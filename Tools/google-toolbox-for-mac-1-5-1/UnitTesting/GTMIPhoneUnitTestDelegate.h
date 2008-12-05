@@ -16,6 +16,8 @@
 //  the License.
 //
 
+#import <Foundation/Foundation.h>
+
 // Application delegate that runs all test methods in registered classes
 // extending SenTestCase. The application is terminated afterwards.
 // You can also run the tests directly from your application by invoking
