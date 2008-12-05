@@ -41,6 +41,15 @@
 		05CD332C0EE94464000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
 		05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */; };
 		05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */; };
+		05CD339C0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
+		05CD339D0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
+		05CD339E0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
+		05CD339F0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
+		05CD33A00EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
+		05CD33A10EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
+		05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */; };
+		05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */; };
+		05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -126,6 +135,9 @@
 		05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestMain.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMIPhoneUnitTestMain.m"; sourceTree = "<group>"; };
 		05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iPhoneOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD33520EE9457D000FDE88 /* CrashReporter.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; name = CrashReporter.exp; path = Resources/CrashReporter.exp; sourceTree = "<group>"; };
+		05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashSignalHandler.h; sourceTree = "<group>"; };
+		05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSignalHandler.m; sourceTree = "<group>"; };
+		05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSignalHandlerTests.m; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -250,6 +262,9 @@
 			children = (
 				05CD31890EE93A90000FDE88 /* CrashReporter.h */,
 				05CD318A0EE93A90000FDE88 /* CrashReporter.m */,
+				05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */,
+				05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */,
+				05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -284,6 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD318D0EE93A90000FDE88 /* CrashReporter.h in Headers */,
+				05CD339C0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +308,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD318F0EE93A90000FDE88 /* CrashReporter.h in Headers */,
+				05CD339E0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,6 +317,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */,
+				05CD33A00EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -545,6 +563,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD318E0EE93A90000FDE88 /* CrashReporter.m in Sources */,
+				05CD339D0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -553,6 +572,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */,
+				05CD339F0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -561,6 +581,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */,
+				05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -571,6 +592,7 @@
 				05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
+				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -581,6 +603,7 @@
 				05CD332C0EE94464000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
+				05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -589,6 +612,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */,
+				05CD33A10EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
