@@ -32,6 +32,7 @@
 		05CD318F0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
 		05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		05CD32110EE93AF9000FDE88 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +88,9 @@
 		05CD318A0EE93A90000FDE88 /* CrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashReporter.m; sourceTree = "<group>"; };
 		05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-MacOSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Tests-MacOSX-Info.plist"; path = "Resources/Tests-MacOSX-Info.plist"; sourceTree = "<group>"; };
+		05CD328B0EE93F5E000FDE88 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMDefines.h; path = "google-toolbox-for-mac-1-5-1/GTMDefines.h"; sourceTree = "<group>"; };
+		05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMSenTestCase.h; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMSenTestCase.h"; sourceTree = "<group>"; };
+		05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMSenTestCase.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMSenTestCase.m"; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,8 +143,19 @@
 		05CD32750EE93E5A000FDE88 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				05CD32890EE93F44000FDE88 /* google-toolbox-for-mac-1-5-1 */,
 			);
 			path = Tools;
+			sourceTree = "<group>";
+		};
+		05CD32890EE93F44000FDE88 /* google-toolbox-for-mac-1-5-1 */ = {
+			isa = PBXGroup;
+			children = (
+				05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */,
+				05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */,
+				05CD328B0EE93F5E000FDE88 /* GTMDefines.h */,
+			);
+			name = "google-toolbox-for-mac-1-5-1";
 			sourceTree = "<group>";
 		};
 		0867D691FE84028FC02AAC07 /* CrashReporter */ = {
@@ -281,7 +296,7 @@
 				05CD32640EE93DC3000FDE88 /* Resources */,
 				05CD32650EE93DC3000FDE88 /* Sources */,
 				05CD32660EE93DC3000FDE88 /* Frameworks */,
-				05CD32670EE93DC3000FDE88 /* ShellScript */,
+				05CD32670EE93DC3000FDE88 /* Run Tests */,
 			);
 			buildRules = (
 			);
@@ -382,18 +397,20 @@
 			shellScript = "# Copy in the canonical framework\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-${PL_CANONICAL_PLATFORM}\" -cf - \"${PL_CANONICAL_PRODUCT}.framework\" | tar -C \"${BUILT_PRODUCTS_DIR}\" -xf -\n\n# Copy in the static library we'll be using to replace the canonical framework's dylib\ncp \"${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}\" \"${BUILT_PRODUCTS_DIR}/${PL_CANONICAL_PRODUCT}.framework/Versions/Current/${PL_CANONICAL_PRODUCT}\"";
 			showEnvVarsInLog = 0;
 		};
-		05CD32670EE93DC3000FDE88 /* ShellScript */ = {
+		05CD32670EE93DC3000FDE88 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Run Tests";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SRCROOT}/Tools/google-toolbox-for-mac-1-5-1/UnitTesting/RunMacOSUnitTests.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -418,6 +435,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
