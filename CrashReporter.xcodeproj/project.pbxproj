@@ -16,6 +16,7 @@
 				05CD31700EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316E0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316C0EE939D8000FDE88 /* PBXTargetDependency */,
+				05CD32720EE93E24000FDE88 /* PBXTargetDependency */,
 			);
 			name = CrashReporter;
 			productName = CrashReporter;
@@ -38,36 +39,43 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			remoteGlobalIDString = 05CD31620EE93905000FDE88;
 			remoteInfo = "CrashReporter-iPhoneSimulator";
 		};
 		05CD316D0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
 			remoteInfo = "CrashReporter-iPhoneOS";
 		};
 		05CD316F0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
 		05CD31710EE939DC000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
 		05CD31730EE939DF000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
+		};
+		05CD32710EE93E24000FDE88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
+			remoteInfo = "Tests-MacOSX";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -77,6 +85,8 @@
 		05CD31630EE93905000FDE88 /* libCrashReporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCrashReporter.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31890EE93A90000FDE88 /* CrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashReporter.h; sourceTree = "<group>"; };
 		05CD318A0EE93A90000FDE88 /* CrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashReporter.m; sourceTree = "<group>"; };
+		05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-MacOSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Tests-MacOSX-Info.plist"; path = "Resources/Tests-MacOSX-Info.plist"; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -91,6 +101,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		05CD31610EE93905000FDE88 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05CD32660EE93DC3000FDE88 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -114,8 +131,16 @@
 				8DC2EF5B0486A6940098B216 /* CrashReporter.framework */,
 				05CD31520EE936A9000FDE88 /* libCrashReporter.a */,
 				05CD31630EE93905000FDE88 /* libCrashReporter.a */,
+				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		05CD32750EE93E5A000FDE88 /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Tools;
 			sourceTree = "<group>";
 		};
 		0867D691FE84028FC02AAC07 /* CrashReporter */ = {
@@ -126,6 +151,7 @@
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
+				05CD32750EE93E5A000FDE88 /* Tools */,
 			);
 			name = CrashReporter;
 			sourceTree = "<group>";
@@ -144,6 +170,7 @@
 			children = (
 				05CD314C0EE9364B000FDE88 /* InfoPlist.strings */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -247,6 +274,24 @@
 			productReference = 05CD31630EE93905000FDE88 /* libCrashReporter.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		05CD32680EE93DC3000FDE88 /* Tests-MacOSX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests-MacOSX" */;
+			buildPhases = (
+				05CD32640EE93DC3000FDE88 /* Resources */,
+				05CD32650EE93DC3000FDE88 /* Sources */,
+				05CD32660EE93DC3000FDE88 /* Frameworks */,
+				05CD32670EE93DC3000FDE88 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Tests-MacOSX";
+			productName = "Tests-MacOSX";
+			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
 		8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "CrashReporter-MacOSX" */;
@@ -283,11 +328,19 @@
 				8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */,
 				05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */,
 				05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */,
+				05CD32680EE93DC3000FDE88 /* Tests-MacOSX */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		05CD32640EE93DC3000FDE88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF520486A6940098B216 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -329,6 +382,19 @@
 			shellScript = "# Copy in the canonical framework\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-${PL_CANONICAL_PLATFORM}\" -cf - \"${PL_CANONICAL_PRODUCT}.framework\" | tar -C \"${BUILT_PRODUCTS_DIR}\" -xf -\n\n# Copy in the static library we'll be using to replace the canonical framework's dylib\ncp \"${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}\" \"${BUILT_PRODUCTS_DIR}/${PL_CANONICAL_PRODUCT}.framework/Versions/Current/${PL_CANONICAL_PRODUCT}\"";
 			showEnvVarsInLog = 0;
 		};
+		05CD32670EE93DC3000FDE88 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -345,6 +411,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05CD32650EE93DC3000FDE88 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +456,11 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05CD31730EE939DF000FDE88 /* PBXContainerItemProxy */;
+		};
+		05CD32720EE93E24000FDE88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
+			targetProxy = 05CD32710EE93E24000FDE88 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -481,6 +559,60 @@
 			};
 			name = Release;
 		};
+		05CD326B0EE93DC4000FDE88 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Tests-MacOSX";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		05CD326C0EE93DC4000FDE88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Tests-MacOSX";
+				WRAPPER_EXTENSION = octest;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		1DEB91AE08733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -497,7 +629,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = Resources/Info.plist;
-				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = CrashReporter;
 				WRAPPER_EXTENSION = framework;
 			};
@@ -516,7 +648,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = Resources/Info.plist;
-				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = CrashReporter;
 				WRAPPER_EXTENSION = framework;
 			};
@@ -582,6 +714,15 @@
 			buildConfigurations = (
 				05CD31690EE939D1000FDE88 /* Debug */,
 				05CD316A0EE939D1000FDE88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests-MacOSX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05CD326B0EE93DC4000FDE88 /* Debug */,
+				05CD326C0EE93DC4000FDE88 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
