@@ -17,6 +17,7 @@
 				05CD316E0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316C0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD32720EE93E24000FDE88 /* PBXTargetDependency */,
+				05CD32EA0EE94105000FDE88 /* PBXTargetDependency */,
 			);
 			name = CrashReporter;
 			productName = CrashReporter;
@@ -33,6 +34,9 @@
 		05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		05CD32110EE93AF9000FDE88 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
+		05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */; };
+		05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */; };
+		05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,12 +82,33 @@
 			remoteGlobalIDString = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
 			remoteInfo = "Tests-MacOSX";
 		};
+		05CD32E90EE94105000FDE88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */;
+			remoteInfo = "Tests-iPhoneSimulator";
+		};
+		05CD32F20EE94153000FDE88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			remoteInfo = "CrashReporter-iPhoneSimulator";
+		};
+		05CD32F40EE94153000FDE88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			remoteInfo = "CrashReporter-iPhoneOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		05CD314A0EE93647000FDE88 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		05CD31520EE936A9000FDE88 /* libCrashReporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCrashReporter.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		05CD31630EE93905000FDE88 /* libCrashReporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCrashReporter.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphoneos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphonesimulator.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31890EE93A90000FDE88 /* CrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashReporter.h; sourceTree = "<group>"; };
 		05CD318A0EE93A90000FDE88 /* CrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashReporter.m; sourceTree = "<group>"; };
 		05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-MacOSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -91,6 +116,10 @@
 		05CD328B0EE93F5E000FDE88 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMDefines.h; path = "google-toolbox-for-mac-1-5-1/GTMDefines.h"; sourceTree = "<group>"; };
 		05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMSenTestCase.h; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMSenTestCase.h"; sourceTree = "<group>"; };
 		05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMSenTestCase.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMSenTestCase.m"; sourceTree = "<group>"; };
+		05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iPhoneSimulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD32AF0EE94086000FDE88 /* Tests-iPhoneSimulator-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Tests-iPhoneSimulator-Info.plist"; path = "Resources/Tests-iPhoneSimulator-Info.plist"; sourceTree = "<group>"; };
+		05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestDelegate.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMIPhoneUnitTestDelegate.m"; sourceTree = "<group>"; };
+		05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestMain.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMIPhoneUnitTestMain.m"; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,6 +147,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		05CD32A70EE94062000FDE88 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF560486A6940098B216 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -133,9 +169,10 @@
 			isa = PBXGroup;
 			children = (
 				8DC2EF5B0486A6940098B216 /* CrashReporter.framework */,
-				05CD31520EE936A9000FDE88 /* libCrashReporter.a */,
-				05CD31630EE93905000FDE88 /* libCrashReporter.a */,
+				05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */,
+				05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */,
 				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */,
+				05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -154,6 +191,8 @@
 				05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */,
 				05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */,
 				05CD328B0EE93F5E000FDE88 /* GTMDefines.h */,
+				05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */,
+				05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */,
 			);
 			name = "google-toolbox-for-mac-1-5-1";
 			sourceTree = "<group>";
@@ -185,6 +224,7 @@
 			children = (
 				05CD314C0EE9364B000FDE88 /* InfoPlist.strings */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				05CD32AF0EE94086000FDE88 /* Tests-iPhoneSimulator-Info.plist */,
 				05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */,
 			);
 			name = Resources;
@@ -267,7 +307,7 @@
 			);
 			name = "CrashReporter-iPhoneOS";
 			productName = "CrashReporter-iPhoneOS";
-			productReference = 05CD31520EE936A9000FDE88 /* libCrashReporter.a */;
+			productReference = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */ = {
@@ -286,7 +326,7 @@
 			);
 			name = "CrashReporter-iPhoneSimulator";
 			productName = "CrashReporter-iPhoneSimulator";
-			productReference = 05CD31630EE93905000FDE88 /* libCrashReporter.a */;
+			productReference = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		05CD32680EE93DC3000FDE88 /* Tests-MacOSX */ = {
@@ -306,6 +346,26 @@
 			productName = "Tests-MacOSX";
 			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */;
 			productType = "com.apple.product-type.bundle";
+		};
+		05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05CD32AE0EE94063000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iPhoneSimulator" */;
+			buildPhases = (
+				05CD32A50EE94062000FDE88 /* Resources */,
+				05CD32A60EE94062000FDE88 /* Sources */,
+				05CD32A70EE94062000FDE88 /* Frameworks */,
+				05CD32B50EE940C8000FDE88 /* Simulator Run Tests */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				05CD32F50EE94153000FDE88 /* PBXTargetDependency */,
+				05CD32F30EE94153000FDE88 /* PBXTargetDependency */,
+			);
+			name = "Tests-iPhoneSimulator";
+			productName = "Tests-iPhoneSimulator";
+			productReference = 05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */;
+			productType = "com.apple.product-type.application";
 		};
 		8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */ = {
 			isa = PBXNativeTarget;
@@ -344,12 +404,20 @@
 				05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */,
 				05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */,
 				05CD32680EE93DC3000FDE88 /* Tests-MacOSX */,
+				05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		05CD32640EE93DC3000FDE88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05CD32A50EE94062000FDE88 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -412,6 +480,21 @@
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SRCROOT}/Tools/google-toolbox-for-mac-1-5-1/UnitTesting/RunMacOSUnitTests.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		05CD32B50EE940C8000FDE88 /* Simulator Run Tests */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Simulator Run Tests";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Only run at build-time on the simulator\nif [ \"${PLATFORM_NAME}\" != iphoneos ]; then\n\t${SRCROOT}/Tools/google-toolbox-for-mac-1-5-1/UnitTesting/RunIPhoneUnitTest.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -436,6 +519,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05CD32A60EE94062000FDE88 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */,
+				05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
+				05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -480,6 +573,21 @@
 			target = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
 			targetProxy = 05CD32710EE93E24000FDE88 /* PBXContainerItemProxy */;
 		};
+		05CD32EA0EE94105000FDE88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */;
+			targetProxy = 05CD32E90EE94105000FDE88 /* PBXContainerItemProxy */;
+		};
+		05CD32F30EE94153000FDE88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			targetProxy = 05CD32F20EE94153000FDE88 /* PBXContainerItemProxy */;
+		};
+		05CD32F50EE94153000FDE88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			targetProxy = 05CD32F40EE94153000FDE88 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -504,7 +612,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
-				PRODUCT_NAME = CrashReporter;
+				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos2.0;
 			};
 			name = Debug;
@@ -535,7 +643,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
-				PRODUCT_NAME = CrashReporter;
+				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphonesimulator2.0;
 			};
 			name = Debug;
@@ -627,6 +735,61 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
 				WRAPPER_EXTENSION = octest;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		05CD32AC0EE94063000FDE88 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/UIKit.framework/Headers/UIKit.h";
+				INFOPLIST_FILE = "Resources/Tests-iPhoneSimulator-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					UIKit,
+					"-L${CONFIGURATION_BUILD_DIR}",
+					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Tests-iPhoneSimulator";
+				SDKROOT = iphonesimulator2.0;
+			};
+			name = Debug;
+		};
+		05CD32AD0EE94063000FDE88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/UIKit.framework/Headers/UIKit.h";
+				INFOPLIST_FILE = "Resources/Tests-iPhoneSimulator-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					UIKit,
+					"-L${CONFIGURATION_BUILD_DIR}",
+					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Tests-iPhoneSimulator";
+				SDKROOT = iphoneos2.2;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -741,6 +904,15 @@
 			buildConfigurations = (
 				05CD326B0EE93DC4000FDE88 /* Debug */,
 				05CD326C0EE93DC4000FDE88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		05CD32AE0EE94063000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iPhoneSimulator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05CD32AC0EE94063000FDE88 /* Debug */,
+				05CD32AD0EE94063000FDE88 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
