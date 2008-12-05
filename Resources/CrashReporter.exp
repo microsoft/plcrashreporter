@@ -7,3 +7,6 @@
 # CrashReporter
 _PLCrashReporterException
 _PLCrashReporterErrorDomain
+
+# PLCrashSignalHandler
+*_PLCrashSignalHandler
