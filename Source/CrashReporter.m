@@ -7,7 +7,12 @@
 
 #import "CrashReporter.h"
 
+/** 
+ * Generic CrashReporter Exception
+ * @ingroup exceptions
+ */
+NSString *PLCrashReporterException = @"PLCrashReporterException";
 
-@implementation CrashReporter
-
-@end
+/** Plausible Database NSError Domain
+ * @ingroup globals */
+NSString *PLCrashReporterErrorDomain = @"PLCrashReporterErrorDomain";
