@@ -2,6 +2,8 @@
 # CrashReporter
 #
 # Created by Landon Fuller on 12/5/08.
-# Copyright 2008 __MyCompanyName__. All rights reserved.
+# Copyright 2008 Plausible Labs Cooperative, Inc. All rights reserved.
 
-
+# CrashReporter
+_PLCrashReporterException
+_PLCrashReporterErrorDomain
