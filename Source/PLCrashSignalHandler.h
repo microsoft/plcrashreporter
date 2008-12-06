@@ -8,7 +8,9 @@
 #import <Foundation/Foundation.h>
 
 @interface PLCrashSignalHandler : NSObject {
-
+@private
 }
+
++ (PLCrashSignalHandler *) sharedHandler;
 
 @end
