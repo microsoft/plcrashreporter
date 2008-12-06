@@ -7,11 +7,14 @@
 
 #import "GTMSenTestCase.h"
 
+#import "PLCrashSignalHandler.h"
+
 @interface PLCrashSignalHandlerTests : SenTestCase @end
 
 @implementation PLCrashSignalHandlerTests
 
-- (void) testSomething {
+- (void) testSharedHandler {
+    STAssertNotNil([PLCrashSignalHandler sharedHandler], @"Nil shared handler");
 }
 
 @end
