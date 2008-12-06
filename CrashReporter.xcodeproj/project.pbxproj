@@ -50,6 +50,8 @@
 		05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */; };
 		05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */; };
 		05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */; };
+		05CD34380EEA60BB000FDE88 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
+		05CD34390EEA60C1000FDE88 /* CrashReporter.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,10 +115,31 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD33230EE94439000FDE88 /* Tests-iPhoneOS */;
+			remoteGlobalIDString = 05CD33230EE94439000FDE88;
 			remoteInfo = "Tests-iPhoneOS";
 		};
+		05CD34290EEA5FFA000FDE88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			remoteInfo = "CrashReporter-MacOSX";
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		05CD34410EEA60F8000FDE88 /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				05CD34390EEA60C1000FDE88 /* CrashReporter.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		05CD314A0EE93647000FDE88 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -162,6 +185,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05CD34380EEA60BB000FDE88 /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -367,6 +391,7 @@
 			buildConfigurationList = 05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests-MacOSX" */;
 			buildPhases = (
 				05CD32640EE93DC3000FDE88 /* Resources */,
+				05CD34410EEA60F8000FDE88 /* Copy Frameworks */,
 				05CD32650EE93DC3000FDE88 /* Sources */,
 				05CD32660EE93DC3000FDE88 /* Frameworks */,
 				05CD32670EE93DC3000FDE88 /* Run Tests */,
@@ -374,6 +399,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				05CD342A0EEA5FFA000FDE88 /* PBXTargetDependency */,
 			);
 			name = "Tests-MacOSX";
 			productName = "Tests-MacOSX";
@@ -664,6 +690,11 @@
 			target = 05CD33230EE94439000FDE88 /* Tests-iPhoneOS */;
 			targetProxy = 05CD33300EE94473000FDE88 /* PBXContainerItemProxy */;
 		};
+		05CD342A0EEA5FFA000FDE88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			targetProxy = 05CD34290EEA5FFA000FDE88 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -770,6 +801,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -798,6 +830,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -894,6 +927,8 @@
 					Foundation,
 					"-framework",
 					UIKit,
+					"-L${CONFIGURATION_BUILD_DIR}",
+					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
@@ -919,6 +954,8 @@
 					Foundation,
 					"-framework",
 					UIKit,
+					"-L${CONFIGURATION_BUILD_DIR}",
+					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
