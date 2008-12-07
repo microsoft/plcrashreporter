@@ -63,6 +63,14 @@ static PLCrashSignalHandler *sharedHandler;
     return sharedHandler;
 }
 
+/**
+ * Register the the signal handler for the given signal.
+ *
+ * @param outError A pointer to an NSError object variable. If an error occurs, this
+ * pointer will contain an error object indicating why the signal handlers could not be
+ * registered. If no error occurs, this parameter will be left unmodified. You may specify
+ * NULL for this parameter, and no error information will be provided. 
+ */
 - (BOOL) registerHandlerForSignal: (int) signal error: (NSError **) outError {
     struct sigaction new_action;
 
