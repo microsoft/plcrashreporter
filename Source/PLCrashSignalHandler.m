@@ -19,6 +19,8 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 
 @interface PLCrashSignalHandler (PrivateMethods)
 
+- (BOOL) spawnHandlerThreadAndReturnError: (NSError **) outError;
+
 - (void) populateError: (NSError **) error
               errnoVal: (int) errnoVal
            description: (NSString *) description;
@@ -72,6 +74,7 @@ static void *exception_handler_thread (void *arg) {
 
 
 
+
 /**
  * Register the Mach exception handlers.
  *
@@ -82,49 +85,20 @@ static void *exception_handler_thread (void *arg) {
  */
 - (BOOL) registerHandlerAndReturnError: (NSError **) outError {
     static BOOL initialized = NO;
-    pthread_attr_t attr;
-    pthread_t thr;
-    
+
     /* Must only be called once per process */
     if (initialized) {
         [NSException raise: PLCrashReporterException format: @"Attempted to re-register per-process signal handler"];
         return NO;
     }
-    
-    /* Set up the exception handler thread. The thread should be extremely lightweight, as it only
-     * exists to handle very unusual conditions.
-     *
-     * We use a very small stack size (4k or PTHREAD_STACK_MIN, whichever is larger) */
-    if (pthread_attr_init(&attr) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread stack size", @"")];
+
+    /* Spawn the handler thread */
+    if (![self spawnHandlerThreadAndReturnError: outError]) {
         return NO;
     }
 
-    if (pthread_attr_setstacksize(&attr, MAX(PTHREAD_STACK_MIN, 4096)) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread stack size", @"")];
-        goto cleanup;
-    }
-
-    /* start the thread detached */
-    if (pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread detach state", @"")];
-        goto cleanup;
-    }
-    
-    /* Create the exception handler thread */
-    if (pthread_create(&thr, &attr, exception_handler_thread, NULL) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not create exception handler thread", @"")];
-        goto cleanup;
-    }
-    
-    /* Success, set initialized */
     initialized = YES;
-    
-cleanup:
-    /* Clean up */
-    pthread_attr_destroy(&attr);
-    
-    return initialized;
+    return YES;
 }
 
 /**
@@ -142,7 +116,60 @@ cleanup:
 @end
 
 
+
+/**
+ * @internal
+ * Private Methods
+ */
 @implementation PLCrashSignalHandler (PrivateMethods)
+
+/**
+ * Spawn the thread handler. The thread is started detached, with the minimum reasonable stack
+ * size.
+ *
+ * @warning Do not call more than once.
+ */
+- (BOOL) spawnHandlerThreadAndReturnError: (NSError **) outError {
+    pthread_attr_t attr;
+    pthread_t thr;
+    BOOL retval = NO;
+    
+    /* Set up the exception handler thread. The thread should be extremely lightweight, as it only
+     * exists to handle very unusual conditions.
+     *
+     * We use a very small stack size (4k or PTHREAD_STACK_MIN, whichever is larger) */
+    if (pthread_attr_init(&attr) != 0) {
+        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread stack size", @"")];
+        return NO;
+    }
+    
+    if (pthread_attr_setstacksize(&attr, MAX(PTHREAD_STACK_MIN, 4096)) != 0) {
+        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread stack size", @"")];
+        goto cleanup;
+    }
+    
+    /* start the thread detached */
+    if (pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0) {
+        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread detach state", @"")];
+        goto cleanup;
+    }
+    
+    /* Create the exception handler thread */
+    if (pthread_create(&thr, &attr, exception_handler_thread, NULL) != 0) {
+        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not create exception handler thread", @"")];
+        goto cleanup;
+    }
+    
+    /* Success, thread running */
+    retval = YES;
+    
+cleanup:
+    /* Clean up */
+    pthread_attr_destroy(&attr);
+    
+    return retval;
+}
+
 
 /**
  * Populate an PLCrashReporterErrorOperatingSystem NSError instance, using the provided
