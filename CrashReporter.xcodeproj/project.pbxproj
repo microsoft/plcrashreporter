@@ -55,6 +55,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		054F50E80EEC50B30034B184 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			remoteInfo = "CrashReporter-iPhoneOS";
+		};
 		05CD316B0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -436,6 +443,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
 			);
 			name = "Tests-iPhoneOS";
 			productName = "Tests-iPhoneOS";
@@ -645,6 +653,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		054F50E90EEC50B30034B184 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			targetProxy = 054F50E80EEC50B30034B184 /* PBXContainerItemProxy */;
+		};
 		05CD316C0EE939D8000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
