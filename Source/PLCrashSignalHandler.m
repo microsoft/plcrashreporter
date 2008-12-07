@@ -11,7 +11,7 @@
 
 #import "PLCrashSignalHandler.h"
 
-// Architecture specific crash log handler
+// Crash log handler
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 
 /**
@@ -34,11 +34,19 @@ static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
 /** @internal
  * Root fatal signal handler */
 static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
-    /* Basic signal information */
-    NSLog(@"Received signal %d (sig%s) code %d", signal, sys_signame[signal], info->si_code);
-    NSLog(@"Signal fault address %p", info->si_addr);
+    /* Remove all signal handlers -- if the dump code fails, the default terminate
+     * action will occur */
+    for (int i = 0; i < n_fatal_signals; i++) {
+        struct sigaction sa;
+        
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = SIG_DFL;
+        sigemptyset(&sa.sa_mask);
+        
+        sigaction(fatal_signals[i], &sa, NULL);
+    }
 
-    /* Call the architecture-specific signal handler */
+    /* Call the crash log dumper */
     dump_crash_log(signal, info, uapVoid);
 
     /* Re-raise the signal */
@@ -125,7 +133,7 @@ static PLCrashSignalHandler *sharedHandler;
 }
 
 /**
- * Execute the fatal signal handler.
+ * Execute the crash log handler.
  * @warning For testing purposes only.
  *
  * @param signal Signal to emulate.
@@ -147,19 +155,21 @@ static PLCrashSignalHandler *sharedHandler;
     /* Get the current thread's ucontext */
     getcontext(&uap);
 
-    /* Execute the signal handler */
-    fatal_signal_handler(signal, &info, &uap);
+    /* Execute the crash log handler */
+    dump_crash_log(signal, &info, &uap);
 }
 
 @end
 
 
-#ifdef __i386__
-
-/* i386 dump_crash_log */
+/**
+ * Dump the process crash log.
+ *
+ * XXX Currently outputs to stderr using NSLog, must use the crash log writer
+ * implementation (once available)
+ */
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
+    /* Basic signal information */
+    NSLog(@"Received signal %d (sig%s) code %d", signal, sys_signame[signal], info->si_code);
+    NSLog(@"Signal fault address %p", info->si_addr);    
 }
-
-#else
-#error Unsupported Architecture
-#endif
