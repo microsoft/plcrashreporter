@@ -12,5 +12,6 @@
 }
 
 + (PLCrashSignalHandler *) sharedHandler;
+- (BOOL) registerHandlerAndReturnError: (NSError **) outError;
 
 @end
