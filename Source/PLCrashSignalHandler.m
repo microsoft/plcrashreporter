@@ -12,6 +12,10 @@
 #import "PLCrashReporter.h"
 #import "PLCrashSignalHandler.h"
 
+/** @internal
+ * Monitored fatal exception types. */
+#define FATAL_EXCEPTION_TYPES (EXC_MASK_BAD_ACCESS|EXC_MASK_BAD_INSTRUCTION|EXC_MASK_ARITHMETIC)
+
 // Crash log handler
 #if 0
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
@@ -72,6 +76,12 @@ static void *exception_handler_thread (void *arg) {
     return sharedHandler;
 }
 
+- (void) dealloc {
+    /* To actually clean up, we'd need to re-register the old exception handler,
+     * and then drop our send rights */
+    [NSException raise: PLCrashReporterException format: @"The PLCrashSignalHandler process singleton may not be deallocated"];
+    [super dealloc];
+}
 
 
 
@@ -85,12 +95,27 @@ static void *exception_handler_thread (void *arg) {
  */
 - (BOOL) registerHandlerAndReturnError: (NSError **) outError {
     static BOOL initialized = NO;
+    kern_return_t kr;
 
     /* Must only be called once per process */
     if (initialized) {
         [NSException raise: PLCrashReporterException format: @"Attempted to re-register per-process signal handler"];
         return NO;
     }
+    
+    /* Fetch the current exception handler */
+    kr = task_get_exception_ports(mach_task_self(),
+                                  FATAL_EXCEPTION_TYPES,
+                                  _forwardingHandler.masks,
+                                  &_forwardingHandler.count,
+                                  _forwardingHandler.ports,
+                                  _forwardingHandler.behaviors,
+                                  _forwardingHandler.flavors);
+    if (kr != KERN_SUCCESS) {
+        [self populateError: outError machError: kr description: NSLocalizedString(@"Failed to fetch current exception handler", @"")];
+        return NO;
+    }
+
 
     /* Spawn the handler thread */
     if (![self spawnHandlerThreadAndReturnError: outError]) {
