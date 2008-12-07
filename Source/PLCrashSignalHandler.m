@@ -6,8 +6,13 @@
  */
 
 #import <signal.h>
+#import <ucontext.h>
+
 
 #import "PLCrashSignalHandler.h"
+
+// Architecture specific crash log handler
+static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 
 /**
  * @internal
@@ -16,7 +21,6 @@
 static int fatal_signals[] = {
     SIGABRT,
     SIGBUS,
-    SIGFPE,
     SIGFPE,
     SIGILL,
     SIGSEGV
@@ -30,7 +34,12 @@ static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
 /** @internal
  * Root fatal signal handler */
 static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
-    // todo
+    /* Basic signal information */
+    NSLog(@"Received signal %s (%d) code %d", signal, sys_signame[signal], info->si_code);
+    NSLog(@"Signal fault address %p", info->si_addr);
+
+    /* Call the architecture-specific signal handler */
+    dump_crash_log(signal, info, uapVoid);
 
     /* Re-raise the signal */
     raise(signal);
@@ -114,4 +123,42 @@ static PLCrashSignalHandler *sharedHandler;
     return YES;
 }
 
+/**
+ * Execute the fatal signal handler.
+ * @warning For testing purposes only.
+ *
+ * @param signal Signal to emulate.
+ * @param code Signal code.
+ * @param address Fault address.
+ */
+- (void) testHandlerWithSignal: (int) signal code: (int) code faultAddress: (void *) address {
+    siginfo_t info;
+    ucontext_t uap;
+
+    /* Initialze a faux-siginfo instance */
+    info.si_addr = address;
+    info.si_errno = 0;
+    info.si_pid = getpid();
+    info.si_uid = getuid();
+    info.si_code = code;
+    info.si_status = signal;
+    
+    /* Get the current thread's ucontext */
+    getcontext(&uap);
+
+    /* Execute the signal handler */
+    fatal_signal_handler(signal, &info, &uap);
+}
+
 @end
+
+
+#ifdef __i386__
+
+/* i386 dump_crash_log */
+static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
+}
+
+#else
+#error Unsupported Architecture
+#endif
