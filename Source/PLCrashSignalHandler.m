@@ -35,7 +35,7 @@ static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
  * Root fatal signal handler */
 static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     /* Basic signal information */
-    NSLog(@"Received signal %s (%d) code %d", signal, sys_signame[signal], info->si_code);
+    NSLog(@"Received signal %d (sig%s) code %d", signal, sys_signame[signal], info->si_code);
     NSLog(@"Signal fault address %p", info->si_addr);
 
     /* Call the architecture-specific signal handler */
@@ -81,15 +81,16 @@ static PLCrashSignalHandler *sharedHandler;
  * NULL for this parameter, and no error information will be provided. 
  */
 - (BOOL) registerHandlerForSignal: (int) signal error: (NSError **) outError {
-    struct sigaction new_action;
+    struct sigaction sa;
 
     /* Configure action */
-    new_action.sa_flags = SA_SIGINFO;
-    sigemptyset(&new_action.sa_mask);
-    new_action.sa_sigaction = &fatal_signal_handler;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_sigaction = &fatal_signal_handler;
 
     /* Set new sigaction */
-    if (sigaction(signal, &new_action, NULL) != 0) {
+    if (sigaction(signal, &sa, NULL) != 0) {
         int err = errno;
         if (outError)
             *outError = [NSError errorWithDomain: NSPOSIXErrorDomain code: errno userInfo: nil];
