@@ -33,4 +33,9 @@
     STAssertNotEquals(action.sa_handler, SIG_DFL, @"Action not registered for SIGSEGV");
 }
 
+- (void) testSignalHandler {
+    /* Send a test 'signal' to the handler. Nothing for us to verify afterwards, yet. */
+    [[PLCrashSignalHandler sharedHandler] testHandlerWithSignal: SIGBUS code: SEGV_MAPERR faultAddress: 0x0];
+}
+
 @end

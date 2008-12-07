@@ -14,4 +14,6 @@
 + (PLCrashSignalHandler *) sharedHandler;
 - (BOOL) registerHandlerAndReturnError: (NSError **) outError;
 
+- (void) testHandlerWithSignal: (int) signal code: (int) code faultAddress: (void *) address;
+
 @end
