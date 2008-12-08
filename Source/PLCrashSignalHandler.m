@@ -6,23 +6,52 @@
  */
 
 #import <pthread.h>
+#import <unistd.h>
 
 #import <mach/mach.h>
+
+#import "mig/exc.h"
 
 #import "PLCrashReporter.h"
 #import "PLCrashSignalHandler.h"
 
-// OS-supplied mach exception server implementation
-extern boolean_t exc_server(mach_msg_header_t *, mach_msg_header_t *);
+// A super simple debug 'function' that's async safe.
+#define ASYNC_DEBUG(msg) {\
+    const char output[] = msg "\n";\
+    write(STDERR_FILENO, output, sizeof(output));\
+}
+
+// YES if the process shared instance has been initialized
+static BOOL initialized = NO;
+
+// mach exception server implementation
+extern boolean_t plexc_server(mach_msg_header_t *, mach_msg_header_t *);
 
 /** @internal
  * Monitored fatal exception types. */
 #define FATAL_EXCEPTION_TYPES (EXC_MASK_BAD_ACCESS|EXC_MASK_BAD_INSTRUCTION|EXC_MASK_ARITHMETIC)
 
-// Crash log handler
-#if 0
-static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
-#endif
+typedef struct PLCrashSignalHandlerPorts {
+    mach_msg_type_number_t  count;
+    exception_mask_t        masks[EXC_TYPES_COUNT];
+    exception_port_t        ports[EXC_TYPES_COUNT];
+    exception_behavior_t    behaviors[EXC_TYPES_COUNT];
+    thread_state_flavor_t   flavors[EXC_TYPES_COUNT];
+} PLCrashSignalHandlerPorts;
+
+/** @internal
+ * Saved reference to the previous exception handler (process global) */
+static PLCrashSignalHandlerPorts old_exception_handler;
+
+
+/** @internal
+ * Exception port (process global) */
+static mach_port_t exceptionPort;
+
+
+/** @internal
+ * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
+static PLCrashSignalHandler *sharedHandler;
 
 
 @interface PLCrashSignalHandler (PrivateMethods)
@@ -47,11 +76,6 @@ static void *exception_handler_thread (void *arg);
                  cause: (NSError *) cause;
 
 @end
-
-
-/** @internal
- * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
-static PLCrashSignalHandler *sharedHandler;
 
 
 /***
@@ -95,8 +119,6 @@ static PLCrashSignalHandler *sharedHandler;
  * NULL for this parameter, and no error information will be provided. 
  */
 - (BOOL) registerHandlerAndReturnError: (NSError **) outError {
-    static BOOL initialized = NO;
-
     /* Must only be called once per process */
     if (initialized) {
         [NSException raise: PLCrashReporterException format: @"Attempted to re-register per-process signal handler"];
@@ -104,12 +126,12 @@ static PLCrashSignalHandler *sharedHandler;
     }
     
     /* Fetch the current exception handler */
-    if (![self saveExceptionHandler: &_forwardingHandler error: outError]) {
+    if (![self saveExceptionHandler: &old_exception_handler error: outError]) {
         return NO;
     }
 
     /* Register exception handler ports */
-    if (![self registerHandlerPort: &_exceptionPort error: outError]) {
+    if (![self registerHandlerPort: &exceptionPort error: outError]) {
         return NO;
     }
 
@@ -150,41 +172,128 @@ static PLCrashSignalHandler *sharedHandler;
  * Background thread that receives and forwards Mach exception handler messages
  */
 static void *exception_handler_thread (void *arg) {
-    sigset_t sigset;
-    PLCrashSignalHandler *self = arg;
-    // PLCrashSignalHandlerPorts *oldHandler = &self->_forwardingHandler;
-
-    /* Block all signals */
-    sigfillset(&sigset);
-    if (pthread_sigmask(SIG_BLOCK, &sigset, NULL) != 0)
-        NSLog(@"Warning - could not block signals on Mach exception handler thread: %s", strerror(errno));
-
     /* Run forever */
-    mach_msg_server(exc_server, 2048, self->_exceptionPort, 0);
-    
-    return NULL;
+    mach_msg_server(plexc_server, 2048, exceptionPort, 0);
+    abort();
 }
 
+/**
+ * Forward the exception to the original saved handler. Brian Alliet's example code
+ * was used as a reference here.
+ */
+static kern_return_t plcrash_exception_forward (mach_port_t thread,
+                                                mach_port_t task,
+                                           exception_type_t exception,
+                                           exception_data_t code,
+                                     mach_msg_type_number_t codeCnt)
+{
+    kern_return_t kr;
+    mach_port_t dest = MACH_PORT_NULL;
+    exception_behavior_t behavior;
+    thread_state_flavor_t flavor;
+
+    thread_state_data_t thread_state;
+    mach_msg_type_number_t thread_state_count = THREAD_STATE_MAX;
+
+    /* Check for a matching registered exception handler */
+    for (mach_msg_type_number_t i = 0; i < old_exception_handler.count; i++) {
+        if (old_exception_handler.masks[i] & (1 << exception)) {
+            dest = old_exception_handler.ports[i];
+            behavior = old_exception_handler.behaviors[i];
+            flavor = old_exception_handler.flavors[i];
+            break;
+        }
+    }
+
+    /* No match, nothing to do */
+    if (dest == MACH_PORT_NULL)
+        return KERN_SUCCESS;
+
+    /* If needed, fetch the thread state */
+    if (behavior != EXCEPTION_DEFAULT) {
+        kr = thread_get_state(thread, flavor, thread_state, &thread_state_count);
+        if (kr != KERN_SUCCESS) {
+            ASYNC_DEBUG("Failed to get thread state while forwarding exception!");
+            NSLog(@"Tried to fetch flavor %d (behavior %d), %d returned", flavor, behavior, kr);
+            return KERN_FAILURE;
+        }
+    }
+
+    /* Call the appropriate exception function */
+    switch (behavior) {
+        case EXCEPTION_DEFAULT:
+            kr = exception_raise(dest, thread, task, exception, code, codeCnt);
+            break;
+        case EXCEPTION_STATE:
+            kr = exception_raise_state(dest, exception, code, codeCnt, &flavor, thread_state,
+                                       thread_state_count, thread_state, &thread_state_count);
+            break;
+        case EXCEPTION_STATE_IDENTITY:
+            kr = exception_raise_state_identity(dest, thread, task, exception, code, codeCnt, &flavor, 
+                                                thread_state, thread_state_count, thread_state, &thread_state_count);
+            break;
+        default:
+            ASYNC_DEBUG("Unhandled behavior type while forwarding exception!");
+            kr = KERN_FAILURE;
+            break;
+    }
+
+    return kr;
+}
 
 /**
- * Called by mach_msg_server.
+ * Called by mach_msg_server on receipt of an exception
  */
-kern_return_t catch_exception_raise(mach_port_t exception_port,
-                                           mach_port_t thread,
-                                           mach_port_t task,
-                                           exception_type_t exception,
-                                           exception_data_t code_vector,
-                                           mach_msg_type_number_t code_count)
+kern_return_t plcrash_exception_raise (mach_port_t exception_port,
+                                       mach_port_t thread,
+                                       mach_port_t task,
+                                  exception_type_t exception,
+                                  exception_data_t code_vector,
+                            mach_msg_type_number_t code_count)
 {
-    const char hello[] = "Hello\n";
-    write(STDERR_FILENO, hello, sizeof(hello));
-    return KERN_SUCCESS;
+    if (plcrash_exception_forward(thread, task, exception, code_vector, code_count) != KERN_SUCCESS)
+        ASYNC_DEBUG("Failed to forward exception message");
+
+    /* Terminate the process */
+    return KERN_FAILURE;
+}
+
+kern_return_t plcrash_exception_raise_state (mach_port_t exception_port,
+                                        exception_type_t exception,
+                                  const exception_data_t code,
+                                  mach_msg_type_number_t codeCnt,
+                                                     int *flavor,
+                                    const thread_state_t old_state,
+                                  mach_msg_type_number_t old_stateCnt,
+                                          thread_state_t new_state,
+                                  mach_msg_type_number_t *new_stateCnt)
+{
+    // Unused & unsupported
+    return KERN_FAILURE;
+}
+
+kern_return_t plcrash_exception_raise_state_identity (mach_port_t exception_port,
+                                                      mach_port_t thread,
+                                                      mach_port_t task,
+                                                 exception_type_t exception,
+                                                 exception_data_t code,
+                                           mach_msg_type_number_t codeCnt,
+                                                              int *flavor,
+                                                   thread_state_t old_state,
+                                           mach_msg_type_number_t old_stateCnt,
+                                                   thread_state_t new_state,
+                                           mach_msg_type_number_t *new_stateCnt)
+{
+    // Unused & unsupported
+    return KERN_FAILURE;
 }
 
 /**
  * Save the current exception handler.
  */
 - (BOOL) saveExceptionHandler: (PLCrashSignalHandlerPorts *) saved error: (NSError **) outError {
+    assert(initialized == NO);
+
     kern_return_t kr;
     kr = task_get_exception_ports(mach_task_self(),
                                   FATAL_EXCEPTION_TYPES,
@@ -209,7 +318,9 @@ kern_return_t catch_exception_raise(mach_port_t exception_port,
  */
 - (BOOL) registerHandlerPort: (mach_port_t *) exceptionPort error: (NSError **) outError {
     kern_return_t kr;
-    mach_port_t task = mach_task_self();    
+    mach_port_t task = mach_task_self();
+    
+    assert(initialized == NO);
 
     /* Allocate the receive right */
     kr = mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE, exceptionPort);
@@ -255,19 +366,23 @@ error:
     pthread_t thr;
     BOOL retval = NO;
     
+    assert(initialized == NO);
+    
     /* Set up the exception handler thread. The thread should be extremely lightweight, as it only
      * exists to handle very unusual conditions.
      *
-     * We use a very small stack size (4k or PTHREAD_STACK_MIN, whichever is larger) */
+     * We use a very small stack size (64k or PTHREAD_STACK_MIN, whichever is larger) */
     if (pthread_attr_init(&attr) != 0) {
         [self populateError: outError errnoVal: errno description: @"Could not set pthread stack size"];
         return NO;
     }
-    
-    if (pthread_attr_setstacksize(&attr, MAX(PTHREAD_STACK_MIN, 4096)) != 0) {
+
+#if 0
+    if (pthread_attr_setstacksize(&attr, MAX(PTHREAD_STACK_MIN, 64 * 1024)) != 0) {
         [self populateError: outError errnoVal: errno description: @"Could not set pthread stack size"];
         goto cleanup;
     }
+#endif
     
     /* start the thread detached */
     if (pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0) {

@@ -25,5 +25,10 @@
     STAssertThrows([[PLCrashSignalHandler sharedHandler] registerHandlerAndReturnError: &error], @"Second registration should throw an exception");
 }
 
+- (void) testImplode {
+    CFStringRef *string = NULL;
+    CFRetain(string);
+}
+
 
 @end

@@ -26,7 +26,18 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		05308A050EECEC9D00B90721 /* exc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05308A020EECEC9D00B90721 /* exc.h */; };
+		05308A060EECEC9D00B90721 /* excServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 05308A030EECEC9D00B90721 /* excServer.c */; };
+		05308A070EECEC9D00B90721 /* excUser.c in Sources */ = {isa = PBXBuildFile; fileRef = 05308A040EECEC9D00B90721 /* excUser.c */; };
+		05308A080EECEC9D00B90721 /* exc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05308A020EECEC9D00B90721 /* exc.h */; };
+		05308A090EECEC9D00B90721 /* excServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 05308A030EECEC9D00B90721 /* excServer.c */; };
+		05308A0A0EECEC9D00B90721 /* excUser.c in Sources */ = {isa = PBXBuildFile; fileRef = 05308A040EECEC9D00B90721 /* excUser.c */; };
+		05308A0B0EECEC9D00B90721 /* exc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05308A020EECEC9D00B90721 /* exc.h */; };
+		05308A0C0EECEC9D00B90721 /* excServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 05308A030EECEC9D00B90721 /* excServer.c */; };
+		05308A0D0EECEC9D00B90721 /* excUser.c in Sources */ = {isa = PBXBuildFile; fileRef = 05308A040EECEC9D00B90721 /* excUser.c */; };
 		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; };
+		0550A10E0EECFEC80037F7C3 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
+		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
 		05CD314D0EE9364B000FDE88 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 05CD314C0EE9364B000FDE88 /* InfoPlist.strings */; };
 		05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
 		05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -60,7 +71,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
 			remoteInfo = "CrashReporter-iPhoneOS";
 		};
 		05CD316B0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
@@ -150,6 +161,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		05308A020EECEC9D00B90721 /* exc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exc.h; sourceTree = "<group>"; };
+		05308A030EECEC9D00B90721 /* excServer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = excServer.c; sourceTree = "<group>"; };
+		05308A040EECEC9D00B90721 /* excUser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = excUser.c; sourceTree = "<group>"; };
 		054F51070EEC73C80034B184 /* PLCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReporter.h; sourceTree = "<group>"; };
 		05CD314A0EE93647000FDE88 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphoneos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -202,6 +216,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,6 +224,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0550A10E0EECFEC80037F7C3 /* libCrashReporter-iphoneos.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +250,16 @@
 				05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		05308A010EECEC9D00B90721 /* mig */ = {
+			isa = PBXGroup;
+			children = (
+				05308A020EECEC9D00B90721 /* exc.h */,
+				05308A030EECEC9D00B90721 /* excServer.c */,
+				05308A040EECEC9D00B90721 /* excUser.c */,
+			);
+			path = mig;
 			sourceTree = "<group>";
 		};
 		05CD32750EE93E5A000FDE88 /* Tools */ = {
@@ -299,6 +325,7 @@
 				05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */,
 				05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */,
 				05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */,
+				05308A010EECEC9D00B90721 /* mig */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -334,6 +361,7 @@
 			files = (
 				05CD318D0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05CD339C0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
+				05308A080EECEC9D00B90721 /* exc.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +371,7 @@
 			files = (
 				05CD318F0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05CD339E0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
+				05308A0B0EECEC9D00B90721 /* exc.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +382,7 @@
 				05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05CD33A00EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
 				054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */,
+				05308A050EECEC9D00B90721 /* exc.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -479,7 +509,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = YES;
+				BuildIndependentTargetsInParallel = NO;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
 			compatibilityVersion = "Xcode 3.1";
@@ -602,6 +632,8 @@
 			files = (
 				05CD318E0EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD339D0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
+				05308A090EECEC9D00B90721 /* excServer.c in Sources */,
+				05308A0A0EECEC9D00B90721 /* excUser.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -611,6 +643,8 @@
 			files = (
 				05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD339F0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
+				05308A0C0EECEC9D00B90721 /* excServer.c in Sources */,
+				05308A0D0EECEC9D00B90721 /* excUser.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -651,6 +685,8 @@
 			files = (
 				05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD33A10EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
+				05308A060EECEC9D00B90721 /* excServer.c in Sources */,
+				05308A070EECEC9D00B90721 /* excUser.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -888,8 +924,6 @@
 					Foundation,
 					"-framework",
 					UIKit,
-					"-L${CONFIGURATION_BUILD_DIR}",
-					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
@@ -916,8 +950,6 @@
 					Foundation,
 					"-framework",
 					UIKit,
-					"-L${CONFIGURATION_BUILD_DIR}",
-					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
@@ -944,8 +976,6 @@
 					Foundation,
 					"-framework",
 					UIKit,
-					"-L${CONFIGURATION_BUILD_DIR}",
-					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
@@ -971,8 +1001,6 @@
 					Foundation,
 					"-framework",
 					UIKit,
-					"-L${CONFIGURATION_BUILD_DIR}",
-					"-lCrashReporter${EFFECTIVE_PLATFORM_NAME}",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
@@ -1031,7 +1059,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				PL_CANONICAL_PLATFORM = MacOSX;
 				PL_CANONICAL_PRODUCT = CrashReporter;
 				PREBINDING = NO;
