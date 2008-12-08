@@ -12,6 +12,9 @@
 #import "PLCrashReporter.h"
 #import "PLCrashSignalHandler.h"
 
+// OS-supplied mach exception server implementation
+extern boolean_t exc_server(mach_msg_header_t *, mach_msg_header_t *);
+
 /** @internal
  * Monitored fatal exception types. */
 #define FATAL_EXCEPTION_TYPES (EXC_MASK_BAD_ACCESS|EXC_MASK_BAD_INSTRUCTION|EXC_MASK_ARITHMETIC)
@@ -21,7 +24,10 @@
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 #endif
 
+
 @interface PLCrashSignalHandler (PrivateMethods)
+
+static void *exception_handler_thread (void *arg);
 
 - (BOOL) saveExceptionHandler: (PLCrashSignalHandlerPorts *) saved error: (NSError **) outError;
 - (BOOL) registerHandlerPort: (mach_port_t *) exceptionPort error: (NSError **) outError;
@@ -42,26 +48,17 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 
 @end
 
+
 /** @internal
  * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
 static PLCrashSignalHandler *sharedHandler;
+
 
 /***
  * @internal
  * Implements Crash Reporter signal handling. Singleton.
  */
 @implementation PLCrashSignalHandler
-
-/**
- * Background thread that receives and forwards Mach exception handler messages
- */
-static void *exception_handler_thread (void *arg) {
-    PLCrashSignalHandler *self = arg;
-
-    assert(self != nil);
-
-    return NULL;
-}
 
 
 /* Set up the singleton signal handler */
@@ -149,6 +146,40 @@ static void *exception_handler_thread (void *arg) {
  */
 @implementation PLCrashSignalHandler (PrivateMethods)
 
+/**
+ * Background thread that receives and forwards Mach exception handler messages
+ */
+static void *exception_handler_thread (void *arg) {
+    sigset_t sigset;
+    PLCrashSignalHandler *self = arg;
+    // PLCrashSignalHandlerPorts *oldHandler = &self->_forwardingHandler;
+
+    /* Block all signals */
+    sigfillset(&sigset);
+    if (pthread_sigmask(SIG_BLOCK, &sigset, NULL) != 0)
+        NSLog(@"Warning - could not block signals on Mach exception handler thread: %s", strerror(errno));
+
+    /* Run forever */
+    mach_msg_server(exc_server, 2048, self->_exceptionPort, 0);
+    
+    return NULL;
+}
+
+
+/**
+ * Called by mach_msg_server.
+ */
+kern_return_t catch_exception_raise(mach_port_t exception_port,
+                                           mach_port_t thread,
+                                           mach_port_t task,
+                                           exception_type_t exception,
+                                           exception_data_t code_vector,
+                                           mach_msg_type_number_t code_count)
+{
+    const char hello[] = "Hello\n";
+    write(STDERR_FILENO, hello, sizeof(hello));
+    return KERN_SUCCESS;
+}
 
 /**
  * Save the current exception handler.
