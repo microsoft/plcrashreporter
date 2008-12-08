@@ -24,6 +24,9 @@ typedef struct PLCrashSignalHandlerPorts {
 
 @interface PLCrashSignalHandler : NSObject {
 @private
+    /** Exception port */
+    mach_port_t _exceptionPort;
+
     /** Handler to which exceptions should be forwarded */
     PLCrashSignalHandlerPorts _forwardingHandler;
 }

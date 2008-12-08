@@ -16,6 +16,20 @@
  * Monitored fatal exception types. */
 #define FATAL_EXCEPTION_TYPES (EXC_MASK_BAD_ACCESS|EXC_MASK_BAD_INSTRUCTION|EXC_MASK_ARITHMETIC)
 
+
+/* Define the mach thread state flavor for this platform */
+#if defined(__i386__) || (__x86_64__)
+#  define PL_EXCEPTION_FLAVOR x86_THREAD_STATE
+
+#elif defined(__ppc__)
+#  define PL_EXCEPTION_FLAVOR PPC_THREAD_STATE
+
+#elif defined(__arm__)
+#  define PL_EXCEPTION_FLAVOR ARM_THREAD_STATE
+#else
+#  error Unsupported Architecture
+#endif
+
 // Crash log handler
 #if 0
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
@@ -23,6 +37,8 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 
 @interface PLCrashSignalHandler (PrivateMethods)
 
+- (BOOL) saveExceptionHandler: (PLCrashSignalHandlerPorts *) saved error: (NSError **) outError;
+- (BOOL) registerHandlerPort: (mach_port_t *) exceptionPort error: (NSError **) outError;
 - (BOOL) spawnHandlerThreadAndReturnError: (NSError **) outError;
 
 - (void) populateError: (NSError **) error
@@ -95,7 +111,6 @@ static void *exception_handler_thread (void *arg) {
  */
 - (BOOL) registerHandlerAndReturnError: (NSError **) outError {
     static BOOL initialized = NO;
-    kern_return_t kr;
 
     /* Must only be called once per process */
     if (initialized) {
@@ -104,18 +119,14 @@ static void *exception_handler_thread (void *arg) {
     }
     
     /* Fetch the current exception handler */
-    kr = task_get_exception_ports(mach_task_self(),
-                                  FATAL_EXCEPTION_TYPES,
-                                  _forwardingHandler.masks,
-                                  &_forwardingHandler.count,
-                                  _forwardingHandler.ports,
-                                  _forwardingHandler.behaviors,
-                                  _forwardingHandler.flavors);
-    if (kr != KERN_SUCCESS) {
-        [self populateError: outError machError: kr description: NSLocalizedString(@"Failed to fetch current exception handler", @"")];
+    if (![self saveExceptionHandler: &_forwardingHandler error: outError]) {
         return NO;
     }
 
+    /* Register exception handler ports */
+    if (![self registerHandlerPort: &_exceptionPort error: outError]) {
+        return NO;
+    }
 
     /* Spawn the handler thread */
     if (![self spawnHandlerThreadAndReturnError: outError]) {
@@ -125,6 +136,7 @@ static void *exception_handler_thread (void *arg) {
     initialized = YES;
     return YES;
 }
+
 
 /**
  * Execute the crash log handler.
@@ -138,6 +150,7 @@ static void *exception_handler_thread (void *arg) {
 
 }
 
+
 @end
 
 
@@ -147,6 +160,70 @@ static void *exception_handler_thread (void *arg) {
  * Private Methods
  */
 @implementation PLCrashSignalHandler (PrivateMethods)
+
+
+/**
+ * Save the current exception handler.
+ */
+- (BOOL) saveExceptionHandler: (PLCrashSignalHandlerPorts *) saved error: (NSError **) outError {
+    kern_return_t kr;
+    kr = task_get_exception_ports(mach_task_self(),
+                                  FATAL_EXCEPTION_TYPES,
+                                  saved->masks,
+                                  &saved->count,
+                                  saved->ports,
+                                  saved->behaviors,
+                                  saved->flavors);
+    if (kr != KERN_SUCCESS) {
+        [self populateError: outError machError: kr description: @"Failed to fetch current exception handler"];
+        return NO;
+    }
+
+    return YES;
+}
+
+
+/**
+ * Register the Mach exception handler. On success, the exceptionPort argument will
+ * be populated with the new exception port. It is the caller's responsibility to release
+ * this port.
+ */
+- (BOOL) registerHandlerPort: (mach_port_t *) exceptionPort error: (NSError **) outError {
+    kern_return_t kr;
+    mach_port_t task = mach_task_self();    
+
+    /* Allocate the receive right */
+    kr = mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE, exceptionPort);
+    if (kr != KERN_SUCCESS) {
+        [self populateError: outError machError: kr description: @"Could not create mach exception port"];
+        return NO;
+    }
+
+    /* Insert a send right */
+    kr = mach_port_insert_right(task, *exceptionPort, *exceptionPort, MACH_MSG_TYPE_MAKE_SEND);
+    if (kr != KERN_SUCCESS) {
+        [self populateError: outError machError: kr description: @"Could not insert send right for mach exception port"];
+        goto error;
+    }
+
+    /* Set the task exception ports */
+    kr = task_set_exception_ports(task,
+                                  FATAL_EXCEPTION_TYPES,
+                                  *exceptionPort,
+                                  EXCEPTION_STATE_IDENTITY,
+                                  PL_EXCEPTION_FLAVOR);
+    if (kr != KERN_SUCCESS) {
+        [self populateError: outError machError: kr description: @"Could not set task exception port"];
+        goto error;
+    }
+
+    return YES;
+
+error:
+    mach_port_deallocate(task, *exceptionPort);
+    return NO;
+}
+
 
 /**
  * Spawn the thread handler. The thread is started detached, with the minimum reasonable stack
@@ -164,24 +241,24 @@ static void *exception_handler_thread (void *arg) {
      *
      * We use a very small stack size (4k or PTHREAD_STACK_MIN, whichever is larger) */
     if (pthread_attr_init(&attr) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread stack size", @"")];
+        [self populateError: outError errnoVal: errno description: @"Could not set pthread stack size"];
         return NO;
     }
     
     if (pthread_attr_setstacksize(&attr, MAX(PTHREAD_STACK_MIN, 4096)) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread stack size", @"")];
+        [self populateError: outError errnoVal: errno description: @"Could not set pthread stack size"];
         goto cleanup;
     }
     
     /* start the thread detached */
     if (pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not set pthread detach state", @"")];
+        [self populateError: outError errnoVal: errno description: @"Could not set pthread detach state"];
         goto cleanup;
     }
     
     /* Create the exception handler thread */
     if (pthread_create(&thr, &attr, exception_handler_thread, NULL) != 0) {
-        [self populateError: outError errnoVal: errno description: NSLocalizedString(@"Could not create exception handler thread", @"")];
+        [self populateError: outError errnoVal: errno description: @"Could not create exception handler thread"];
         goto cleanup;
     }
     
@@ -208,6 +285,7 @@ cleanup:
     [self populateError: error errorCode: PLCrashReporterErrorOperatingSystem description: description cause: cause];
 }
 
+
 /**
  * Populate an PLCrashReporterErrorOperatingSystem NSError instance, using the provided
  * mach error value to create the underlying error cause.
@@ -219,6 +297,7 @@ cleanup:
     NSError *cause = [NSError errorWithDomain: NSMachErrorDomain code: machError userInfo: nil];
     [self populateError: error errorCode: PLCrashReporterErrorOperatingSystem description: description cause: cause];
 }
+
 
 /**
  * Populate an NSError instance with the provided information.
@@ -251,6 +330,7 @@ cleanup:
     
     *error = [NSError errorWithDomain: PLCrashReporterErrorDomain code: code userInfo: userInfo];
 }
+
 
 @end
 
