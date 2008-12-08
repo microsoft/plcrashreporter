@@ -70,7 +70,10 @@ static PLCrashSignalHandler *sharedHandler;
  * Background thread that receives and forwards Mach exception handler messages
  */
 static void *exception_handler_thread (void *arg) {
-    
+    PLCrashSignalHandler *self = arg;
+
+    assert(self != nil);
+
     return NULL;
 }
 
@@ -256,7 +259,7 @@ error:
     }
     
     /* Create the exception handler thread */
-    if (pthread_create(&thr, &attr, exception_handler_thread, NULL) != 0) {
+    if (pthread_create(&thr, &attr, exception_handler_thread, self) != 0) {
         [self populateError: outError errnoVal: errno description: @"Could not create exception handler thread"];
         goto cleanup;
     }
