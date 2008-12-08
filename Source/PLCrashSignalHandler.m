@@ -11,6 +11,7 @@
 #import <mach/mach.h>
 
 #import "mig/exc.h"
+#import "mach_exc.h"
 
 #import "PLCrashReporter.h"
 #import "PLCrashSignalHandler.h"
@@ -190,6 +191,7 @@ static kern_return_t plcrash_exception_forward (mach_port_t thread,
     kern_return_t kr;
     mach_port_t dest = MACH_PORT_NULL;
     exception_behavior_t behavior;
+    exception_behavior_t behavior_code64;
     thread_state_flavor_t flavor;
 
     thread_state_data_t thread_state;
@@ -209,12 +211,18 @@ static kern_return_t plcrash_exception_forward (mach_port_t thread,
     if (dest == MACH_PORT_NULL)
         return KERN_SUCCESS;
 
+    /* Map to 64-bit behavior */
+    if (behavior & MACH_EXCEPTION_CODES) {
+        behavior_code64 = behavior;
+        behavior &= ~MACH_EXCEPTION_CODES;
+    }
+
     /* If needed, fetch the thread state */
     if (behavior != EXCEPTION_DEFAULT) {
+        NSLog(@"Requesting flavor %d", flavor);
         kr = thread_get_state(thread, flavor, thread_state, &thread_state_count);
         if (kr != KERN_SUCCESS) {
             ASYNC_DEBUG("Failed to get thread state while forwarding exception!");
-            NSLog(@"Tried to fetch flavor %d (behavior %d), %d returned", flavor, behavior, kr);
             return KERN_FAILURE;
         }
     }
@@ -222,15 +230,27 @@ static kern_return_t plcrash_exception_forward (mach_port_t thread,
     /* Call the appropriate exception function */
     switch (behavior) {
         case EXCEPTION_DEFAULT:
-            kr = exception_raise(dest, thread, task, exception, code, codeCnt);
+            if (behavior_code64 != 0) {
+                ASYNC_DEBUG("Call 64 with default");
+                kr = mach_exception_raise(dest, thread, task, exception, (mach_exception_data_t) code, codeCnt);
+            } else
+                kr = exception_raise(dest, thread, task, exception, code, codeCnt);
             break;
         case EXCEPTION_STATE:
-            kr = exception_raise_state(dest, exception, code, codeCnt, &flavor, thread_state,
-                                       thread_state_count, thread_state, &thread_state_count);
+            if (behavior_code64 != 0)
+                kr = mach_exception_raise_state(dest, exception, (mach_exception_data_t) code, codeCnt, &flavor, thread_state,
+                                                thread_state_count, thread_state, &thread_state_count);
+            else
+                kr = exception_raise_state(dest, exception, code, codeCnt, &flavor, thread_state,
+                                           thread_state_count, thread_state, &thread_state_count);
             break;
         case EXCEPTION_STATE_IDENTITY:
-            kr = exception_raise_state_identity(dest, thread, task, exception, code, codeCnt, &flavor, 
-                                                thread_state, thread_state_count, thread_state, &thread_state_count);
+            if (behavior_code64 != 0)
+                kr = mach_exception_raise_state_identity(dest, thread, task, exception, (mach_exception_data_t) code, codeCnt, &flavor, 
+                                                         thread_state, thread_state_count, thread_state, &thread_state_count);
+            else
+                kr = exception_raise_state_identity(dest, thread, task, exception, code, codeCnt, &flavor, 
+                                                    thread_state, thread_state_count, thread_state, &thread_state_count);
             break;
         default:
             ASYNC_DEBUG("Unhandled behavior type while forwarding exception!");
@@ -251,8 +271,10 @@ kern_return_t plcrash_exception_raise (mach_port_t exception_port,
                                   exception_data_t code_vector,
                             mach_msg_type_number_t code_count)
 {
-    if (plcrash_exception_forward(thread, task, exception, code_vector, code_count) != KERN_SUCCESS)
-        ASYNC_DEBUG("Failed to forward exception message");
+    if (plcrash_exception_forward(thread, task, exception, code_vector, code_count) != KERN_SUCCESS) {
+        ASYNC_DEBUG("Failed to forward exception message, forcing immediate termination via _exit(1)");
+        _exit(1);
+    }
 
     /* Terminate the process */
     return KERN_FAILURE;
@@ -295,6 +317,7 @@ kern_return_t plcrash_exception_raise_state_identity (mach_port_t exception_port
     assert(initialized == NO);
 
     kern_return_t kr;
+    saved->count = EXC_TYPES_COUNT;
     kr = task_get_exception_ports(mach_task_self(),
                                   FATAL_EXCEPTION_TYPES,
                                   saved->masks,
