@@ -60,20 +60,19 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
  * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
 static PLCrashSignalHandler *sharedHandler;
 
-/**
+/***
  * @internal
+ * Implements Crash Reporter signal handling. Singleton.
+ */
+@implementation PLCrashSignalHandler
+
+/**
  * Background thread that receives and forwards Mach exception handler messages
  */
 static void *exception_handler_thread (void *arg) {
     
     return NULL;
 }
-
-/***
- * @internal
- * Implements Crash Reporter signal handling. Singleton.
- */
-@implementation PLCrashSignalHandler
 
 
 /* Set up the singleton signal handler */
