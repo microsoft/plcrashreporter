@@ -16,20 +16,6 @@
  * Monitored fatal exception types. */
 #define FATAL_EXCEPTION_TYPES (EXC_MASK_BAD_ACCESS|EXC_MASK_BAD_INSTRUCTION|EXC_MASK_ARITHMETIC)
 
-
-/* Define the mach thread state flavor for this platform */
-#if defined(__i386__) || (__x86_64__)
-#  define PL_EXCEPTION_FLAVOR x86_THREAD_STATE
-
-#elif defined(__ppc__)
-#  define PL_EXCEPTION_FLAVOR PPC_THREAD_STATE
-
-#elif defined(__arm__)
-#  define PL_EXCEPTION_FLAVOR ARM_THREAD_STATE
-#else
-#  error Unsupported Architecture
-#endif
-
 // Crash log handler
 #if 0
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
@@ -212,8 +198,8 @@ static void *exception_handler_thread (void *arg) {
     kr = task_set_exception_ports(task,
                                   FATAL_EXCEPTION_TYPES,
                                   *exceptionPort,
-                                  EXCEPTION_STATE_IDENTITY,
-                                  PL_EXCEPTION_FLAVOR);
+                                  EXCEPTION_DEFAULT,
+                                  MACHINE_THREAD_STATE);
     if (kr != KERN_SUCCESS) {
         [self populateError: outError machError: kr description: @"Could not set task exception port"];
         goto error;
