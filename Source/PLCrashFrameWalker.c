@@ -25,6 +25,8 @@ const char *plframe_strerror (plframe_error_t error) {
             return "Operation not supported";
         case PLFRAME_EINVAL:
             return "Invalid argument";
+        case PLFRAME_INTERNAL:
+            return "Internal error";
         case PLFRAME_EBADREG:
             return "Invalid register";
     }

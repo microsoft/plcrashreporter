@@ -8,6 +8,7 @@
  */
 
 #include "PLCrashFrameWalker.h"
+#include <signal.h>
 
 #define RETGEN(name, type, uap, result) {\
     *result = (uap->uc_mcontext->__ ## type . __ ## name); \
@@ -28,7 +29,47 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) 
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t thread) {
-    return PLFRAME_ENOTSUP;
+    kern_return_t kr;
+    ucontext_t *uap;
+
+    /* Perform basic initialization */
+    uap = &cursor->_uap_data;
+    uap->uc_mcontext = (void *) &cursor->_mcontext_data;
+
+    /* Zero the signal mask */
+    sigemptyset(&uap->uc_sigmask);
+
+    /* Fetch the thread states */
+    mach_msg_type_number_t state_count;
+
+    // thread state
+    state_count = x86_THREAD_STATE32_COUNT;
+    kr = thread_get_state(thread, x86_THREAD_STATE32, (thread_state_t) &uap->uc_mcontext->__ss, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of x86 thread state failed with mach error: %d", kr);
+        return PLFRAME_INTERNAL;
+    }
+
+    // floating point state
+    state_count = x86_FLOAT_STATE32_COUNT;
+    kr = thread_get_state(thread, x86_FLOAT_STATE32, (thread_state_t) &uap->uc_mcontext->__fs, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of x86 float state failed with mach error: %d", kr);
+        return PLFRAME_INTERNAL;
+    }
+
+    // exception state
+    state_count = x86_EXCEPTION_STATE32_COUNT;
+    kr = thread_get_state(thread, x86_EXCEPTION_STATE32, (thread_state_t) &uap->uc_mcontext->__es, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of x86 float state failed with mach error: %d", kr);
+        return PLFRAME_INTERNAL;
+    }
+
+    /* Perform standard initialization */
+    plframe_cursor_init(cursor, uap);
+
+    return PLFRAME_ESUCCESS;
 }
 
 

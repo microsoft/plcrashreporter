@@ -10,13 +10,16 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include <mach/mach.h>
 
+#include <stdio.h> // for snprintf
+
 // A super simple debug 'function' that's async safe.
-#define PLCF_DEBUG(msg, ...) {\
-    const char output[1024];\
-    snprintf(output, sizeof(output), msg "\n", ...) \
+#define PLCF_DEBUG(msg, args...) {\
+    char output[1024];\
+    snprintf(output, sizeof(output), msg "\n", args); \
     write(STDERR_FILENO, output, strlen(output));\
 }
 
@@ -54,6 +57,9 @@ typedef enum  {
     /** Invalid argument */
     PLFRAME_EINVAL,
 
+    /** Internal error */
+    PLFRAME_INTERNAL,
+
     /** Bad register number */
     PLFRAME_EBADREG
 } plframe_error_t;
@@ -70,6 +76,11 @@ typedef struct plframe_cursor {
 
     /** Stack frame pointer */
     void **fp;
+
+    // for thread-initialized cursors
+    ucontext_t _uap_data;
+    mcontext_t _mcontext_data;
+    unsigned char[1024];
 } plframe_cursor_t;
 
 
