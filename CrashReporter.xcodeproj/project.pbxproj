@@ -29,6 +29,24 @@
 		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; };
 		0550A10E0EECFEC80037F7C3 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
 		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
+		059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
+		059666DD0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		059666DE0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
+		059666DF0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		059666E00EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
+		059666E10EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		059666E30EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */; };
+		059666E40EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */; };
+		059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */; };
+		0596675A0EEDECA7008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
+		0596675B0EEDECA7008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
+		0596675C0EEDECA7008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
+		0596677D0EEDF1C1008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		0596677E0EEDF1C1008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
+		0596677F0EEDF1C5008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		059667800EEDF1C5008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
+		059667810EEDF1CA008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		059667820EEDF1CA008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
 		05CD314D0EE9364B000FDE88 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 05CD314C0EE9364B000FDE88 /* InfoPlist.strings */; };
 		05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
 		05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -153,6 +171,11 @@
 
 /* Begin PBXFileReference section */
 		054F51070EEC73C80034B184 /* PLCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReporter.h; sourceTree = "<group>"; };
+		059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameWalker.h; sourceTree = "<group>"; };
+		059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameWalker.c; sourceTree = "<group>"; };
+		059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashFrameWalkerTests.m; sourceTree = "<group>"; };
+		0596672E0EEDEA97008A0601 /* PLCrashFrameWalker_i386.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameWalker_i386.h; sourceTree = "<group>"; };
+		059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameWalker_i386.c; sourceTree = "<group>"; };
 		05CD314A0EE93647000FDE88 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphoneos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphonesimulator.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -240,6 +263,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		0596674D0EEDEBB1008A0601 /* Backtrace */ = {
+			isa = PBXGroup;
+			children = (
+				059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */,
+				059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */,
+				0596672E0EEDEA97008A0601 /* PLCrashFrameWalker_i386.h */,
+				059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */,
+				059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */,
+			);
+			name = Backtrace;
+			sourceTree = "<group>";
+		};
 		05CD32750EE93E5A000FDE88 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
@@ -303,6 +338,7 @@
 				05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */,
 				05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */,
 				05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */,
+				0596674D0EEDEBB1008A0601 /* Backtrace */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -338,6 +374,7 @@
 			files = (
 				05CD318D0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05CD339C0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
+				059666E00EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,6 +384,7 @@
 			files = (
 				05CD318F0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05CD339E0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
+				059666DE0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,6 +395,7 @@
 				05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05CD33A00EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
 				054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */,
+				059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -606,6 +645,8 @@
 			files = (
 				05CD318E0EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD339D0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
+				059666E10EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */,
+				0596675B0EEDECA7008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -615,6 +656,8 @@
 			files = (
 				05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD339F0EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
+				059666DF0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */,
+				0596675A0EEDECA7008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -622,8 +665,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0596677F0EEDF1C5008A0601 /* PLCrashFrameWalker.c in Sources */,
+				059667800EEDF1C5008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 				05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
+				059666E30EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -631,10 +677,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0596677D0EEDF1C1008A0601 /* PLCrashFrameWalker.c in Sources */,
+				0596677E0EEDF1C1008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 				05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
 				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
+				059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -646,6 +695,9 @@
 				05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
 				05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
+				059666E40EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
+				059667810EEDF1CA008A0601 /* PLCrashFrameWalker.c in Sources */,
+				059667820EEDF1CA008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -655,6 +707,8 @@
 			files = (
 				05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD33A10EE948EB000FDE88 /* PLCrashSignalHandler.m in Sources */,
+				059666DD0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */,
+				0596675C0EEDECA7008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
