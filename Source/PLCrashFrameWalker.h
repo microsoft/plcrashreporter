@@ -118,6 +118,16 @@ bool plframe_valid_stackaddr (ucontext_t *uap, void *addr);
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap);
 
 /**
+ * Initialize the frame cursor by acquiring state from the provided mach thread.
+ *
+ * @param cursor Cursor record to be initialized.
+ * @param thread The thread to use for cursor initialization.
+ *
+ * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
+ */
+plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t thread);
+
+/**
  * Fetch the next cursor.
  *
  * @param cursor A cursor instance initialized with plframe_cursor_init();
