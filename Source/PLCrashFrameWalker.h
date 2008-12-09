@@ -80,7 +80,7 @@ typedef struct plframe_cursor {
     // for thread-initialized cursors
     ucontext_t _uap_data;
     mcontext_t _mcontext_data;
-    unsigned char[1024];
+    unsigned char pad[1024];
 } plframe_cursor_t;
 
 
