@@ -61,8 +61,8 @@ typedef struct plframe_cursor {
     /** Thread context */
     ucontext_t *uap;
 
-    /** Stack pointer */
-    void **sp;
+    /** Stack frame pointer */
+    void **fp;
 } plframe_cursor_t;
 
 
