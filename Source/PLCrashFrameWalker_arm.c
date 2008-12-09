@@ -18,7 +18,7 @@
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) {
     cursor->uap = uap;
     cursor->init_frame = true;
-    cursor->fp = NULL;
+    cursor->fp[0] = NULL;
     
     return PLFRAME_ESUCCESS;
 }
@@ -32,20 +32,27 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
+    kern_return_t kr;
+    void *prevfp = cursor->fp[0];
+
     /* Fetch the next stack address */
-    if (cursor->fp == NULL) {
-        cursor->fp = (void **) cursor->uap->uc_mcontext->__ss.__r[7]; // Apple uses r7 as the frame pointer register
+    if (cursor->fp[0] == NULL) {
+        kr = plframe_read_addr((void *) cursor->uap->uc_mcontext->__ss.__r[7], cursor->fp, sizeof(cursor->fp));
     } else {
         cursor->init_frame = false;
-        cursor->fp = cursor->fp[0];
+        kr = plframe_read_addr(cursor->fp[0], cursor->fp, sizeof(cursor->fp));
     }
     
+    /* Was the read successful? */
+    if (kr != KERN_SUCCESS)
+        return PLFRAME_EBADFRAME;
+    
     /* Check for completion */
-    if (cursor->fp == NULL)
+    if (cursor->fp[0] == NULL)
         return PLFRAME_ENOFRAME;
-        
-    /* Check for a valid frame address */
-    if (!plframe_valid_addr(cursor->fp, MIN_VALID_STACK))
+    
+    /* Is the stack growing in the right direction? */
+    if (!cursor->init_frame && prevfp > cursor->fp[0])
         return PLFRAME_EBADFRAME;
     
     /* New frame fetched */

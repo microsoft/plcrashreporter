@@ -64,30 +64,32 @@ typedef enum  {
     PLFRAME_EBADREG
 } plframe_error_t;
 
-/**
- * Frame cursor context.
- */
-typedef struct plframe_cursor {
-    /** true if this is the initial frame */
-    bool init_frame;
-
-    /** Thread context */
-    ucontext_t *uap;
-
-    /** Stack frame pointer */
-    void **fp;
-
-    // for thread-initialized cursors
-    ucontext_t _uap_data;
-    _STRUCT_MCONTEXT _mcontext_data;
-} plframe_cursor_t;
-
 
 /** Register number type */
 typedef int plframe_regnum_t;
 
 #include "PLCrashFrameWalker_i386.h"
 #include "PLCrashFrameWalker_arm.h"
+
+#define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
+
+/**
+ * Frame cursor context.
+ */
+typedef struct plframe_cursor {
+    /** true if this is the initial frame */
+    bool init_frame;
+    
+    /** Thread context */
+    ucontext_t *uap;
+    
+    /** Stack frame data */
+    void *fp[PLFRAME_STACKFRAME_LEN];
+    
+    // for thread-initialized cursors
+    ucontext_t _uap_data;
+    _STRUCT_MCONTEXT _mcontext_data;
+} plframe_cursor_t;
 
 /**
  * General pseudo-registers common across platforms.
@@ -113,7 +115,8 @@ typedef plframe_pdef_fpreg_t plframe_fpreg_t;
 
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
-bool plframe_valid_addr (void *addr, size_t len);
+kern_return_t plframe_read_addr (void *source, void *dest, size_t len);
+
 
 /* Platform specific funtions */
 
