@@ -116,19 +116,6 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
         case PLFRAME_X86_GS:
             RETGEN(gs, ss, uap, reg);
 
-        // unimplemented
-        case PLFRAME_X86_TSS:
-            return PLFRAME_ENOTSUP;
-
-        // unimplemented
-        case PLFRAME_X86_LDT:
-            return PLFRAME_ENOTSUP;
-
-        // unimplemented     
-        case PLFRAME_X86_MXCSR:
-            return PLFRAME_ENOTSUP;
-            break;
-
         default:
             // Unsupported register
             return PLFRAME_EBADREG;
@@ -140,56 +127,7 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
 
 // PLFrameWalker API
 plframe_error_t plframe_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {
-    /* Supported register for this context state? */
-    if (!cursor->init_frame) {
-        return PLFRAME_ENOTSUP;
-    }
-
-    switch (regnum) {
-        case PLFRAME_X86_ST0:
-
-        case PLFRAME_X86_ST1:
-            
-        case PLFRAME_X86_ST2:
-            
-        case PLFRAME_X86_ST3:
-            
-        case PLFRAME_X86_ST4:
-            
-        case PLFRAME_X86_ST5:
-            
-        case PLFRAME_X86_ST6:
-            
-        case PLFRAME_X86_ST7:
-            
-        case PLFRAME_X86_XMM0_lo:
-        case PLFRAME_X86_XMM0_hi:
-            
-        case PLFRAME_X86_XMM1_lo:
-        case PLFRAME_X86_XMM1_hi:
-            
-        case PLFRAME_X86_XMM2_lo:
-        case PLFRAME_X86_XMM2_hi:
-            
-        case PLFRAME_X86_XMM3_lo:
-        case PLFRAME_X86_XMM3_hi:
-            
-        case PLFRAME_X86_XMM4_lo:
-        case PLFRAME_X86_XMM4_hi:
-            
-        case PLFRAME_X86_XMM5_lo:
-        case PLFRAME_X86_XMM5_hi:
-            
-        case PLFRAME_X86_XMM6_lo:
-        case PLFRAME_X86_XMM6_hi:
-            
-        case PLFRAME_X86_XMM7_lo:
-        case PLFRAME_X86_XMM7_hi:
-            return PLFRAME_ENOTSUP;
-
-        default:
-            return PLFRAME_EBADREG;
-    }
+    return PLFRAME_ENOTSUP;
 }
 
 #endif
