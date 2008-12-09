@@ -24,11 +24,6 @@
  */
 
 /**
- * Maximum number of frames to be walked.
- */
-#define PLCRASH_MAX_FRAMES 128
-
-/**
  * Error return codes.
  */
 typedef enum  {
@@ -73,6 +68,23 @@ typedef struct plframe_cursor {
 typedef int plframe_regnum_t;
 
 #include "PLCrashFrameWalker_i386.h"
+
+
+/**
+ * General pseudo-registers common across platforms.
+ *
+ * Platform registers must be allocated starting at a 0
+ * index, with no breaks. The last valid register number must
+ * be provided as PLFRAME_PDEF_LAST_REG.
+ */
+typedef enum {
+    /** Instruction pointer */
+    PLFRAME_REG_IP = PLFRAME_PDEF_REG_IP,
+    
+    /** Last register */
+    PLFRAME_REG_LAST = PLFRAME_PDEF_LAST_REG
+} plframe_gen_regnum_t;
+
 
 /** Platform word type */
 typedef plframe_pdef_word_t plframe_word_t;
