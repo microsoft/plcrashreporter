@@ -33,13 +33,8 @@ const char *plframe_strerror (plframe_error_t error) {
 
 /* Return true if the given address is a valid stack address for the @a uap thread context */
 bool plframe_valid_stackaddr (ucontext_t *uap, void *addr) {
-#if (PLFRAME_STACK_DIRECTION == PLFRAME_STACK_DIR_DOWN)
-    if (uap->uc_stack.ss_sp >= addr && addr >= uap->uc_stack.ss_sp - uap->uc_stack.ss_size)
-        return true;
-#else
     if (uap->uc_stack.ss_sp <= addr && addr < uap->uc_stack.ss_sp + uap->uc_stack.ss_size)
         return true;
-#endif // PLFRAME_STACK_DIRECTION
 
     return false;
 }
