@@ -28,7 +28,6 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) 
 
 
 // PLFrameWalker API
-#include <stdio.h>
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
     /* Fetch the next stack address */
