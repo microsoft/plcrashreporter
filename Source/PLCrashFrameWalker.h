@@ -68,7 +68,7 @@ typedef struct plframe_cursor {
 typedef int plframe_regnum_t;
 
 #include "PLCrashFrameWalker_i386.h"
-
+#include "PLCrashFrameWalker_arm.h"
 
 /**
  * General pseudo-registers common across platforms.

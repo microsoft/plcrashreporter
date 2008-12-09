@@ -268,13 +268,14 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
         /* Fetch remaining frames */
         while (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
             Dl_info info;
-            void *ip;
-            if (cursor.init_frame)
-                ip = (void *) cursor.uap->uc_mcontext->__ss.__eip;
-            else
-                ip = cursor.fp[1];
+            plframe_word_t ip;
+            
+            if (plframe_get_reg(&cursor, PLFRAME_REG_IP, &ip) != PLFRAME_ESUCCESS) {
+                NSLog(@"Failed to get frame instruction pointer");
+                break;
+            }
 
-            if (dladdr(ip, &info) == 0) {
+            if (dladdr((void *) ip, &info) == 0) {
                 NSLog(@"Can't find symbol for %p",ip);
             } else {
                 NSLog(@"Frame IP %p (%s) %s", ip, info.dli_sname, info.dli_fname);
