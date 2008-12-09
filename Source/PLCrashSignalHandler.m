@@ -282,27 +282,3 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
         }
     }
 }
-
-#if 0
-
-static BOOL plbacktrace_init (ucontext_t *uap, backtrace_frame *frame) {
-    // TODO: Sanity checks!
-
-    frame->ip = (void *) uap->uc_mcontext->__ss.__eip;
-    frame->fp = (void **) uap->uc_mcontext->__ss.__ebp;
-
-    return YES;
-}
-
-static BOOL plbacktrace_next_frame (const backtrace_frame *currentFrame, backtrace_frame *nextFrame) {
-    NSLog(@"Req for frame ip %p", currentFrame->ip);
-    if (currentFrame->fp[0] == NULL || currentFrame->fp[1] == NULL)
-        return NO;
-
-    nextFrame->fp = currentFrame->fp[0];
-    nextFrame->ip = currentFrame->fp[1];
-
-    return YES;
-}
-
-#endif
