@@ -16,6 +16,8 @@
     return PLFRAME_ESUCCESS; \
 }
 
+// Minimum readable size of a stack frame
+#define MIN_VALID_STACK (sizeof(intptr_t) * 2)
 
 #ifdef __i386__
 
@@ -83,7 +85,6 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
-
     /* Fetch the next stack address */
     if (cursor->fp == NULL) {
         cursor->fp = (void **) cursor->uap->uc_mcontext->__ss.__ebp;
@@ -96,12 +97,10 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     if (cursor->fp == NULL)
         return PLFRAME_ENOFRAME;
 
-    /* Check for a valid address */
-    if (!plframe_valid_stackaddr(cursor->uap, cursor->fp)) {
+    /* Check for a valid frame address */
+    if (!plframe_valid_addr(cursor->fp, MIN_VALID_STACK))
         return PLFRAME_EBADFRAME;
-    }
 
-    /* New frame fetched */
     return PLFRAME_ESUCCESS;
 }
 
