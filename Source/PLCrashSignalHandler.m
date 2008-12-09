@@ -7,6 +7,7 @@
 
 #import "PLCrashReporter.h"
 #import "PLCrashSignalHandler.h"
+#import "PLCrashFrameWalker.h"
 
 #import <signal.h>
 #import <ucontext.h>
@@ -15,37 +16,6 @@
 
 // Crash log handler
 static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
-
-/**
- * @internal
- * Architecture-generic backtrace frame.
- */
-typedef struct backtrace_frame {
-    /** Instruction pointer. */
-    void *ip;
-
-    /** Stack pointer. */
-    void **sp;
-} backtrace_frame;
-
-/** @internal
- * Initialize the backtrace, populating the given backtrace frame pointer.
- * Returns NO if the backtrace can not be fetched.
- *
- * (Architecture Specific)
- */
-static BOOL plbacktrace_init (ucontext_t *uap, backtrace_frame *frame);
-
-/** @internal
- * Fetch the next available frame. Returns NO if the frame can't be fetched,
- * or an error occurs.
- * 
- * @param currentFrame The current frame.
- * @param nextFrame The frame structure to populate.
- *
- * (Architecture Specific)
- */
-static BOOL plbacktrace_next_frame (const backtrace_frame *currentFrame, backtrace_frame *nextFrame);
 
 /**
  * @internal
@@ -288,32 +258,32 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
 
     /* Get backtrace */
     {
-        int maxFrames = 128;
-        backtrace_frame frames[maxFrames];
-        int frameCount = 0;
-
+        plframe_cursor_t cursor;
+    
         /* Fetch the first frame */
-        if (!plbacktrace_init(uap, &frames[0])) {
-            ASYNC_DEBUG("Could not fetch first frame");
-        } else {
-            frameCount++;
+        if (plframe_cursor_init(&cursor, uap) != PLFRAME_ESUCCESS) {
+            ASYNC_DEBUG("Could not init cursor");
         }
 
         /* Fetch remaining frames */
-        while (frameCount < maxFrames && plbacktrace_next_frame(&frames[frameCount - 1], &frames[frameCount])) {
+        while (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
             Dl_info info;
-            if (dladdr(frames[frameCount].ip, &info) == 0) {
-                NSLog(@"Can't find symbol for %p", frames[frameCount].ip);
+            void *ip;
+            if (cursor.init_frame)
+                ip = (void *) cursor.uap->uc_mcontext->__ss.__eip;
+            else
+                ip = cursor.sp[1];
+
+            if (dladdr(ip, &info) == 0) {
+                NSLog(@"Can't find symbol for %p",ip);
             } else {
-                NSLog(@"Frame IP %p (%s) %s", frames[frameCount].ip, info.dli_sname, info.dli_fname);
+                NSLog(@"Frame IP %p (%s) %s", ip, info.dli_sname, info.dli_fname);
             }
-            
-            frameCount++;
         }
     }
 }
 
-#ifdef __i386__
+#if 0
 
 static BOOL plbacktrace_init (ucontext_t *uap, backtrace_frame *frame) {
     // TODO: Sanity checks!
@@ -335,6 +305,4 @@ static BOOL plbacktrace_next_frame (const backtrace_frame *currentFrame, backtra
     return YES;
 }
 
-#else // __i386__
-#error Unsupported Architecture
 #endif

@@ -55,6 +55,9 @@ typedef enum  {
  * Frame cursor context.
  */
 typedef struct plframe_cursor {
+    /** true if this is the initial frame */
+    bool init_frame;
+
     /** Thread context */
     ucontext_t *uap;
 
@@ -73,11 +76,6 @@ typedef plframe_pdef_word_t plframe_word_t;
 
 /** Platform floating point register type */
 typedef plframe_pdef_fpreg_t plframe_fpreg_t;
-
-/** Platforms stack direction */
-#define PLFRAME_STACK_DIR_UP    0
-#define PLFRAME_STACK_DIR_DOWN  1
-#define PLFRAME_STACK_DIRECTION PLFRAME_PDEF_STACK_DIRECTION
 
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);

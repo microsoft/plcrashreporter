@@ -22,17 +22,10 @@
     uap.uc_stack.ss_size = 50;
 
     /* Test addresses */
-#if (PLFRAME_STACK_DIRECTION == PLFRAME_STACK_DIR_DOWN)
-    STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64), @"Valid address");
-    STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x63), @"Valid address");
-    STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64 - 50), @"Valid address");
-    STAssertFalse(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64 - 51), @"Invalid address");
-#else
     STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64), @"Valid address");
     STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x65), @"Valid address");
     STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64 + 49), @"Valid address");
     STAssertFalse(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64 + 50), @"Invalid address");
-#endif
 }
 
 /* test plframe_cursor_init() */
@@ -45,7 +38,10 @@
     getcontext(uap);
 
     /* Initialize the cursor */
-    plframe_cursor_init(&cursor, uap);
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_init(&cursor, uap), @"Initialization failed");
+
+    /* Try fetching our own stack pointer */
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_next(&cursor), @"Next failed");
 
     /* Clean up */
     free(uap);
