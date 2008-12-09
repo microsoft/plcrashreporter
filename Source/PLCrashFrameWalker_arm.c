@@ -14,9 +14,6 @@
 
 #ifdef __arm__
 
-// Minimum readable size of a stack frame
-#define MIN_VALID_STACK (sizeof(intptr_t) * 2)
-
 // PLFrameWalker API
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) {
     cursor->uap = uap;

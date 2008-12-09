@@ -16,9 +16,6 @@
     return PLFRAME_ESUCCESS; \
 }
 
-// Minimum readable size of a stack frame
-#define MIN_VALID_STACK (sizeof(intptr_t) * 2)
-
 #ifdef __i386__
 
 // PLFrameWalker API
