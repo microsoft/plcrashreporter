@@ -10,7 +10,6 @@
 #import "PLCrashFrameWalker.h"
 
 #import <signal.h>
-#import <ucontext.h>
 #import <unistd.h>
 #import <dlfcn.h>
 

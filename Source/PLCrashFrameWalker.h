@@ -77,10 +77,15 @@ typedef struct plframe_cursor {
     /** Stack frame pointer */
     void **fp;
 
+    /** Thread stack range */
+    struct {
+        void *start;
+        void *end;
+    } stack;
+
     // for thread-initialized cursors
     ucontext_t _uap_data;
-    mcontext_t _mcontext_data;
-    unsigned char pad[1024];
+    _STRUCT_MCONTEXT _mcontext_data;
 } plframe_cursor_t;
 
 
