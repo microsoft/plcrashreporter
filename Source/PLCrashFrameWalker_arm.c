@@ -9,6 +9,9 @@
 
 #include "PLCrashFrameWalker.h"
 
+#include <signal.h>
+#include <assert.h>
+
 #ifdef __arm__
 
 // Minimum readable size of a stack frame
@@ -26,7 +29,52 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) 
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t thread) {
-    return PLFRAME_ENOTSUP;
+    kern_return_t kr;
+    ucontext_t *uap;
+    
+    /* Perform basic initialization */
+    uap = &cursor->_uap_data;
+    uap->uc_mcontext = (void *) &cursor->_mcontext_data;
+    
+    /* Zero the signal mask */
+    sigemptyset(&uap->uc_sigmask);
+    
+    /* Fetch the thread states */
+    mach_msg_type_number_t state_count;
+    
+    /* Sanity check */
+    assert(sizeof(cursor->_mcontext_data.__ss) == sizeof(arm_thread_state_t));
+    assert(sizeof(cursor->_mcontext_data.__es) == sizeof(arm_exception_state_t));
+    assert(sizeof(cursor->_mcontext_data.__fs) == sizeof(arm_vfp_state_t));
+    
+    // thread state
+    state_count = ARM_THREAD_STATE_COUNT;
+    kr = thread_get_state(thread, ARM_THREAD_STATE, (thread_state_t) &cursor->_mcontext_data.__ss, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of arm thread state failed with mach error: %d", kr);
+        return PLFRAME_INTERNAL;
+    }
+    
+    // floating point state
+    state_count = ARM_VFP_STATE_COUNT;
+    kr = thread_get_state(thread, ARM_VFP_STATE, (thread_state_t) &cursor->_mcontext_data.__fs, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of arm vfp state failed with mach error: %d", kr);
+        return PLFRAME_INTERNAL;
+    }
+    
+    // exception state
+    state_count = ARM_EXCEPTION_STATE_COUNT;
+    kr = thread_get_state(thread, ARM_EXCEPTION_STATE, (thread_state_t) &cursor->_mcontext_data.__es, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of ARM exception state failed with mach error: %d", kr);
+        return PLFRAME_INTERNAL;
+    }
+    
+    /* Perform standard initialization */
+    plframe_cursor_init(cursor, uap);
+    
+    return PLFRAME_ESUCCESS;
 }
 
 
