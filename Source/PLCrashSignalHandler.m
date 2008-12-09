@@ -272,7 +272,7 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
             if (cursor.init_frame)
                 ip = (void *) cursor.uap->uc_mcontext->__ss.__eip;
             else
-                ip = cursor.sp[1];
+                ip = cursor.fp[1];
 
             if (dladdr(ip, &info) == 0) {
                 NSLog(@"Can't find symbol for %p",ip);
@@ -289,18 +289,18 @@ static BOOL plbacktrace_init (ucontext_t *uap, backtrace_frame *frame) {
     // TODO: Sanity checks!
 
     frame->ip = (void *) uap->uc_mcontext->__ss.__eip;
-    frame->sp = (void **) uap->uc_mcontext->__ss.__ebp;
+    frame->fp = (void **) uap->uc_mcontext->__ss.__ebp;
 
     return YES;
 }
 
 static BOOL plbacktrace_next_frame (const backtrace_frame *currentFrame, backtrace_frame *nextFrame) {
     NSLog(@"Req for frame ip %p", currentFrame->ip);
-    if (currentFrame->sp[0] == NULL || currentFrame->sp[1] == NULL)
+    if (currentFrame->fp[0] == NULL || currentFrame->fp[1] == NULL)
         return NO;
 
-    nextFrame->sp = currentFrame->sp[0];
-    nextFrame->ip = currentFrame->sp[1];
+    nextFrame->fp = currentFrame->fp[0];
+    nextFrame->ip = currentFrame->fp[1];
 
     return YES;
 }

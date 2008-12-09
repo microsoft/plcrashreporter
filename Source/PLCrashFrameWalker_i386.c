@@ -15,7 +15,7 @@
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) {
     cursor->uap = uap;
     cursor->init_frame = true;
-    cursor->sp = NULL;
+    cursor->fp = NULL;
 
     return PLFRAME_ESUCCESS;
 }
@@ -26,19 +26,19 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) 
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
     /* Fetch the next stack address */
-    if (cursor->sp == NULL) {
-        cursor->sp = (void **) cursor->uap->uc_mcontext->__ss.__ebp;
+    if (cursor->fp == NULL) {
+        cursor->fp = (void **) cursor->uap->uc_mcontext->__ss.__ebp;
     } else {
         cursor->init_frame = false;
-        cursor->sp = cursor->sp[0];
+        cursor->fp = cursor->fp[0];
     }
     
     /* Check for completion */
-    if (cursor->sp == NULL)
+    if (cursor->fp == NULL)
         return PLFRAME_ENOFRAME;
 
     /* Check for a valid address */
-    if (!plframe_valid_stackaddr(cursor->uap, cursor->sp)) {
+    if (!plframe_valid_stackaddr(cursor->uap, cursor->fp)) {
         return PLFRAME_EBADFRAME;
     }
 
