@@ -50,13 +50,21 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
     ucontext_t *uap = cursor->uap;
     
     /* Supported register for this context state? */
-    if (cursor->init_frame) {
+    if (!cursor->init_frame) {
         if (regnum == PLFRAME_ARM_PC) {
-            *reg = uap->uc_mcontext->__ss.__pc;
+            *reg = (plframe_word_t) cursor->fp[1];
             return PLFRAME_ESUCCESS;
         }
         
         return PLFRAME_ENOTSUP;
+    }
+    
+    switch (regnum) {
+        case PLFRAME_ARM_PC:
+            *reg = uap->uc_mcontext->__ss.__pc;
+            return PLFRAME_ESUCCESS;
+        default:
+            return PLFRAME_ENOTSUP;
     }
 
     return PLFRAME_ENOTSUP;
