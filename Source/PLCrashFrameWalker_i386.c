@@ -70,7 +70,7 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
     state_count = x86_EXCEPTION_STATE32_COUNT;
     kr = thread_get_state(thread, x86_EXCEPTION_STATE32, (thread_state_t) &cursor->_mcontext_data.__es, &state_count);
     if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86 float state failed with mach error: %d", kr);
+        PLCF_DEBUG("Fetch of x86 exception state failed with mach error: %d", kr);
         return PLFRAME_INTERNAL;
     }
 
