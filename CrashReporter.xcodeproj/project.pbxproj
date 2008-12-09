@@ -1023,7 +1023,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos2.2;
+				SDKROOT = iphoneos2.0;
 			};
 			name = Debug;
 		};
@@ -1048,7 +1048,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos2.2;
+				SDKROOT = iphoneos2.0;
 				ZERO_LINK = NO;
 			};
 			name = Release;
