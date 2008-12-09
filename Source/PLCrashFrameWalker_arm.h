@@ -11,6 +11,9 @@
 typedef int32_t plframe_pdef_word_t;
 typedef int32_t plframe_pdef_fpreg_t;
 
+// Data we'll read off the stack frame
+#define PLFRAME_PDEF_STACKFRAME_LEN sizeof(intptr_t) * 2
+
 /**
  * @internal
  * Arm registers
