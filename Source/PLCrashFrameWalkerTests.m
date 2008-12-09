@@ -72,17 +72,7 @@ static void stop_test_thread (pthread_t *thr, struct test_stack_args *args) {
 
 /* test plframe_valid_stackaddr() */
 - (void) testValidStackAddress {
-    ucontext_t uap;
 
-    /* Mock up a stack */
-    uap.uc_stack.ss_sp = (uint8_t *) 0x64;
-    uap.uc_stack.ss_size = 50;
-
-    /* Test addresses */
-    STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64), @"Valid address");
-    STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x65), @"Valid address");
-    STAssertTrue(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64 + 49), @"Valid address");
-    STAssertFalse(plframe_valid_stackaddr(&uap, (uint8_t *) 0x64 + 50), @"Invalid address");
 }
 
 

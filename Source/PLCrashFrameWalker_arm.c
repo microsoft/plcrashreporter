@@ -11,6 +11,9 @@
 
 #ifdef __arm__
 
+// Minimum readable size of a stack frame
+#define MIN_VALID_STACK (sizeof(intptr_t) * 2)
+
 // PLFrameWalker API
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) {
     cursor->uap = uap;
@@ -40,11 +43,10 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     /* Check for completion */
     if (cursor->fp == NULL)
         return PLFRAME_ENOFRAME;
-    
-    /* Check for a valid address */
-    if (!plframe_valid_stackaddr(cursor->uap, cursor->fp)) {
+        
+    /* Check for a valid frame address */
+    if (!plframe_valid_addr(cursor->fp, MIN_VALID_STACK))
         return PLFRAME_EBADFRAME;
-    }
     
     /* New frame fetched */
     return PLFRAME_ESUCCESS;

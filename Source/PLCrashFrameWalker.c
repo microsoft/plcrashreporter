@@ -35,10 +35,16 @@ const char *plframe_strerror (plframe_error_t error) {
     return "Unhandled error code";
 }
 
-/* Return true if the given address is a valid stack address for the @a uap thread context */
-bool plframe_valid_stackaddr (ucontext_t *uap, void *addr) {
-    if (uap->uc_stack.ss_sp <= addr && addr < uap->uc_stack.ss_sp + uap->uc_stack.ss_size)
+/* Return true if the given address is a valid and readable. */
+bool plframe_valid_addr (void *addr, size_t len) {
+    kern_return_t kr;
+    intptr_t data[len];
+
+    vm_size_t read_size = sizeof(data);
+    kr = vm_read_overwrite(mach_task_self(), (vm_address_t) addr, sizeof(data), (pointer_t) data, &read_size);
+    if (kr == KERN_SUCCESS) {
         return true;
+    }
 
     return false;
 }

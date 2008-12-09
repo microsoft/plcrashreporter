@@ -119,7 +119,7 @@ typedef plframe_pdef_fpreg_t plframe_fpreg_t;
 
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
-bool plframe_valid_stackaddr (ucontext_t *uap, void *addr);
+bool plframe_valid_addr (void *addr, size_t len);
 
 /* Platform specific funtions */
 
