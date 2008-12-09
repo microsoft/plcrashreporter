@@ -9,6 +9,7 @@
 
 #include "PLCrashFrameWalker.h"
 #include <signal.h>
+#include <assert.h>
 
 #define RETGEN(name, type, uap, result) {\
     *result = (uap->uc_mcontext->__ ## type . __ ## name); \
@@ -42,9 +43,14 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
     /* Fetch the thread states */
     mach_msg_type_number_t state_count;
 
+    /* Sanity check */
+    assert(sizeof(cursor->_mcontext_data.__ss) == sizeof(x86_thread_state32_t));
+    assert(sizeof(cursor->_mcontext_data.__es) == sizeof(x86_exception_state32_t));
+    assert(sizeof(cursor->_mcontext_data.__fs) == sizeof(x86_float_state32_t));
+    
     // thread state
     state_count = x86_THREAD_STATE32_COUNT;
-    kr = thread_get_state(thread, x86_THREAD_STATE32, (thread_state_t) &uap->uc_mcontext->__ss, &state_count);
+    kr = thread_get_state(thread, x86_THREAD_STATE32, (thread_state_t) &cursor->_mcontext_data.__ss, &state_count);
     if (kr != KERN_SUCCESS) {
         PLCF_DEBUG("Fetch of x86 thread state failed with mach error: %d", kr);
         return PLFRAME_INTERNAL;
@@ -52,7 +58,7 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
 
     // floating point state
     state_count = x86_FLOAT_STATE32_COUNT;
-    kr = thread_get_state(thread, x86_FLOAT_STATE32, (thread_state_t) &uap->uc_mcontext->__fs, &state_count);
+    kr = thread_get_state(thread, x86_FLOAT_STATE32, (thread_state_t) &cursor->_mcontext_data.__fs, &state_count);
     if (kr != KERN_SUCCESS) {
         PLCF_DEBUG("Fetch of x86 float state failed with mach error: %d", kr);
         return PLFRAME_INTERNAL;
@@ -60,11 +66,13 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
 
     // exception state
     state_count = x86_EXCEPTION_STATE32_COUNT;
-    kr = thread_get_state(thread, x86_EXCEPTION_STATE32, (thread_state_t) &uap->uc_mcontext->__es, &state_count);
+    kr = thread_get_state(thread, x86_EXCEPTION_STATE32, (thread_state_t) &cursor->_mcontext_data.__es, &state_count);
     if (kr != KERN_SUCCESS) {
         PLCF_DEBUG("Fetch of x86 float state failed with mach error: %d", kr);
         return PLFRAME_INTERNAL;
     }
+
+    // stack
 
     /* Perform standard initialization */
     plframe_cursor_init(cursor, uap);
