@@ -11,6 +11,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <mach/mach.h>
+
+// A super simple debug 'function' that's async safe.
+#define PLCF_DEBUG(msg, ...) {\
+    const char output[1024];\
+    snprintf(output, sizeof(output), msg "\n", ...) \
+    write(STDERR_FILENO, output, strlen(output));\
+}
+
 /**
  * @internal
  * @defgroup plframe_backtrace Backtrace Frame Walker
