@@ -44,7 +44,10 @@ typedef enum  {
     /** Bad frame */
     PLFRAME_EBADFRAME,
 
-    /** Unsupported operation or invalid argument */
+    /** Unsupported operation */
+    PLFRAME_ENOTSUP,
+
+    /** Invalid argument */
     PLFRAME_EINVAL,
 
     /** Bad register number */
