@@ -21,6 +21,8 @@ const char *plframe_strerror (plframe_error_t error) {
             return "No frames are available";
         case PLFRAME_EBADFRAME:
             return "Corrupted frame";
+        case PLFRAME_ENOTSUP:
+            return "Operation not supported";
         case PLFRAME_EINVAL:
             return "Invalid argument";
         case PLFRAME_EBADREG:
