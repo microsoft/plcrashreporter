@@ -10,8 +10,8 @@
 #include "PLCrashFrameWalker.h"
 
 #define RETGEN(name, type, uap, result) {\
-*result = (uap->uc_mcontext->__ ## type . __ ## name); \
-return PLFRAME_ESUCCESS; \
+    *result = (uap->uc_mcontext->__ ## type . __ ## name); \
+    return PLFRAME_ESUCCESS; \
 }
 
 
