@@ -26,6 +26,11 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) 
     return PLFRAME_ESUCCESS;
 }
 
+// PLFrameWalker API
+plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t thread) {
+    return PLFRAME_ENOTSUP;
+}
+
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {

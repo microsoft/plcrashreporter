@@ -30,21 +30,13 @@
 
 /* test plframe_cursor_init() */
 - (void) testInitFrame {
-    ucontext_t *uap;
     plframe_cursor_t cursor;
 
-    /* Fetch the current thread context */
-    uap = malloc(sizeof(uap));
-    getcontext(uap);
-
     /* Initialize the cursor */
-    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_init(&cursor, uap), @"Initialization failed");
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(pthread_self())), @"Initialization failed");
 
     /* Try fetching our own stack pointer */
     STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_next(&cursor), @"Next failed");
-
-    /* Clean up */
-    free(uap);
 }
 
 @end
