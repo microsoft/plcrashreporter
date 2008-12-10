@@ -7,10 +7,11 @@
  *
  */
 
-#include "PLCrashFrameWalker.h"
+#import "PLCrashFrameWalker.h"
+#import "PLCrashAsyncDebug.h"
 
-#include <signal.h>
-#include <assert.h>
+#import <signal.h>
+#import <assert.h>
 
 #ifdef __arm__
 

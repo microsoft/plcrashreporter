@@ -7,9 +7,11 @@
  *
  */
 
-#include "PLCrashFrameWalker.h"
-#include <signal.h>
-#include <assert.h>
+#import "PLCrashFrameWalker.h"
+#import "PLCrashAsyncDebug.h"
+
+#import <signal.h>
+#import <assert.h>
 
 #define RETGEN(name, type, uap, result) {\
     *result = (uap->uc_mcontext->__ ## type . __ ## name); \

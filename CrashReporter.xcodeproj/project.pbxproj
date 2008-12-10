@@ -292,6 +292,7 @@
 		059671E90EF04706008A0601 /* libprotobuf-c-MacOSX.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libprotobuf-c-MacOSX.a"; sourceTree = "<group>"; };
 		059671EB0EF04713008A0601 /* protobuf-c-private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "protobuf-c-private.h"; sourceTree = "<group>"; };
 		059671EC0EF04713008A0601 /* protobuf-c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
+		059672F00EF08564008A0601 /* PLCrashAsyncDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncDebug.h; sourceTree = "<group>"; };
 		05CD314A0EE93647000FDE88 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphoneos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphonesimulator.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -397,7 +398,7 @@
 			name = Backtrace;
 			sourceTree = "<group>";
 		};
-		059670210EEF5459008A0601 /* Crash Log */ = {
+		059670210EEF5459008A0601 /* Log */ = {
 			isa = PBXGroup;
 			children = (
 				059670310EEF6B9A008A0601 /* PLCrashLog.h */,
@@ -405,7 +406,7 @@
 				059670260EEF6B1A008A0601 /* PLCrashLogWriter.c */,
 				0596702D0EEF6B51008A0601 /* PLCrashLogWriterTests.m */,
 			);
-			name = "Crash Log";
+			name = Log;
 			sourceTree = "<group>";
 		};
 		059670E30EEFADA6008A0601 /* Dependencies */ = {
@@ -561,6 +562,19 @@
 			path = "protobuf-c";
 			sourceTree = "<group>";
 		};
+		059672EF0EF0853A008A0601 /* Crash Handling */ = {
+			isa = PBXGroup;
+			children = (
+				05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */,
+				05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */,
+				05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */,
+				059672F00EF08564008A0601 /* PLCrashAsyncDebug.h */,
+				059670210EEF5459008A0601 /* Log */,
+				0596674D0EEDEBB1008A0601 /* Backtrace */,
+			);
+			name = "Crash Handling";
+			sourceTree = "<group>";
+		};
 		05CD32750EE93E5A000FDE88 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
@@ -623,11 +637,7 @@
 				054F51070EEC73C80034B184 /* PLCrashReporter.h */,
 				05CD31890EE93A90000FDE88 /* CrashReporter.h */,
 				05CD318A0EE93A90000FDE88 /* CrashReporter.m */,
-				05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */,
-				05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */,
-				05CD33A20EE94931000FDE88 /* PLCrashSignalHandlerTests.m */,
-				059670210EEF5459008A0601 /* Crash Log */,
-				0596674D0EEDEBB1008A0601 /* Backtrace */,
+				059672EF0EF0853A008A0601 /* Crash Handling */,
 			);
 			path = Source;
 			sourceTree = "<group>";
