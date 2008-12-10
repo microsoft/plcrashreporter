@@ -10,6 +10,7 @@
 /**
  * @internal
  * @defgroup plcrash_log Crash Log Format
+ * @ingroup plcrash_internal
  *
  * Implements Crash Log encoding and decoding
  *
