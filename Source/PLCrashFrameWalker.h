@@ -26,6 +26,7 @@
 /**
  * @internal
  * @defgroup plframe_backtrace Backtrace Frame Walker
+ * @ingroup plcrash_internal
  *
  * Implements a portable backtrace API. The API is fully async safe, and may be called
  * from any signal handler.

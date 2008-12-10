@@ -16,6 +16,10 @@
  */
 
 /**
+ * @defgroup plcrash_internal Crash Reporter Internal Documentation
+ */
+
+/**
  * @defgroup enums Enumerations
  * @ingroup constants
  */
