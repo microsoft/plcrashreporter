@@ -71,8 +71,12 @@ static void stop_test_thread (pthread_t *thr, struct test_stack_args *args) {
 }
 
 /* test plframe_valid_stackaddr() */
-- (void) testValidStackAddress {
+- (void) testReadAddress {
+    const char bytes[] = "Hello";
+    char dest[sizeof(bytes)];
 
+    plframe_read_addr(bytes, dest, sizeof(dest));
+    STAssertTrue(strcmp(bytes, dest) == 0, @"Read was not performed");
 }
 
 

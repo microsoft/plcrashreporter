@@ -115,7 +115,7 @@ typedef plframe_pdef_fpreg_t plframe_fpreg_t;
 
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
-kern_return_t plframe_read_addr (void *source, void *dest, size_t len);
+kern_return_t plframe_read_addr (const void *source, void *dest, size_t len);
 
 
 /* Platform specific funtions */
