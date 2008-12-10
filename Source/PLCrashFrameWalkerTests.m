@@ -75,8 +75,12 @@ static void stop_test_thread (pthread_t *thr, struct test_stack_args *args) {
     const char bytes[] = "Hello";
     char dest[sizeof(bytes)];
 
+    // Verify that a good read succeeds
     plframe_read_addr(bytes, dest, sizeof(dest));
     STAssertTrue(strcmp(bytes, dest) == 0, @"Read was not performed");
+    
+    // Verify that reading off the page at 0x0 fails
+    STAssertNotEquals(KERN_SUCCESS, plframe_read_addr(NULL, dest, sizeof(bytes)), @"Bad read was performed");
 }
 
 
