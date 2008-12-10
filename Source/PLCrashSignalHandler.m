@@ -169,7 +169,8 @@ static PLCrashSignalHandler *sharedHandler;
  */
 - (void) testHandlerWithSignal: (int) signal code: (int) code faultAddress: (void *) address {
     siginfo_t info;
-    ucontext_t uap;
+    plframe_cursor_t cursor;
+    plframe_test_thead_t test_thr;
     
     /* Initialze a faux-siginfo instance */
     info.si_addr = address;
@@ -179,11 +180,15 @@ static PLCrashSignalHandler *sharedHandler;
     info.si_code = code;
     info.si_status = signal;
     
-    /* Get the current thread's ucontext */
-    getcontext(&uap);
+    /* Create a test thread (we'll be stealing its stack to iterate) */
+    plframe_test_thread_spawn(&test_thr);
+    plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(test_thr.thread));
     
     /* Execute the crash log handler */
-    dump_crash_log(signal, &info, &uap);
+    dump_crash_log(signal, &info, cursor.uap);
+
+    /* Clean up the test thread */
+    plframe_test_thread_stop(&test_thr);
 }
 
 @end

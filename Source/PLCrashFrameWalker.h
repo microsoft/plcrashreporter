@@ -113,10 +113,21 @@ typedef plframe_pdef_word_t plframe_word_t;
 /** Platform floating point register type */
 typedef plframe_pdef_fpreg_t plframe_fpreg_t;
 
+
+/** State for test threads */
+typedef struct plframe_test_thread {
+    pthread_t thread;
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
+} plframe_test_thead_t;
+
+
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
 kern_return_t plframe_read_addr (const void *source, void *dest, size_t len);
 
+void plframe_test_thread_spawn (plframe_test_thead_t *args);
+void plframe_test_thread_stop (plframe_test_thead_t *args);
 
 /* Platform specific funtions */
 
