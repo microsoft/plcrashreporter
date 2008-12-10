@@ -5,15 +5,27 @@
  * All rights reserved.
  */
 
+//#include "crash_report.pb-c.h"
+
 /**
+ * @defgroup plcras_log_writer Crash Log Writer
  * @ingroup plcrash_log
+ *
+ * Implements an async-safe, zero allocation crash log writer C API, intended
+ * to be called from the crash log signal handler.
+ *
  * @{
  */
 
 /**
- * Crash log magic number.
+ * @internal
+ *
+ * Crash log context.
  */
-#define PLCRASH_LOG_MAGIC 0xDEADBEEF
+typedef struct plcrash_log_t {
+
+} plcrash_log_t;
+
 
 /**
  * @} plcrash_log
