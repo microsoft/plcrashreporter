@@ -14,6 +14,11 @@
 
 #ifdef __arm__
 
+#define RETGEN(name, type, uap, result) {\
+    *result = (uap->uc_mcontext->__ ## type . __ ## name); \
+    return PLFRAME_ESUCCESS; \
+}
+
 // PLFrameWalker API
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) {
     cursor->uap = uap;
@@ -120,9 +125,31 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
     }
     
     switch (regnum) {
+        case PLFRAME_ARM_R0:
+        case PLFRAME_ARM_R1:
+        case PLFRAME_ARM_R2:
+        case PLFRAME_ARM_R3:
+        case PLFRAME_ARM_R4:
+        case PLFRAME_ARM_R5:
+        case PLFRAME_ARM_R6:
+        case PLFRAME_ARM_R7:
+        case PLFRAME_ARM_R8:
+        case PLFRAME_ARM_R9:
+        case PLFRAME_ARM_R10:
+        case PLFRAME_ARM_R11:
+        case PLFRAME_ARM_R12:
+            // Map enum to actual register index */
+            RETGEN(r[regnum - PLFRAME_ARM_R0], ss, uap, reg);
+
+        case PLFRAME_ARM_SP:
+            RETGEN(sp, ss, uap, reg);
+
+        case PLFRAME_ARM_LR:
+            RETGEN(lr, ss, uap, reg);
+
         case PLFRAME_ARM_PC:
-            *reg = uap->uc_mcontext->__ss.__pc;
-            return PLFRAME_ESUCCESS;
+            RETGEN(pc, ss, uap, reg);
+            
         default:
             return PLFRAME_ENOTSUP;
     }
