@@ -10,3 +10,6 @@ _PLCrashReporterErrorDomain
 
 # PLCrashSignalHandler
 *_PLCrashSignalHandler
+
+# PLCrashFrame (Private API, Unit Tested)
+_plframe_*
