@@ -74,6 +74,7 @@ typedef int plframe_regnum_t;
 #define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
 
 /**
+ * @internal
  * Frame cursor context.
  */
 typedef struct plframe_cursor {
@@ -114,7 +115,9 @@ typedef plframe_pdef_word_t plframe_word_t;
 typedef plframe_pdef_fpreg_t plframe_fpreg_t;
 
 
-/** State for test threads */
+/**
+ * @internal
+ * State for test threads */
 typedef struct plframe_test_thread {
     pthread_t thread;
     pthread_mutex_t lock;
