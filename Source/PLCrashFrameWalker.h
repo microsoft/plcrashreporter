@@ -5,23 +5,14 @@
  * All rights reserved.
  */
 
-#include <ucontext.h>
-#include <pthread.h>
+#import <ucontext.h>
+#import <pthread.h>
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <unistd.h>
+#import <stdint.h>
+#import <stdbool.h>
+#import <unistd.h>
 
-#include <mach/mach.h>
-
-#include <stdio.h> // for snprintf
-
-// A super simple debug 'function' that's async safe.
-#define PLCF_DEBUG(msg, args...) {\
-    char output[1024];\
-    snprintf(output, sizeof(output), msg "\n", args); \
-    write(STDERR_FILENO, output, strlen(output));\
-}
+#import <mach/mach.h>
 
 /**
  * @internal
@@ -69,8 +60,8 @@ typedef enum  {
 /** Register number type */
 typedef int plframe_regnum_t;
 
-#include "PLCrashFrameWalker_i386.h"
-#include "PLCrashFrameWalker_arm.h"
+#import "PLCrashFrameWalker_i386.h"
+#import "PLCrashFrameWalker_arm.h"
 
 #define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
 
