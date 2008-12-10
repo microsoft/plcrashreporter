@@ -1,0 +1,113 @@
+/*
+ * Author: Landon Fuller <landonf@plausiblelabs.com>
+ *
+ * Copyright (c) 2008 Plausible Labs Cooperative, Inc.
+ * All rights reserved.
+ */
+
+package plausible.crashreport;
+option java_package = "com.plausiblelabs.crashreporter";
+
+/* Known processor architecture types */
+enum MachineType {
+    /* x86 */
+    X86_32 = 0;
+
+    /* x86-64 */
+    X86_64 = 1;
+
+    /* ARM */
+    ARM = 2;
+}
+
+/* Known operating system types */
+enum OperatingSystem {
+    /* Mac OS X */
+    MAC_OS_X = 0;
+
+    /* iPhone OS */
+    IPHONE_OS = 1;
+
+    /* iPhone Simulator (Mac OS X w/ simulator runtime environment) */
+    IPHONE_SIMULATOR = 2;
+}
+
+/* A crash report */
+message CrashReport {
+    message SystemInfo {
+        /* Operating system */
+        required OperatingSystem operating_system = 1;
+
+        /* OS version */
+        required string os_version = 2;
+
+        /* Processor architecture */
+        required MachineType machine_type = 3;
+
+        /* Date crash report was generated (as milliseconds since epoch */
+        required uint64 timestamp = 4;
+    }
+
+    /* Host data */
+    required SystemInfo system_info = 1;
+
+    /* Thread backtrace */
+    message Thread {
+        /* Thread number (indexed at 0, must be unique within a crash report) */
+        required int32 thread_number = 1;
+
+        /* Stack frame */
+        message StackFrame {
+            /* Nearest symbol name for the given PC. This may be inaccurate. */
+            optional string symbol_name = 1;
+
+            /* Address of the named symbol, if one is available */
+            optional uint64 symbol_address = 2;
+
+            /* Instruction pointer */
+            required uint64 pc = 3;
+        }
+
+        /* Backtrace stack frames */
+        repeated StackFrame frames = 2;
+    }
+
+    /* All threads */
+    repeated Thread threads = 2;
+
+    /* Thread state (registers, etc) */
+    message ThreadState {
+        /* The thread number (indexed at 0, must be unique within a crash report) */
+        required int32 thread_number = 1;
+
+        /* A single register value */
+        message RegisterValue {
+            /* Register name (r1, ebp, ...) */
+            required string name = 1;
+
+            /* Register value (32-bit or 64-bit) */
+            required uint64 value = 2;
+        }
+
+        /* Thread registers */
+        repeated RegisterValue registers = 2;
+    }
+
+    /* The crashed thread's state */
+    required ThreadState crashed_thread_state = 3;
+
+    /* Binary image */
+    message BinaryImage {
+        /* Virtual memory slide */
+        required uint64 base_address = 1;
+
+        /* Size of mapped memory */
+        required uint64 size = 2;
+
+        /* Name of the binary image (should be a full path name) */
+        required string name = 3;
+    }
+
+    /* All loaded binary images */
+    repeated BinaryImage images = 4;
+}
