@@ -28,13 +28,6 @@
     write(STDERR_FILENO, output, strlen(output));\
 }
 
-typedef struct plcrash_slab plcrash_slab_t;
-
-plcrash_slab_t *plcrash_slab_create (size_t size, int *err);
-void *plcrash_slab_alloc (plcrash_slab_t *slab, size_t size);
-void plcrash_slab_flush (plcrash_slab_t *slab);
-void plcrash_slab_destroy (plcrash_slab_t *slab);
-
 
 /**
  * @} plcrash_async
