@@ -11,43 +11,78 @@
 #import <string.h>
 #import <stdbool.h>
 
+#import <sys/time.h>
+
 #import "PLCrashLogWriter.h"
 #import "PLCrashAsync.h"
+#import "PLCrashFrameWalker.h"
 
 #import "crash_report.pb-c.h"
 
+#include <TargetConditionals.h>
 
-/**
- * @internal
- * @ingroup plcrash_log_writer
- *
- * @{
- */
-static ssize_t writen (int fd, const uint8_t *buf, size_t len) {
+/* Platform/Architecture Defines */
+#if TARGET_IPHONE_SIMULATOR
+#  define PLCRASH_OS    PLCRASH__OPERATING_SYSTEM__IPHONE_SIMULATOR
+#elif TARGET_OS_IPHONE
+#  define PLCRASH_OS    PLCRASH__OPERATING_SYSTEM__IPHONE_OS
+#elif TARGET_OS_MAC
+#  define PLCRASH_OS    PLCRASH__OPERATING_SYSTEM__MAC_OS_X
+#else
+#error Unknown operating system
+#endif
+
+#ifdef __x86_64__
+#  define PLCRASH_MACHINE PLCRASH__MACHINE_TYPE__X86_64
+
+#elif defined(__i386__)
+#  define PLCRASH_MACHINE PLCRASH__MACHINE_TYPE__X86_32
+
+#elif defined(__arm__)
+#  define PLCRASH_MACHINE PLCRASH__MACHINE_TYPE__ARM
+
+#else
+#  error Unknown machine architecture
+#endif
+
+// Simple file descriptor output buffer
+typedef struct pl_protofd_buffer {
+    ProtobufCBuffer base;
+    int fd;
+    bool had_error;
+} pl_protofd_buffer_t;
+
+
+static void fd_buffer_append (ProtobufCBuffer *buffer, size_t len, const uint8_t *data) {
+    pl_protofd_buffer_t *fd_buf = (pl_protofd_buffer_t *) buffer;
     const uint8_t *p;
     size_t left;
     ssize_t written;
 
+    /* If an error has occured, don't try to write */
+    if (fd_buf->had_error)
+        return;
+    
     /* Loop until all bytes are written */
-    p = buf;
+    p = data;
     left = len;
     while (left > 0) {
-        if ((written = write(fd, p, left)) <= 0) {
+        if ((written = write(fd_buf->fd, p, left)) <= 0) {
             if (errno == EINTR) {
                 // Try again
                 written = 0;
             } else {
                 PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
-                return -1;
+                fd_buf->had_error = true;
+                return;
             }
         }
-            
+        
         left -= written;
         p += written;
     }
-
-    return written;
 }
+
 
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
@@ -77,6 +112,11 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
     return PLCRASH_ESUCCESS;
 }
 
+struct M {
+    Plcrash__CrashReport crashReport;
+    Plcrash__CrashReport__SystemInfo systemInfo;
+    Plcrash__CrashReport__ThreadState threadState;
+};
 
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
@@ -86,10 +126,78 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
  * and thread dump.
  */
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx) {
-    uint8_t buffer[] = { 0, 1 };
+    Plcrash__CrashReport crashReport = PLCRASH__CRASH_REPORT__INIT;
+    Plcrash__CrashReport__SystemInfo systemInfo = PLCRASH__CRASH_REPORT__SYSTEM_INFO__INIT;
+    
+    /* Initialize the output buffer */
+    pl_protofd_buffer_t buffer;
+    memset(&buffer, 0, sizeof(buffer));
+    buffer.fd = writer->fd;
+    buffer.base.append = fd_buffer_append;
+    buffer.had_error = false;
 
-    writen(writer->fd, buffer, sizeof(buffer));
+    /* Initialize the system information */
+    crashReport.system_info = &systemInfo;
+    {
+        struct timeval tv;
 
+        /* Fetch the timestamp */
+        if (gettimeofday(&tv, NULL) == 0) {
+            systemInfo.timestamp = tv.tv_sec;
+        } else {
+            systemInfo.timestamp = 0;
+        }
+
+        /* Set the OS stats */
+        systemInfo.os_version = writer->utsname.release;
+        systemInfo.operating_system = PLCRASH_OS;
+        systemInfo.machine_type = PLCRASH_MACHINE;
+        systemInfo.machine_type = PLCRASH__MACHINE_TYPE__X86_32;
+    }
+
+    /* Threads */
+    {
+        crashReport.n_threads = 0;
+    }
+    
+    /* Crashed Thread */
+    Plcrash__CrashReport__ThreadState crashed = PLCRASH__CRASH_REPORT__THREAD_STATE__INIT;
+    Plcrash__CrashReport__ThreadState__RegisterValue *crashedRegisters[PLFRAME_REG_LAST + 1];
+    Plcrash__CrashReport__ThreadState__RegisterValue crashedRegisterValues[PLFRAME_REG_LAST + 1];
+    PLCF_DEBUG("%lu vs %lu", sizeof(crashedRegisters), sizeof(crashedRegisterValues));
+    {
+        crashReport.crashed_thread_state = &crashed;
+        crashed.registers = crashedRegisters;
+
+        // todo
+        crashed.thread_number = 0;
+
+        /* Write out registers */
+        Plcrash__CrashReport__ThreadState__RegisterValue init_value = PLCRASH__CRASH_REPORT__THREAD_STATE__REGISTER_VALUE__INIT;
+        int i;
+
+        for (i = 0; i < PLFRAME_REG_LAST; i++) {
+            crashedRegisterValues[i] = init_value;
+            crashedRegisterValues[i].name = "reg";
+            crashedRegisterValues[i].value = 0xFF;
+            
+            crashedRegisters[i] = &crashedRegisterValues[i];
+            i++;
+        }
+        
+        // not working
+        crashed.n_registers = 0;
+        
+        //assert(crashed.n_registers == PLFRAME_REG_LAST + 1);
+    }
+
+    /* Binary Images */
+    {
+        crashReport.n_images = 0;
+    }
+
+    protobuf_c_message_pack_to_buffer((ProtobufCMessage *) &crashReport, (ProtobufCBuffer *) &buffer);
+    
     return PLCRASH_ESUCCESS;
 }
 
