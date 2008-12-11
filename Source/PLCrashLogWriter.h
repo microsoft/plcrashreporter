@@ -54,7 +54,7 @@ typedef enum  {
     PLCRASH_EINVAL,
     
     /** Internal error */
-    PLCRASH_INTERNAL,
+    PLCRASH_EINTERNAL,
 } plcrash_error_t;
 
 
