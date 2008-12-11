@@ -24,44 +24,33 @@
  *
  * @{
  */
-
-
-// Simple file descriptor output buffer
-typedef struct pl_protofd_buffer {
-    ProtobufCBuffer base;
-    int fd;
-    bool had_error;
-} pl_protofd_buffer_t;
-
-static void fd_buffer_append (ProtobufCBuffer *buffer, size_t len, const uint8_t *data) {
-    pl_protofd_buffer_t *fd_buf = (pl_protofd_buffer_t *) buffer;
+#if 0
+static ssize_t writen (int fd, const uint8_t *buf, size_t len) {
     const uint8_t *p;
     size_t left;
     ssize_t written;
-    
-    /* If an error has occured, don't try to write */
-    if (fd_buf->had_error)
-        return;
 
     /* Loop until all bytes are written */
-    p = data;
+    p = buf;
     left = len;
     while (left > 0) {
-        if ((written = write(fd_buf->fd, p, left)) <= 0) {
+        if ((written = write(fd, p, left)) <= 0) {
             if (errno == EINTR) {
                 // Try again
                 written = 0;
             } else {
                 PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
-                fd_buf->had_error = true;
-                return;
+                return -1;
             }
 
             left -= written;
             p += written;
         }
     }
+
+    return written;
 }
+#endif
 
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
@@ -91,33 +80,16 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
     return PLCRASH_ESUCCESS;
 }
 
-struct Message {
-    Plausible__Crashreport__CrashReport__SystemInfo system_info;
-    Plausible__Crashreport__CrashReport__Thread threads;
-    Plausible__Crashreport__CrashReport__ThreadState crashed_thread_state;
-    Plausible__Crashreport__CrashReport__BinaryImage images;
-};
 
 /**
- * Write the crash report. All other running threads are suspended while the
- * crash report is generated.
+ * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
  * @warning This method must only be called from the thread that has triggered the crash. This must correspond
  * to the provided crashctx. Failure to adhere to this requirement will result in an invalid stack trace
  * and thread dump.
  */
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx) {
-    /* Initialize the output buffer */
-    pl_protofd_buffer_t buffer;
-    buffer.fd = writer->fd;
-    buffer.base.append = fd_buffer_append;
-    buffer.had_error = false;
 
-    /* Initialize the message */
-    // Plausible__Crashreport__CrashReport crashReport = PLAUSIBLE__CRASHREPORT__CRASH_REPORT__INIT;
-
-    /* Write the message */
-    // protobuf_c_message_pack_to_buffer((ProtobufCMessage *) &crashReport, (ProtobufCBuffer *) &buffer);
 
     return PLCRASH_ENOTSUP;
 }
