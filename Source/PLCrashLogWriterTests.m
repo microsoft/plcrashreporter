@@ -99,12 +99,14 @@
     Plausible__Crashreport__CrashReport *crashReport;
     crashReport = plausible__crashreport__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf);
     STAssertNotNULL(crashReport, @"Could not decode crash report");
-    
-    /* Test the report */
-    [self checkSystemInfo: crashReport->system_info];
-    
-    if (crashReport != NULL)
+
+    if (crashReport != NULL) {
+        /* Test the report */
+        [self checkSystemInfo: crashReport->system_info];
+
+        /* Free it */
         protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+    }
 
     close(infd);
     STAssertEquals(0, munmap(buf, statbuf.st_size), @"Could not unmap pages: %s", strerror(errno));
