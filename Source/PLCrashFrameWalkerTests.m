@@ -58,6 +58,12 @@
     /* Try fetching the first frame */
     plframe_error_t ferr = plframe_cursor_next(&cursor);
     STAssertEquals(PLFRAME_ESUCCESS, ferr, @"Next failed: %s", plframe_strerror(ferr));
+
+    /* Verify that all registers are supported */
+    for (int i = 0; i < PLFRAME_REG_LAST + 1; i++) {
+        plframe_word_t val;
+        STAssertEquals(PLFRAME_ESUCCESS, plframe_get_reg(&cursor, i, &val), @"Could not fetch register value");
+    }
 }
 
 @end
