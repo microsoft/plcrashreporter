@@ -13,8 +13,6 @@
 
 @interface PLCrashSignalHandler : NSObject {
 @private
-    /** Signal stack */
-    stack_t _sigstk;
 }
 
 + (PLCrashSignalHandler *) sharedHandler;
