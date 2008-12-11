@@ -12,7 +12,8 @@
 
 #import <sys/stat.h>
 #import <sys/mman.h>
-#include <fcntl.h>
+#import <fcntl.h>
+#import <sys/utsname.h>
 
 #import "crash_report.pb-c.h"
 
@@ -50,7 +51,17 @@
 
 // check a crash report's system info
 - (void) checkSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo {
+    struct utsname uts;
+    uname(&uts);
+
     STAssertNotNULL(systemInfo, @"No system info available");
+    
+    STAssertEquals(systemInfo->operating_system, PLCRASH_OS, @"Unexpected OS value");
+    STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
+
+    STAssertEquals(systemInfo->machine_type, PLCRASH_MACHINE, @"Unexpected machine type");
+
+    STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
 
 - (void) testWriteReport {
