@@ -155,6 +155,11 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor);
 
 /**
+ * Get a register's name.
+ */
+const char *plframe_get_regname (plframe_regnum_t regnum);
+
+/**
  * Get a register value.
  */
 plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_word_t *reg);

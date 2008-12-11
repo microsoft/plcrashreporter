@@ -26,6 +26,14 @@
     plframe_test_thread_stop(&_thr_args);
 }
 
+- (void) testGetRegName {
+    for (int i = 0; i < PLFRAME_REG_LAST + 1; i++) {
+        const char *name = plframe_get_regname(i);
+        STAssertNotNULL(name, @"Register name for %d is NULL", i);
+        STAssertNotEquals((size_t)0, strlen(name), @"Register name for %d is 0 length", i);
+    }
+}
+
 /* test plframe_valid_stackaddr() */
 - (void) testReadAddress {
     const char bytes[] = "Hello";

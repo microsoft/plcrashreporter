@@ -12,6 +12,7 @@
 
 #import <signal.h>
 #import <assert.h>
+#import <stdlib.h>
 
 #define RETGEN(name, type, uap, result) {\
     *result = (uap->uc_mcontext->__ ## type . __ ## name); \
@@ -186,6 +187,68 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
 // PLFrameWalker API
 plframe_error_t plframe_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {
     return PLFRAME_ENOTSUP;
+}
+
+// PLFrameWalker API
+const char *plframe_get_regname (plframe_regnum_t regnum) {
+    /* All word-sized registers */
+    switch (regnum) {
+        case PLFRAME_X86_EAX:
+            return "eax";
+            
+        case PLFRAME_X86_EDX:
+            return "edx";
+            
+        case PLFRAME_X86_ECX:
+            return "ecx";
+            
+        case PLFRAME_X86_EBX:
+            return "ebx";
+            
+        case PLFRAME_X86_EBP:
+            return "ebp";
+            
+        case PLFRAME_X86_ESI:
+            return "esi";
+            
+        case PLFRAME_X86_EDI:
+            return "edi";
+            
+        case PLFRAME_X86_ESP:
+            return "esp";
+            
+        case PLFRAME_X86_EIP:
+            return "eip";
+            
+        case PLFRAME_X86_EFLAGS:
+            return "eflags";
+            
+        case PLFRAME_X86_TRAPNO:
+            return "trapno";
+            
+        case PLFRAME_X86_CS:
+            return "cs";
+            
+        case PLFRAME_X86_DS:
+            return "ds";
+            
+        case PLFRAME_X86_ES:
+            return "es";
+            
+        case PLFRAME_X86_FS:
+            return "fs";
+            
+        case PLFRAME_X86_GS:
+            return "gs";
+            
+        default:
+            // Unsupported register
+            break;
+    }
+   
+    /* Unsupported register is an implementation error (checked in unit tests) */
+    PLCF_DEBUG("Missing register name for register id: %d", regnum);
+    abort();
 }
 
 #endif
