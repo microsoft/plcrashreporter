@@ -6,6 +6,7 @@
  */
 
 #import <sys/utsname.h>
+#import <TargetConditionals.h>
 
 /**
  * @defgroup plcrash_log_writer Crash Log Writer
@@ -16,6 +17,30 @@
  *
  * @{
  */
+
+/* Platform/Architecture Defines */
+#if TARGET_IPHONE_SIMULATOR
+#  define PLCRASH_OS    PLCRASH__OPERATING_SYSTEM__IPHONE_SIMULATOR
+#elif TARGET_OS_IPHONE
+#  define PLCRASH_OS    PLCRASH__OPERATING_SYSTEM__IPHONE_OS
+#elif TARGET_OS_MAC
+#  define PLCRASH_OS    PLCRASH__OPERATING_SYSTEM__MAC_OS_X
+#else
+#error Unknown operating system
+#endif
+
+#ifdef __x86_64__
+#  define PLCRASH_MACHINE PLCRASH__MACHINE_TYPE__X86_64
+
+#elif defined(__i386__)
+#  define PLCRASH_MACHINE PLCRASH__MACHINE_TYPE__X86_32
+
+#elif defined(__arm__)
+#  define PLCRASH_MACHINE PLCRASH__MACHINE_TYPE__ARM
+
+#else
+#  error Unknown machine architecture
+#endif
 
 /**
  * @internal
