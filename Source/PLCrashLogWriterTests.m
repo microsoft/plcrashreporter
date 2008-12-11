@@ -49,7 +49,7 @@
 }
 
 // check a crash report's system info
-- (void) checkSystemInfo: (Plausible__Crashreport__CrashReport__SystemInfo *) systemInfo {
+- (void) checkSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo {
     STAssertNotNULL(systemInfo, @"No system info available");
 }
 
@@ -96,8 +96,8 @@
     }
 
     /* Try to read the crash report */
-    Plausible__Crashreport__CrashReport *crashReport;
-    crashReport = plausible__crashreport__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf);
+    Plcrash__CrashReport *crashReport;
+    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf);
     STAssertNotNULL(crashReport, @"Could not decode crash report");
 
     if (crashReport != NULL) {
