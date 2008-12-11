@@ -12,6 +12,7 @@
 
 #import <signal.h>
 #import <assert.h>
+#import <stdlib.h>
 
 #ifdef __arm__
 
@@ -169,40 +170,40 @@ plframe_error_t plframe_get_freg (plframe_cursor_t *cursor, plframe_regnum_t reg
 const char *plframe_get_regname (plframe_regnum_t regnum) {
     switch (regnum) {
         case PLFRAME_ARM_R0:
-            return "r0"
+            return "r0";
         case PLFRAME_ARM_R1:
-            return "r1"
+            return "r1";
         case PLFRAME_ARM_R2:
-            return "r2"
+            return "r2";
         case PLFRAME_ARM_R3:
-            return "r3"
+            return "r3";
         case PLFRAME_ARM_R4:
-            return "r4"
+            return "r4";
         case PLFRAME_ARM_R5:
-            return "r5"
+            return "r5";
         case PLFRAME_ARM_R6:
-            return "r6"
+            return "r6";
         case PLFRAME_ARM_R7:
-            return "r7"
+            return "r7";
         case PLFRAME_ARM_R8:
-            return "r8"
+            return "r8";
         case PLFRAME_ARM_R9:
-            return "r9"
+            return "r9";
         case PLFRAME_ARM_R10:
-            return "r10"
+            return "r10";
         case PLFRAME_ARM_R11:
-            return "r11"
+            return "r11";
         case PLFRAME_ARM_R12:
-            return "r12"
+            return "r12";
             
         case PLFRAME_ARM_SP:
-            return "sp"
+            return "sp";
             
         case PLFRAME_ARM_LR:
-            return "lr"
+            return "lr";
             
         case PLFRAME_ARM_PC:
-            return "pc"
+            return "pc";
             
         default:
             // Unsupported register
