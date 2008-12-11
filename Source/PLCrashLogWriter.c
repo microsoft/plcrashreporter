@@ -106,7 +106,7 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
     if (uname(&writer->utsname) != 0) {
         // Should not happen
         PLCF_DEBUG("uname() failed: %s", strerror(errno));
-        return PLCRASH_INTERNAL;
+        return PLCRASH_EINTERNAL;
     }
 
     return PLCRASH_ESUCCESS;
@@ -166,9 +166,24 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
     Plcrash__CrashReport__ThreadState crashed = PLCRASH__CRASH_REPORT__THREAD_STATE__INIT;
     Plcrash__CrashReport__ThreadState__RegisterValue *crashedRegisters[regCount];
     Plcrash__CrashReport__ThreadState__RegisterValue crashedRegisterValues[regCount];
+    
+    crashReport.crashed_thread_state = &crashed;
+    crashed.registers = crashedRegisters;
     {
-        crashReport.crashed_thread_state = &crashed;
-        crashed.registers = crashedRegisters;
+        plframe_cursor_t cursor;
+        plframe_error_t frame_err;
+
+        /* Create the crashed thread frame cursor */
+        if ((frame_err = plframe_cursor_init(&cursor, crashctx)) != PLFRAME_ESUCCESS) {
+            PLCF_DEBUG("Failed to initialize frame cursor for crashed thread: %s", plframe_strerror(frame_err));
+            return PLCRASH_EINTERNAL;
+        }
+
+        /* Fetch the first frame */
+        if ((frame_err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
+            PLCF_DEBUG("Could not fetch crashed thread frame: %s", plframe_strerror(frame_err));
+            return PLCRASH_EINTERNAL;
+        }
 
         // todo - thread number
         crashed.thread_number = 0;
@@ -179,12 +194,21 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
         /* Write out registers */
         crashed.n_registers = regCount;
         for (int i = 0; i < regCount; i++) {
+            
+            /* Fetch the register */
+            plframe_word_t regVal;
+            if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
+                // Should never happen
+                PLCF_DEBUG("Could not fetch register %i value: %s", i, strerror(frame_err));
+                regVal = 0;
+            }
+
+            /* Initialize the register struct */
             crashedRegisterValues[i] = init_value;
+            crashedRegisterValues[i].value = regVal;
             // Cast to drop 'const', since we can't make a copy.
             // The string will never be modified.
             crashedRegisterValues[i].name = (char *) plframe_get_regname(i);
-                
-            crashedRegisterValues[i].value = 0xFF; // todo
             
             crashedRegisters[i] = crashedRegisterValues + i;
         }
@@ -232,7 +256,7 @@ const char *plcrash_strerror (plcrash_error_t error) {
             return "Operation not supported";
         case PLCRASH_EINVAL:
             return "Invalid argument";
-        case PLCRASH_INTERNAL:
+        case PLCRASH_EINTERNAL:
             return "Internal error";
     }
     
