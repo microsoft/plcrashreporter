@@ -11,7 +11,6 @@
 #import <string.h>
 #import <stdbool.h>
 
-#import "PLCrashLog.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashAsync.h"
 
@@ -24,7 +23,6 @@
  *
  * @{
  */
-#if 0
 static ssize_t writen (int fd, const uint8_t *buf, size_t len) {
     const uint8_t *p;
     size_t left;
@@ -42,15 +40,14 @@ static ssize_t writen (int fd, const uint8_t *buf, size_t len) {
                 PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
                 return -1;
             }
-
-            left -= written;
-            p += written;
         }
+            
+        left -= written;
+        p += written;
     }
 
     return written;
 }
-#endif
 
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
@@ -89,9 +86,11 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
  * and thread dump.
  */
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx) {
+    uint8_t buffer[] = { 0, 1 };
 
+    writen(writer->fd, buffer, sizeof(buffer));
 
-    return PLCRASH_ENOTSUP;
+    return PLCRASH_ESUCCESS;
 }
 
 /**
