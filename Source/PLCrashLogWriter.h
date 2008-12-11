@@ -8,7 +8,7 @@
 #import <sys/utsname.h>
 
 /**
- * @defgroup plcras_log_writer Crash Log Writer
+ * @defgroup plcrash_log_writer Crash Log Writer
  * @ingroup plcrash_log
  *
  * Implements an async-safe, zero allocation crash log writer C API, intended
@@ -65,5 +65,5 @@ plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer);
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx);
 
 /**
- * @} plcrash_log
+ * @} plcrash_log_writer
  */

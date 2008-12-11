@@ -13,9 +13,18 @@
 
 #import "PLCrashLog.h"
 #import "PLCrashLogWriter.h"
-#import "PLCrashAsyncDebug.h"
+#import "PLCrashAsync.h"
 
 #import "crash_report.pb-c.h"
+
+
+/**
+ * @internal
+ * @ingroup plcrash_log_writer
+ *
+ * @{
+ */
+
 
 // Simple file descriptor output buffer
 typedef struct pl_protofd_buffer {
@@ -152,3 +161,7 @@ const char *plcrash_strerror (plcrash_error_t error) {
     /* Should be unreachable */
     return "Unhandled error code";
 }
+
+/**
+ * @} plcrash_log_writer
+ */
