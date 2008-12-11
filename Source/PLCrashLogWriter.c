@@ -161,34 +161,30 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
     }
     
     /* Crashed Thread */
+    // Last is the register index, so increment to get the count
+    const uint32_t regCount = PLFRAME_REG_LAST + 1;
     Plcrash__CrashReport__ThreadState crashed = PLCRASH__CRASH_REPORT__THREAD_STATE__INIT;
-    Plcrash__CrashReport__ThreadState__RegisterValue *crashedRegisters[PLFRAME_REG_LAST + 1];
-    Plcrash__CrashReport__ThreadState__RegisterValue crashedRegisterValues[PLFRAME_REG_LAST + 1];
-    PLCF_DEBUG("%lu vs %lu", sizeof(crashedRegisters), sizeof(crashedRegisterValues));
+    Plcrash__CrashReport__ThreadState__RegisterValue *crashedRegisters[regCount];
+    Plcrash__CrashReport__ThreadState__RegisterValue crashedRegisterValues[regCount];
     {
         crashReport.crashed_thread_state = &crashed;
         crashed.registers = crashedRegisters;
 
-        // todo
+        // todo - thread number
         crashed.thread_number = 0;
 
-        /* Write out registers */
+        /* Set the register initialization value */
         Plcrash__CrashReport__ThreadState__RegisterValue init_value = PLCRASH__CRASH_REPORT__THREAD_STATE__REGISTER_VALUE__INIT;
-        int i;
 
-        for (i = 0; i < PLFRAME_REG_LAST; i++) {
+        /* Write out registers */
+        crashed.n_registers = regCount;
+        for (int i = 0; i < regCount; i++) {
             crashedRegisterValues[i] = init_value;
-            crashedRegisterValues[i].name = "reg";
-            crashedRegisterValues[i].value = 0xFF;
+            crashedRegisterValues[i].name = "reg"; // todo
+            crashedRegisterValues[i].value = 0xFF; // todo
             
-            crashedRegisters[i] = &crashedRegisterValues[i];
-            i++;
+            crashedRegisters[i] = crashedRegisterValues + i;
         }
-        
-        // not working
-        crashed.n_registers = 0;
-        
-        //assert(crashed.n_registers == PLFRAME_REG_LAST + 1);
     }
 
     /* Binary Images */
