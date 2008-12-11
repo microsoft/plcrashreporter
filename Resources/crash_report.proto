@@ -44,8 +44,9 @@ message CrashReport {
         /* Processor architecture */
         required MachineType machine_type = 3;
 
-        /* Date crash report was generated (as milliseconds since epoch */
-        required uint64 timestamp = 4;
+        /* Date crash report was generated (as seconds since epoch). 0 if the time
+         * is unknown or can not be determined. */
+        required uint32 timestamp = 4;
     }
 
     /* Host data */
