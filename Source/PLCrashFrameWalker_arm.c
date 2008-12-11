@@ -8,7 +8,7 @@
  */
 
 #import "PLCrashFrameWalker.h"
-#import "PLCrashAsyncDebug.h"
+#import "PLCrashAsync.h"
 
 #import <signal.h>
 #import <assert.h>
