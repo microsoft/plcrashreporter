@@ -33,7 +33,7 @@
 
 - (void) setUp {
     /* Create a temporary log path */
-    _logPath = [NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]];
+    _logPath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
     
     /* Create the test thread */
     plframe_test_thread_spawn(&_thr_args);
@@ -44,6 +44,7 @@
     
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
+    [_logPath release];
 
     /* Stop the test thread */
     plframe_test_thread_stop(&_thr_args);
