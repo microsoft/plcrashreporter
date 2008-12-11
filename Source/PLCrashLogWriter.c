@@ -180,7 +180,10 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
         crashed.n_registers = regCount;
         for (int i = 0; i < regCount; i++) {
             crashedRegisterValues[i] = init_value;
-            crashedRegisterValues[i].name = "reg"; // todo
+            // Cast to drop 'const', since we can't make a copy.
+            // The string will never be modified.
+            crashedRegisterValues[i].name = (char *) plframe_get_regname(i);
+                
             crashedRegisterValues[i].value = 0xFF; // todo
             
             crashedRegisters[i] = crashedRegisterValues + i;
