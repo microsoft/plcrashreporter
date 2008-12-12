@@ -10,7 +10,7 @@
 
 /**
  * @defgroup plcrash_log_writer Crash Log Writer
- * @ingroup plcrash_log
+ * @ingroup plcrash_internal
  *
  * Implements an async-safe, zero allocation crash log writer C API, intended
  * to be called from the crash log signal handler.

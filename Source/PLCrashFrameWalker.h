@@ -63,6 +63,7 @@ typedef int plframe_regnum_t;
 #import "PLCrashFrameWalker_i386.h"
 #import "PLCrashFrameWalker_arm.h"
 
+/** Platform-specific length of stack to be read when iterating frames */
 #define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
 
 /**
@@ -80,7 +81,10 @@ typedef struct plframe_cursor {
     void *fp[PLFRAME_STACKFRAME_LEN];
     
     // for thread-initialized cursors
+    /** Generated ucontext_t */
     ucontext_t _uap_data;
+
+    /** Generated mcontext_t */
     _STRUCT_MCONTEXT _mcontext_data;
 } plframe_cursor_t;
 
@@ -111,8 +115,13 @@ typedef plframe_pdef_fpreg_t plframe_fpreg_t;
  * @internal
  * State for test threads */
 typedef struct plframe_test_thread {
+    /** Running test thread */
     pthread_t thread;
+
+    /** Thread signaling lock */
     pthread_mutex_t lock;
+
+    /** Thread signaling (used to inform waiting callee that thread is active) */
     pthread_cond_t cond;
 } plframe_test_thead_t;
 
