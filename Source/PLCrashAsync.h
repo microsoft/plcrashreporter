@@ -26,8 +26,13 @@
  * within signal handler execution of crash log output.
  */
 typedef struct plasync_file {
+    /** Output file descriptor */
     int fd;
+
+    /** Current length of data in buffer */
     size_t buflen;
+
+    /** Buffered output */
     char buffer[256];
 } plasync_file_t;
 
