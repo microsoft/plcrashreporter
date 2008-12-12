@@ -56,7 +56,10 @@
     uname(&uts);
 
     STAssertNotNULL(systemInfo, @"No system info available");
-    
+    // Nothing else to do?
+    if (systemInfo == NULL)
+        return;
+
     STAssertEquals(systemInfo->operating_system, PLCRASH_OS, @"Unexpected OS value");
     STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
 
@@ -69,6 +72,7 @@
     siginfo_t info;
     plframe_cursor_t cursor;
     plcrash_writer_t writer;
+    plasync_file_t file;
 
     /* Initialze faux crash data */
     {
@@ -82,28 +86,31 @@
         
         /* Steal the test thread's stack for iteration */
         plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(_thr_args.thread));
-    }    
+    }
+
+    /* Open the output file */
+    int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
+    plasync_file_init(&file, fd);
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_init(&writer), @"Initialization failed");
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_report(&writer, &info, cursor.uap), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_report(&writer, &file, &info, cursor.uap), @"Crash log failed");
 
     /* Close it */
     plcrash_writer_close(&writer);
 
+    /* Flush the output */
+    plasync_file_flush(&file);
+
     /* Try reading it back in */
-    int infd;
     void *buf;
     struct stat statbuf;
     {
         STAssertEquals(0, stat([_logPath UTF8String], &statbuf), @"fstat failed");
-    
-        infd = open([_logPath UTF8String], O_RDONLY);
-        STAssertGreaterThan(infd, 0, @"Could not open log file");
         
-        buf = mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, infd, 0);
+        buf = mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
         STAssertNotNULL(buf, @"Could not map pages");
     }
 
@@ -117,11 +124,12 @@
         [self checkSystemInfo: crashReport->system_info];
 
         /* Free it */
-        protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+        //protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
     }
 
-    close(infd);
+
     STAssertEquals(0, munmap(buf, statbuf.st_size), @"Could not unmap pages: %s", strerror(errno));
+    plasync_file_close(&file);
 }
 
 @end

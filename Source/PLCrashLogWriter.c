@@ -52,7 +52,7 @@ struct M {
  * to the provided crashctx. Failure to adhere to this requirement will result in an invalid stack trace
  * and thread dump.
  */
-plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx) {
+plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
 
     
 #if 0
