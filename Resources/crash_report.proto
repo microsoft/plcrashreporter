@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-package plausible.plcrash;
+package plcrash;
 option java_package = "com.plausiblelabs.crashreporter";
 
 /* Known processor architecture types */
