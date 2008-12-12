@@ -85,7 +85,7 @@
     }    
 
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_init(&writer, [_logPath UTF8String]), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_init(&writer), @"Initialization failed");
 
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_report(&writer, &info, cursor.uap), @"Crash log failed");
