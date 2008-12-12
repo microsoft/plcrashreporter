@@ -55,35 +55,6 @@ typedef struct plcrash_writer {
 } plcrash_writer_t;
 
 
-/**
- * Error return codes.
- */
-typedef enum  {
-    /** Success */
-    PLCRASH_ESUCCESS = 0,
-    
-    /** Unknown error (if found, is a bug) */
-    PLCRASH_EUNKNOWN,
-    
-    /** The output file can not be opened or written to */
-    PLCRASH_OUTPUT_ERR,
-    
-    /** No memory available (allocation failed) */
-    PLCRASH_ENOMEM,
-    
-    /** Unsupported operation */
-    PLCRASH_ENOTSUP,
-    
-    /** Invalid argument */
-    PLCRASH_EINVAL,
-    
-    /** Internal error */
-    PLCRASH_EINTERNAL,
-} plcrash_error_t;
-
-
-const char *plcrash_strerror (plcrash_error_t error);
-
 plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer);
 plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer);
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx);
