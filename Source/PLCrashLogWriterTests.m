@@ -15,6 +15,8 @@
 #import <fcntl.h>
 #import <sys/utsname.h>
 
+#import "crash_report.pb-c.h"
+
 @interface PLCrashLogWriterTests : SenTestCase {
 @private
     /* Path to crash log */
@@ -49,7 +51,6 @@
 }
 
 // check a crash report's system info
-#if 0
 - (void) checkSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo {
     struct utsname uts;
     uname(&uts);
@@ -63,7 +64,6 @@
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
-#endif
 
 - (void) testWriteReport {
     siginfo_t info;
@@ -92,6 +92,36 @@
 
     /* Close it */
     plcrash_writer_close(&writer);
+
+    /* Try reading it back in */
+    int infd;
+    void *buf;
+    struct stat statbuf;
+    {
+        STAssertEquals(0, stat([_logPath UTF8String], &statbuf), @"fstat failed");
+    
+        infd = open([_logPath UTF8String], O_RDONLY);
+        STAssertGreaterThan(infd, 0, @"Could not open log file");
+        
+        buf = mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, infd, 0);
+        STAssertNotNULL(buf, @"Could not map pages");
+    }
+
+    /* Try to read the crash report */
+    Plcrash__CrashReport *crashReport;
+    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf);
+    STAssertNotNULL(crashReport, @"Could not decode crash report");
+
+    if (crashReport != NULL) {
+        /* Test the report */
+        [self checkSystemInfo: crashReport->system_info];
+
+        /* Free it */
+        protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+    }
+
+    close(infd);
+    STAssertEquals(0, munmap(buf, statbuf.st_size), @"Could not unmap pages: %s", strerror(errno));
 }
 
 @end
