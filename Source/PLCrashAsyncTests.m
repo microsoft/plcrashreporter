@@ -7,7 +7,7 @@
 
 #import "GTMSenTestCase.h"
 #import "PLCrashAsync.h"
-
+#import <fcntl.h>
 
 @interface PLCrashAsyncTests : SenTestCase {
 @private

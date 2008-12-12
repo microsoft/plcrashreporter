@@ -165,30 +165,5 @@ plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer) {
 }
 
 /**
- * Return an error description for the given plcrash_error_t.
- */
-const char *plcrash_strerror (plcrash_error_t error) {
-    switch (error) {
-        case PLCRASH_ESUCCESS:
-            return "No error";
-        case PLCRASH_EUNKNOWN:
-            return "Unknown error";
-        case PLCRASH_OUTPUT_ERR:
-            return "Output file can not be opened (or written to)";
-        case PLCRASH_ENOMEM:
-            return "No memory available";
-        case PLCRASH_ENOTSUP:
-            return "Operation not supported";
-        case PLCRASH_EINVAL:
-            return "Invalid argument";
-        case PLCRASH_EINTERNAL:
-            return "Internal error";
-    }
-    
-    /* Should be unreachable */
-    return "Unhandled error code";
-}
-
-/**
  * @} plcrash_log_writer
  */
