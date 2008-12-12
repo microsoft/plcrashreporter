@@ -8,6 +8,8 @@
 #import <sys/utsname.h>
 #import <TargetConditionals.h>
 
+#import "PLCrashAsync.h"
+
 /**
  * @defgroup plcrash_log_writer Crash Log Writer
  * @ingroup plcrash_internal
@@ -48,9 +50,6 @@
  * Crash log writer context.
  */
 typedef struct plcrash_writer {
-    /** Output file descriptor */
-    int fd;
-
     /** System uname() */
     struct utsname utsname;
 } plcrash_writer_t;
@@ -85,7 +84,7 @@ typedef enum  {
 
 const char *plcrash_strerror (plcrash_error_t error);
 
-plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path);
+plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer);
 plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer);
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx);
 

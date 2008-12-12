@@ -19,63 +19,16 @@
 
 #import "crash_report.pb-c.h"
 
-// Simple file descriptor output buffer
-typedef struct pl_protofd_buffer {
-    ProtobufCBuffer base;
-    int fd;
-    bool had_error;
-} pl_protofd_buffer_t;
-
-
-static void fd_buffer_append (ProtobufCBuffer *buffer, size_t len, const uint8_t *data) {
-    pl_protofd_buffer_t *fd_buf = (pl_protofd_buffer_t *) buffer;
-    const uint8_t *p;
-    size_t left;
-    ssize_t written;
-
-    /* If an error has occured, don't try to write */
-    if (fd_buf->had_error)
-        return;
-    
-    /* Loop until all bytes are written */
-    p = data;
-    left = len;
-    while (left > 0) {
-        if ((written = write(fd_buf->fd, p, left)) <= 0) {
-            if (errno == EINTR) {
-                // Try again
-                written = 0;
-            } else {
-                PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
-                fd_buf->had_error = true;
-                return;
-            }
-        }
-        
-        left -= written;
-        p += written;
-    }
-}
-
-
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
  * information.
  *
  * @param writer Writer instance to be initialized.
- * @param path Crash log output path.
  *
  * @warning This function is not guaranteed to be async-safe, and must be
  * called prior to entering the crash handler.
  */
-plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path) {
-    /* Try opening the output file */
-    writer->fd = open(path, O_WRONLY|O_TRUNC|O_CREAT);
-    if (writer->fd < 0) {
-        PLCF_DEBUG("Open of '%s' failed: %s", path, strerror(errno));
-        return PLCRASH_OUTPUT_ERR;
-    }
-
+plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer) {
     /* Fetch the OS information */
     if (uname(&writer->utsname) != 0) {
         // Should not happen
@@ -100,6 +53,9 @@ struct M {
  * and thread dump.
  */
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx) {
+
+    
+#if 0
     Plcrash__CrashReport crashReport = PLCRASH__CRASH_REPORT__INIT;
     Plcrash__CrashReport__SystemInfo systemInfo = PLCRASH__CRASH_REPORT__SYSTEM_INFO__INIT;
     
@@ -194,6 +150,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
     }
 
     protobuf_c_message_pack_to_buffer((ProtobufCMessage *) &crashReport, (ProtobufCBuffer *) &buffer);
+#endif
     
     return PLCRASH_ESUCCESS;
 }
@@ -204,12 +161,6 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
  * @param writer Writer instance to be closed.
  */
 plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer) {
-    /* Try closing the output file */
-    if (close(writer->fd) != 0) {
-        PLCF_DEBUG("Closing output file failed: %s", strerror(errno));
-        return PLCRASH_OUTPUT_ERR;
-    }
-
     return PLCRASH_ESUCCESS;
 }
 
