@@ -17,33 +17,46 @@
 #import "PLCrashAsync.h"
 #import "PLCrashFrameWalker.h"
 
-#if 0
-static size_t writen (int fd, const void *data, size_t len) {
+#import "crash_report.pb-c.h"
+
+// Simple file descriptor output buffer
+typedef struct pl_protofd_buffer {
+    ProtobufCBuffer base;
+    int fd;
+    bool had_error;
+} pl_protofd_buffer_t;
+
+
+static void fd_buffer_append (ProtobufCBuffer *buffer, size_t len, const uint8_t *data) {
+    pl_protofd_buffer_t *fd_buf = (pl_protofd_buffer_t *) buffer;
+    const uint8_t *p;
     size_t left;
     ssize_t written;
-    const void *p;
+
+    /* If an error has occured, don't try to write */
+    if (fd_buf->had_error)
+        return;
     
     /* Loop until all bytes are written */
     p = data;
     left = len;
     while (left > 0) {
-        if ((written = write(fd, p, left)) <= 0) {
+        if ((written = write(fd_buf->fd, p, left)) <= 0) {
             if (errno == EINTR) {
                 // Try again
                 written = 0;
             } else {
                 PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
-                return -1;
+                fd_buf->had_error = true;
+                return;
             }
         }
         
         left -= written;
         p += written;
     }
-    
-    return written;
 }
-#endif
+
 
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
@@ -73,6 +86,12 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
     return PLCRASH_ESUCCESS;
 }
 
+struct M {
+    Plcrash__CrashReport crashReport;
+    Plcrash__CrashReport__SystemInfo systemInfo;
+    Plcrash__CrashReport__ThreadState threadState;
+};
+
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
@@ -81,8 +100,17 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer, const char *path)
  * and thread dump.
  */
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *siginfo, ucontext_t *crashctx) {
+    Plcrash__CrashReport crashReport = PLCRASH__CRASH_REPORT__INIT;
+    Plcrash__CrashReport__SystemInfo systemInfo = PLCRASH__CRASH_REPORT__SYSTEM_INFO__INIT;
+    
+    /* Initialize the output buffer */
+    pl_protofd_buffer_t buffer;
+    memset(&buffer, 0, sizeof(buffer));
+    buffer.fd = writer->fd;
+    buffer.base.append = fd_buffer_append;
+    buffer.had_error = false;
+
     /* Initialize the system information */
-#if 0
     crashReport.system_info = &systemInfo;
     {
         struct timeval tv;
@@ -100,15 +128,21 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
         systemInfo.machine_type = PLCRASH_MACHINE;
         systemInfo.machine_type = PLCRASH__MACHINE_TYPE__X86_32;
     }
-#endif
-    
-    /* Threads */
 
+    /* Threads */
+    {
+        crashReport.n_threads = 0;
+    }
     
     /* Crashed Thread */
     // Last is the register index, so increment to get the count
     const uint32_t regCount = PLFRAME_REG_LAST + 1;
-
+    Plcrash__CrashReport__ThreadState crashed = PLCRASH__CRASH_REPORT__THREAD_STATE__INIT;
+    Plcrash__CrashReport__ThreadState__RegisterValue *crashedRegisters[regCount];
+    Plcrash__CrashReport__ThreadState__RegisterValue crashedRegisterValues[regCount];
+    
+    crashReport.crashed_thread_state = &crashed;
+    crashed.registers = crashedRegisters;
     {
         plframe_cursor_t cursor;
         plframe_error_t frame_err;
@@ -124,8 +158,15 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
             PLCF_DEBUG("Could not fetch crashed thread frame: %s", plframe_strerror(frame_err));
             return PLCRASH_EINTERNAL;
         }
-    
+
+        // todo - thread number
+        crashed.thread_number = 0;
+
+        /* Set the register initialization value */
+        Plcrash__CrashReport__ThreadState__RegisterValue init_value = PLCRASH__CRASH_REPORT__THREAD_STATE__REGISTER_VALUE__INIT;
+
         /* Write out registers */
+        crashed.n_registers = regCount;
         for (int i = 0; i < regCount; i++) {
             
             /* Fetch the register */
@@ -136,7 +177,6 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
                 regVal = 0;
             }
 
-#if 0
             /* Initialize the register struct */
             crashedRegisterValues[i] = init_value;
             crashedRegisterValues[i].value = regVal;
@@ -145,13 +185,15 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, siginfo_t *sigi
             crashedRegisterValues[i].name = (char *) plframe_get_regname(i);
             
             crashedRegisters[i] = crashedRegisterValues + i;
-#endif
         }
     }
 
     /* Binary Images */
     {
+        crashReport.n_images = 0;
     }
+
+    protobuf_c_message_pack_to_buffer((ProtobufCMessage *) &crashReport, (ProtobufCBuffer *) &buffer);
     
     return PLCRASH_ESUCCESS;
 }
