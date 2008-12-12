@@ -27,7 +27,7 @@
     /* Create a temporary output file */
     _outputFile = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
 
-    _testFd = open([_outputFile UTF8String], O_RDWR|O_CREAT|O_EXCL);
+    _testFd = open([_outputFile UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
     STAssertTrue(_testFd >= 0, @"Could not open test output file");
 }
 
