@@ -1,25 +1,14 @@
 /*
- *  PLCrashAsync.h
- *  CrashReporter
+ * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- *  Created by Landon Fuller on 12/10/08.
- *  Copyright 2008 Plausible Labs Cooperative, Inc.. All rights reserved.
- *
+ * Copyright (c) 2008 Plausible Labs Cooperative, Inc.
+ * All rights reserved.
  */
 
 
 #import <stdio.h> // for snprintf
 #import <unistd.h>
-
-/**
- * @internal
- * @defgroup plcrash_async Async Safe Utilities
- * @ingroup plcrash_internal
- *
- * Implements async-safe utility functions
- *
- * @{
- */
+#import <stdbool.h>
 
 // Debug output support. Lines are capped at 1024
 #define PLCF_DEBUG(msg, args...) {\
@@ -30,5 +19,20 @@
 
 
 /**
- * @} plcrash_async
+ * @internal
+ * @ingroup plcrash_async_bufio
+ *
+ * Async-safe buffered file output. This implementation is only intended for use
+ * within signal handler execution of crash log output.
  */
+typedef struct plasync_file {
+    int fd;
+    size_t buflen;
+    char buffer[256];
+} plasync_file_t;
+
+
+void plasync_file_init (plasync_file_t *file, int fd);
+bool plasync_file_write (plasync_file_t *file, const void *data, size_t len);
+bool plasync_file_flush (plasync_file_t *file);
+bool plasync_file_close (plasync_file_t *file);
