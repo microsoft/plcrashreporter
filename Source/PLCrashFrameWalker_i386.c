@@ -112,13 +112,13 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
 
 // PLFrameWalker API
-plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_reg_t *reg) {
+plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
     ucontext_t *uap = cursor->uap;
     
     /* Supported register for this context state? */
     if (!cursor->init_frame) {
         if (regnum == PLFRAME_X86_EIP) {
-            *reg = (plframe_reg_t) cursor->fp[1];
+            *reg = (plframe_greg_t) cursor->fp[1];
             return PLFRAME_ESUCCESS;
         }
         

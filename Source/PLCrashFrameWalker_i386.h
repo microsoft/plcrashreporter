@@ -8,8 +8,8 @@
 #ifdef __i386__
 
 // 32-bit
-typedef uint32_t plframe_pdef_reg_t;
-typedef uint32_t plframe_pdef_fpreg_t;
+typedef uintptr_t plframe_pdef_greg_t;
+typedef uintptr_t plframe_pdef_fpreg_t;
 
 // Data we'll read off the stack frame
 #define PLFRAME_PDEF_STACKFRAME_LEN sizeof(intptr_t) * 2
