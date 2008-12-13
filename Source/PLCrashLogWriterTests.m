@@ -40,10 +40,11 @@
 }
 
 - (void) tearDown {
-    NSError *error;
+    //NSError *error;
     
     /* Delete the file */
-    STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
+    //STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
+    NSLog(@"Not deleting file at path %@", _logPath);
     [_logPath release];
 
     /* Stop the test thread */
@@ -78,6 +79,19 @@
     STAssertNotNULL(bts, @"No thread messages were written");
     STAssertTrue(crashReport->n_backtraces > 0, @"0 thread messages were written");
 
+    NSLog(@"Number of backtraces: %d", crashReport->n_backtraces);
+    for (int i = 0; i < crashReport->n_backtraces; i++) {
+        Plcrash__CrashReport__Backtrace *bt = bts[i];
+
+        NSLog(@"\nBacktrace for thread ID: %d", bt->thread_number);
+        
+        for (int j = 0; j < bt->n_frames; j++) {
+            Plcrash__CrashReport__Backtrace__StackFrame *f = bt->frames[j];
+            NSLog(@"Frame at pc %lx", f->pc);
+            if (f->nearest_symbol_name != NULL)
+                NSLog(@"Frame symbol %lx %p", f->pc, f->nearest_symbol_name);
+        }
+    }
     // TODO
 }
 
