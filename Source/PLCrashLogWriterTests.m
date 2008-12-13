@@ -72,11 +72,11 @@
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
 
-- (void) checkThreads: (Plcrash__CrashReport *) crashReport {
-    Plcrash__CrashReport__Thread **threads = crashReport->threads;
+- (void) checkBacktraces: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__Backtrace **bts = crashReport->backtraces;
 
-    STAssertNotNULL(threads, @"No thread messages were written");
-    STAssertTrue(crashReport->n_threads > 0, @"0 thread messages were written");
+    STAssertNotNULL(bts, @"No thread messages were written");
+    STAssertTrue(crashReport->n_backtraces > 0, @"0 thread messages were written");
 
     // TODO
 }
@@ -143,7 +143,7 @@
     if (crashReport != NULL) {
         /* Test the report */
         [self checkSystemInfo: crashReport];
-        [self checkThreads: crashReport];
+        [self checkBacktraces: crashReport];
 
         /* Free it */
         protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
