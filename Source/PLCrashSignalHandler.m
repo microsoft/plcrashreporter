@@ -272,7 +272,7 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
         /* Fetch remaining frames */
         while (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
             Dl_info info;
-            plframe_word_t ip;
+            plframe_reg_t ip;
             
             if (plframe_get_reg(&cursor, PLFRAME_REG_IP, &ip) != PLFRAME_ESUCCESS) {
                 NSLog(@"Failed to get frame instruction pointer");

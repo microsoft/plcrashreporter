@@ -61,7 +61,7 @@
 
     /* Verify that all registers are supported */
     for (int i = 0; i < PLFRAME_REG_LAST + 1; i++) {
-        plframe_word_t val;
+        plframe_reg_t val;
         STAssertEquals(PLFRAME_ESUCCESS, plframe_get_reg(&cursor, i, &val), @"Could not fetch register value");
     }
 }

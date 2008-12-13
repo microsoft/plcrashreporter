@@ -119,7 +119,7 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
     /* Supported register for this context state? */
     if (!cursor->init_frame) {
         if (regnum == PLFRAME_ARM_PC) {
-            *reg = (plframe_word_t) cursor->fp[1];
+            *reg = (plframe_reg_t) cursor->fp[1];
             return PLFRAME_ESUCCESS;
         }
         

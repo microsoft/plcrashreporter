@@ -8,7 +8,7 @@
 #ifdef __arm__
 
 // 32-bit
-typedef int32_t plframe_pdef_word_t;
+typedef int32_t plframe_pdef_reg_t;
 typedef int32_t plframe_pdef_fpreg_t;
 
 // Data we'll read off the stack frame
