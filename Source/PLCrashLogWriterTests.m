@@ -61,7 +61,10 @@
         return;
 
     STAssertEquals(systemInfo->operating_system, PLCRASH_OS, @"Unexpected OS value");
-    STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
+    
+    STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
+    if (systemInfo->os_version != NULL)
+        STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
 
     STAssertEquals(systemInfo->machine_type, PLCRASH_MACHINE, @"Unexpected machine type");
 
@@ -117,6 +120,13 @@
     /* Try to read the crash report */
     Plcrash__CrashReport *crashReport;
     crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf);
+    
+    fprintf(stderr, "Binary dump: ");
+    for (size_t i = 0; i < statbuf.st_size; i++) {
+        fprintf(stderr, "%.2hhx", ((uint8_t *) buf)[i]);
+    }
+    fprintf(stderr, "\n");
+    
     STAssertNotNULL(crashReport, @"Could not decode crash report");
 
     if (crashReport != NULL) {

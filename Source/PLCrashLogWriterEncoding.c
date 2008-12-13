@@ -271,7 +271,8 @@ static size_t tag_pack (uint32_t id, uint8_t *out)
 }
 
 /* === pack_to_buffer() === */
-size_t plcrash_pack (plasync_file_t *file, uint32_t field_id, ProtobufCType field_type, const void *value) {
+// file argument may be NULL
+size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, ProtobufCType field_type, const void *value) {
     size_t rv;
     uint8_t scratch[MAX_UINT64_ENCODED_SIZE * 2];
     rv = tag_pack (field_id, scratch);
@@ -280,57 +281,67 @@ size_t plcrash_pack (plasync_file_t *file, uint32_t field_id, ProtobufCType fiel
         case PROTOBUF_C_TYPE_SINT32:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_VARINT;
             rv += sint32_pack (*(const int32_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_INT32:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_VARINT;
             rv += int32_pack (*(const uint32_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_UINT32:
         case PROTOBUF_C_TYPE_ENUM:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_VARINT;
             rv += uint32_pack (*(const uint32_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_SINT64:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_VARINT;
             rv += sint64_pack (*(const int64_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_INT64:
         case PROTOBUF_C_TYPE_UINT64:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_VARINT;
             rv += uint64_pack (*(const uint64_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_SFIXED32:
         case PROTOBUF_C_TYPE_FIXED32:
         case PROTOBUF_C_TYPE_FLOAT:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_32BIT;
             rv += fixed32_pack (*(const uint64_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_SFIXED64:
         case PROTOBUF_C_TYPE_FIXED64:
         case PROTOBUF_C_TYPE_DOUBLE:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_64BIT;
             rv += fixed64_pack (*(const uint64_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         case PROTOBUF_C_TYPE_BOOL:
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_VARINT;
             rv += boolean_pack (*(const bool *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
             
         case PROTOBUF_C_TYPE_STRING:
         {
-            size_t sublen = strlen (*(char * const *) value);
+            size_t sublen = strlen (value);
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
             rv += uint32_pack (sublen, scratch + rv);
-            plasync_file_write(file, scratch, rv);
-            plasync_file_write(file, *(uint8_t * const *)value, sublen);
+            if (file != NULL) {
+                plasync_file_write(file, scratch, rv);
+                plasync_file_write(file, value, sublen);
+            }
             rv += sublen;
             break;
         }
@@ -353,7 +364,8 @@ size_t plcrash_pack (plasync_file_t *file, uint32_t field_id, ProtobufCType fiel
         {
             scratch[0] |= PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
             rv += uint32_pack (*(const uint32_t *) value, scratch + rv);
-            plasync_file_write(file, scratch, rv);
+            if (file != NULL)
+                plasync_file_write(file, scratch, rv);
             break;
         }
         default:
