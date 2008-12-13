@@ -49,12 +49,6 @@ enum {
 
     /** CrashReports.thread.frames */
     PLCRASH_PROTO_BACKTRACE_FRAMES_ID = 2,
-
-    /** CrashReport.thread.frame.symbol_name */
-    PLCRASH_PROTO_BACKTRACE_FRAME_NEAREST_SYMBOL_NAME_ID = 1,
-
-    /** CrashReport.thread.frame.symbol_address */
-    PLCRASH_PROTO_BACKTRACE_FRAME_NEAREST_SYMBOL_ADDRESS_ID = 2,
     
     /** CrashReport.thread.frame.pc */
     PLCRASH_PROTO_BACKTRACE_FRAME_PC_ID = 3
