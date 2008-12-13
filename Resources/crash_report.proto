@@ -52,11 +52,11 @@ message CrashReport {
     /* Host data */
     required SystemInfo system_info = 1;
 
-    /* Thread backtrace */
-    message Backtrace {
+    /* Thread state */
+    message Thread {
         /* Thread number (indexed at 0, must be unique within a crash report) */
         required uint32 thread_number = 1;
-
+        
         /* Stack frame */
         message StackFrame {
             /* Instruction pointer */
@@ -65,16 +65,10 @@ message CrashReport {
 
         /* Backtrace stack frames */
         repeated StackFrame frames = 2;
-    }
 
-    /* All backtraces */
-    repeated Backtrace backtraces = 2;
-
-    /* Thread state (registers, etc) */
-    message ThreadState {
-        /* The thread number (indexed at 0, must be unique within a crash report) */
-        required uint32 thread_number = 1;
-
+        /* True if this is the crashed thread */
+        required bool crashed = 3;
+        
         /* A single register value */
         message RegisterValue {
             /* Register name (r1, ebp, ...) */
@@ -84,12 +78,13 @@ message CrashReport {
             required uint64 value = 2;
         }
 
-        /* Thread registers */
-        repeated RegisterValue registers = 2;
+        /* Thread registers (required if this is the
+         * crashed thread, optional otherwise) */
+        repeated RegisterValue registers = 4;
     }
 
-    /* The crashed thread's state */
-    required ThreadState crashed_thread_state = 3;
+    /* All backtraces */
+    repeated Thread threads = 2;
 
     /* Binary image */
     message BinaryImage {
