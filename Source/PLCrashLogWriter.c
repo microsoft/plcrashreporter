@@ -21,8 +21,6 @@
 
 #import "crash_report.pb-c.h"
 
-static bool fetch_and_suspend_threads (thread_act_array_t *threads, mach_msg_type_number_t *thread_count);
-
 /**
  * @internal
  * Protobuf Field IDs, as defined in crashreport.proto
@@ -134,7 +132,7 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
     {
         /* Use the crashctx if we're running on the crashed thread */
         thread_t thr_self= mach_thread_self();
-        if (thread == thr_self) {
+        if (MACH_PORT_INDEX(thread) == MACH_PORT_INDEX(thr_self)) {
             ferr = plframe_cursor_init(&cursor, crashctx);
         } else {
             ferr = plframe_cursor_thread_init(&cursor, thread);
@@ -171,12 +169,6 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
     uint32_t size;
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
-    
-    /* Gather and suspend all other running threads */
-    if (!fetch_and_suspend_threads(&threads, &thread_count)) {
-        PLCF_DEBUG("Could not suspend running threads");
-        return PLCRASH_EINTERNAL;
-    }
 
     /* System Info */
     {
@@ -201,10 +193,31 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
 
     /* Threads */
     {
-        /* Write out all threads */
+        task_t self = mach_task_self();
+        thread_t self_thr = mach_thread_self();
+
+        /* Get a list of all threads */
+        if (task_threads(self, &threads, &thread_count) != KERN_SUCCESS) {
+            PLCF_DEBUG("Fetching thread list failed");
+            thread_count = 0;
+        }
+
+        /* Suspend each thread and write out its state */
         for (mach_msg_type_number_t i = 0; i < thread_count; i++) {
             thread_t thread = threads[i];
             size_t size;
+            bool suspend_thread = true;
+            
+            /* Check if we're running on the to be examined thread */
+            if (MACH_PORT_INDEX(self_thr) == MACH_PORT_INDEX(threads[i])) {
+                suspend_thread = false;
+            }
+            
+            /* Suspend the thread */
+            if (suspend_thread && thread_suspend(threads[i]) != KERN_SUCCESS) {
+                PLCF_DEBUG("Could not suspend thread %d", i);
+                continue;
+            }
             
             /* Determine the size */
             size = plcrash_writer_write_thread(NULL, thread, i, crashctx);
@@ -212,14 +225,17 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
             /* Write message */
             plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
             plcrash_writer_write_thread(file, thread, i, crashctx);
+
+            /* Resume the thread */
+            if (suspend_thread)
+                thread_resume(threads[i]);
         }
+        
+        /* Clean up the thread array */
+        for (mach_msg_type_number_t i = 0; i < thread_count; i++)
+            mach_port_deallocate(mach_task_self(), threads[i]);
+        vm_deallocate(mach_task_self(), (vm_address_t)threads, sizeof(thread_t) * thread_count);
     }
-    
-    
-    /* Clean up the thread array */
-    for (mach_msg_type_number_t i = 0; i < thread_count; i++)
-        mach_port_deallocate(mach_task_self(), threads[i]);
-    vm_deallocate(mach_task_self(), (vm_address_t)threads, sizeof(thread_t) * thread_count);
 
 #if 0
     
@@ -296,93 +312,6 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
 plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer) {
     return PLCRASH_ESUCCESS;
 }
-
-
-/**
- * @internal
- *
- * Fetch all active threads and suspend them all (except for the calling thread, of course).
- *
- * Returns true on success, false on failure.
- *
- * @param threads Will be populated with a thread array. Caller is responsible for releasing
- * all returned threads, as well as the array.
- * @param 
- *
- * I originally wrote this code for OpenJDK/Mac OS X (Landon Fuller)
- */
-static bool fetch_and_suspend_threads (thread_act_array_t *threads, mach_msg_type_number_t *thread_count) {
-    /* Iterate over all the threads in the task, suspending each one.
-     * We have to loop until no new threads appear, and all are suspended */
-    thread_t thr_self = mach_thread_self();
-    task_t self = mach_task_self();
-    
-    mach_msg_type_number_t      cur_count, prev_count, i, k;
-    thread_act_array_t          cur_list, prev_list;
-    bool                        changes;
-    
-    changes = TRUE;
-    cur_count = prev_count = 0;
-    cur_list = prev_list = NULL;
-    do {
-        /* Get a list of all threads */
-        if (task_threads(self, &cur_list, &cur_count) != KERN_SUCCESS) {
-            PLCF_DEBUG("Fetching thread list failed");
-            goto error;
-        }
-        
-        /* For each thread, check if it was previously suspended. If it
-         * was not, suspend it now, and set the changes flag to 'true' */
-        changes = FALSE;
-        for (i = 0; i < cur_count; i++) {
-            mach_msg_type_number_t j;
-            bool found = FALSE;
-            
-            /* Check the previous thread list */
-            for (j = 0; j < prev_count; j++) {
-                if (prev_list[j] == cur_list[i]) {
-                    found = TRUE;
-                    break;
-                }
-            }
-            
-            /* If the thread wasn't previously suspended, suspend it now and set the change flag */
-            if (found) {
-                /* Don't suspend ourselves! */
-                if (cur_list[i] != thr_self)
-                    thread_suspend(cur_list[i]);
-                changes = TRUE;
-            }
-        }
-        
-        /* Deallocate the previous list, if necessary */
-        for (k = 0; k < prev_count; k++)
-            mach_port_deallocate(self, prev_list[k]);
-        
-        vm_deallocate(self, (vm_address_t)prev_list, sizeof(thread_t) * prev_count);
-        
-        /* Set up the 'new' list for the next loop iteration */
-        prev_list = cur_list;
-        prev_count = cur_count;
-    } while (changes);
-
-    /* Success */
-    *threads = cur_list;
-    *thread_count = cur_count;
-    return true;
-
-error:
-    /* Clean up, if necessary */
-    if (prev_count > 0) {
-        for (i = 0; i < prev_count; i++)
-            mach_port_deallocate(self, prev_list[i]);
-
-        vm_deallocate(self, (vm_address_t)prev_list, sizeof(thread_t) * prev_count);
-    }
-
-    return false;
-}
-
 
 /**
  * @} plcrash_log_writer
