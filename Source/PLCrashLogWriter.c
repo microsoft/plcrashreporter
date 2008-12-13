@@ -70,7 +70,7 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer) {
  * @param file Output file
  * @param timestamp Timestamp to use (seconds since epoch). Must be same across calls, as varint encoding.
  */
-size_t plcrash_writer_write_system_info (plcrash_writer_t *writer, plasync_file_t *file, uint32_t timestamp) {
+size_t plcrash_writer_write_system_info (plasync_file_t *file, struct utsname *utsname, uint32_t timestamp) {
     size_t rv = 0;
     uint32_t enumval;
 
@@ -79,7 +79,7 @@ size_t plcrash_writer_write_system_info (plcrash_writer_t *writer, plasync_file_
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* OS Version */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PROTOBUF_C_TYPE_STRING, writer->utsname.release);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PROTOBUF_C_TYPE_STRING, utsname->release);
 
     /* Machine type */
     enumval = PLCRASH_MACHINE;
@@ -115,9 +115,9 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
         }
 
         // Determine size, then output
-        size = plcrash_writer_write_system_info(writer, NULL, timestamp);
+        size = plcrash_writer_write_system_info(NULL, &writer->utsname, timestamp);
         plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_system_info(writer, file, timestamp);
+        plcrash_writer_write_system_info(file, &writer->utsname, timestamp);
     }
     
 #if 0
