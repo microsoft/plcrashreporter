@@ -53,7 +53,7 @@ message CrashReport {
     required SystemInfo system_info = 1;
 
     /* Thread backtrace */
-    message Thread {
+    message Backtrace {
         /* Thread number (indexed at 0, must be unique within a crash report) */
         required uint32 thread_number = 1;
 
@@ -73,8 +73,8 @@ message CrashReport {
         repeated StackFrame frames = 2;
     }
 
-    /* All threads */
-    repeated Thread threads = 2;
+    /* All backtraces */
+    repeated Backtrace backtraces = 2;
 
     /* Thread state (registers, etc) */
     message ThreadState {

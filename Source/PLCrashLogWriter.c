@@ -42,22 +42,22 @@ enum {
     PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID = 4,
 
     /** CrashReport.threads */
-    PLCRASH_PROTO_THREADS_ID = 2,
+    PLCRASH_PROTO_BACKTRACES_ID = 2,
 
     /** CrashReports.thread.thread_number */
-    PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID = 1,
+    PLCRASH_PROTO_BACKTRACE_THREAD_NUMBER_ID = 1,
 
     /** CrashReports.thread.frames */
-    PLCRASH_PROTO_THREAD_FRAMES = 2,
+    PLCRASH_PROTO_BACKTRACE_FRAMES = 2,
 
     /** CrashReport.thread.frame.symbol_name */
-    PLCRASH_PROTO_THREAD_FRAME_SYMBOL_NAME = 1,
+    PLCRASH_PROTO_BACKTRACE_FRAME_SYMBOL_NAME = 1,
 
     /** CrashReport.thread.frame.symbol_address */
-    PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ADDRESS = 2,
+    PLCRASH_PROTO_BACKTRACE_FRAME_SYMBOL_ADDRESS = 2,
     
     /** CrashReport.thread.frame.pc */
-    PLCRASH_PROTO_THREAD_FRAME_PC = 3
+    PLCRASH_PROTO_BACKTRACE_FRAME_PC = 3
 };
 
 /**
@@ -126,7 +126,7 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
     plframe_error_t ferr;
 
     /* Write the thread ID */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PROTOBUF_C_TYPE_UINT32, &thread_number);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_THREAD_NUMBER_ID, PROTOBUF_C_TYPE_UINT32, &thread_number);
 
     /* Set up the frame cursor. */
     {
@@ -223,7 +223,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
             size = plcrash_writer_write_thread(NULL, thread, i, crashctx);
             
             /* Write message */
-            plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+            plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACES_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
             plcrash_writer_write_thread(file, thread, i, crashctx);
 
             /* Resume the thread */
