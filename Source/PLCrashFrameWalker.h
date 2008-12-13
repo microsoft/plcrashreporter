@@ -105,7 +105,7 @@ typedef enum {
 
 
 /** Platform word type */
-typedef plframe_pdef_word_t plframe_word_t;
+typedef plframe_pdef_reg_t plframe_reg_t;
 
 /** Platform floating point register type */
 typedef plframe_pdef_fpreg_t plframe_fpreg_t;
@@ -171,7 +171,7 @@ const char *plframe_get_regname (plframe_regnum_t regnum);
 /**
  * Get a register value.
  */
-plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_word_t *reg);
+plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_reg_t *reg);
 
 /**
  * Get a floating point register value.

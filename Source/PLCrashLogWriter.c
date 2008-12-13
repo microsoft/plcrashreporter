@@ -125,7 +125,7 @@ size_t plcrash_writer_write_backtrace_frame (plasync_file_t *file, plframe_curso
     size_t rv = 0;
 
     /* PC */
-    plframe_word_t pc = 0;
+    plframe_reg_t pc = 0;
     if ((err = plframe_get_reg(cursor, PLFRAME_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
         PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(err));
         return 0;
@@ -324,7 +324,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
         for (int i = 0; i < regCount; i++) {
             
             /* Fetch the register */
-            plframe_word_t regVal;
+            plframe_reg_t regVal;
             if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
                 // Should never happen
                 PLCF_DEBUG("Could not fetch register %i value: %s", i, strerror(frame_err));
