@@ -61,13 +61,14 @@ enum {
 
     
     /** CrashReport.thread.registers */
-    PLCRASH_PROTO_THREAD_CRASHED_REGISTERS_ID = 4,
+    PLCRASH_PROTO_THREAD_REGISTERS_ID = 4,
+
 
     /** CrashReport.thread.register.name */
-    PLCRASH_PROTO_THREAD_CRASHED_REGISTER_NAME_ID = 1,
+    PLCRASH_PROTO_THREAD_REGISTER_NAME_ID = 1,
 
     /** CrashReport.thread.register.name */
-    PLCRASH_PROTO_THREAD_CRASHED_REGISTER_VALUE_ID = 2,
+    PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID = 2,
 };
 
 /**
@@ -119,6 +120,86 @@ size_t plcrash_writer_write_system_info (plasync_file_t *file, struct utsname *u
     return rv;
 }
 
+
+/**
+ * @internal
+ *
+ * Write a thread backtrace register
+ *
+ * @param file Output file
+ * @param cursor The cursor from which to acquire frame data.
+ */
+size_t plcrash_writer_write_thread_register (plasync_file_t *file, const char *regname, plframe_greg_t regval) {
+    uint64_t uint64val;
+    size_t rv = 0;
+
+    /* Write the name */
+    PLCF_DEBUG("Want to write %s", regname);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_NAME_ID, PROTOBUF_C_TYPE_STRING, regname);
+
+    /* Write the value */
+    uint64val = regval;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
+    
+    return rv;
+}
+
+/**
+ * @internal
+ *
+ * Write all thread backtrace register messages
+ *
+ * @param file Output file
+ * @param cursor The cursor from which to acquire frame data.
+ */
+size_t plcrash_writer_write_thread_registers (plasync_file_t *file, ucontext_t *uap) {
+    plframe_cursor_t cursor;
+    plframe_error_t frame_err;
+    uint32_t regCount;
+    size_t rv = 0;
+
+    /* Last is an index value, so increment to get the count */
+    regCount = PLFRAME_REG_LAST + 1;
+
+    /* Create the crashed thread frame cursor */
+    if ((frame_err = plframe_cursor_init(&cursor, uap)) != PLFRAME_ESUCCESS) {
+        PLCF_DEBUG("Failed to initialize frame cursor for crashed thread: %s", plframe_strerror(frame_err));
+        return 0;
+    }
+    
+    /* Fetch the first frame */
+    if ((frame_err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
+        PLCF_DEBUG("Could not fetch crashed thread frame: %s", plframe_strerror(frame_err));
+        return 0;
+    }
+    
+    /* Write out register messages */
+    for (int i = 0; i < regCount; i++) {
+        plframe_greg_t regVal;
+        const char *regname;
+        uint32_t msgsize;
+
+        /* Fetch the register value */
+        if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
+            // Should never happen
+            PLCF_DEBUG("Could not fetch register %i value: %s", i, strerror(frame_err));
+            regVal = 0;
+        }
+
+        /* Fetch the register name */
+        regname = plframe_get_regname(i);
+
+        /* Get the register message size */
+        msgsize = plcrash_writer_write_thread_register(NULL, regname, regVal);
+        
+        /* Write the header and message */
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTERS_ID, PROTOBUF_C_TYPE_MESSAGE, &msgsize);
+        rv += plcrash_writer_write_thread_register(file, regname, regVal);
+    }
+    
+    return rv;
+}
+
 /**
  * @internal
  *
@@ -158,16 +239,22 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
     size_t rv = 0;
     plframe_cursor_t cursor;
     plframe_error_t ferr;
+    bool crashed_thread = false;
 
     /* Write the thread ID */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PROTOBUF_C_TYPE_UINT32, &thread_number);
+    
+    /* Is this the crashed thread? */
+    thread_t thr_self = mach_thread_self();
+    if (MACH_PORT_INDEX(thread) == MACH_PORT_INDEX(thr_self))
+        crashed_thread = true;
 
     /* Set up the frame cursor. */
     {
         /* Use the crashctx if we're running on the crashed thread */
-        thread_t thr_self= mach_thread_self();
-        if (MACH_PORT_INDEX(thread) == MACH_PORT_INDEX(thr_self)) {
+        if (crashed_thread) {
             ferr = plframe_cursor_init(&cursor, crashctx);
+            crashed_thread = true;
         } else {
             ferr = plframe_cursor_thread_init(&cursor, thread);
         }
@@ -193,6 +280,14 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
     /* Did we reach the end successfully? */
     if (ferr != PLFRAME_ENOFRAME)
         PLCF_DEBUG("Terminated stack walking early: %s", plframe_strerror(ferr));
+
+    /* Note crashed status */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_CRASHED_ID, PROTOBUF_C_TYPE_BOOL, &crashed_thread);
+    
+    /* Dump registers for the crashed thread */
+    if (crashed_thread) {
+        rv += plcrash_writer_write_thread_registers(file, crashctx);
+    }
 
     return rv;
 }
@@ -245,7 +340,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
         /* Suspend each thread and write out its state */
         for (mach_msg_type_number_t i = 0; i < thread_count; i++) {
             thread_t thread = threads[i];
-            size_t size;
+            uint32_t size;
             bool suspend_thread = true;
             
             /* Check if we're running on the to be examined thread */
@@ -279,59 +374,6 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
 
 #if 0
     
-    /* Crashed Thread */
-    // Last is the register index, so increment to get the count
-    const uint32_t regCount = PLFRAME_REG_LAST + 1;
-    Plcrash__CrashReport__ThreadState crashed = PLCRASH__CRASH_REPORT__THREAD_STATE__INIT;
-    Plcrash__CrashReport__ThreadState__RegisterValue *crashedRegisters[regCount];
-    Plcrash__CrashReport__ThreadState__RegisterValue crashedRegisterValues[regCount];
-    
-    crashReport.crashed_thread_state = &crashed;
-    crashed.registers = crashedRegisters;
-    {
-        plframe_cursor_t cursor;
-        plframe_error_t frame_err;
-
-        /* Create the crashed thread frame cursor */
-        if ((frame_err = plframe_cursor_init(&cursor, crashctx)) != PLFRAME_ESUCCESS) {
-            PLCF_DEBUG("Failed to initialize frame cursor for crashed thread: %s", plframe_strerror(frame_err));
-            return PLCRASH_EINTERNAL;
-        }
-
-        /* Fetch the first frame */
-        if ((frame_err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
-            PLCF_DEBUG("Could not fetch crashed thread frame: %s", plframe_strerror(frame_err));
-            return PLCRASH_EINTERNAL;
-        }
-
-        // todo - thread number
-        crashed.thread_number = 0;
-
-        /* Set the register initialization value */
-        Plcrash__CrashReport__ThreadState__RegisterValue init_value = PLCRASH__CRASH_REPORT__THREAD_STATE__REGISTER_VALUE__INIT;
-
-        /* Write out registers */
-        crashed.n_registers = regCount;
-        for (int i = 0; i < regCount; i++) {
-            
-            /* Fetch the register */
-            plframe_greg_t regVal;
-            if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
-                // Should never happen
-                PLCF_DEBUG("Could not fetch register %i value: %s", i, strerror(frame_err));
-                regVal = 0;
-            }
-
-            /* Initialize the register struct */
-            crashedRegisterValues[i] = init_value;
-            crashedRegisterValues[i].value = regVal;
-            // Cast to drop 'const', since we can't make a copy.
-            // The string will never be modified.
-            crashedRegisterValues[i].name = (char *) plframe_get_regname(i);
-            
-            crashedRegisters[i] = crashedRegisterValues + i;
-        }
-    }
 
     /* Binary Images */
     {
