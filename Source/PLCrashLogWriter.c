@@ -215,12 +215,13 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
         }
     }
     
+    
+    /* Clean up the thread array */
+    for (mach_msg_type_number_t i = 0; i < thread_count; i++)
+        mach_port_deallocate(mach_task_self(), threads[i]);
+    vm_deallocate(mach_task_self(), (vm_address_t)threads, sizeof(thread_t) * thread_count);
 
 #if 0
-    /* Threads */
-    {
-        crashReport.n_threads = 0;
-    }
     
     /* Crashed Thread */
     // Last is the register index, so increment to get the count
@@ -313,7 +314,8 @@ plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer) {
 static bool fetch_and_suspend_threads (thread_act_array_t *threads, mach_msg_type_number_t *thread_count) {
     /* Iterate over all the threads in the task, suspending each one.
      * We have to loop until no new threads appear, and all are suspended */
-    mach_port_t self = mach_thread_self();
+    thread_t thr_self = mach_thread_self();
+    task_t self = mach_task_self();
     
     mach_msg_type_number_t      cur_count, prev_count, i, k;
     thread_act_array_t          cur_list, prev_list;
@@ -324,7 +326,7 @@ static bool fetch_and_suspend_threads (thread_act_array_t *threads, mach_msg_typ
     cur_list = prev_list = NULL;
     do {
         /* Get a list of all threads */
-        if (task_threads(mach_task_self(), &cur_list, &cur_count) != KERN_SUCCESS) {
+        if (task_threads(self, &cur_list, &cur_count) != KERN_SUCCESS) {
             PLCF_DEBUG("Fetching thread list failed");
             goto error;
         }
@@ -347,7 +349,7 @@ static bool fetch_and_suspend_threads (thread_act_array_t *threads, mach_msg_typ
             /* If the thread wasn't previously suspended, suspend it now and set the change flag */
             if (found) {
                 /* Don't suspend ourselves! */
-                if (cur_list[i] != self)
+                if (cur_list[i] != thr_self)
                     thread_suspend(cur_list[i]);
                 changes = TRUE;
             }
@@ -355,9 +357,9 @@ static bool fetch_and_suspend_threads (thread_act_array_t *threads, mach_msg_typ
         
         /* Deallocate the previous list, if necessary */
         for (k = 0; k < prev_count; k++)
-            mach_port_deallocate(mach_task_self(), prev_list[k]);
+            mach_port_deallocate(self, prev_list[k]);
         
-        vm_deallocate(mach_task_self(), (vm_address_t)prev_list, sizeof(thread_t) * prev_count);
+        vm_deallocate(self, (vm_address_t)prev_list, sizeof(thread_t) * prev_count);
         
         /* Set up the 'new' list for the next loop iteration */
         prev_list = cur_list;
