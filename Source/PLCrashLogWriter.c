@@ -134,7 +134,6 @@ size_t plcrash_writer_write_thread_register (plasync_file_t *file, const char *r
     size_t rv = 0;
 
     /* Write the name */
-    PLCF_DEBUG("Want to write %s", regname);
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_NAME_ID, PROTOBUF_C_TYPE_STRING, regname);
 
     /* Write the value */
