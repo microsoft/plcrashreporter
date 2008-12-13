@@ -104,7 +104,7 @@ void plasync_file_init (plasync_file_t *file, int fd) {
  */
 bool plasync_file_write (plasync_file_t *file, const void *data, size_t len) {
     /* Check if the buffer will fill */
-    if (file->buflen + len >= sizeof(file->buffer)) {
+    if (file->buflen + len > sizeof(file->buffer)) {
         /* Flush the buffer */
         if (writen(file->fd, file->buffer, file->buflen) < 0) {
             return false;
@@ -114,7 +114,7 @@ bool plasync_file_write (plasync_file_t *file, const void *data, size_t len) {
     }
     
     /* Check if the new data fits within the buffer, if so, buffer it */
-    if (len + file->buflen < sizeof(file->buffer)) {
+    if (len + file->buflen <= sizeof(file->buffer)) {
         memcpy(file->buffer + file->buflen, data, len);
         file->buflen += len;
         
