@@ -11,7 +11,6 @@
 #import <errno.h>
 #import <string.h>
 #import <stdbool.h>
-#import <dlfcn.h>
 
 #import <sys/time.h>
 
@@ -121,7 +120,6 @@ size_t plcrash_writer_write_system_info (plasync_file_t *file, struct utsname *u
 size_t plcrash_writer_write_backtrace_frame (plasync_file_t *file, plframe_cursor_t *cursor) {
     plframe_error_t err;
     uint64_t uint64val;
-    Dl_info dlinfo;
     size_t rv = 0;
 
     /* PC */
@@ -130,26 +128,9 @@ size_t plcrash_writer_write_backtrace_frame (plasync_file_t *file, plframe_curso
         PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(err));
         return 0;
     }
-    uint64val = pc << 4;
-    PLCF_DEBUG("Want to encode pc of val: %p (%llx %llx)", (void *) pc, uint64val, (uint64val << 4));
-
+    uint64val = pc;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_FRAME_PC_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
 
-    /* Attempt to fetch symbol data (not async-safe! usually OK) */
-    if (dladdr((void *) pc, &dlinfo) != 0) {
-        if (dlinfo.dli_sname != NULL && dlinfo.dli_saddr != NULL) {
-            PLCF_DEBUG("Packing in a symbol name: %s", dlinfo.dli_sname);
-            /* Write the name */
-            rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_FRAME_NEAREST_SYMBOL_NAME_ID, PROTOBUF_C_TYPE_STRING, dlinfo.dli_sname);
-            
-            /* Write the address */
-            uint64val = ((intptr_t) dlinfo.dli_saddr) << 4;
-            rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_FRAME_NEAREST_SYMBOL_ADDRESS_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
-        } else {
-            PLCF_DEBUG("Is NULL symbol");
-        }
-    }
-    
     return rv;
 }
 

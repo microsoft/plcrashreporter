@@ -40,11 +40,10 @@
 }
 
 - (void) tearDown {
-    //NSError *error;
+    NSError *error;
     
     /* Delete the file */
-    //STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
-    NSLog(@"Not deleting file at path %@", _logPath);
+    STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
     [_logPath release];
 
     /* Stop the test thread */
@@ -83,16 +82,17 @@
     for (int i = 0; i < crashReport->n_backtraces; i++) {
         Plcrash__CrashReport__Backtrace *bt = bts[i];
 
-        NSLog(@"\nBacktrace for thread ID: %d", bt->thread_number);
+        /* Check that the threads are provided in order */
+        STAssertEquals((uint32_t)i, bt->thread_number, @"Threads were encoded out of order (%d vs %d)", i, bt->thread_number);
+
+        /* Check that there is at least one frame */
+        STAssertNotEquals((size_t)0, bt->n_frames, @"No frames available in backtrace");
         
         for (int j = 0; j < bt->n_frames; j++) {
             Plcrash__CrashReport__Backtrace__StackFrame *f = bt->frames[j];
-            NSLog(@"Frame at pc %lx", f->pc);
-            if (f->nearest_symbol_name != NULL)
-                NSLog(@"Frame symbol %lx %p", f->pc, f->nearest_symbol_name);
+            STAssertNotEquals((uint64_t)0, f->pc, @"Backtrace includes NULL pc");
         }
     }
-    // TODO
 }
 
 - (void) testWriteReport {
@@ -165,6 +165,7 @@
 
 
     STAssertEquals(0, munmap(buf, statbuf.st_size), @"Could not unmap pages: %s", strerror(errno));
+
     plasync_file_close(&file);
 }
 
