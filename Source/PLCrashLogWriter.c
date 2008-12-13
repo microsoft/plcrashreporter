@@ -14,10 +14,32 @@
 #import <sys/time.h>
 
 #import "PLCrashLogWriter.h"
+#import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
 #import "PLCrashFrameWalker.h"
 
 #import "crash_report.pb-c.h"
+
+/**
+ * @internal
+ * Protobuf Field IDs, as defined in crashreport.proto
+ */
+enum {
+    /** CrashReport.system_info */
+    PLCRASH_PROTO_SYSTEM_INFO_ID = 1,
+
+    /** CrashReport.system_info.operating_system */
+    PLCRASH_PROTO_SYSTEM_INFO_OS_ID = 1,
+
+    /** CrashReport.system_info.os_version */
+    PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID = 2,
+
+    /** CrashReport.system_info.machine_type */
+    PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID = 3,
+
+    /** CrashReport.system_info.timestamp */
+    PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID = 4
+};
 
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
@@ -39,11 +61,35 @@ plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer) {
     return PLCRASH_ESUCCESS;
 }
 
-struct M {
-    Plcrash__CrashReport crashReport;
-    Plcrash__CrashReport__SystemInfo systemInfo;
-    Plcrash__CrashReport__ThreadState threadState;
-};
+/**
+ * @internal
+ *
+ * Write the system info message.
+ *
+ * @param writer Writer context
+ * @param file Output file
+ * @param timestamp Timestamp to use (seconds since epoch). Must be same across calls, as varint encoding.
+ */
+size_t plcrash_writer_write_system_info (plcrash_writer_t *writer, plasync_file_t *file, uint32_t timestamp) {
+    size_t rv = 0;
+    uint32_t enumval;
+
+    /* OS */
+    enumval = PLCRASH_OS;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PROTOBUF_C_TYPE_ENUM, &enumval);
+
+    /* OS Version */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PROTOBUF_C_TYPE_STRING, writer->utsname.release);
+
+    /* Machine type */
+    enumval = PLCRASH_MACHINE;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID, PROTOBUF_C_TYPE_ENUM, &enumval);
+
+    /* Timestamp */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PROTOBUF_C_TYPE_UINT32, &timestamp);
+
+    return rv;
+}
 
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
@@ -53,7 +99,26 @@ struct M {
  * and thread dump.
  */
 plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
+    size_t size;
 
+    /* System Info */
+    {
+        struct timeval tv;
+        uint32_t timestamp;
+
+        /* Must stay the same across both calls, so get the timestamp here */
+        if (gettimeofday(&tv, NULL) != 0) {
+            PLCF_DEBUG("Failed to fetch timestamp: %s", strerror(errno));
+            timestamp = 0;
+        } else {
+            timestamp = tv.tv_sec;
+        }
+
+        // Determine size, then output
+        size = plcrash_writer_write_system_info(writer, NULL, timestamp);
+        plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_system_info(writer, file, timestamp);
+    }
     
 #if 0
     Plcrash__CrashReport crashReport = PLCRASH__CRASH_REPORT__INIT;
