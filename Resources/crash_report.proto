@@ -59,13 +59,6 @@ message CrashReport {
 
         /* Stack frame */
         message StackFrame {
-            /* Nearest symbol name for the given PC. This may be inaccurate. This may not be the symbol name
-             * for the code block containing the instruction pc.*/
-            optional string nearest_symbol_name = 1;
-
-            /* Address of the nearest named symbol, if one is available. */
-            optional uint64 nearest_symbol_address = 2;
-
             /* Instruction pointer */
             required uint64 pc = 3;
         }
