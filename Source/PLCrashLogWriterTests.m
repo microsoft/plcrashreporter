@@ -73,23 +73,22 @@
 }
 
 - (void) checkBacktraces: (Plcrash__CrashReport *) crashReport {
-    Plcrash__CrashReport__Backtrace **bts = crashReport->backtraces;
+    Plcrash__CrashReport__Thread **threads = crashReport->threads;
 
-    STAssertNotNULL(bts, @"No thread messages were written");
-    STAssertTrue(crashReport->n_backtraces > 0, @"0 thread messages were written");
+    STAssertNotNULL(threads, @"No thread messages were written");
+    STAssertTrue(crashReport->n_threads > 0, @"0 thread messages were written");
 
-    NSLog(@"Number of backtraces: %d", crashReport->n_backtraces);
-    for (int i = 0; i < crashReport->n_backtraces; i++) {
-        Plcrash__CrashReport__Backtrace *bt = bts[i];
+    for (int i = 0; i < crashReport->n_threads; i++) {
+        Plcrash__CrashReport__Thread *thread = threads[i];
 
         /* Check that the threads are provided in order */
-        STAssertEquals((uint32_t)i, bt->thread_number, @"Threads were encoded out of order (%d vs %d)", i, bt->thread_number);
+        STAssertEquals((uint32_t)i, thread->thread_number, @"Threads were encoded out of order (%d vs %d)", i, thread->thread_number);
 
         /* Check that there is at least one frame */
-        STAssertNotEquals((size_t)0, bt->n_frames, @"No frames available in backtrace");
+        STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
         
-        for (int j = 0; j < bt->n_frames; j++) {
-            Plcrash__CrashReport__Backtrace__StackFrame *f = bt->frames[j];
+        for (int j = 0; j < thread->n_frames; j++) {
+            Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[j];
             STAssertNotEquals((uint64_t)0, f->pc, @"Backtrace includes NULL pc");
         }
     }

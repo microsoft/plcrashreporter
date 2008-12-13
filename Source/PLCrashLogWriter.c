@@ -40,18 +40,34 @@ enum {
 
     /** CrashReport.system_info.timestamp */
     PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID = 4,
+    
+    
 
     /** CrashReport.threads */
-    PLCRASH_PROTO_BACKTRACES_ID = 2,
+    PLCRASH_PROTO_THREADS_ID = 2,
+    
 
     /** CrashReports.thread.thread_number */
-    PLCRASH_PROTO_BACKTRACE_THREAD_NUMBER_ID = 1,
+    PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID = 1,
 
     /** CrashReports.thread.frames */
-    PLCRASH_PROTO_BACKTRACE_FRAMES_ID = 2,
+    PLCRASH_PROTO_THREAD_FRAMES_ID = 2,
     
     /** CrashReport.thread.frame.pc */
-    PLCRASH_PROTO_BACKTRACE_FRAME_PC_ID = 3
+    PLCRASH_PROTO_THREAD_FRAME_PC_ID = 3,
+
+    /** CrashReport.thread.crashed */
+    PLCRASH_PROTO_THREAD_CRASHED_ID = 3,
+
+    
+    /** CrashReport.thread.registers */
+    PLCRASH_PROTO_THREAD_CRASHED_REGISTERS_ID = 4,
+
+    /** CrashReport.thread.register.name */
+    PLCRASH_PROTO_THREAD_CRASHED_REGISTER_NAME_ID = 1,
+
+    /** CrashReport.thread.register.name */
+    PLCRASH_PROTO_THREAD_CRASHED_REGISTER_VALUE_ID = 2,
 };
 
 /**
@@ -111,7 +127,7 @@ size_t plcrash_writer_write_system_info (plasync_file_t *file, struct utsname *u
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-size_t plcrash_writer_write_backtrace_frame (plasync_file_t *file, plframe_cursor_t *cursor) {
+size_t plcrash_writer_write_thread_frame (plasync_file_t *file, plframe_cursor_t *cursor) {
     plframe_error_t err;
     uint64_t uint64val;
     size_t rv = 0;
@@ -123,7 +139,7 @@ size_t plcrash_writer_write_backtrace_frame (plasync_file_t *file, plframe_curso
         return 0;
     }
     uint64val = pc;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_FRAME_PC_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
 
     return rv;
 }
@@ -131,20 +147,20 @@ size_t plcrash_writer_write_backtrace_frame (plasync_file_t *file, plframe_curso
 /**
  * @internal
  *
- * Write a thread backtrace message
+ * Write a thread message
  *
  * @param file Output file
  * @param thread Thread for which we'll output data.
  * @param crashctx Context to use for currently running thread (rather than fetching the thread
  * context, which we've invalidated by running at all)
  */
-size_t plcrash_writer_write_backtrace (plasync_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx) {
+size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx) {
     size_t rv = 0;
     plframe_cursor_t cursor;
     plframe_error_t ferr;
 
     /* Write the thread ID */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_THREAD_NUMBER_ID, PROTOBUF_C_TYPE_UINT32, &thread_number);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PROTOBUF_C_TYPE_UINT32, &thread_number);
 
     /* Set up the frame cursor. */
     {
@@ -168,10 +184,10 @@ size_t plcrash_writer_write_backtrace (plasync_file_t *file, thread_t thread, ui
         uint32_t frame_size;
 
         /* Determine the size */
-        frame_size = plcrash_writer_write_backtrace_frame(NULL, &cursor);
+        frame_size = plcrash_writer_write_thread_frame(NULL, &cursor);
         
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACE_FRAMES_ID, PROTOBUF_C_TYPE_MESSAGE, &frame_size);
-        rv += plcrash_writer_write_backtrace_frame(file, &cursor);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PROTOBUF_C_TYPE_MESSAGE, &frame_size);
+        rv += plcrash_writer_write_thread_frame(file, &cursor);
     }
 
     /* Did we reach the end successfully? */
@@ -244,11 +260,11 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
             }
             
             /* Determine the size */
-            size = plcrash_writer_write_backtrace(NULL, thread, i, crashctx);
+            size = plcrash_writer_write_thread(NULL, thread, i, crashctx);
             
             /* Write message */
-            plcrash_writer_pack(file, PLCRASH_PROTO_BACKTRACES_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
-            plcrash_writer_write_backtrace(file, thread, i, crashctx);
+            plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+            plcrash_writer_write_thread(file, thread, i, crashctx);
 
             /* Resume the thread */
             if (suspend_thread)
