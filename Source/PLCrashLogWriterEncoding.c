@@ -249,16 +249,6 @@ static inline size_t binary_data_pack (const ProtobufCBinaryData *bd, uint8_t *o
     memcpy (out + rv, bd->data, len);
     return rv + len;
 }
-
-static inline size_t
-prefixed_message_pack (const ProtobufCMessage *message, uint8_t *out)
-{
-    size_t rv = protobuf_c_message_pack (message, out + 1);
-    uint32_t rv_packed_size = uint32_size (rv);
-    if (rv_packed_size != 1)
-        memmove (out + rv_packed_size, out + 1, rv);
-    return uint32_pack (rv, out) + rv;
-}
 #endif
 
 /* wire-type will be added in required_field_pack() */
