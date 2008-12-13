@@ -51,7 +51,8 @@
 }
 
 // check a crash report's system info
-- (void) checkSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo {
+- (void) checkSystemInfo: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__SystemInfo *systemInfo = crashReport->system_info;
     struct utsname uts;
     uname(&uts);
 
@@ -69,6 +70,15 @@
     STAssertEquals(systemInfo->machine_type, PLCRASH_MACHINE, @"Unexpected machine type");
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
+}
+
+- (void) checkThreads: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__Thread **threads = crashReport->threads;
+
+    STAssertNotNULL(threads, @"No thread messages were written");
+    STAssertTrue(crashReport->n_threads > 0, @"0 thread messages were written");
+
+    // TODO
 }
 
 - (void) testWriteReport {
@@ -121,20 +131,22 @@
     Plcrash__CrashReport *crashReport;
     crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf);
     
+    /* Output some debug decoding (TODO: Remove) */
     fprintf(stderr, "Binary dump: ");
     for (size_t i = 0; i < statbuf.st_size; i++) {
         fprintf(stderr, "%.2hhx", ((uint8_t *) buf)[i]);
     }
     fprintf(stderr, "\n");
     
+    /* If reading the report didn't fail, test the contents */
     STAssertNotNULL(crashReport, @"Could not decode crash report");
-
     if (crashReport != NULL) {
         /* Test the report */
-        [self checkSystemInfo: crashReport->system_info];
+        [self checkSystemInfo: crashReport];
+        [self checkThreads: crashReport];
 
         /* Free it */
-        //protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+        protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
     }
 
 

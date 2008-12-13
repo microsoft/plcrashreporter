@@ -55,7 +55,7 @@ message CrashReport {
     /* Thread backtrace */
     message Thread {
         /* Thread number (indexed at 0, must be unique within a crash report) */
-        required int32 thread_number = 1;
+        required uint32 thread_number = 1;
 
         /* Stack frame */
         message StackFrame {
@@ -79,7 +79,7 @@ message CrashReport {
     /* Thread state (registers, etc) */
     message ThreadState {
         /* The thread number (indexed at 0, must be unique within a crash report) */
-        required int32 thread_number = 1;
+        required uint32 thread_number = 1;
 
         /* A single register value */
         message RegisterValue {
