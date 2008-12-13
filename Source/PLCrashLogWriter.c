@@ -114,42 +114,19 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
             timestamp = tv.tv_sec;
         }
 
-        // Determine size, then output
+        /* Determine size */
         size = plcrash_writer_write_system_info(NULL, &writer->utsname, timestamp);
+        
+        /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_system_info(file, &writer->utsname, timestamp);
     }
-    
-#if 0
-    Plcrash__CrashReport crashReport = PLCRASH__CRASH_REPORT__INIT;
-    Plcrash__CrashReport__SystemInfo systemInfo = PLCRASH__CRASH_REPORT__SYSTEM_INFO__INIT;
-    
-    /* Initialize the output buffer */
-    pl_protofd_buffer_t buffer;
-    memset(&buffer, 0, sizeof(buffer));
-    buffer.fd = writer->fd;
-    buffer.base.append = fd_buffer_append;
-    buffer.had_error = false;
 
-    /* Initialize the system information */
-    crashReport.system_info = &systemInfo;
+    /* Threads */
     {
-        struct timeval tv;
-
-        /* Fetch the timestamp */
-        if (gettimeofday(&tv, NULL) == 0) {
-            systemInfo.timestamp = tv.tv_sec;
-        } else {
-            systemInfo.timestamp = 0;
-        }
-
-        /* Set the OS stats */
-        systemInfo.os_version = writer->utsname.release;
-        systemInfo.operating_system = PLCRASH_OS;
-        systemInfo.machine_type = PLCRASH_MACHINE;
-        systemInfo.machine_type = PLCRASH__MACHINE_TYPE__X86_32;
     }
 
+#if 0
     /* Threads */
     {
         crashReport.n_threads = 0;
