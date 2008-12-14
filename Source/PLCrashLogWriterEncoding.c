@@ -252,16 +252,6 @@ static inline size_t string_pack (const char * str, uint8_t *out)
     return rv + len;
 }
 
-#if 0
-static inline size_t binary_data_pack (const ProtobufCBinaryData *bd, uint8_t *out)
-{
-    size_t len = bd->len;
-    size_t rv = uint32_pack (len, out);
-    memcpy (out + rv, bd->data, len);
-    return rv + len;
-}
-#endif
-
 /* wire-type will be added in required_field_pack() */
 static size_t tag_pack (uint32_t id, uint8_t *out)
 {
@@ -273,7 +263,7 @@ static size_t tag_pack (uint32_t id, uint8_t *out)
 
 /* === pack_to_buffer() === */
 // file argument may be NULL
-size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, ProtobufCType field_type, const void *value) {
+size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value) {
     size_t rv;
     uint8_t scratch[MAX_UINT64_ENCODED_SIZE * 2];
     rv = tag_pack (field_id, scratch);
@@ -346,19 +336,20 @@ size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, ProtobufCTy
             rv += sublen;
             break;
         }
-#if 0            
+     
         case PLPROTOBUF_C_TYPE_BYTES:
         {
-            const ProtobufCBinaryData * bd = ((const ProtobufCBinaryData*) value);
+            const PLProtobufCBinaryData * bd = ((const PLProtobufCBinaryData*) value);
             size_t sublen = bd->len;
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
             rv += uint32_pack (sublen, scratch + rv);
-            buffer->append (buffer, rv, scratch);
-            buffer->append (buffer, sublen, bd->data);
+            if (file != NULL) {
+                plasync_file_write(file, scratch, rv);
+                plasync_file_write(file, bd->data, sublen);
+            }
             rv += sublen;
             break;
         }
-#endif
             
             //PLPROTOBUF_C_TYPE_GROUP,          // NOT SUPPORTED
         case PLPROTOBUF_C_TYPE_MESSAGE:

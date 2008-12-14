@@ -35,6 +35,11 @@ typedef enum {
         PLPROTOBUF_C_TYPE_BYTES,
         //PLPROTOBUF_C_TYPE_GROUP,          // NOT SUPPORTED
         PLPROTOBUF_C_TYPE_MESSAGE,
-} ProtobufCType;
+} PLProtobufCType;
 
-size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, ProtobufCType field_type, const void *value);
+typedef struct PLProtobufCBinaryData {
+    size_t len;
+    void *data;
+} PLProtobufCBinaryData;
+
+size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value);

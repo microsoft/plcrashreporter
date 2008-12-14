@@ -81,6 +81,9 @@ enum {
 
     /** CrashReport.BinaryImage.name */
     PLCRASH_PROTO_BINARY_IMAGE_NAME_ID = 3,
+    
+    /** CrashReport.BinaryImage.uuid */
+    PLCRASH_PROTO_BINARY_IMAGE_UUID_ID = 4,
 };
 
 /**
@@ -318,6 +321,7 @@ size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name
 
     /* Compute the image size and search for a UUID */
     struct load_command *cmd = (struct load_command *) (header + 1);
+    struct uuid_command *uuid = NULL;
 
     for (uint32_t i = 0; cmd != NULL && i < header->ncmds; i++) {
         /* 32-bit text segment */
@@ -336,9 +340,8 @@ size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name
             }
         }
         /* DWARF dSYM UUID */
-        else if (cmd->cmd == LC_UUID) {
-            PLCF_DEBUG("Found UUID inside of %s", name);
-            // TODO Write UUID once the encoder supports it
+        else if (cmd->cmd == LC_UUID && cmd->cmdsize == sizeof(struct uuid_command)) {
+            uuid = (struct uuid_command *) cmd;
         }
 
         cmd = (struct load_command *) ((uint8_t *) cmd + cmd->cmdsize);
@@ -347,15 +350,27 @@ size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID, PLPROTOBUF_C_TYPE_UINT64, &mach_size);
     
     /* Base address */
-    uintptr_t base_addr;
-    uint64_t u64;
+    {
+        uintptr_t base_addr;
+        uint64_t u64;
 
-    base_addr = (uintptr_t) header;
-    u64 = base_addr;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID, PLPROTOBUF_C_TYPE_UINT64, &u64);
+        base_addr = (uintptr_t) header;
+        u64 = base_addr;
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID, PLPROTOBUF_C_TYPE_UINT64, &u64);
+    }
 
     /* Name */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
+
+    /* UUID */
+    if (uuid != NULL) {
+        PLProtobufCBinaryData binary;
+    
+        /* Write the 128-bit UUID */
+        binary.len = sizeof(uuid->uuid);
+        binary.data = uuid->uuid;
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_UUID_ID, PLPROTOBUF_C_TYPE_BYTES, &binary);
+    }
 
     return rv;
 }

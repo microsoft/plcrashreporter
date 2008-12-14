@@ -94,6 +94,21 @@
     }
 }
 
+- (void) checkBinaryImages: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__BinaryImage **images = crashReport->binary_images;
+
+    STAssertNotNULL(images, @"No image messages were written");
+    STAssertTrue(crashReport->n_binary_images, @"0 thread messages were written");
+
+    for (int i = 0; i < crashReport->n_binary_images; i++) {
+        Plcrash__CrashReport__BinaryImage *image = images[i];
+        
+        STAssertNotNULL(image->name, @"Null image name");
+        STAssertTrue(image->name[0] == '/', @"Image is not absolute path");
+    }
+}
+
+
 - (void) testWriteReport {
     siginfo_t info;
     plframe_cursor_t cursor;

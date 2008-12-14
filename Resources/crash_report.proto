@@ -96,6 +96,9 @@ message CrashReport {
 
         /* Name of the binary image (should be a full path name) */
         required string name = 3;
+
+        /* 128-bit object UUID (matches Mach-O DWARF dSYM files) */
+        optional bytes uuid = 4;
     }
 
     /* All loaded binary images */
