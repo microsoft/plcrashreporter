@@ -99,5 +99,5 @@ message CrashReport {
     }
 
     /* All loaded binary images */
-    repeated BinaryImage images = 4;
+    repeated BinaryImage binary_images = 4;
 }

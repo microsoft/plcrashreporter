@@ -14,6 +14,8 @@
 
 #import <sys/time.h>
 
+#import <mach-o/dyld.h>
+
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
@@ -59,16 +61,29 @@ enum {
     /** CrashReport.thread.crashed */
     PLCRASH_PROTO_THREAD_CRASHED_ID = 3,
 
-    
+
+
     /** CrashReport.thread.registers */
     PLCRASH_PROTO_THREAD_REGISTERS_ID = 4,
-
 
     /** CrashReport.thread.register.name */
     PLCRASH_PROTO_THREAD_REGISTER_NAME_ID = 1,
 
     /** CrashReport.thread.register.name */
     PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID = 2,
+
+
+    /** CrashReport.images */
+    PLCRASH_PROTO_BINARY_IMAGES_ID = 4,
+
+    /** CrashReport.BinaryImage.base_address */
+    PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID = 1,
+
+    /** CrashReport.BinaryImage.size */
+    PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID = 2,
+
+    /** CrashReport.BinaryImage.name */
+    PLCRASH_PROTO_BINARY_IMAGE_NAME_ID = 3,
 };
 
 /**
@@ -293,6 +308,62 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
 
 
 /**
+ * @internal
+ *
+ * Write a binary image frame
+ *
+ * @param file Output file
+ * @param cursor The cursor from which to acquire frame data.
+ */
+size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name, const struct mach_header *header) {
+    size_t rv = 0;
+    uint64_t mach_size = 0;
+
+    /* Compute the image size and search for a UUID */
+    struct load_command *cmd = (struct load_command *) (header + 1);
+
+    for (uint32_t i = 0; cmd != NULL && i < header->ncmds; i++) {
+        /* 32-bit text segment */
+        if (cmd->cmd == LC_SEGMENT) {
+            struct segment_command *segment = (struct segment_command *) cmd;
+            if (strcmp(segment->segname, SEG_TEXT) == 0) {
+                mach_size = segment->vmsize;
+            }
+        }
+        /* 64-bit text segment */
+        else if (cmd->cmd == LC_SEGMENT_64) {
+            struct segment_command_64 *segment = (struct segment_command_64 *) cmd;
+
+            if (strcmp(segment->segname, SEG_TEXT) == 0) {
+                mach_size = segment->vmsize;
+            }
+        }
+        /* DWARF dSYM UUID */
+        else if (cmd->cmd == LC_UUID) {
+            PLCF_DEBUG("Found UUID inside of %s", name);
+            // TODO Write UUID once the encoder supports it
+        }
+
+        cmd = (struct load_command *) ((uint8_t *) cmd + cmd->cmdsize);
+    }
+
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID, PROTOBUF_C_TYPE_UINT64, &mach_size);
+    
+    /* Base address */
+    uintptr_t base_addr;
+    uint64_t u64;
+
+    base_addr = (uintptr_t) header;
+    u64 = base_addr;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID, PROTOBUF_C_TYPE_UINT64, &u64);
+
+    /* Name */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PROTOBUF_C_TYPE_STRING, name);
+
+    return rv;
+}
+
+/**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
  * @warning This method must only be called from the thread that has triggered the crash. This must correspond
@@ -371,16 +442,22 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
         vm_deallocate(mach_task_self(), (vm_address_t)threads, sizeof(thread_t) * thread_count);
     }
 
-#if 0
-    
-
     /* Binary Images */
-    {
-        crashReport.n_images = 0;
-    }
+    uint32_t image_count = _dyld_image_count();
+    for (uint32_t i = 0; i < image_count; i++) {
+        const struct mach_header *header;
+        const char *name;
+        uint32_t size;
 
-    protobuf_c_message_pack_to_buffer((ProtobufCMessage *) &crashReport, (ProtobufCBuffer *) &buffer);
-#endif
+        /* Fetch the info */
+        header = _dyld_get_image_header(i);
+        name = _dyld_get_image_name(i);
+
+        /* Calculate the message size */
+        size = plcrash_writer_write_binary_image(NULL, name, header);
+        plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_binary_image(file, name, header);
+    }
     
     return PLCRASH_ESUCCESS;
 }
