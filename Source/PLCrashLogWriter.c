@@ -20,9 +20,6 @@
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
 #import "PLCrashFrameWalker.h"
-
-#import "crash_report.pb-c.h"
-
 /**
  * @internal
  * Protobuf Field IDs, as defined in crashreport.proto
@@ -120,17 +117,17 @@ size_t plcrash_writer_write_system_info (plasync_file_t *file, struct utsname *u
 
     /* OS */
     enumval = PLCRASH_OS;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PROTOBUF_C_TYPE_ENUM, &enumval);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* OS Version */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PROTOBUF_C_TYPE_STRING, utsname->release);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, utsname->release);
 
     /* Machine type */
     enumval = PLCRASH_MACHINE;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID, PROTOBUF_C_TYPE_ENUM, &enumval);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* Timestamp */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PROTOBUF_C_TYPE_UINT32, &timestamp);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PLPROTOBUF_C_TYPE_UINT32, &timestamp);
 
     return rv;
 }
@@ -149,11 +146,11 @@ size_t plcrash_writer_write_thread_register (plasync_file_t *file, const char *r
     size_t rv = 0;
 
     /* Write the name */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_NAME_ID, PROTOBUF_C_TYPE_STRING, regname);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_NAME_ID, PLPROTOBUF_C_TYPE_STRING, regname);
 
     /* Write the value */
     uint64val = regval;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID, PLPROTOBUF_C_TYPE_UINT64, &uint64val);
     
     return rv;
 }
@@ -207,7 +204,7 @@ size_t plcrash_writer_write_thread_registers (plasync_file_t *file, ucontext_t *
         msgsize = plcrash_writer_write_thread_register(NULL, regname, regVal);
         
         /* Write the header and message */
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTERS_ID, PROTOBUF_C_TYPE_MESSAGE, &msgsize);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTERS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &msgsize);
         rv += plcrash_writer_write_thread_register(file, regname, regVal);
     }
     
@@ -234,7 +231,7 @@ size_t plcrash_writer_write_thread_frame (plasync_file_t *file, plframe_cursor_t
         return 0;
     }
     uint64val = pc;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PROTOBUF_C_TYPE_UINT64, &uint64val);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &uint64val);
 
     return rv;
 }
@@ -256,7 +253,7 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
     bool crashed_thread = false;
 
     /* Write the thread ID */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PROTOBUF_C_TYPE_UINT32, &thread_number);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PLPROTOBUF_C_TYPE_UINT32, &thread_number);
     
     /* Is this the crashed thread? */
     thread_t thr_self = mach_thread_self();
@@ -287,7 +284,7 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
         /* Determine the size */
         frame_size = plcrash_writer_write_thread_frame(NULL, &cursor);
         
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PROTOBUF_C_TYPE_MESSAGE, &frame_size);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
         rv += plcrash_writer_write_thread_frame(file, &cursor);
     }
 
@@ -296,7 +293,7 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
         PLCF_DEBUG("Terminated stack walking early: %s", plframe_strerror(ferr));
 
     /* Note crashed status */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_CRASHED_ID, PROTOBUF_C_TYPE_BOOL, &crashed_thread);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_CRASHED_ID, PLPROTOBUF_C_TYPE_BOOL, &crashed_thread);
     
     /* Dump registers for the crashed thread */
     if (crashed_thread) {
@@ -347,7 +344,7 @@ size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name
         cmd = (struct load_command *) ((uint8_t *) cmd + cmd->cmdsize);
     }
 
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID, PROTOBUF_C_TYPE_UINT64, &mach_size);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID, PLPROTOBUF_C_TYPE_UINT64, &mach_size);
     
     /* Base address */
     uintptr_t base_addr;
@@ -355,10 +352,10 @@ size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name
 
     base_addr = (uintptr_t) header;
     u64 = base_addr;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID, PROTOBUF_C_TYPE_UINT64, &u64);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID, PLPROTOBUF_C_TYPE_UINT64, &u64);
 
     /* Name */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PROTOBUF_C_TYPE_STRING, name);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
 
     return rv;
 }
@@ -392,7 +389,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
         size = plcrash_writer_write_system_info(NULL, &writer->utsname, timestamp);
         
         /* Write message */
-        plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_system_info(file, &writer->utsname, timestamp);
     }
 
@@ -428,7 +425,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
             size = plcrash_writer_write_thread(NULL, thread, i, crashctx);
             
             /* Write message */
-            plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+            plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
             plcrash_writer_write_thread(file, thread, i, crashctx);
 
             /* Resume the thread */
@@ -455,7 +452,7 @@ plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t 
 
         /* Calculate the message size */
         size = plcrash_writer_write_binary_image(NULL, name, header);
-        plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_binary_image(file, name, header);
     }
     
