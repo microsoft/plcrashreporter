@@ -99,6 +99,30 @@ static PLCrashSignalHandler *sharedHandler;
     return sharedHandler;
 }
 
+/**
+ * @internal
+ *
+ * Initialize the signal handler. API clients should use he +[PLCrashSignalHandler sharedHandler] method.
+ *
+ */
+- (id) init {
+    if ((self = [super init]) == nil)
+        return nil;
+    
+    /* Set up an alternate signal stack for crash dumps. Only 64k is reserved, and the
+     * crash dump path must be sparing in its use of stack space. */
+    _sigstk.ss_size = MAX(MINSIGSTKSZ, 64 * 1024);
+    _sigstk.ss_sp = malloc(_sigstk.ss_size);
+    _sigstk.ss_flags = 0;
+
+    /* (Unlikely) malloc failure */
+    if (_sigstk.ss_sp == NULL) {
+        [self release];
+        return nil;
+    }
+
+    return self;
+}
 
 /**
  * Register the the signal handler for the given signal.
@@ -113,7 +137,7 @@ static PLCrashSignalHandler *sharedHandler;
     
     /* Configure action */
     memset(&sa, 0, sizeof(sa));
-    sa.sa_flags = SA_SIGINFO;
+    sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
     sigemptyset(&sa.sa_mask);
     sa.sa_sigaction = &fatal_signal_handler;
     
@@ -143,6 +167,12 @@ static PLCrashSignalHandler *sharedHandler;
  * NULL for this parameter, and no error information will be provided. 
  */
 - (BOOL) registerHandlerAndReturnError: (NSError **) outError {
+    /* Register our signal stack */
+    if (sigaltstack(&_sigstk, 0) < 0) {
+        [self populateError: outError errnoVal: errno description: @"Could not initialize alternative signal stack"];
+        return NO;
+    }
+
     /* Register handler for signals */
     for (int i = 0; i < n_fatal_signals; i++) {
         if (![self registerHandlerForSignal: fatal_signals[i] error: outError])
