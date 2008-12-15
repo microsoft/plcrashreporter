@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-#import "PLCrashReporter.h"
+#import "CrashReporter.h"
 #import "PLCrashAsync.h"
 #import "PLCrashSignalHandler.h"
 #import "PLCrashFrameWalker.h"
