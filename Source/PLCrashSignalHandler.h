@@ -13,9 +13,13 @@
     stack_t _sigstk;
 }
 
-+ (PLCrashSignalHandler *) sharedHandler;
-- (BOOL) registerHandlerAndReturnError: (NSError **) outError;
+/**
+ * @internal
+ * Signal handler callback.
+ */
+typedef void (*PLCrashSignalHandlerCallback)(int signal, siginfo_t *info, ucontext_t *uap, void *context);
 
-- (void) testHandlerWithSignal: (int) signal code: (int) code faultAddress: (void *) address;
++ (PLCrashSignalHandler *) sharedHandler;
+- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallback) crashCallback context: (void *) context error: (NSError **) outError;
 
 @end
