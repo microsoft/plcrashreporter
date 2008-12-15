@@ -91,7 +91,7 @@
         /* Check for crashed thread */
         if (thread->crashed) {
             foundCrashed = YES;
-            // TODO
+            STAssertNotEquals((size_t)0, thread->n_registers, @"No registers available on crashed thread");
         }
         
         for (int j = 0; j < thread->n_frames; j++) {
