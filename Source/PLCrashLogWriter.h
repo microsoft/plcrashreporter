@@ -47,19 +47,13 @@ enum {
 #endif
 
 #ifdef __x86_64__
-
 #  define PLCRASH_MACHINE PLCRASH_MACHINE_TYPE_X86_64
-#  define PLCRASH_MACHINE_REGISTER_MSG_ID unimplemented // TODO
 
 #elif defined(__i386__)
-
 #  define PLCRASH_MACHINE PLCRASH_MACHINE_TYPE_X86_32
-#  define PLCRASH_MACHINE_REGISTER_MSG_ID PLCRASH_PROTO_THREAD_REGISTERS_X86_32_ID
 
 #elif defined(__arm__)
-
 #  define PLCRASH_MACHINE PLCRASH_MACHINE_TYPE_ARM
-#  define PLCRASH_MACHINE_REGISTER_MSG_ID PLCRASH_PROTO_THREAD_REGISTERS_ARM_ID
 
 #else
 #  error Unknown machine architecture

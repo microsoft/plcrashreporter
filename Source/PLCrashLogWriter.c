@@ -15,13 +15,11 @@
 #import <sys/time.h>
 
 #import <mach-o/dyld.h>
-#import <assert.h>
 
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
 #import "PLCrashFrameWalker.h"
-
 /**
  * @internal
  * Protobuf Field IDs, as defined in crashreport.proto
@@ -60,11 +58,17 @@ enum {
     /** CrashReport.thread.crashed */
     PLCRASH_PROTO_THREAD_CRASHED_ID = 3,
 
-    /** CrashReport.thread.registers_arm */
-    PLCRASH_PROTO_THREAD_REGISTERS_ARM_ID = 4,
 
-    /** CrashReport.thread.registers_x86_32 */
-    PLCRASH_PROTO_THREAD_REGISTERS_X86_32_ID = 5,
+
+    /** CrashReport.thread.registers */
+    PLCRASH_PROTO_THREAD_REGISTERS_ID = 4,
+
+    /** CrashReport.thread.register.name */
+    PLCRASH_PROTO_THREAD_REGISTER_NAME_ID = 1,
+
+    /** CrashReport.thread.register.name */
+    PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID = 2,
+
 
     /** CrashReport.images */
     PLCRASH_PROTO_BINARY_IMAGES_ID = 4,
@@ -133,97 +137,34 @@ size_t plcrash_writer_write_system_info (plasync_file_t *file, struct utsname *u
 
 
 /**
- * Map a plframe register number to a CrashReport protobuf id.
+ * @internal
  *
- * plframe register numbers are gauranteed to remain constant.
+ * Write a thread backtrace register
+ *
+ * @param file Output file
+ * @param cursor The cursor from which to acquire frame data.
  */
-static int plcrash_writer_register_id (plframe_regnum_t regnum) {
-#if __i386__
-    switch ((plframe_x86_regnum_t) regnum) {
-        case PLFRAME_X86_EAX:
-            return 1;
-        case PLFRAME_X86_EDX:
-            return 2;
-        case PLFRAME_X86_ECX:
-            return 3;
-        case PLFRAME_X86_EBX:
-            return 4;
-        case PLFRAME_X86_EBP:
-            return 5;
-        case PLFRAME_X86_ESI:
-            return 6;
-        case PLFRAME_X86_EDI:
-            return 7;
-        case PLFRAME_X86_ESP:
-            return 8;
-        case PLFRAME_X86_EIP:
-            return 9;
-        case PLFRAME_X86_EFLAGS:
-            return 10;
-        case PLFRAME_X86_TRAPNO:
-            return 11;
-        case PLFRAME_X86_CS:
-            return 12;
-        case PLFRAME_X86_DS:
-            return 13;
-        case PLFRAME_X86_ES:
-            return 14;
-        case PLFRAME_X86_FS:
-            return 15;
-        case PLFRAME_X86_GS:
-            return 16;
-    }
+size_t plcrash_writer_write_thread_register (plasync_file_t *file, const char *regname, plframe_greg_t regval) {
+    uint64_t uint64val;
+    size_t rv = 0;
 
-#elif defined(__arm__)
-    switch ((plframe_arm_regnum_t) regnum) {
-        case PLFRAME_ARM_R0:
-            return 1;
-        case PLFRAME_ARM_R1:
-            return 2;
-        case PLFRAME_ARM_R2:
-            return 3;
-        case PLFRAME_ARM_R3:
-            return 4;
-        case PLFRAME_ARM_R4:
-            return 5;
-        case PLFRAME_ARM_R5:
-            return 6;
-        case PLFRAME_ARM_R6:
-            return 7;
-        case PLFRAME_ARM_R7:
-            return 8;
-        case PLFRAME_ARM_R8:
-            return 9;
-        case PLFRAME_ARM_R9:
-            return 10;
-        case PLFRAME_ARM_R10:
-            return 11;
-        case PLFRAME_ARM_R11:
-            return 12;
-        case PLFRAME_ARM_R12:
-            return 13;
-        case PLFRAME_ARM_SP:
-            return 14;
-        case PLFRAME_ARM_LR:
-            return 15;
-        case PLFRAME_ARM_PC:
-            return 16;
-    }
-#else
-#error Unsupported architecture
-#endif
+    /* Write the name */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_NAME_ID, PLPROTOBUF_C_TYPE_STRING, regname);
 
-    // Unreachable
-    abort();
+    /* Write the value */
+    uint64val = regval;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID, PLPROTOBUF_C_TYPE_UINT64, &uint64val);
+    
+    return rv;
 }
 
 /**
  * @internal
  *
- * Write all thread backtrace register message
+ * Write all thread backtrace register messages
  *
  * @param file Output file
- * @param uap The context from which to acquire register data.
+ * @param cursor The cursor from which to acquire frame data.
  */
 size_t plcrash_writer_write_thread_registers (plasync_file_t *file, ucontext_t *uap) {
     plframe_cursor_t cursor;
@@ -246,13 +187,12 @@ size_t plcrash_writer_write_thread_registers (plasync_file_t *file, ucontext_t *
         return 0;
     }
     
-    /* Write out register values */
+    /* Write out register messages */
     for (int i = 0; i < regCount; i++) {
         plframe_greg_t regVal;
-        
-        /* Fetch the register id */
-        uint32_t field_id = plcrash_writer_register_id(i);
-    
+        const char *regname;
+        uint32_t msgsize;
+
         /* Fetch the register value */
         if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
             // Should never happen
@@ -260,14 +200,15 @@ size_t plcrash_writer_write_thread_registers (plasync_file_t *file, ucontext_t *
             regVal = 0;
         }
 
-        /* Store the value */
-#if _LP64
-        assert(sizeof(uint64_t) == sizeof(plframe_greg_t));
-        rv += plcrash_writer_pack(file, field_id, PLPROTOBUF_C_TYPE_UINT64, &regVal);
-#else
-        assert(sizeof(uint32_t) == sizeof(plframe_greg_t));
-        rv += plcrash_writer_pack(file, field_id, PLPROTOBUF_C_TYPE_UINT32, &regVal);
-#endif
+        /* Fetch the register name */
+        regname = plframe_get_regname(i);
+
+        /* Get the register message size */
+        msgsize = plcrash_writer_write_thread_register(NULL, regname, regVal);
+        
+        /* Write the header and message */
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_REGISTERS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &msgsize);
+        rv += plcrash_writer_write_thread_register(file, regname, regVal);
     }
     
     return rv;
@@ -359,12 +300,6 @@ size_t plcrash_writer_write_thread (plasync_file_t *file, thread_t thread, uint3
     
     /* Dump registers for the crashed thread */
     if (crashed_thread) {
-        uint32_t register_size;
-        
-        /* Determine the size */
-        register_size = plcrash_writer_write_thread_registers(NULL, crashctx);
-        
-        rv += plcrash_writer_pack(file, PLCRASH_MACHINE_REGISTER_MSG_ID, PLPROTOBUF_C_TYPE_MESSAGE, &register_size);
         rv += plcrash_writer_write_thread_registers(file, crashctx);
     }
 
