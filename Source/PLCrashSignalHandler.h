@@ -7,10 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import <mach/mach.h>
-#import <mach/exception.h>
-
-
 @interface PLCrashSignalHandler : NSObject {
 @private
     /** Signal stack */
