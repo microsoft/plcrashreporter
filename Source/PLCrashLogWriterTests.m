@@ -72,8 +72,9 @@
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
 
-- (void) checkBacktraces: (Plcrash__CrashReport *) crashReport {
+- (void) checkThreads: (Plcrash__CrashReport *) crashReport {
     Plcrash__CrashReport__Thread **threads = crashReport->threads;
+    BOOL foundCrashed = NO;
 
     STAssertNotNULL(threads, @"No thread messages were written");
     STAssertTrue(crashReport->n_threads > 0, @"0 thread messages were written");
@@ -87,11 +88,19 @@
         /* Check that there is at least one frame */
         STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
         
+        /* Check for crashed thread */
+        if (thread->crashed) {
+            foundCrashed = YES;
+            // TODO
+        }
+        
         for (int j = 0; j < thread->n_frames; j++) {
             Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[j];
             STAssertNotEquals((uint64_t)0, f->pc, @"Backtrace includes NULL pc");
         }
     }
+
+    STAssertTrue(foundCrashed, @"No crashed thread was provided");
 }
 
 - (void) checkBinaryImages: (Plcrash__CrashReport *) crashReport {
@@ -171,7 +180,7 @@
     if (crashReport != NULL) {
         /* Test the report */
         [self checkSystemInfo: crashReport];
-        [self checkBacktraces: crashReport];
+        [self checkThreads: crashReport];
 
         /* Free it */
         protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
