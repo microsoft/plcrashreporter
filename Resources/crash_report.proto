@@ -51,6 +51,91 @@ message CrashReport {
 
     /* Host data */
     required SystemInfo system_info = 1;
+    
+    /* x86-32 Register State */
+    message Registers_x86_32 {
+        /** Return value */
+        required uint32 eax = 1;
+
+        /** Dividend register */
+        required uint32 edx = 2;
+
+        /** Count register */
+        required uint32 ecx = 3;
+
+        /** Local register variable */
+        required uint32 ebx = 4;
+        
+        /** Stack frame pointer */
+        required uint32 ebp = 5;
+
+        /** Local register variable */
+        required uint32 esi = 6;
+
+        /** Local register variable */
+        required uint32 edi = 7;
+
+        /** Stack pointer */
+        required uint32 esp = 8;
+
+        /** Instruction pointer */
+        required uint32 eip = 9;
+        
+        /** Flags */
+        required uint32 eflags = 10;
+        
+        /* Scratcn */
+        required uint32 trapno = 11;
+        
+        
+        /*
+         * Segment Registers
+         */
+         
+        /** Segment register */
+        required uint32 cs = 12;
+        
+        /** Segment register */
+        required uint32 ds = 13;
+        
+        /** Segment register */
+        required uint32 es = 14;
+        
+        /** Segment register */
+        required uint32 fs = 15;
+        
+        /** Segment register */
+        required uint32 gs = 16;
+    }
+
+    /* ARM Register State */
+    message Registers_ARM {
+        /*
+         * General
+         */
+        required uint32 r0 = 1;
+        required uint32 r1 = 2;
+        required uint32 r2 = 3;
+        required uint32 r3 = 4;
+        required uint32 r4 = 5;
+        required uint32 r5 = 6;
+        required uint32 r6 = 7;
+        required uint32 r7 = 8;
+        required uint32 r8 = 9;
+        required uint32 r9 = 10;
+        required uint32 r10 = 11;
+        required uint32 r11 = 12;
+        required uint32 r12 = 13;
+
+        /* stack pointer (r13) */
+        required uint32 sp = 14;
+
+        /* link register (r14) */
+        required uint32 lr = 15;
+
+        /** Program counter (r15) */
+        required uint32 pc = 16;
+    }
 
     /* Thread state */
     message Thread {
@@ -68,19 +153,14 @@ message CrashReport {
 
         /* True if this is the crashed thread */
         required bool crashed = 3;
+
+        /* Platform specific thread registers (required if this is the
+         * crashed thread, optional otherwise). Must match the
+         * CrashReport MachineType. */
         
-        /* A single register value */
-        message RegisterValue {
-            /* Register name (r1, ebp, ...) */
-            required string name = 1;
-
-            /* Register value (32-bit or 64-bit) */
-            required uint64 value = 2;
-        }
-
-        /* Thread registers (required if this is the
-         * crashed thread, optional otherwise) */
-        repeated RegisterValue registers = 4;
+        optional Registers_ARM registers_arm = 4;
+        
+        optional Registers_x86_32 registers_x86_32 = 5;
     }
 
     /* All backtraces */

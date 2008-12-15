@@ -52,6 +52,6 @@ typedef enum {
     
     /** Last register */
     PLFRAME_PDEF_LAST_REG = PLFRAME_ARM_PC
-} plframe_x86_regnum_t;
+} plframe_arm_regnum_t;
 
 #endif
