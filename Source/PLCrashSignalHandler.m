@@ -34,6 +34,29 @@ static int fatal_signals[] = {
 static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
 
 
+/**
+ * Signal handler context that must be global for async-safe
+ * access.
+ */
+static struct {
+    /** @internal
+     * Initialization flag. Set to YES if the signal handler has been registered. */
+    BOOL handlerRegistered;
+
+    /** @internal
+     * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
+    PLCrashSignalHandler *sharedHandler;
+    
+    /** @internal
+     * Crash signal callback. */
+    PLCrashSignalHandlerCallback crashCallback;
+    
+    /** @internal
+     * Crash signal callback context */
+    void *crashCallbackContext;
+} SharedHandlerContext;
+
+
 /** @internal
  * Root fatal signal handler */
 static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
@@ -48,6 +71,10 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
         
         sigaction(fatal_signals[i], &sa, NULL);
     }
+
+    /* Call the callback handler */
+    if (SharedHandlerContext.crashCallback != NULL)
+        SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext);
     
     /* Call the crash log dumper */
     dump_crash_log(signal, info, uapVoid);
@@ -55,11 +82,6 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     /* Re-raise the signal */
     raise(signal);
 }
-
-
-/** @internal
- * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
-static PLCrashSignalHandler *sharedHandler;
 
 
 @interface PLCrashSignalHandler (PrivateMethods)
@@ -85,7 +107,8 @@ static PLCrashSignalHandler *sharedHandler;
 
 /* Set up the singleton signal handler */
 + (void) initialize {
-    sharedHandler = [[PLCrashSignalHandler alloc] init];
+    memset(&SharedHandlerContext, 0, sizeof(SharedHandlerContext));
+    SharedHandlerContext.sharedHandler = [[PLCrashSignalHandler alloc] init];
 }
 
 
@@ -93,10 +116,7 @@ static PLCrashSignalHandler *sharedHandler;
  * Return the process signal handler. Only one signal handler may be registered per process.
  */
 + (PLCrashSignalHandler *) sharedHandler {
-    if (sharedHandler == nil)
-        sharedHandler = [[PLCrashSignalHandler alloc] init];
-
-    return sharedHandler;
+    return SharedHandlerContext.sharedHandler;
 }
 
 /**
@@ -155,8 +175,8 @@ static PLCrashSignalHandler *sharedHandler;
 }
 
 /**
- * Register the process signal handlers. May be called more than once, but will
- * simply reset previously registered signal handlers.
+ * Register the process signal handlers with the provided callback.
+ * Should not be called more than once.
  *
  * @note If this method returns NO, some signal handlers may have been registered
  * successfully.
@@ -166,7 +186,16 @@ static PLCrashSignalHandler *sharedHandler;
  * registered. If no error occurs, this parameter will be left unmodified. You may specify
  * NULL for this parameter, and no error information will be provided. 
  */
-- (BOOL) registerHandlerAndReturnError: (NSError **) outError {
+- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallback) crashCallback context: (void *) context error: (NSError **) outError {
+    /* Prevent duplicate registrations */
+    if (SharedHandlerContext.handlerRegistered)
+        [NSException raise: PLCrashReporterException format: @"Signal handler has already been registered"];
+    SharedHandlerContext.handlerRegistered = YES;
+
+    /* Save the callback function */
+    SharedHandlerContext.crashCallback = crashCallback;
+    SharedHandlerContext.crashCallbackContext = context;
+
     /* Register our signal stack */
     if (sigaltstack(&_sigstk, 0) < 0) {
         [self populateError: outError errnoVal: errno description: @"Could not initialize alternative signal stack"];
@@ -178,41 +207,8 @@ static PLCrashSignalHandler *sharedHandler;
         if (![self registerHandlerForSignal: fatal_signals[i] error: outError])
             return NO;
     }
-    
+
     return YES;
-}
-
-
-/**
- * Execute the crash log handler.
- * @warning For testing purposes only.
- *
- * @param signal Signal to emulate.
- * @param code Signal code.
- * @param address Fault address.
- */
-- (void) testHandlerWithSignal: (int) signal code: (int) code faultAddress: (void *) address {
-    siginfo_t info;
-    plframe_cursor_t cursor;
-    plframe_test_thead_t test_thr;
-    
-    /* Initialze a faux-siginfo instance */
-    info.si_addr = address;
-    info.si_errno = 0;
-    info.si_pid = getpid();
-    info.si_uid = getuid();
-    info.si_code = code;
-    info.si_status = signal;
-    
-    /* Create a test thread (we'll be stealing its stack to iterate) */
-    plframe_test_thread_spawn(&test_thr);
-    plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(test_thr.thread));
-    
-    /* Execute the crash log handler */
-    dump_crash_log(signal, &info, cursor.uap);
-
-    /* Clean up the test thread */
-    plframe_test_thread_stop(&test_thr);
 }
 
 @end

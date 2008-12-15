@@ -11,6 +11,10 @@
 
 @interface PLCrashSignalHandlerTests : SenTestCase @end
 
+static void crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context) {
+    // Do nothing
+}
+
 @implementation PLCrashSignalHandlerTests
 
 - (void) testSharedHandler {
@@ -26,16 +30,11 @@
     STAssertEquals(action.sa_handler, SIG_DFL, @"Action already registered for SIGSEGV");
     
     /* Register the signal handlers */
-    STAssertTrue([[PLCrashSignalHandler sharedHandler] registerHandlerAndReturnError: &error], @"Could not register signal handler: %@", error);
+    STAssertTrue([[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &crash_callback context: NULL error: &error], @"Could not register signal handler: %@", error);
     
     /* Check for SIGSEGV registration */
     sigaction (SIGSEGV, NULL, &action);
     STAssertNotEquals(action.sa_handler, SIG_DFL, @"Action not registered for SIGSEGV");
-}
-
-- (void) testSignalHandler {
-    /* Send a test 'signal' to the handler. Nothing for us to verify afterwards, yet. */
-    [[PLCrashSignalHandler sharedHandler] testHandlerWithSignal: SIGBUS code: SEGV_MAPERR faultAddress: 0x0];
 }
 
 @end
