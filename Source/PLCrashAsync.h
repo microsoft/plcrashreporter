@@ -10,9 +10,9 @@
 #import <unistd.h>
 #import <stdbool.h>
 
-// Debug output support. Lines are capped at 1024
+// Debug output support. Lines are capped at 128 (stack space is scarce)
 #define PLCF_DEBUG(msg, args...) {\
-    char output[1024];\
+    char output[128];\
     snprintf(output, sizeof(output), "[PLCrashReport] " msg "\n", ## args); \
     write(STDERR_FILENO, output, strlen(output));\
 }
