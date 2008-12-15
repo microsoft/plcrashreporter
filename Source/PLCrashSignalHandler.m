@@ -6,6 +6,7 @@
  */
 
 #import "PLCrashReporter.h"
+#import "PLCrashAsync.h"
 #import "PLCrashSignalHandler.h"
 #import "PLCrashFrameWalker.h"
 
@@ -27,13 +28,6 @@ static int fatal_signals[] = {
     SIGILL,
     SIGSEGV
 };
-
-
-// A super simple debug 'function' that's async safe.
-#define ASYNC_DEBUG(msg) {\
-    const char output[] = "[PLCrashReporter] " msg "\n";\
-    write(STDERR_FILENO, output, sizeof(output));\
-}
 
 /** @internal
  * number of signals in the fatal signals list */
@@ -266,7 +260,7 @@ static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
     
         /* Fetch the first frame */
         if (plframe_cursor_init(&cursor, uap) != PLFRAME_ESUCCESS) {
-            ASYNC_DEBUG("Could not init cursor");
+            PLCF_DEBUG("Could not init cursor");
         }
 
         /* Fetch remaining frames */
