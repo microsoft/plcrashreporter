@@ -42,4 +42,4 @@ typedef struct PLProtobufCBinaryData {
     void *data;
 } PLProtobufCBinaryData;
 
-size_t plcrash_writer_pack (plasync_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value);
+size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value);

@@ -51,7 +51,7 @@ static plcrashreporter_handler_ctx_t signal_handler_context;
  */
 static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *uap, void *context) {
     plcrashreporter_handler_ctx_t *sigctx = context;
-    plasync_file_t file;
+    plcrash_async_file_t file;
 
     /* Open the output file */
     int fd = open(sigctx->path, O_RDWR|O_CREAT|O_EXCL, 0644);
@@ -61,15 +61,15 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     }
 
     /* Initialize the output context */
-    plasync_file_init(&file, fd);
+    plcrash_async_file_init(&file, fd);
 
     /* Write the crash log using the already-initialized writer */
     plcrash_writer_write(&sigctx->writer, &file, info, uap);
     plcrash_writer_close(&sigctx->writer);
 
     /* Finished */
-    plasync_file_flush(&file);
-    plasync_file_close(&file);
+    plcrash_async_file_flush(&file);
+    plcrash_async_file_close(&file);
 }
 
 

@@ -122,7 +122,7 @@
     siginfo_t info;
     plframe_cursor_t cursor;
     plcrash_writer_t writer;
-    plasync_file_t file;
+    plcrash_async_file_t file;
 
     /* Initialze faux crash data */
     {
@@ -140,7 +140,7 @@
 
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
-    plasync_file_init(&file, fd);
+    plcrash_async_file_init(&file, fd);
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_init(&writer), @"Initialization failed");
@@ -152,7 +152,7 @@
     plcrash_writer_close(&writer);
 
     /* Flush the output */
-    plasync_file_flush(&file);
+    plcrash_async_file_flush(&file);
 
     /* Try reading it back in */
     void *buf;
@@ -189,7 +189,7 @@
 
     STAssertEquals(0, munmap(buf, statbuf.st_size), @"Could not unmap pages: %s", strerror(errno));
 
-    plasync_file_close(&file);
+    plcrash_async_file_close(&file);
 }
 
 @end

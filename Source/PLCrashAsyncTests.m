@@ -62,7 +62,7 @@
 }
 
 - (void) testBufferedWrite {
-    plasync_file_t file;
+    plcrash_async_file_t file;
     int write_iterations = 8;
     unsigned char data[100];
     size_t nread = 0;
@@ -70,7 +70,7 @@
     STAssertTrue(sizeof(data) * write_iterations > sizeof(file.buffer), @"Test is invalid if our buffer is not larger");
 
     /* Initialize the file instance */
-    plasync_file_init(&file, _testFd);
+    plcrash_async_file_init(&file, _testFd);
 
     /* Create test data */
     for (unsigned char i = 0; i < sizeof(data); i++)
@@ -78,11 +78,11 @@
 
     /* Write out the test data */
     for (int i = 0; i < write_iterations; i++)
-        STAssertTrue(plasync_file_write(&file, data, sizeof(data)), @"Failed to write to output buffer");
+        STAssertTrue(plcrash_async_file_write(&file, data, sizeof(data)), @"Failed to write to output buffer");
     
     /* Flush pending data and close the file */
-    STAssertTrue(plasync_file_flush(&file), @"File flush failed");
-    STAssertTrue(plasync_file_close(&file), @"File not closed");
+    STAssertTrue(plcrash_async_file_flush(&file), @"File flush failed");
+    STAssertTrue(plcrash_async_file_close(&file), @"File not closed");
     
     /* Validate the test file */
     NSInputStream *input = [NSInputStream inputStreamWithFileAtPath: _outputFile];
