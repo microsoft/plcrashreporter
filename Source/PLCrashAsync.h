@@ -59,6 +59,12 @@ typedef struct plcrash_async_file {
     /** Output file descriptor */
     int fd;
 
+    /** Output limit */
+    off_t limit_bytes;
+
+    /** Total bytes written */
+    off_t total_bytes;
+
     /** Current length of data in buffer */
     size_t buflen;
 
@@ -67,7 +73,7 @@ typedef struct plcrash_async_file {
 } plcrash_async_file_t;
 
 
-void plcrash_async_file_init (plcrash_async_file_t *file, int fd);
+void plcrash_async_file_init (plcrash_async_file_t *file, int fd, off_t output_limit);
 bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, size_t len);
 bool plcrash_async_file_flush (plcrash_async_file_t *file);
 bool plcrash_async_file_close (plcrash_async_file_t *file);

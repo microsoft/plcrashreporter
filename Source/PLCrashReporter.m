@@ -26,6 +26,14 @@ static NSString *PLCRASH_LIVE_CRASHREPORT = @"live_report.plcrash";
  * Directory containing crash reports queued for sending. */
 static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
 
+/** @internal
+ * Maximum number of bytes that will be written to the crash report.
+ * Used as a safety measure in case of implementation malfunction.
+ *
+ * We provide for a generous 64k here. Most crash reports
+ * are approximately 7k.
+ */
+#define MAX_REPORT_BYTES (64 * 1024)
 
 /**
  * @internal
@@ -75,7 +83,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     }
 
     /* Initialize the output context */
-    plcrash_async_file_init(&file, fd);
+    plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
     /* Write the crash log using the already-initialized writer */
     plcrash_log_writer_write(&sigctx->writer, &file, info, uap);

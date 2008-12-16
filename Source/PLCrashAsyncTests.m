@@ -7,7 +7,9 @@
 
 #import "GTMSenTestCase.h"
 #import "PLCrashAsync.h"
+
 #import <fcntl.h>
+#import <sys/stat.h>
 
 @interface PLCrashAsyncTests : SenTestCase {
 @private
@@ -42,6 +44,28 @@
     [_outputFile release];
 }
 
+- (void) testWriteLimits {
+    plcrash_async_file_t file;
+    uint32_t data = 1;
+
+    /* Initialize the file instance with an 8 byte limit */
+    plcrash_async_file_init(&file, _testFd, 8);
+
+    /* Write to the limit */
+    STAssertTrue(plcrash_async_file_write(&file, &data, sizeof(data)), @"Write failed");
+    STAssertTrue(plcrash_async_file_write(&file, &data, sizeof(data)), @"Write failed");
+    STAssertFalse(plcrash_async_file_write(&file, &data, sizeof(data)), @"Limit not enforced");
+
+    /* Close */
+    plcrash_async_file_flush(&file);
+    plcrash_async_file_close(&file);
+
+    /* Test the actual file size */
+    struct stat fs;
+    stat([_outputFile UTF8String], &fs);
+    STAssertEquals((off_t)8, fs.st_size, @"File size is not 8 bytes");
+}
+
 /*
  * Read in the test file, verify that it matches the given data block. Returns the
  * total number of bytes read (which may be less than the data block, which will
@@ -70,7 +94,7 @@
     STAssertTrue(sizeof(data) * write_iterations > sizeof(file.buffer), @"Test is invalid if our buffer is not larger");
 
     /* Initialize the file instance */
-    plcrash_async_file_init(&file, _testFd);
+    plcrash_async_file_init(&file, _testFd, 0);
 
     /* Create test data */
     for (unsigned char i = 0; i < sizeof(data); i++)

@@ -140,7 +140,7 @@
 
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
-    plcrash_async_file_init(&file, fd);
+    plcrash_async_file_init(&file, fd, 0);
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer), @"Initialization failed");
