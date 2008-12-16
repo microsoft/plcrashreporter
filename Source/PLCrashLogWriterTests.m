@@ -146,7 +146,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_init(&writer), @"Initialization failed");
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_report(&writer, &file, &info, cursor.uap), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
 
     /* Close it */
     plcrash_writer_close(&writer);

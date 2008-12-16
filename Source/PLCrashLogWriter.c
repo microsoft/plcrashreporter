@@ -382,7 +382,7 @@ size_t plcrash_writer_write_binary_image (plasync_file_t *file, const char *name
  * to the provided crashctx. Failure to adhere to this requirement will result in an invalid stack trace
  * and thread dump.
  */
-plcrash_error_t plcrash_writer_report (plcrash_writer_t *writer, plasync_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
+plcrash_error_t plcrash_writer_write (plcrash_writer_t *writer, plasync_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
     uint32_t size;
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;

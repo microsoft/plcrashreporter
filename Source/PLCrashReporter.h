@@ -8,9 +8,14 @@
 #import <Foundation/Foundation.h>
 
 @interface PLCrashReporter : NSObject {
-@private    
+@private
+    /** YES if the crash reporter has been enabled */
+    BOOL _enabled;
 }
 
 + (PLCrashReporter *) sharedReporter;
+
+- (BOOL) enableCrashReporter;
+- (BOOL) enableCrashReporterAndReturnError: (NSError **) outError;
 
 @end
