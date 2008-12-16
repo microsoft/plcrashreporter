@@ -87,12 +87,12 @@ static ssize_t writen (int fd, const void *data, size_t len) {
 
 
 /**
- * Initialize the plasync_file_t instance.
+ * Initialize the plcrash_async_file_t instance.
  *
  * @param file File structure to initialize.
  * @param fd Open file descriptor.
  */
-void plasync_file_init (plasync_file_t *file, int fd) {
+void plcrash_async_file_init (plcrash_async_file_t *file, int fd) {
     file->fd = fd;
     file->buflen = 0;
 }
@@ -102,7 +102,7 @@ void plasync_file_init (plasync_file_t *file, int fd) {
  * Write all bytes from @a data to the file buffer. Returns true on success,
  * or false if an error occurs.
  */
-bool plasync_file_write (plasync_file_t *file, const void *data, size_t len) {
+bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, size_t len) {
     /* Check if the buffer will fill */
     if (file->buflen + len > sizeof(file->buffer)) {
         /* Flush the buffer */
@@ -134,7 +134,7 @@ bool plasync_file_write (plasync_file_t *file, const void *data, size_t len) {
 /**
  * Flush all buffered bytes from the file buffer.
  */
-bool plasync_file_flush (plasync_file_t *file) {
+bool plcrash_async_file_flush (plcrash_async_file_t *file) {
     /* Anything to do? */
     if (file->buflen == 0)
         return true;
@@ -152,7 +152,12 @@ bool plasync_file_flush (plasync_file_t *file) {
 /**
  * Close the backing file descriptor.
  */
-bool plasync_file_close (plasync_file_t *file) {
+bool plcrash_async_file_close (plcrash_async_file_t *file) {
+    /* Flush any pending data */
+    if (!plcrash_async_file_flush(file))
+        return false;
+
+    /* Close the file descriptor */
     if (close(file->fd) != 0) {
         PLCF_DEBUG("Error closing file: %s", strerror(errno));
         return false;

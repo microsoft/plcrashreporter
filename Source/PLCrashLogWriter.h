@@ -71,7 +71,7 @@ typedef struct plcrash_writer {
 
 
 plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer);
-plcrash_error_t plcrash_writer_write (plcrash_writer_t *writer, plasync_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx);
+plcrash_error_t plcrash_writer_write (plcrash_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx);
 plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer);
 
 /**

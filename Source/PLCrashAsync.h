@@ -55,7 +55,7 @@ const char *plcrash_strerror (plcrash_error_t error);
  * Async-safe buffered file output. This implementation is only intended for use
  * within signal handler execution of crash log output.
  */
-typedef struct plasync_file {
+typedef struct plcrash_async_file {
     /** Output file descriptor */
     int fd;
 
@@ -64,10 +64,10 @@ typedef struct plasync_file {
 
     /** Buffered output */
     char buffer[256];
-} plasync_file_t;
+} plcrash_async_file_t;
 
 
-void plasync_file_init (plasync_file_t *file, int fd);
-bool plasync_file_write (plasync_file_t *file, const void *data, size_t len);
-bool plasync_file_flush (plasync_file_t *file);
-bool plasync_file_close (plasync_file_t *file);
+void plcrash_async_file_init (plcrash_async_file_t *file, int fd);
+bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, size_t len);
+bool plcrash_async_file_flush (plcrash_async_file_t *file);
+bool plcrash_async_file_close (plcrash_async_file_t *file);
