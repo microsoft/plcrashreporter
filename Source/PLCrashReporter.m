@@ -68,7 +68,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_async_file_t file;
 
     /* Open the output file */
-    int fd = open(sigctx->path, O_RDWR|O_CREAT|O_EXCL, 0644);
+    int fd = open(sigctx->path, O_RDWR|O_CREAT|O_TRUNC, 0644);
     if (fd < 0) {
         PLCF_DEBUG("Could not open the crashlog output file: %s", strerror(errno));
         return;
