@@ -127,6 +127,9 @@
 		05F40ADE0EF73A39008050CF /* PLCrashReporterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */; };
 		05F40ADF0EF73A39008050CF /* PLCrashReporterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */; };
 		05F40AE00EF73A39008050CF /* PLCrashReporterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */; };
+		05F40CF20EF7AC0E008050CF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40CF10EF7AC0E008050CF /* main.m */; };
+		05F40CF50EF7AC82008050CF /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
+		05F40CFA0EF7AC96008050CF /* CrashReporter.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -246,6 +249,13 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
+		05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			remoteInfo = "CrashReporter-MacOSX";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -256,6 +266,17 @@
 			dstSubfolderSpec = 10;
 			files = (
 				05CD34390EEA60C1000FDE88 /* CrashReporter.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05F40D270EF7AD0F008050CF /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				05F40CFA0EF7AC96008050CF /* CrashReporter.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -343,6 +364,9 @@
 		05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashLogWriterEncoding.c; sourceTree = "<group>"; };
 		05F40ACA0EF7379F008050CF /* PLCrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporter.m; sourceTree = "<group>"; };
 		05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporterTests.m; sourceTree = "<group>"; };
+		05F40CE70EF7AB80008050CF /* DemoCrash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoCrash.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		05F40CE90EF7AB80008050CF /* DemoCrash-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "DemoCrash-Info.plist"; path = "Resources/DemoCrash-Info.plist"; sourceTree = "<group>"; };
+		05F40CF10EF7AC0E008050CF /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -390,6 +414,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		05F40CE50EF7AB80008050CF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05F40CF50EF7AC82008050CF /* CrashReporter.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF560486A6940098B216 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -410,6 +442,7 @@
 				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */,
 				05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */,
 				05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */,
+				05F40CE70EF7AB80008050CF /* DemoCrash.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -628,6 +661,14 @@
 			name = "google-toolbox-for-mac-1-5-1";
 			sourceTree = "<group>";
 		};
+		05F40CF00EF7ABD6008050CF /* Crash Demo */ = {
+			isa = PBXGroup;
+			children = (
+				05F40CF10EF7AC0E008050CF /* main.m */,
+			);
+			path = "Crash Demo";
+			sourceTree = "<group>";
+		};
 		0867D691FE84028FC02AAC07 /* CrashReporter */ = {
 			isa = PBXGroup;
 			children = (
@@ -654,6 +695,7 @@
 		089C1665FE841158C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				05F40CE90EF7AB80008050CF /* DemoCrash-Info.plist */,
 				05CD314C0EE9364B000FDE88 /* InfoPlist.strings */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				05CD32AF0EE94086000FDE88 /* Tests-iPhone-Info.plist */,
@@ -673,6 +715,7 @@
 				05F40ACA0EF7379F008050CF /* PLCrashReporter.m */,
 				05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */,
 				059672EF0EF0853A008A0601 /* Private API */,
+				05F40CF00EF7ABD6008050CF /* Crash Demo */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -843,6 +886,25 @@
 			productReference = 05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */;
 			productType = "com.apple.product-type.application";
 		};
+		05F40CE60EF7AB80008050CF /* DemoCrash */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05F40CEC0EF7AB81008050CF /* Build configuration list for PBXNativeTarget "DemoCrash" */;
+			buildPhases = (
+				05F40CE30EF7AB80008050CF /* Resources */,
+				05F40D270EF7AD0F008050CF /* Copy Frameworks */,
+				05F40CE40EF7AB80008050CF /* Sources */,
+				05F40CE50EF7AB80008050CF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				05F40CFD0EF7AC9D008050CF /* PBXTargetDependency */,
+			);
+			name = DemoCrash;
+			productName = DemoCrash;
+			productReference = 05F40CE70EF7AB80008050CF /* DemoCrash.app */;
+			productType = "com.apple.product-type.application";
+		};
 		8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "CrashReporter-MacOSX" */;
@@ -885,6 +947,7 @@
 				05CD32680EE93DC3000FDE88 /* Tests-MacOSX */,
 				05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */,
 				05CD33230EE94439000FDE88 /* Tests-iPhoneOS */,
+				05F40CE60EF7AB80008050CF /* DemoCrash */,
 			);
 		};
 /* End PBXProject section */
@@ -905,6 +968,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		05CD33200EE94439000FDE88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05F40CE30EF7AB80008050CF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1084,6 +1154,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		05F40CE40EF7AB80008050CF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05F40CF20EF7AC0E008050CF /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF540486A6940098B216 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1157,6 +1235,11 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05CD34290EEA5FFA000FDE88 /* PBXContainerItemProxy */;
+		};
+		05F40CFD0EF7AC9D008050CF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			targetProxy = 05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1460,6 +1543,56 @@
 			};
 			name = Release;
 		};
+		05F40CEA0EF7AB81008050CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Resources/DemoCrash-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = DemoCrash;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		05F40CEB0EF7AB81008050CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "DemoCrash-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = DemoCrash;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		1DEB91AE08733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1603,6 +1736,15 @@
 			buildConfigurations = (
 				05CD33270EE9443A000FDE88 /* Debug */,
 				05CD33280EE9443A000FDE88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		05F40CEC0EF7AB81008050CF /* Build configuration list for PBXNativeTarget "DemoCrash" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05F40CEA0EF7AB81008050CF /* Debug */,
+				05F40CEB0EF7AB81008050CF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
