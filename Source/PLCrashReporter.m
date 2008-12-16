@@ -190,11 +190,11 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
         return NO;
 
     /* Set up the signal handler context */
-    signal_handler_context.path = NULL; // TODO
+    signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
     plcrash_log_writer_init(&signal_handler_context.writer);
 
     /* Enable the signal handler */
-    if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: NULL error: outError])
+    if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])
         return NO;
 
     /* Success */
