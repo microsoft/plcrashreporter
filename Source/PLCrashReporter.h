@@ -11,6 +11,9 @@
 @private
     /** YES if the crash reporter has been enabled */
     BOOL _enabled;
+
+    /** Path to the crash reporter internal data directory */
+    NSString *_crashReportDirectory;
 }
 
 + (PLCrashReporter *) sharedReporter;

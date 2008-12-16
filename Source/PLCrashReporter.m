@@ -14,6 +14,19 @@
 
 #import <fcntl.h>
 
+/** @internal
+ * CrashReporter cache directory name. */
+static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
+
+/** @internal
+ * Crash Report file name. */
+static NSString *PLCRASH_LIVE_CRASHREPORT = @"live_report.plcrash";
+
+/** @internal
+ * Directory containing crash reports queued for sending. */
+static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
+
+
 /**
  * @internal
  *
@@ -44,6 +57,7 @@ typedef struct signal_handler_ctx {
  */
 static plcrashreporter_handler_ctx_t signal_handler_context;
 
+
 /**
  * @internal
  *
@@ -71,6 +85,17 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_async_file_flush(&file);
     plcrash_async_file_close(&file);
 }
+
+
+@interface PLCrashReporter (PrivateMethods)
+
+- (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
+
+- (NSString *) crashReportDirectory;
+- (NSString *) queuedCrashReportDirectory;
+- (NSString *) crashReportPath;
+
+@end
 
 
 /**
@@ -109,7 +134,21 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     if ((self = [super init]) == nil)
         return nil;
 
+    /* Fetch the application's bundle identifier for use in the crash report directory path. No occurances of '/' should ever
+     * be in a bundle ID, but just to be safe, we escape them */
+    NSString *bundleIdPath = [[[NSBundle mainBundle] bundleIdentifier] stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
+
+    /* Fetch the path to the crash report directory */
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *cacheDir = [paths objectAtIndex: 0];
+    _crashReportDirectory = [[[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: bundleIdPath] retain];
+
     return self;
+}
+
+- (void) dealloc {
+    [_crashReportDirectory release];
+    [super dealloc];
 }
 
 
@@ -146,6 +185,10 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     if (_enabled)
         [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
 
+    /* Create the directory tree */
+    if (![self populateCrashReportDirectoryAndReturnError: outError])
+        return NO;
+
     /* Set up the signal handler context */
     signal_handler_context.path = NULL; // TODO
     plcrash_log_writer_init(&signal_handler_context.writer);
@@ -158,6 +201,66 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     _enabled = YES;
     return YES;
 }
+
+
+@end
+
+/**
+ * @internal
+ *
+ * Private Methods
+ */
+@implementation PLCrashReporter (PrivateMethods)
+
+/**
+ * Validate (and create if necessary) the crash reporter directory structure.
+ */
+- (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    /* Set up reasonable directory attributes */
+    NSDictionary *attributes = [NSDictionary dictionaryWithObject: [NSNumber numberWithUnsignedLong: 0755] forKey: NSFilePosixPermissions];
+    
+    /* Create the top-level path */
+    if (![fm fileExistsAtPath: [self crashReportDirectory]] &&
+        ![fm createDirectoryAtPath: [self crashReportDirectory] withIntermediateDirectories: YES attributes: attributes error: outError])
+    {
+        return NO;
+    }
+
+    /* Create the queued crash report directory */
+    if (![fm fileExistsAtPath: [self queuedCrashReportDirectory]] &&
+        ![fm createDirectoryAtPath: [self queuedCrashReportDirectory] withIntermediateDirectories: YES attributes: attributes error: outError])
+    {
+        return NO;
+    }
+
+    return YES;
+}
+
+/**
+ * Return the path to the crash reporter data directory.
+ */
+- (NSString *) crashReportDirectory {
+    return _crashReportDirectory;
+}
+
+
+/**
+ * Return the path to to-be-sent crash reports.
+ */
+- (NSString *) queuedCrashReportDirectory {
+    return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_QUEUED_DIR];
+}
+
+
+/**
+ * Return the path to live crash report (which may not yet, or ever, exist).
+ */
+- (NSString *) crashReportPath {
+    return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_LIVE_CRASHREPORT];
+}
+
 
 
 @end
