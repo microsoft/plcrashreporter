@@ -194,7 +194,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_log_writer_init(&signal_handler_context.writer);
 
     /* Enable the signal handler */
-    if ([[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: NULL error: outError])
+    if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: NULL error: outError])
         return NO;
 
     /* Success */
