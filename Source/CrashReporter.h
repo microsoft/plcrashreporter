@@ -58,7 +58,7 @@ typedef enum {
      * code is received, it is a bug, and should be reported. */
     PLCrashReporterErrorUnknown = 0,
     
-    /** An Mach or POSIX operating system error has occured. The underlying cause may be fetched from the userInfo
+    /** An Mach or POSIX operating system error has occured. The underlying NSError cause may be fetched from the userInfo
      * dictionary using the NSUnderlyingErrorKey key. */
     PLCrashReporterErrorOperatingSystem = 1,
 } PLCrashReporterError;

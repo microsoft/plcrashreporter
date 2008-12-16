@@ -593,7 +593,7 @@
 			path = "protobuf-c";
 			sourceTree = "<group>";
 		};
-		059672EF0EF0853A008A0601 /* Crash Handling */ = {
+		059672EF0EF0853A008A0601 /* Private API */ = {
 			isa = PBXGroup;
 			children = (
 				05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */,
@@ -605,7 +605,7 @@
 				059670210EEF5459008A0601 /* Log */,
 				0596674D0EEDEBB1008A0601 /* Backtrace */,
 			);
-			name = "Crash Handling";
+			name = "Private API";
 			sourceTree = "<group>";
 		};
 		05CD32750EE93E5A000FDE88 /* Tools */ = {
@@ -672,7 +672,7 @@
 				054F51070EEC73C80034B184 /* PLCrashReporter.h */,
 				05F40ACA0EF7379F008050CF /* PLCrashReporter.m */,
 				05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */,
-				059672EF0EF0853A008A0601 /* Crash Handling */,
+				059672EF0EF0853A008A0601 /* Private API */,
 			);
 			path = Source;
 			sourceTree = "<group>";
