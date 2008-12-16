@@ -20,6 +20,7 @@
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
 #import "PLCrashFrameWalker.h"
+
 /**
  * @internal
  * Protobuf Field IDs, as defined in crashreport.proto
@@ -386,6 +387,15 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
     uint32_t size;
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
+
+    /* File header */
+    {
+        uint8_t version = PLCRASH_LOG_FILE_VERSION;
+
+        /* Write the magic string (with no trailing NULL) and the version number */
+        plcrash_async_file_write(file, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC));
+        plcrash_async_file_write(file, &version, sizeof(version));
+    }
 
     /* System Info */
     {
