@@ -174,6 +174,9 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
  * @note If this method returns NO, some signal handlers may have been registered
  * successfully.
  *
+ * @param crashCallback Callback called upon receipt of a signal. The callback will execute on the crashed
+ * thread, using an alternate, limited stack.
+ * @param context Context to be passed to the callback. May be NULL.
  * @param outError A pointer to an NSError object variable. If an error occurs, this
  * pointer will contain an error object indicating why the signal handlers could not be
  * registered. If no error occurs, this parameter will be left unmodified. You may specify

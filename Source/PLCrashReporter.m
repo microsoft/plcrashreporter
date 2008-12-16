@@ -133,7 +133,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
  * This method must only be invoked once. Further invocations will throw
  * a PLCrashReporterException.
  *
- * @param A pointer to an NSError object variable. If an error occurs, this pointer
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error object indicating why the Crash Reporter could not be enabled.
  * If no error occurs, this parameter will be left unmodified. You may specify nil for this
  * parameter, and no error information will be provided.
