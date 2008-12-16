@@ -88,11 +88,18 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     void *prevfp = cursor->fp[0];
 
     /* Fetch the next stack address */
-    if (cursor->fp[0] == NULL) {
-        kr = plframe_read_addr((void *) cursor->uap->uc_mcontext->__ss.__r[7], cursor->fp, sizeof(cursor->fp));
-    } else {
+    if (cursor->init_frame) {
+        /* The first frame is already available, so there's nothing to do */
         cursor->init_frame = false;
-        kr = plframe_read_addr(cursor->fp[0], cursor->fp, sizeof(cursor->fp));
+        return PLFRAME_ESUCCESS;
+    } else {
+        if (cursor->fp[0] == NULL) {
+            /* No frame data has been loaded, fetch it from register state */
+            kr = plframe_read_addr((void *) cursor->uap->uc_mcontext->__ss.__ebp, cursor->fp, sizeof(cursor->fp));
+        } else {
+            /* Frame data loaded, walk the stack */
+            kr = plframe_read_addr(cursor->fp[0], cursor->fp, sizeof(cursor->fp));
+        }
     }
     
     /* Was the read successful? */
@@ -117,7 +124,7 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
     ucontext_t *uap = cursor->uap;
     
     /* Supported register for this context state? */
-    if (!cursor->init_frame) {
+    if (cursor->fp[0] != NULL) {
         if (regnum == PLFRAME_ARM_PC) {
             *reg = (plframe_greg_t) cursor->fp[1];
             return PLFRAME_ESUCCESS;
