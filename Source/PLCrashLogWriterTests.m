@@ -121,7 +121,7 @@
 - (void) testWriteReport {
     siginfo_t info;
     plframe_cursor_t cursor;
-    plcrash_writer_t writer;
+    plcrash_log_writer_t writer;
     plcrash_async_file_t file;
 
     /* Initialze faux crash data */
@@ -143,13 +143,13 @@
     plcrash_async_file_init(&file, fd);
 
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_init(&writer), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer), @"Initialization failed");
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
 
     /* Close it */
-    plcrash_writer_close(&writer);
+    plcrash_log_writer_close(&writer);
 
     /* Flush the output */
     plcrash_async_file_flush(&file);

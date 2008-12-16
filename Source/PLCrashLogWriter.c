@@ -95,7 +95,7 @@ enum {
  * @warning This function is not guaranteed to be async-safe, and must be
  * called prior to entering the crash handler.
  */
-plcrash_error_t plcrash_writer_init (plcrash_writer_t *writer) {
+plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer) {
     /* Fetch the OS information */
     if (uname(&writer->utsname) != 0) {
         // Should not happen
@@ -382,7 +382,7 @@ size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char
  * to the provided crashctx. Failure to adhere to this requirement will result in an invalid stack trace
  * and thread dump.
  */
-plcrash_error_t plcrash_writer_write (plcrash_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
+plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
     uint32_t size;
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
@@ -479,7 +479,7 @@ plcrash_error_t plcrash_writer_write (plcrash_writer_t *writer, plcrash_async_fi
  *
  * @param writer Writer instance to be closed.
  */
-plcrash_error_t plcrash_writer_close (plcrash_writer_t *writer) {
+plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer) {
     return PLCRASH_ESUCCESS;
 }
 
