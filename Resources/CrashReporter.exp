@@ -7,6 +7,5 @@
 # CrashReporter
 _PLCrashReporterException
 _PLCrashReporterErrorDomain
+.objc_class_name_PLCrashReporter
 
-# PLCrashSignalHandler
-*_PLCrashSignalHandler

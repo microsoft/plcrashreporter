@@ -63,6 +63,11 @@ typedef enum {
     PLCrashReporterErrorOperatingSystem = 1,
 } PLCrashReporterError;
 
+
+/* Library Imports */
+#import "PLCrashReporter.h"
+
+
 /**
  * @mainpage Plausible Crash Reporter
  *

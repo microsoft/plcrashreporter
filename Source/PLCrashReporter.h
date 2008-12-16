@@ -7,3 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+@interface PLCrashReporter : NSObject {
+@private    
+}
+
++ (PLCrashReporter *) sharedReporter;
+
+@end
