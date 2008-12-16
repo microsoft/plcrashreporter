@@ -254,14 +254,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
 		05F40DD70EF7B626008050CF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05F40CE60EF7AB80008050CF /* DemoCrash */;
+			remoteGlobalIDString = 05F40CE60EF7AB80008050CF;
 			remoteInfo = DemoCrash;
 		};
 /* End PBXContainerItemProxy section */

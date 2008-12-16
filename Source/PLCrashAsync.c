@@ -90,11 +90,16 @@ static ssize_t writen (int fd, const void *data, size_t len) {
  * Initialize the plcrash_async_file_t instance.
  *
  * @param file File structure to initialize.
+ * @param output_cap Maximum number of bytes that will be written to disk. Intended as a
+ * safety measure prevent a run-away crash log writer from filling the disk. Specify
+ * 0 to disable any limits. Once the limit is reached, all data will be dropped.
  * @param fd Open file descriptor.
  */
-void plcrash_async_file_init (plcrash_async_file_t *file, int fd) {
+void plcrash_async_file_init (plcrash_async_file_t *file, int fd, off_t output_limit) {
     file->fd = fd;
     file->buflen = 0;
+    file->total_bytes = 0;
+    file->limit_bytes = output_limit;
 }
 
 
@@ -103,6 +108,13 @@ void plcrash_async_file_init (plcrash_async_file_t *file, int fd) {
  * or false if an error occurs.
  */
 bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, size_t len) {
+    /* Check and update output limit */
+    if (file->limit_bytes != 0 && len + file->total_bytes > file->limit_bytes) {
+        return false;
+    } else if (file->limit_bytes != 0) {
+        file->total_bytes += len;
+    }
+
     /* Check if the buffer will fill */
     if (file->buflen + len > sizeof(file->buffer)) {
         /* Flush the buffer */
