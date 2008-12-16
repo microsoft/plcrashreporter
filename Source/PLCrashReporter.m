@@ -30,7 +30,7 @@ static PLCrashReporter *sharedReporter = NULL;
  */
 typedef struct signal_handler_ctx {
     /** PLCrashLogWriter instance */
-    plcrash_writer_t writer;
+    plcrash_log_writer_t writer;
 
     /** Path to the output file */
     const char *path;
@@ -64,8 +64,8 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_async_file_init(&file, fd);
 
     /* Write the crash log using the already-initialized writer */
-    plcrash_writer_write(&sigctx->writer, &file, info, uap);
-    plcrash_writer_close(&sigctx->writer);
+    plcrash_log_writer_write(&sigctx->writer, &file, info, uap);
+    plcrash_log_writer_close(&sigctx->writer);
 
     /* Finished */
     plcrash_async_file_flush(&file);
@@ -148,7 +148,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
 
     /* Set up the signal handler context */
     signal_handler_context.path = NULL; // TODO
-    plcrash_writer_init(&signal_handler_context.writer);
+    plcrash_log_writer_init(&signal_handler_context.writer);
 
     /* Enable the signal handler */
     if ([[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: NULL error: outError])
