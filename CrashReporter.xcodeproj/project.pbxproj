@@ -16,6 +16,7 @@
 				05CD31700EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316E0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316C0EE939D8000FDE88 /* PBXTargetDependency */,
+				05F40DD80EF7B626008050CF /* PBXTargetDependency */,
 				05CD32720EE93E24000FDE88 /* PBXTargetDependency */,
 				05CD32EA0EE94105000FDE88 /* PBXTargetDependency */,
 				05CD33310EE94473000FDE88 /* PBXTargetDependency */,
@@ -255,6 +256,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			remoteInfo = "CrashReporter-MacOSX";
+		};
+		05F40DD70EF7B626008050CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05F40CE60EF7AB80008050CF /* DemoCrash */;
+			remoteInfo = DemoCrash;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1240,6 +1248,11 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */;
+		};
+		05F40DD80EF7B626008050CF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05F40CE60EF7AB80008050CF /* DemoCrash */;
+			targetProxy = 05F40DD70EF7B626008050CF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
