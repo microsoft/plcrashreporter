@@ -12,10 +12,6 @@
 
 #import <signal.h>
 #import <unistd.h>
-#import <dlfcn.h>
-
-// Crash log handler
-static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap);
 
 /**
  * @internal
@@ -75,9 +71,6 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     /* Call the callback handler */
     if (SharedHandlerContext.crashCallback != NULL)
         SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext);
-    
-    /* Call the crash log dumper */
-    dump_crash_log(signal, info, uapVoid);
     
     /* Re-raise the signal */
     raise(signal);
@@ -268,42 +261,3 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
 
 
 @end
-
-/**
- * Dump the process crash log.
- *
- * XXX Currently outputs to stderr using NSLog, must use the crash log writer
- * implementation (once available)
- */
-static void dump_crash_log (int signal, siginfo_t *info, ucontext_t *uap) {
-    /* Basic signal information */
-    NSLog(@"Received signal %d (sig%s) code %d", signal, sys_signame[signal], info->si_code);
-    NSLog(@"Signal fault address %p", info->si_addr);
-
-    /* Get backtrace */
-    {
-        plframe_cursor_t cursor;
-    
-        /* Fetch the first frame */
-        if (plframe_cursor_init(&cursor, uap) != PLFRAME_ESUCCESS) {
-            PLCF_DEBUG("Could not init cursor");
-        }
-
-        /* Fetch remaining frames */
-        while (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
-            Dl_info info;
-            plframe_greg_t ip;
-            
-            if (plframe_get_reg(&cursor, PLFRAME_REG_IP, &ip) != PLFRAME_ESUCCESS) {
-                NSLog(@"Failed to get frame instruction pointer");
-                break;
-            }
-
-            if (dladdr((void *) ip, &info) == 0) {
-                NSLog(@"Can't find symbol for %p",ip);
-            } else {
-                NSLog(@"Frame IP %p (%s) %s", ip, info.dli_sname, info.dli_fname);
-            }
-        }
-    }
-}
