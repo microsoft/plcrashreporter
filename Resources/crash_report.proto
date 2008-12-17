@@ -54,10 +54,10 @@ message CrashReport {
 
     message ApplicationInfo {
         /* Unique application identifier */
-        required string app_identifier = 1;
+        required string identifier = 1;
 
         /* Application version string */
-        required string app_version = 2;
+        required string version = 2;
     }
     required ApplicationInfo application_info = 2;
 
