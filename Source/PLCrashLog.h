@@ -19,13 +19,18 @@
 
 /**
  * @ingroup types
- * Plausible Crash Log Header.
+ * Crash log file header format.
+ *
+ * Crash log files start with 7 byte magic identifier (#PLCRASH_LOG_FILE_MAGIC),
+ * followed by a single unsigned byte version number (#PLCRASH_LOG_FILE_VERSION).
+ * The crash log message format itself is extensible, so this version number will only
+ * be incremented in the event of an incompatible encoding or format change.
  */
 struct PLCrashLogFileHeader {
-    /** File magic, not NULL terminated */
+    /** Crash log magic identifier, not NULL terminated */
     const char magic[7];
 
-    /** File version */
+    /** Crash log encoding/format version */
     const uint8_t version;
 
     /** File data */
