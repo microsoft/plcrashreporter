@@ -85,6 +85,16 @@ enum {
     
     /** CrashReport.BinaryImage.uuid */
     PLCRASH_PROTO_BINARY_IMAGE_UUID_ID = 4,
+
+    
+    /** CrashReport.exception */
+    PLCRASH_PROTO_EXCEPTION_ID = 5,
+
+    /** CrashReport.exception.name */
+    PLCRASH_PROTO_EXCEPTION_NAME_ID = 1,
+    
+    /** CrashReport.exception.reason */
+    PLCRASH_PROTO_EXCEPTION_REASON_ID = 2,
 };
 
 
@@ -98,6 +108,9 @@ enum {
  * called prior to entering the crash handler.
  */
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer) {
+    /* Default to 0 */
+    memset(writer, 0, sizeof(*writer));
+
     /* Fetch the OS information */
     if (uname(&writer->utsname) != 0) {
         // Should not happen
@@ -106,6 +119,43 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer) {
     }
 
     return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Set the uncaught exception for this writer. Once set, this exception will be used to
+ * provide exception data for the crash log output.
+ *
+ * @warning This function is not async safe, and must be called outside of a signal handler.
+ */
+void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception) {
+    assert(writer->uncaught_exception.has_exception == false);
+
+    /* Save the exception data */
+    writer->uncaught_exception.has_exception = true;
+    writer->uncaught_exception.name = strdup([[exception name] UTF8String]);
+    writer->uncaught_exception.reason = strdup([[exception reason] UTF8String]);
+}
+
+/**
+ * Close the plcrash_writer_t output.
+ *
+ * @param writer Writer instance to be closed.
+ */
+plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer) {
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Free any crash log writer resources.
+ *
+ * @warning This method is not async safe.
+ */
+void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
+    /* Free the exception data */
+    if (writer->uncaught_exception.has_exception) {
+        free(writer->uncaught_exception.name);
+        free(writer->uncaught_exception.reason);
+    }
 }
 
 /**
@@ -377,6 +427,29 @@ size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char
     return rv;
 }
 
+
+/**
+ * @internal
+ *
+ * Write the crash Exception message
+ *
+ * @param writer Writer containing exception data
+ * @param file Output file
+ * @param cursor The cursor from which to acquire frame data.
+ */
+size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
+    size_t rv = 0;
+
+    /* Write the name and reason */
+    assert(writer->uncaught_exception.has_exception);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_NAME_ID, PLPROTOBUF_C_TYPE_STRING, writer->uncaught_exception.name);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_REASON_ID, PLPROTOBUF_C_TYPE_STRING, writer->uncaught_exception.reason);
+
+    return rv;
+}
+
+
+
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
@@ -486,18 +559,20 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_binary_image(file, name, header);
     }
+
+    /* Exception */
+    {
+        uint32_t size;
+
+        /* Calculate the message size */
+        size = plcrash_writer_write_exception(NULL, writer);
+        plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_exception(file, writer);
+    }
     
     return PLCRASH_ESUCCESS;
 }
 
-/**
- * Close the plcrash_writer_t output.
- *
- * @param writer Writer instance to be closed.
- */
-plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer) {
-    return PLCRASH_ESUCCESS;
-}
 
 /**
  * @} plcrash_log_writer

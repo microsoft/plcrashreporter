@@ -117,6 +117,14 @@
     }
 }
 
+- (void) checkException: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__Exception *exception = crashReport->exception;
+    
+    STAssertNotNULL(exception, @"No exception was written");
+    STAssertTrue(strcmp(exception->name, "TestException") == 0, @"Exception name was not correctly serialized");
+    STAssertTrue(strcmp(exception->reason, "TestReason") == 0, @"Exception reason was not correctly serialized");
+}
+
 
 - (void) testWriteReport {
     siginfo_t info;
@@ -145,11 +153,15 @@
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer), @"Initialization failed");
 
+    /* Set an exception */
+    plcrash_log_writer_set_exception(&writer, [NSException exceptionWithName: @"TestException" reason: @"TestReason" userInfo: nil]);
+
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
+    plcrash_log_writer_free(&writer);
 
     /* Flush the output */
     plcrash_async_file_flush(&file);
@@ -186,6 +198,7 @@
         /* Test the report */
         [self checkSystemInfo: crashReport];
         [self checkThreads: crashReport];
+        [self checkException: crashReport];
 
         /* Free it */
         protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
