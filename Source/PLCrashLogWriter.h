@@ -21,45 +21,6 @@
  * @{
  */
 
-/** CrashReport machine type enums */
-enum {
-    PLCRASH_MACHINE_TYPE_X86_32 = 0,
-    PLCRASH_MACHINE_TYPE_X86_64 = 1,
-    PLCRASH_MACHINE_TYPE_ARM = 2
-};
-
-/** CrashReport operating system enums */
-enum {
-    PLCRASH_OPERATING_SYSTEM_MAC_OS_X = 0,
-    PLCRASH_OPERATING_SYSTEM_IPHONE_OS = 1,
-    PLCRASH_OPERATING_SYSTEM_IPHONE_SIMULATOR = 2
-};
-
-
-/* Platform/Architecture Defines */
-#if TARGET_IPHONE_SIMULATOR
-#  define PLCRASH_OS    PLCRASH_OPERATING_SYSTEM_IPHONE_SIMULATOR
-#elif TARGET_OS_IPHONE
-#  define PLCRASH_OS    PLCRASH_OPERATING_SYSTEM_IPHONE_OS
-#elif TARGET_OS_MAC
-#  define PLCRASH_OS    PLCRASH_OPERATING_SYSTEM_MAC_OS_X
-#else
-#error Unknown operating system
-#endif
-
-#ifdef __x86_64__
-#  define PLCRASH_MACHINE PLCRASH_MACHINE_TYPE_X86_64
-
-#elif defined(__i386__)
-#  define PLCRASH_MACHINE PLCRASH_MACHINE_TYPE_X86_32
-
-#elif defined(__arm__)
-#  define PLCRASH_MACHINE PLCRASH_MACHINE_TYPE_ARM
-
-#else
-#  error Unknown machine architecture
-#endif
-
 /**
  * @internal
  *
