@@ -7,4 +7,5 @@ The binaries were build from unmodified protobuf 2.0.3 and protobuf-c 0.6 source
 
 The source (see src/) directory, is an extraction of the protobuf-c runtime library. It
 has been modified as follows:
-    - No current modifications
+    - Unintialized value compiler warnings were fixed, and marked
+      with "landonf - 12/17/2008 (uninitialized compiler warning))"
