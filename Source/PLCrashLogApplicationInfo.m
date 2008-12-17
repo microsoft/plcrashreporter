@@ -16,19 +16,19 @@
     if ((self = [super init]) == nil)
         return nil;
 
-    _applicationIdentifier = [applicationIdentifier retain];
-    _applicationVersion = [applicationVersion retain];
+    _identifier = [applicationIdentifier retain];
+    _version = [applicationVersion retain];
 
     return self;
 }
 
 - (void) dealloc {
-    [_applicationIdentifier release];
-    [_applicationVersion release];
+    [_identifier release];
+    [_version release];
     [super dealloc];
 }
 
-@synthesize applicationIdentifier = _applicationIdentifier;
-@synthesize applicationVersion = _applicationVersion;
+@synthesize identifier = _identifier;
+@synthesize version = _version;
 
 @end

@@ -82,8 +82,8 @@
     if (appInfo == NULL)
         return;
 
-    STAssertTrue(strcmp(appInfo->app_identifier, "test.id") == 0, @"Incorrect app ID written");
-    STAssertTrue(strcmp(appInfo->app_version, "1.0") == 0, @"Incorrect app version written");
+    STAssertTrue(strcmp(appInfo->identifier, "test.id") == 0, @"Incorrect app ID written");
+    STAssertTrue(strcmp(appInfo->version, "1.0") == 0, @"Incorrect app version written");
 }
 
 

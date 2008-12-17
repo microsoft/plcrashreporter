@@ -11,10 +11,10 @@
 @interface PLCrashLogApplicationInfo : NSObject {
 @private
     /** Application identifier */
-    NSString *_applicationIdentifier;
+    NSString *_identifier;
     
     /** Application version */
-    NSString *_applicationVersion;
+    NSString *_version;
 }
 
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier 
@@ -23,11 +23,11 @@
 /**
  * The application identifier. This is usually the application's CFBundleIdentifier value.
  */
-@property(nonatomic, readonly) NSString *applicationIdentifier;
+@property(nonatomic, readonly) NSString *identifier;
 
 /**
  * The application version. This is usually the application's CFBundleVersion value.
  */
-@property(nonatomic, readonly) NSString *applicationVersion;
+@property(nonatomic, readonly) NSString *version;
 
 @end

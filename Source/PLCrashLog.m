@@ -17,8 +17,12 @@ struct _PLCrashLogDecoder {
 @interface PLCrashLog (PrivateMethods)
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
+
 - (PLCrashLogSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo 
                                        error: (NSError **) outError;
+
+- (PLCrashLogApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
+                                                 error: (NSError **) outError;
 
 @end
 
@@ -70,6 +74,9 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         goto error;
 
     /* Application info */
+    _applicationInfo = [[self extractApplicationInfo: _decoder->crashReport->application_info error: outError] retain];
+    if (!_applicationInfo)
+        goto error;
 
     return self;
 
@@ -157,7 +164,7 @@ error:
     /* Validate */
     if (systemInfo == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
-                         NSLocalizedString(@"Crash report is missing System Information field", 
+                         NSLocalizedString(@"Crash report is missing System Information section", 
                                            @"Missing sysinfo in crash report"));
         return nil;
     }
@@ -178,6 +185,45 @@ error:
                                            operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
                                                      architecture: systemInfo->architecture
                                                         timestamp: timestamp] autorelease];
+}
+
+
+/**
+ * Extract application information from the crash log. Returns nil on error.
+ */
+- (PLCrashLogApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
+                                                 error: (NSError **) outError
+{    
+    /* Validate */
+    if (applicationInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Application Information section", 
+                                           @"Missing appinfo in crash report"));
+        return nil;
+    }
+
+    /* Identifier available? */
+    if (applicationInfo->identifier == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Application Information app identifier field", 
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+
+    /* Version available? */
+    if (applicationInfo->version == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Application Information app version field", 
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+    
+    /* Done */
+    NSString *identifier = [NSString stringWithUTF8String: applicationInfo->identifier];
+    NSString *version = [NSString stringWithUTF8String: applicationInfo->version];
+
+    return [[[PLCrashLogApplicationInfo alloc] initWithApplicationIdentifier: identifier
+                                                          applicationVersion: version] autorelease];
 }
 
 @end
