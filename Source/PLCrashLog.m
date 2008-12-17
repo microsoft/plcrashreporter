@@ -87,7 +87,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         /* Done */
         _systemInfo = [[PLCrashLogSystemInfo alloc] initWithOperatingSystem: systemInfo->operating_system
                                                      operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
-                                                               architecture: systemInfo->machine_type
+                                                               architecture: systemInfo->architecture
                                                                   timestamp: timestamp];
     }
 
