@@ -188,6 +188,8 @@ static void uncaught_exception_handler (NSException *exception) {
 
     /* Set up the signal handler context */
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
+    assert(_applicationIdentifier != nil);
+    assert(_applicationVersion != nil);
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion);
 
     /* Enable the signal handler */
@@ -228,6 +230,10 @@ static void uncaught_exception_handler (NSException *exception) {
     /* Initialize our superclass */
     if ((self = [super init]) == nil)
         return nil;
+
+    /* Save application ID and version */
+    _applicationIdentifier = [applicationIdentifier retain];
+    _applicationVersion = [applicationVersion retain];
     
     /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
     NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
