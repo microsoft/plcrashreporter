@@ -95,6 +95,25 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
 }
 
 
+/**
+ * @internal
+ *
+ * Uncaught exception handler. Sets the plcrash_log_writer_t's uncaught exception
+ * field, and then triggers a SIGTRAP (synchronous exception) to cause a normal
+ * exception dump.
+ *
+ * XXX: It is possible that another crash may occur between setting the uncaught 
+ * exception field, and triggering the signal handler.
+ */
+static void uncaught_exception_handler (NSException *exception) {
+    /* Set the uncaught exception */
+    plcrash_log_writer_set_exception(&signal_handler_context.writer, exception);
+
+    /* Trigger the crash handler */
+    raise(SIGTRAP);
+}
+
+
 @interface PLCrashReporter (PrivateMethods)
 
 - (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
@@ -204,6 +223,9 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     /* Enable the signal handler */
     if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])
         return NO;
+
+    /* Set the uncaught exception handler */
+    NSSetUncaughtExceptionHandler(&uncaught_exception_handler);
 
     /* Success */
     _enabled = YES;
