@@ -22,7 +22,8 @@ static int fatal_signals[] = {
     SIGBUS,
     SIGFPE,
     SIGILL,
-    SIGSEGV
+    SIGSEGV,
+    SIGTRAP
 };
 
 /** @internal
