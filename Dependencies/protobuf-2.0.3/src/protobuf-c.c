@@ -1359,11 +1359,12 @@ protobuf_c_message_unpack         (const ProtobufCMessageDescriptor *desc,
 
   while (rem > 0)
     {
-      uint32_t tag;
+      uint32_t tag = 0; // landonf - 12/17/2008 (uninitialized compiler warning)
       ProtobufCWireType wire_type;
       size_t used = parse_tag_and_wiretype (rem, at, &tag, &wire_type);
       const ProtobufCFieldDescriptor *field;
       ScannedMember tmp;
+      memset(&tmp, 0, sizeof(tmp)); // landonf - 12/17/2008 (uninitialized compiler warning)
       if (used == 0)
         {
           UNPACK_ERROR (("error parsing tag/wiretype at offset %u",
@@ -1426,7 +1427,7 @@ protobuf_c_message_unpack         (const ProtobufCMessageDescriptor *desc,
           break;
         case PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED:
           {
-            size_t pref_len;
+            size_t pref_len = 0; // landonf - 12/17/2008 (uninitialized compiler warning)
             tmp.len = scan_length_prefixed_data (rem, at, &pref_len);
             if (tmp.len == 0)
               {
