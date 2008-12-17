@@ -11,3 +11,4 @@ _PLCrashReporterErrorDomain
 
 # PLCrashLog
 .objc_class_name_PLCrashLog
+.objc_class_name_PLCrashLogSystemInfo
