@@ -14,6 +14,10 @@
 
 #import <fcntl.h>
 
+#define NSDEBUG(msg, args...) {\
+    NSLog(@"[PLCrashReporter] " msg, ## args); \
+}
+
 /** @internal
  * CrashReporter cache directory name. */
 static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
@@ -116,8 +120,10 @@ static void uncaught_exception_handler (NSException *exception) {
 
 @interface PLCrashReporter (PrivateMethods)
 
-- (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
+- (id) initWithBundle: (NSBundle *) bundle;
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion;
 
+- (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
 - (NSString *) crashReportDirectory;
 - (NSString *) queuedCrashReportDirectory;
 - (NSString *) crashReportPath;
@@ -133,7 +139,7 @@ static void uncaught_exception_handler (NSException *exception) {
 /* Create the shared crash reporter singleton. */
 + (void) initialize {
     sharedReporter = NULL;
-    sharedReporter = [[PLCrashReporter alloc] init];
+    sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
 }
 
 /**
@@ -142,42 +148,6 @@ static void uncaught_exception_handler (NSException *exception) {
 + (PLCrashReporter *) sharedReporter {
     return sharedReporter;
 }
-
-
-/**
- * @internal
- *
- * This is the designated class initializer, but it is not intended
- * to be called externally. If 
- */
-- (id) init {
-    /* Only allow one instance to be created, no matter what */
-    if (sharedReporter != NULL) {
-        [self release];
-        return sharedReporter;
-    }
-
-    /* Initialize our superclass */
-    if ((self = [super init]) == nil)
-        return nil;
-
-    /* Fetch the application's bundle identifier for use in the crash report directory path. No occurances of '/' should ever
-     * be in a bundle ID, but just to be safe, we escape them */
-    NSString *bundleIdPath = [[[NSBundle mainBundle] bundleIdentifier] stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
-
-    /* Fetch the path to the crash report directory */
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *cacheDir = [paths objectAtIndex: 0];
-    _crashReportDirectory = [[[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: bundleIdPath] retain];
-
-    return self;
-}
-
-- (void) dealloc {
-    [_crashReportDirectory release];
-    [super dealloc];
-}
-
 
 /**
  * Enable the crash reporter. Once called, all application crashes will
@@ -218,7 +188,7 @@ static void uncaught_exception_handler (NSException *exception) {
 
     /* Set up the signal handler context */
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
-    plcrash_log_writer_init(&signal_handler_context.writer, @"", @""); // TODO set version and bundle id
+    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion);
 
     /* Enable the signal handler */
     if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])
@@ -241,6 +211,74 @@ static void uncaught_exception_handler (NSException *exception) {
  * Private Methods
  */
 @implementation PLCrashReporter (PrivateMethods)
+
+/**
+ * @internal
+ *
+ * This is the designated initializer, but it is not intended
+ * to be called externally. If 
+ */
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion {
+    /* Only allow one instance to be created, no matter what */
+    if (sharedReporter != NULL) {
+        [self release];
+        return sharedReporter;
+    }
+    
+    /* Initialize our superclass */
+    if ((self = [super init]) == nil)
+        return nil;
+    
+    /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
+    NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *cacheDir = [paths objectAtIndex: 0];
+    _crashReportDirectory = [[[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath] retain];
+    
+    return self;
+}
+
+
+/**
+ * @internal
+ * 
+ * Initialize with the provided bundle's ID and version.
+ */
+- (id) initWithBundle: (NSBundle *) bundle {
+    NSString *bundleIdentifier = [bundle bundleIdentifier];
+    NSString *bundleVersion = [[bundle infoDictionary] objectForKey: (NSString *) kCFBundleVersionKey];
+    
+    /* Verify that the identifier is available */
+    if (bundleIdentifier == nil) {
+        const char *progname = getprogname();
+        if (progname == NULL) {
+            [NSException raise: PLCrashReporterException format: @"Can not determine process identifier or process name"];
+            [self release];
+            return nil;
+        }
+
+        NSDEBUG(@"Warning -- bundle identifier, using process name %s", progname);
+        bundleIdentifier = [NSString stringWithCString: progname];
+    }
+
+    /* Verify that the version is available */
+    if (bundleVersion == nil) {
+        NSDEBUG(@"Warning -- bundle version unavailable");
+        bundleVersion = @"";
+    }
+    
+    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion];
+}
+
+
+- (void) dealloc {
+    [_crashReportDirectory release];
+    [_applicationIdentifier release];
+    [_applicationVersion release];
+    [super dealloc];
+}
+
 
 /**
  * Validate (and create if necessary) the crash reporter directory structure.
