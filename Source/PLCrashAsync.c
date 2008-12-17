@@ -90,7 +90,7 @@ static ssize_t writen (int fd, const void *data, size_t len) {
  * Initialize the plcrash_async_file_t instance.
  *
  * @param file File structure to initialize.
- * @param output_cap Maximum number of bytes that will be written to disk. Intended as a
+ * @param output_limit Maximum number of bytes that will be written to disk. Intended as a
  * safety measure prevent a run-away crash log writer from filling the disk. Specify
  * 0 to disable any limits. Once the limit is reached, all data will be dropped.
  * @param fd Open file descriptor.
