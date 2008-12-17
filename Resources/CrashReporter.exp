@@ -14,3 +14,4 @@ _PLCrashLogHostOperatingSystem
 _PLCrashLogHostArchitecture
 .objc_class_name_PLCrashLog
 .objc_class_name_PLCrashLogSystemInfo
+.objc_class_name_PLCrashLogApplicationInfo
