@@ -615,7 +615,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
     }
 
     /* Exception */
-    {
+    if (writer->uncaught_exception.has_exception) {
         uint32_t size;
 
         /* Calculate the message size */
