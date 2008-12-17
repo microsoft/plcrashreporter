@@ -36,8 +36,8 @@ enum {
     /** CrashReport.system_info.os_version */
     PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID = 2,
 
-    /** CrashReport.system_info.machine_type */
-    PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID = 3,
+    /** CrashReport.system_info.architecture */
+    PLCRASH_PROTO_SYSTEM_INFO_ARCHITECTURE_TYPE_ID = 3,
 
     /** CrashReport.system_info.timestamp */
     PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID = 4,
@@ -200,7 +200,7 @@ size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, struct utsn
 
     /* Machine type */
     enumval = PLCrashLogHostArchitecture;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ARCHITECTURE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* Timestamp */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PLPROTOBUF_C_TYPE_UINT32, &timestamp);

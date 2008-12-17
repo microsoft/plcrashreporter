@@ -9,7 +9,7 @@ package plcrash;
 option java_package = "com.plausiblelabs.crashreporter";
 
 /* Known processor architecture types */
-enum MachineType {
+enum Architecture {
     /* x86 */
     X86_32 = 0;
 
@@ -42,7 +42,7 @@ message CrashReport {
         required string os_version = 2;
 
         /* Processor architecture */
-        required MachineType machine_type = 3;
+        required Architecture architecture = 3;
 
         /* Date crash report was generated (as seconds since epoch). 0 if the time
          * is unknown or can not be determined. */

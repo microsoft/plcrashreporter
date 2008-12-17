@@ -68,7 +68,7 @@
     if (systemInfo->os_version != NULL)
         STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
 
-    STAssertEquals(systemInfo->machine_type, PLCrashLogHostArchitecture, @"Unexpected machine type");
+    STAssertEquals(systemInfo->architecture, PLCrashLogHostArchitecture, @"Unexpected machine type");
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
