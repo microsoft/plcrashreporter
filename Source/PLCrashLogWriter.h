@@ -76,6 +76,15 @@ typedef struct plcrash_log_writer {
     /** System uname() */
     struct utsname utsname;
 
+    /** Application data */
+    struct {
+        /** Application identifier */
+        char *app_identifier;
+
+        /** Application version */
+        char *app_version;
+    } application_info;
+
     /** Uncaught exception (if any) */
     struct {
         /** Flag specifying wether an uncaught exception is available. */
@@ -93,7 +102,7 @@ typedef struct plcrash_log_writer {
 } plcrash_log_writer_t;
 
 
-plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer);
+plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString *app_identifier, NSString *app_version);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx);
 plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer);

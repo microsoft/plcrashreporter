@@ -218,7 +218,7 @@ static void uncaught_exception_handler (NSException *exception) {
 
     /* Set up the signal handler context */
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
-    plcrash_log_writer_init(&signal_handler_context.writer);
+    plcrash_log_writer_init(&signal_handler_context.writer, @"", @""); // TODO set version and bundle id
 
     /* Enable the signal handler */
     if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])

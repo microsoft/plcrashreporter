@@ -52,6 +52,15 @@ message CrashReport {
     /* Host data */
     required SystemInfo system_info = 1;
 
+    message ApplicationInfo {
+        /* Unique application identifier */
+        required string app_identifier = 1;
+
+        /* Application version string */
+        required string app_version = 2;
+    }
+    required ApplicationInfo application_info = 2;
+
     /* Thread state */
     message Thread {
         /* Thread number (indexed at 0, must be unique within a crash report) */
@@ -84,7 +93,7 @@ message CrashReport {
     }
 
     /* All backtraces */
-    repeated Thread threads = 2;
+    repeated Thread threads = 3;
 
     /* Binary image */
     message BinaryImage {
