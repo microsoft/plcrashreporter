@@ -50,7 +50,7 @@
     plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
-    NSError *error;
+    NSError *error = nil;
     
     /* Initialze faux crash data */
     {
@@ -89,6 +89,11 @@
     /* Try to parse it */
     PLCrashLog *crashLog = [[[PLCrashLog alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
     STAssertNotNil(crashLog, @"Could not decode crash log: %@", error);
+
+    STAssertNotNil(crashLog.systemInfo, @"No system information available");
+    STAssertNotNil(crashLog.systemInfo.operatingSystemVersion, @"OS version is nil");
+    STAssertNotNil(crashLog.systemInfo.timestamp, @"Timestamp is nil");
+
 }
 
 

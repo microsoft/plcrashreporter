@@ -6,6 +6,8 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "PLCrashLogSystemInfo.h"
+
 /** 
  * @ingroup constants
  * Crash file magic identifier */
@@ -48,8 +50,13 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
 @private
     /** Private implementation variables (used to hide the underlying protobuf parser) */
     _PLCrashLogDecoder *_decoder;
+
+    /** Crash log system info */
+    PLCrashLogSystemInfo *_systemInfo;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
+
+@property(nonatomic, readonly) PLCrashLogSystemInfo *systemInfo;
 
 @end
