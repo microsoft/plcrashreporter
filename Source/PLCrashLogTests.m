@@ -99,8 +99,8 @@
 
     /* App info */
     STAssertNotNil(crashLog.applicationInfo, @"No application information available");
-    STAssertNotNil(crashLog.applicationInfo.identifier, @"No application identifier available");
-    STAssertNotNil(crashLog.applicationInfo.version, @"No application version available");
+    STAssertNotNil(crashLog.applicationInfo.applicationIdentifier, @"No application identifier available");
+    STAssertNotNil(crashLog.applicationInfo.applicationVersion, @"No application version available");
 
 }
 
