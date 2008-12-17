@@ -87,6 +87,7 @@ enum {
     PLCRASH_PROTO_BINARY_IMAGE_UUID_ID = 4,
 };
 
+
 /**
  * Initialize a new crash log writer instance. This fetches all necessary environment
  * information.
@@ -378,6 +379,11 @@ size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char
 
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
+ *
+ * @param writer The writer context
+ * @param file The output file.
+ * @param siginfo Signal information
+ * @param crashctx Context of the crashed thread.
  *
  * @warning This method must only be called from the thread that has triggered the crash. This must correspond
  * to the provided crashctx. Failure to adhere to this requirement will result in an invalid stack trace
