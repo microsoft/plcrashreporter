@@ -15,9 +15,14 @@
 #endif
 
 #import "PLCrashReporter.h"
+#import "PLCrashLog.h"
 
 /**
  * @defgroup functions Crash Reporter Functions Reference
+ */
+
+/**
+ * @defgroup types Crash Reporter Data Types Reference
  */
 
 /**
@@ -61,6 +66,9 @@ typedef enum {
     /** An Mach or POSIX operating system error has occured. The underlying NSError cause may be fetched from the userInfo
      * dictionary using the NSUnderlyingErrorKey key. */
     PLCrashReporterErrorOperatingSystem = 1,
+
+    /** The crash report log file is corrupt or invalid */
+    PLCrashReporterErrorCrashReportInvalid = 2,
 } PLCrashReporterError;
 
 

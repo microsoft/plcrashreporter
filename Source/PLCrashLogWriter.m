@@ -16,6 +16,7 @@
 
 #import <mach-o/dyld.h>
 
+#import "PLCrashLog.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"

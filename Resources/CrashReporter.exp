@@ -4,8 +4,10 @@
 # Created by Landon Fuller on 12/5/08.
 # Copyright 2008 Plausible Labs Cooperative, Inc. All rights reserved.
 
-# CrashReporter
+# PLCrashReporter
 _PLCrashReporterException
 _PLCrashReporterErrorDomain
 .objc_class_name_PLCrashReporter
 
+# PLCrashLog
+.objc_class_name_PLCrashLog
