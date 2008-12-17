@@ -17,6 +17,8 @@ struct _PLCrashLogDecoder {
 @interface PLCrashLog (PrivateMethods)
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
+- (PLCrashLogSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo 
+                                       error: (NSError **) outError;
 
 @end
 
@@ -29,6 +31,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
 @implementation PLCrashLog
 
 @synthesize systemInfo = _systemInfo;
+@synthesize applicationInfo = _applicationInfo;
 
 /**
  * Initialize with the provided crash log data. On error, nil will be returned, and
@@ -60,36 +63,13 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         goto error;
     }
 
+
     /* System info */
-    {
-        Plcrash__CrashReport__SystemInfo *systemInfo = _decoder->crashReport->system_info;
-        NSDate *timestamp = nil;
+    _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info error: outError] retain];
+    if (!_systemInfo)
+        goto error;
 
-        /* Validate */
-        if (systemInfo == NULL) {
-            populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
-                             NSLocalizedString(@"Crash report is missing System Information field", 
-                                               @"Missing sysinfo in crash report"));
-            goto error;
-        }
-
-        if (systemInfo->os_version == NULL) {
-            populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
-                             NSLocalizedString(@"Crash report is missing System Information OS version field", 
-                                               @"Missing sysinfo operating system in crash report"));
-            goto error;
-        }
-
-        /* Set up the timestamp, if available */
-        if (systemInfo->timestamp != 0)
-            timestamp = [NSDate dateWithTimeIntervalSince1970: systemInfo->timestamp];
-    
-        /* Done */
-        _systemInfo = [[PLCrashLogSystemInfo alloc] initWithOperatingSystem: systemInfo->operating_system
-                                                     operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
-                                                               architecture: systemInfo->architecture
-                                                                  timestamp: timestamp];
-    }
+    /* Application info */
 
     return self;
 
@@ -166,6 +146,38 @@ error:
     }
 
     return crashReport;
+}
+
+/**
+ * Extract system information from the crash log. Returns nil on error.
+ */
+- (PLCrashLogSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError {
+    NSDate *timestamp = nil;
+    
+    /* Validate */
+    if (systemInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing System Information field", 
+                                           @"Missing sysinfo in crash report"));
+        return nil;
+    }
+    
+    if (systemInfo->os_version == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing System Information OS version field", 
+                                           @"Missing sysinfo operating system in crash report"));
+        return nil;
+    }
+    
+    /* Set up the timestamp, if available */
+    if (systemInfo->timestamp != 0)
+        timestamp = [NSDate dateWithTimeIntervalSince1970: systemInfo->timestamp];
+    
+    /* Done */
+    return [[[PLCrashLogSystemInfo alloc] initWithOperatingSystem: systemInfo->operating_system
+                                           operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
+                                                     architecture: systemInfo->architecture
+                                                        timestamp: timestamp] autorelease];
 }
 
 @end
