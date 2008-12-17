@@ -72,6 +72,20 @@
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
 
+// check a crash report's app info
+- (void) checkAppInfo: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__ApplicationInfo *appInfo = crashReport->application_info;
+    
+    STAssertNotNULL(appInfo, @"No app info available");
+    // Nothing else to do?
+    if (appInfo == NULL)
+        return;
+
+    STAssertTrue(strcmp(appInfo->app_identifier, "test.id") == 0, @"Incorrect app ID written");
+    STAssertTrue(strcmp(appInfo->app_version, "1.0") == 0, @"Incorrect app version written");
+}
+
+
 - (void) checkThreads: (Plcrash__CrashReport *) crashReport {
     Plcrash__CrashReport__Thread **threads = crashReport->threads;
     BOOL foundCrashed = NO;
@@ -151,7 +165,7 @@
     plcrash_async_file_init(&file, fd, 0);
 
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
 
     /* Set an exception */
     plcrash_log_writer_set_exception(&writer, [NSException exceptionWithName: @"TestException" reason: @"TestReason" userInfo: nil]);

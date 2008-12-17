@@ -40,11 +40,19 @@ enum {
 
     /** CrashReport.system_info.timestamp */
     PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID = 4,
+
+    /** CrashReport.app_info */
+    PLCRASH_PROTO_APP_INFO_ID = 2,
     
+    /** CrashReport.app_info.app_identifier */
+    PLCRASH_PROTO_APP_INFO_APP_IDENTIFIER_ID = 1,
     
+    /** CrashReport.app_info.app_version */
+    PLCRASH_PROTO_APP_INFO_APP_VERSION_ID = 2,
+
 
     /** CrashReport.threads */
-    PLCRASH_PROTO_THREADS_ID = 2,
+    PLCRASH_PROTO_THREADS_ID = 3,
     
 
     /** CrashReports.thread.thread_number */
@@ -103,13 +111,21 @@ enum {
  * information.
  *
  * @param writer Writer instance to be initialized.
+ * @param app_identifier Unique per-application identifier. On Mac OS X, this is likely the CFBundleIdentifier.
+ * @param app_version Application version string.
  *
  * @warning This function is not guaranteed to be async-safe, and must be
  * called prior to entering the crash handler.
  */
-plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer) {
+plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString *app_identifier, NSString *app_version) {
     /* Default to 0 */
     memset(writer, 0, sizeof(*writer));
+    
+    /* Fetch the application information */
+    {
+        writer->application_info.app_identifier = strdup([app_identifier UTF8String]);
+        writer->application_info.app_version = strdup([app_version UTF8String]);
+    }
 
     /* Fetch the OS information */
     if (uname(&writer->utsname) != 0) {
@@ -151,6 +167,10 @@ plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer) {
  * @warning This method is not async safe.
  */
 void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
+    /* Free the app info */
+    free(writer->application_info.app_identifier);
+    free(writer->application_info.app_version);
+
     /* Free the exception data */
     if (writer->uncaught_exception.has_exception) {
         free(writer->uncaught_exception.name);
@@ -184,6 +204,27 @@ size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, struct utsn
     /* Timestamp */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PLPROTOBUF_C_TYPE_UINT32, &timestamp);
 
+    return rv;
+}
+
+/**
+ * @internal
+ *
+ * Write the app info message.
+ *
+ * @param file Output file
+ * @param app_identifier Application identifier
+ * @param app_version Application version
+ */
+size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const char *app_identifier, const char *app_version) {
+    size_t rv = 0;
+
+    /* App identifier */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_IDENTIFIER_ID, PLPROTOBUF_C_TYPE_STRING, app_identifier);
+    
+    /* App version */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, app_version);
+    
     return rv;
 }
 
@@ -463,7 +504,6 @@ size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_w
  * and thread dump.
  */
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
-    uint32_t size;
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
 
@@ -480,6 +520,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
     {
         struct timeval tv;
         uint32_t timestamp;
+        uint32_t size;
 
         /* Must stay the same across both calls, so get the timestamp here */
         if (gettimeofday(&tv, NULL) != 0) {
@@ -495,6 +536,18 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_system_info(file, &writer->utsname, timestamp);
+    }
+    
+    /* App info */
+    {
+        uint32_t size;
+
+        /* Determine size */
+        size = plcrash_writer_write_app_info(NULL, writer->application_info.app_identifier, writer->application_info.app_version);
+        
+        /* Write message */
+        plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_app_info(file, writer->application_info.app_identifier, writer->application_info.app_version);
     }
 
     /* Threads */
