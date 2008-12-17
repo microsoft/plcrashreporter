@@ -192,13 +192,15 @@
     }
 
     /* Check the file magic. The file must be large enough for the value + version + data */
-    STAssertTrue(statbuf.st_size > strlen(PLCRASH_LOG_FILE_MAGIC) + sizeof(uint8_t), @"File is too small for magic + version + data");
-    STAssertTrue(memcmp(buf, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC)) == 0, @"File does not start with magic string");
-    STAssertEquals(((uint8_t *) buf)[strlen(PLCRASH_LOG_FILE_MAGIC)], (uint8_t)PLCRASH_LOG_FILE_VERSION, @"File version is not equal to 0");
+    struct PLCrashLogFileHeader *header = buf;
+    STAssertTrue(statbuf.st_size > sizeof(struct PLCrashLogFileHeader), @"File is too small for magic + version + data");
+    // verifies correct byte ordering of the file magic
+    STAssertTrue(memcmp(header->magic, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC)) == 0, @"File header is not 'plcrash', is: '%s'", (const char *) &header->magic);
+    STAssertEquals(header->version, (uint8_t) PLCRASH_LOG_FILE_VERSION, @"File version is not equal to 0");
 
     /* Try to read the crash report */
     Plcrash__CrashReport *crashReport;
-    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf + strlen(PLCRASH_LOG_FILE_MAGIC) + sizeof(uint8_t));
+    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size - sizeof(struct PLCrashLogFileHeader), header->data);
     
     /* Output some debug decoding (TODO: Remove) */
     fprintf(stderr, "Binary dump: ");
