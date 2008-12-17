@@ -103,4 +103,16 @@ message CrashReport {
 
     /* All loaded binary images */
     repeated BinaryImage binary_images = 4;
+
+    /* Exception */
+    message Exception {
+        /* The exception name that triggered this crash */
+        required string name = 1;
+
+        /* The exception reason */
+        required string reason = 2;
+    }
+
+    /* The exception that triggered the crash (if any) */
+    optional Exception exception = 5;
 }
