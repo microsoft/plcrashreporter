@@ -7,6 +7,7 @@
 
 #import "GTMSenTestCase.h"
 
+#import "PLCrashLog.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
 

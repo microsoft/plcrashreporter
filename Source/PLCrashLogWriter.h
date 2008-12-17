@@ -21,13 +21,6 @@
  * @{
  */
 
-/** Crash file magic identifier */
-#define PLCRASH_LOG_FILE_MAGIC "plcrash"
-
-/** Crash format version byte identifier. Will not change outside of the introduction of
- * an entirely new crash log format. */
-#define PLCRASH_LOG_FILE_VERSION 1
-
 /** CrashReport machine type enums */
 enum {
     PLCRASH_MACHINE_TYPE_X86_32 = 0,

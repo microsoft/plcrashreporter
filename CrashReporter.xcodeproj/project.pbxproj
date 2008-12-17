@@ -140,6 +140,12 @@
 		05F411AD0EF8DE68008050CF /* PLCrashLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411AC0EF8DE68008050CF /* PLCrashLogTests.m */; };
 		05F411AE0EF8DE68008050CF /* PLCrashLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411AC0EF8DE68008050CF /* PLCrashLogTests.m */; };
 		05F411AF0EF8DE68008050CF /* PLCrashLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411AC0EF8DE68008050CF /* PLCrashLogTests.m */; };
+		05F411F30EF8DFD3008050CF /* crash_report.proto in Sources */ = {isa = PBXBuildFile; fileRef = 059670C70EEFAC3A008A0601 /* crash_report.proto */; };
+		05F411F40EF8DFDA008050CF /* crash_report.proto in Sources */ = {isa = PBXBuildFile; fileRef = 059670C70EEFAC3A008A0601 /* crash_report.proto */; };
+		05F411F50EF8DFE4008050CF /* crash_report.proto in Sources */ = {isa = PBXBuildFile; fileRef = 059670C70EEFAC3A008A0601 /* crash_report.proto */; };
+		05F411F70EF8E001008050CF /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F40F830EF850FC008050CF /* protobuf-c.c */; };
+		05F411F90EF8E013008050CF /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F40F830EF850FC008050CF /* protobuf-c.c */; };
+		05F411FB0EF8E023008050CF /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F40F830EF850FC008050CF /* protobuf-c.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -168,6 +174,42 @@
 			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
 		};
 		0596747B0EF0BA2F008A0601 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(INPUT_FILE_BASE).pb-c.c",
+				"$(INPUT_FILE_BASE).pb-c.h",
+			);
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+		};
+		05F411F10EF8DF79008050CF /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(INPUT_FILE_BASE).pb-c.c",
+				"$(INPUT_FILE_BASE).pb-c.h",
+			);
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+		};
+		05F411FE0EF8E070008050CF /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(INPUT_FILE_BASE).pb-c.c",
+				"$(INPUT_FILE_BASE).pb-c.h",
+			);
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+		};
+		05F411FF0EF8E070008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
@@ -695,6 +737,7 @@
 				05CD321E0EE93B59000FDE88 /* Create Framework */,
 			);
 			buildRules = (
+				05F411FE0EF8E070008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
 				05CD31720EE939DC000FDE88 /* PBXTargetDependency */,
@@ -714,6 +757,7 @@
 				05CD32200EE93B72000FDE88 /* Create Framework */,
 			);
 			buildRules = (
+				05F411FF0EF8E070008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
 				05CD31740EE939DF000FDE88 /* PBXTargetDependency */,
@@ -812,6 +856,7 @@
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
 			buildRules = (
+				05F411F10EF8DF79008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -966,6 +1011,8 @@
 				05CD36D40EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
 				05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */,
 				05F411A90EF8DA31008050CF /* PLCrashLog.m in Sources */,
+				05F411F40EF8DFDA008050CF /* crash_report.proto in Sources */,
+				05F411FB0EF8E023008050CF /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -983,6 +1030,8 @@
 				05CD36D20EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
 				05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */,
 				05F411A70EF8DA31008050CF /* PLCrashLog.m in Sources */,
+				05F411F70EF8E001008050CF /* protobuf-c.c in Sources */,
+				05F411F50EF8DFE4008050CF /* crash_report.proto in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1081,6 +1130,8 @@
 				05CD36D60EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
 				05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */,
 				05F411AB0EF8DA31008050CF /* PLCrashLog.m in Sources */,
+				05F411F30EF8DFD3008050CF /* crash_report.proto in Sources */,
+				05F411F90EF8E013008050CF /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
