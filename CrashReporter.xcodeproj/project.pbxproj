@@ -158,6 +158,12 @@
 		05F414210EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */; };
 		05F414220EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */; };
 		05F414230EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */; };
+		05F414820EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
+		05F414830EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
+		05F414840EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
+		05F414850EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
+		05F414860EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
+		05F414870EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -410,6 +416,8 @@
 		05F413440EF995C0008050CF /* PLCrashLogSystemInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogSystemInfo.m; sourceTree = "<group>"; };
 		05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogApplicationInfo.h; sourceTree = "<group>"; };
 		05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogApplicationInfo.m; sourceTree = "<group>"; };
+		05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogThreadInfo.h; sourceTree = "<group>"; };
+		05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogThreadInfo.m; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -628,6 +636,8 @@
 				05F413440EF995C0008050CF /* PLCrashLogSystemInfo.m */,
 				05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */,
 				05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */,
+				05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */,
+				05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */,
 			);
 			name = "Crash Log";
 			sourceTree = "<group>";
@@ -722,6 +732,7 @@
 				05F411A80EF8DA31008050CF /* PLCrashLog.h in Headers */,
 				05F413470EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */,
 				05F414220EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */,
+				05F414860EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -738,6 +749,7 @@
 				05F411A60EF8DA31008050CF /* PLCrashLog.h in Headers */,
 				05F413450EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */,
 				05F4141E0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */,
+				05F414820EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -755,6 +767,7 @@
 				05F411AA0EF8DA31008050CF /* PLCrashLog.h in Headers */,
 				05F413490EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */,
 				05F414200EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */,
+				05F414840EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1049,6 +1062,7 @@
 				05F411FB0EF8E023008050CF /* protobuf-c.c in Sources */,
 				05F413480EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */,
 				05F414230EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */,
+				05F414870EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1070,6 +1084,7 @@
 				05F411F50EF8DFE4008050CF /* crash_report.proto in Sources */,
 				05F413460EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */,
 				05F4141F0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */,
+				05F414830EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1172,6 +1187,7 @@
 				05F411F90EF8E013008050CF /* protobuf-c.c in Sources */,
 				05F4134A0EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */,
 				05F414210EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */,
+				05F414850EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
