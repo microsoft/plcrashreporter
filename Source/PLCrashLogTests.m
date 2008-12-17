@@ -93,6 +93,8 @@
     STAssertNotNil(crashLog.systemInfo, @"No system information available");
     STAssertNotNil(crashLog.systemInfo.operatingSystemVersion, @"OS version is nil");
     STAssertNotNil(crashLog.systemInfo.timestamp, @"Timestamp is nil");
+    STAssertEquals(crashLog.systemInfo.operatingSystem, PLCrashLogHostOperatingSystem, @"Operating system incorrect");
+    STAssertEquals(crashLog.systemInfo.architecture, PLCrashLogHostArchitecture, @"Architecture incorrect");
 
 }
 
