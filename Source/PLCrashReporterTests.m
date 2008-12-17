@@ -15,7 +15,7 @@
 
 - (void) testSingleton {
     STAssertNotNil([PLCrashReporter sharedReporter], @"Returned nil singleton instance");
-    STAssertTrue([PLCrashReporter sharedReporter] == [[PLCrashReporter alloc] init], @"Crash reporter init method did not return singleton instance");
+    STAssertTrue([PLCrashReporter sharedReporter] == [PLCrashReporter sharedReporter], @"Crash reporter did not return singleton instance");
 }
 
 @end

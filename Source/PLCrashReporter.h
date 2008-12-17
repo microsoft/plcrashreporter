@@ -12,6 +12,12 @@
     /** YES if the crash reporter has been enabled */
     BOOL _enabled;
 
+    /** Application identifier */
+    NSString *_applicationIdentifier;
+
+    /** Application version */
+    NSString *_applicationVersion;
+
     /** Path to the crash reporter internal data directory */
     NSString *_crashReportDirectory;
 }
