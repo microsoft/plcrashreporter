@@ -62,7 +62,7 @@ const char *plcrash_strerror (plcrash_error_t error) {
 static ssize_t writen (int fd, const void *data, size_t len) {
     const void *p;
     size_t left;
-    ssize_t written;
+    ssize_t written = 0;
     
     /* Loop until all bytes are written */
     p = data;
