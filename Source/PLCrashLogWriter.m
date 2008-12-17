@@ -192,14 +192,14 @@ size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, struct utsn
     uint32_t enumval;
 
     /* OS */
-    enumval = PLCRASH_OS;
+    enumval = PLCrashLogHostOperatingSystem;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* OS Version */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, utsname->release);
 
     /* Machine type */
-    enumval = PLCRASH_MACHINE;
+    enumval = PLCrashLogHostArchitecture;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_MACHINE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* Timestamp */

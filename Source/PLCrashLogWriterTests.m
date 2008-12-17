@@ -62,13 +62,13 @@
     if (systemInfo == NULL)
         return;
 
-    STAssertEquals(systemInfo->operating_system, PLCRASH_OS, @"Unexpected OS value");
+    STAssertEquals(systemInfo->operating_system, PLCrashLogHostOperatingSystem, @"Unexpected OS value");
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
     if (systemInfo->os_version != NULL)
         STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
 
-    STAssertEquals(systemInfo->machine_type, PLCRASH_MACHINE, @"Unexpected machine type");
+    STAssertEquals(systemInfo->machine_type, PLCrashLogHostArchitecture, @"Unexpected machine type");
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }

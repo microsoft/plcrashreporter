@@ -27,7 +27,6 @@ typedef enum {
     PLCrashLogOperatingSystemiPhoneSimulator = 2
 } PLCrashLogOperatingSystem;
 
-
 /**
  * @ingroup constants
  *
@@ -47,6 +46,9 @@ typedef enum {
     PLCrashLogArchitectureARM = 2
 } PLCrashLogArchitecture;
 
+
+extern PLCrashLogOperatingSystem PLCrashLogHostOperatingSystem;
+extern PLCrashLogArchitecture PLCrashLogHostArchitecture;
 
 @interface PLCrashLogSystemInfo : NSObject {
 @private
