@@ -71,31 +71,6 @@ struct _PLCrashLogDecoder {
     [super dealloc];
 }
 
-#if 0
-- (void) unpack {
-    /* Check the file magic. The file must be large enough for the value + version + data */
-    STAssertTrue(statbuf.st_size > strlen(PLCRASH_LOG_FILE_MAGIC) + sizeof(uint8_t), @"File is too small for magic + version + data");
-    STAssertTrue(memcmp(buf, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC)) == 0, @"File does not start with magic string");
-    STAssertEquals(((uint8_t *) buf)[strlen(PLCRASH_LOG_FILE_MAGIC)], (uint8_t)PLCRASH_LOG_FILE_VERSION, @"File version is not equal to 0");
-    
-    /* Try to read the crash report */
-    Plcrash__CrashReport *crashReport;
-    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size, buf + strlen(PLCRASH_LOG_FILE_MAGIC) + sizeof(uint8_t));
-    
-    /* If reading the report didn't fail, test the contents */
-    STAssertNotNULL(crashReport, @"Could not decode crash report");
-    if (crashReport != NULL) {
-        /* Test the report */
-        [self checkSystemInfo: crashReport];
-        [self checkThreads: crashReport];
-        [self checkException: crashReport];
-        
-        /* Free it */
-        protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
-    }
-}
-#endif
-
 @end
 
 
