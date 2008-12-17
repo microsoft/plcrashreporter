@@ -7,9 +7,20 @@
 
 #import "PLCrashLogApplicationInfo.h"
 
-
+/**
+ * Crash log application data.
+ *
+ * Provides the application identifier and version of the crashed
+ * application.
+ */
 @implementation PLCrashLogApplicationInfo
 
+/**
+ * Initialize with the provided application identifier and version.
+ *
+ * @param applicationIdentifier Application identifier. This is usually the CFBundleIdentifier value.
+ * @param applicationVersion Application version. This is usually the CFBundleVersion value.
+ */
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier 
                   applicationVersion: (NSString *) applicationVersion
 {
