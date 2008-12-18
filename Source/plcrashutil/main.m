@@ -155,7 +155,7 @@ int convert_command (int argc, char *argv[]) {
                 pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
             }
     
-            fprintf(output, "%d %s\t\t\t0x%" PRIx64 " 0x%" PRIx64 " + 0x%" PRIx64 "\n", 
+            fprintf(output, "%-4d%-36s0x%08" PRIx64 " 0x%" PRIx64 " + %" PRId64 "\n", 
                     frame_idx, imageName, frameInfo.instructionPointer, baseAddress, pcOffset);
         }
         fprintf(output, "\n");
