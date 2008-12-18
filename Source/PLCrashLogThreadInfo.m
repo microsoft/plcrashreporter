@@ -47,3 +47,54 @@
 
 
 @end
+
+
+/**
+ * Crash log stack frame information.
+ */
+@implementation PLCrashLogStackFrameInfo
+
+/**
+ * Initialize with the provided instruction pointer value.
+ */
+- (id) initWithInstructionPointer: (uint64_t) instructionPointer {
+    if ((self = [super init]) == nil)
+        return nil;
+
+    _instructionPointer = instructionPointer;
+
+    return self;
+}
+
+@synthesize instructionPointer = _instructionPointer;
+
+@end
+
+
+/**
+ * Crash log general purpose register information.
+ */
+@implementation PLCrashLogRegisterInfo
+
+/**
+ * Initialize with the provided name and value.
+ */
+- (id) initWithRegisterName: (NSString *) registerName registerValue: (uint64_t) registerValue {
+    if ((self = [super init]) == nil)
+        return nil;
+
+    _registerName = [registerName retain];
+    _registerValue = registerValue;
+
+    return self;
+}
+
+- (void) dealloc {
+    [_registerName release];
+    [super dealloc];
+}
+
+@synthesize registerName = _registerName;
+@synthesize registerValue = _registerValue;
+
+@end
