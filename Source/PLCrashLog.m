@@ -23,7 +23,7 @@ struct _PLCrashLogDecoder {
 - (PLCrashLogApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
 - (NSArray *) extractThreadInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (NSArray *) extractImageInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
-
+- (PLCrashLogApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
 @end
 
 
@@ -86,6 +86,13 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     _images = [[self extractImageInfo: _decoder->crashReport error: outError] retain];
     if (!_images)
         goto error;
+
+    /* Exception info, if it is available */
+    if (_decoder->crashReport->exception != NULL) {
+        _exceptionInfo = [[self extractExceptionInfo: _decoder->crashReport->exception error: outError] retain];
+        if (!_exceptionInfo)
+            goto error;
+    }
 
     return self;
 
@@ -370,6 +377,43 @@ error:
     }
 
     return images;
+}
+
+/**
+ * Extract  exception information from the crash log. Returns nil on error.
+ */
+- (PLCrashLogApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo
+                                               error: (NSError **) outError
+{
+    /* Validate */
+    if (exceptionInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Exception Information section", 
+                                           @"Missing appinfo in crash report"));
+        return nil;
+    }
+    
+    /* Name available? */
+    if (exceptionInfo->name == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing exception name field", 
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+    
+    /* Reason available? */
+    if (exceptionInfo->reason == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing exception reason field", 
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+    
+    /* Done */
+    NSString *name = [NSString stringWithUTF8String: exceptionInfo->name];
+    NSString *reason = [NSString stringWithUTF8String: exceptionInfo->reason];
+    
+    return [[[PLCrashLogExceptionInfo alloc] initWithExceptionName: name reason: reason] autorelease];
 }
 
 @end
