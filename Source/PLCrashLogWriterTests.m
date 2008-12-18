@@ -14,7 +14,6 @@
 #import <sys/stat.h>
 #import <sys/mman.h>
 #import <fcntl.h>
-#import <sys/utsname.h>
 
 #import "crash_report.pb-c.h"
 
@@ -54,8 +53,6 @@
 // check a crash report's system info
 - (void) checkSystemInfo: (Plcrash__CrashReport *) crashReport {
     Plcrash__CrashReport__SystemInfo *systemInfo = crashReport->system_info;
-    struct utsname uts;
-    uname(&uts);
 
     STAssertNotNULL(systemInfo, @"No system info available");
     // Nothing else to do?
