@@ -124,6 +124,18 @@
         thrNumber++;
     }
     STAssertTrue(crashedFound, @"No crashed thread was found in the crash log");
+
+    /* Image info */
+    STAssertNotEquals((NSUInteger)0, [crashLog.images count], @"Crash log should contain at least one image");
+    for (PLCrashLogBinaryImageInfo *imageInfo in crashLog.images) {
+        STAssertNotNil(imageInfo.imageName, @"Image name is nil");
+        if (imageInfo.hasImageUUID == YES) {
+            STAssertNotNil(imageInfo.imageUUID, @"Image UUID is nil");
+            STAssertEquals((NSUInteger)32, [imageInfo.imageUUID length], @"UUID should be 32 characters (16 bytes)");
+        } else if (!imageInfo.hasImageUUID) {
+            STAssertNil(imageInfo.imageUUID, @"Info declares no UUID, but the imageUUID property is non-nil");
+        }
+    }
 }
 
 

@@ -25,6 +25,10 @@
     NSString *_imageUUID;
 }
 
+- (id) initWithImageBaseAddress: (uint64_t) baseAddress 
+                      imageSize: (uint64_t) imageSize
+                      imageName: (NSString *) imageName
+                      imageUUID: (NSString *) imageUUID;
 
 /**
  * Image base address.

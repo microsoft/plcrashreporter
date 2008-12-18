@@ -27,7 +27,7 @@
     _imageSize = imageSize;
     _imageName = [imageName retain];
     _imageUUID = [imageUUID retain];
-    if (_imageName != nil)
+    if (_imageUUID != nil)
         _hasImageUUID = YES;
 
     return self;
