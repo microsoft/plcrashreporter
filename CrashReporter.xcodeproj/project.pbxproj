@@ -1483,6 +1483,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos2.0;
+				SKIP_INSTALL = NO;
 			};
 			name = Debug;
 		};
@@ -1503,6 +1504,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos2.0;
+				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1525,6 +1527,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphonesimulator2.0;
+				SKIP_INSTALL = NO;
 			};
 			name = Debug;
 		};
@@ -1545,6 +1548,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphonesimulator2.0;
+				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1598,6 +1602,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -1629,6 +1634,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
 			};
@@ -1661,6 +1667,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
 				SDKROOT = iphonesimulator2.0;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -1691,6 +1698,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
 				SDKROOT = iphonesimulator2.0;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1721,6 +1729,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
 				SDKROOT = iphoneos2.0;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -1750,6 +1759,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
 				SDKROOT = iphoneos2.0;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1881,6 +1891,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = DemoCrash;
 				SDKROOT = macosx10.5;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -1905,6 +1916,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = DemoCrash;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
