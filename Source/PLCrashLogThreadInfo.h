@@ -75,9 +75,9 @@
 @property(nonatomic, readonly) BOOL crashed;
 
 /**
- * Thread register state as a list of PLCrashLogRegister instances.
- * If this thead did not crash (crashed returns NO), this list will
- * be empty.
+ * State of the general purpose and related registers, as a list of
+ * PLCrashLogRegister instances. If this thead did not crash (crashed returns NO),
+ * this list will be empty.
  */
 @property(nonatomic, readonly) NSArray *registers;
 
