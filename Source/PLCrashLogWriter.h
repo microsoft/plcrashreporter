@@ -5,7 +5,6 @@
  * All rights reserved.
  */
 
-#import <sys/utsname.h>
 #import <TargetConditionals.h>
 #import <Foundation/Foundation.h>
 
@@ -27,8 +26,9 @@
  * Crash log writer context.
  */
 typedef struct plcrash_log_writer {
-    /** System uname() */
-    struct utsname utsname;
+    struct {
+        char *version;
+    } system_info;
 
     /** Application data */
     struct {

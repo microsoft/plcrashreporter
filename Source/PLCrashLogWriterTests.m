@@ -65,8 +65,6 @@
     STAssertEquals(systemInfo->operating_system, PLCrashLogHostOperatingSystem, @"Unexpected OS value");
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
-    if (systemInfo->os_version != NULL)
-        STAssertTrue(strcmp(systemInfo->os_version, uts.release) == 0, @"Unexpected system version");
 
     STAssertEquals(systemInfo->architecture, PLCrashLogHostArchitecture, @"Unexpected machine type");
 

@@ -22,6 +22,10 @@
 #import "PLCrashAsync.h"
 #import "PLCrashFrameWalker.h"
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h> // For UIDevice
+#endif
+
 /**
  * @internal
  * Protobuf Field IDs, as defined in crashreport.proto
@@ -115,6 +119,9 @@ enum {
  * @param app_identifier Unique per-application identifier. On Mac OS X, this is likely the CFBundleIdentifier.
  * @param app_version Application version string.
  *
+ * @note If this function fails, plcrash_log_writer_free() should be called
+ * to free any partially allocated data.
+ *
  * @warning This function is not guaranteed to be async-safe, and must be
  * called prior to entering the crash handler.
  */
@@ -129,11 +136,35 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
     }
 
     /* Fetch the OS information */
-    if (uname(&writer->utsname) != 0) {
-        // Should not happen
-        PLCF_DEBUG("uname() failed: %s", strerror(errno));
-        return PLCRASH_EINTERNAL;
+#if TARGET_OS_IPHONE
+    /* iPhone OS */
+    writer->system_info.version = strdup([[[UIDevice currentDevice] systemVersion] UTF8String]);
+#elif TARGET_OS_MAC
+    /* Mac OS X */
+    {
+        SInt32 major, minor, bugfix;
+
+        /* Fetch the major, minor, and bugfix versions.
+         * Fetching the OS version should not fail. */
+        if (Gestalt(gestaltSystemVersionMajor, &major) != noErr) {
+            PLCF_DEBUG("Could not retreive system major version with Gestalt");
+            return PLCRASH_EINTERNAL;
+        }
+        if (Gestalt(gestaltSystemVersionMinor, &minor) != noErr) {
+            PLCF_DEBUG("Could not retreive system minor version with Gestalt");
+            return PLCRASH_EINTERNAL;
+        }
+        if (Gestalt(gestaltSystemVersionBugFix, &bugfix) != noErr) {
+            PLCF_DEBUG("Could not retreive system bugfix version with Gestalt");
+            return PLCRASH_EINTERNAL;
+        }
+
+        /* Compose the string */
+        asprintf(&writer->system_info.version, "%d.%d.%d", major, minor, bugfix);
     }
+#else
+#error Unsupported Platform
+#endif
 
     return PLCRASH_ESUCCESS;
 }
@@ -169,13 +200,22 @@ plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer) {
  */
 void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     /* Free the app info */
-    free(writer->application_info.app_identifier);
-    free(writer->application_info.app_version);
+    if (writer->application_info.app_identifier != NULL)
+        free(writer->application_info.app_identifier);
+    if (writer->application_info.app_version != NULL)
+        free(writer->application_info.app_version);
+
+    /* Free the system info */
+    if (writer->system_info.version != NULL)
+        free(writer->system_info.version);
 
     /* Free the exception data */
     if (writer->uncaught_exception.has_exception) {
-        free(writer->uncaught_exception.name);
-        free(writer->uncaught_exception.reason);
+        if (writer->uncaught_exception.name != NULL)
+            free(writer->uncaught_exception.name);
+
+        if (writer->uncaught_exception.reason != NULL)
+            free(writer->uncaught_exception.reason);
     }
 }
 
@@ -187,7 +227,7 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
  * @param file Output file
  * @param timestamp Timestamp to use (seconds since epoch). Must be same across calls, as varint encoding.
  */
-size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, struct utsname *utsname, uint32_t timestamp) {
+size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer, uint32_t timestamp) {
     size_t rv = 0;
     uint32_t enumval;
 
@@ -196,7 +236,7 @@ size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, struct utsn
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* OS Version */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, utsname->release);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.version);
 
     /* Machine type */
     enumval = PLCrashLogHostArchitecture;
@@ -532,11 +572,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         }
 
         /* Determine size */
-        size = plcrash_writer_write_system_info(NULL, &writer->utsname, timestamp);
+        size = plcrash_writer_write_system_info(NULL, writer, timestamp);
         
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_system_info(file, &writer->utsname, timestamp);
+        plcrash_writer_write_system_info(file, writer, timestamp);
     }
     
     /* App info */
