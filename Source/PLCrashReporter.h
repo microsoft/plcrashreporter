@@ -24,6 +24,14 @@
 
 + (PLCrashReporter *) sharedReporter;
 
+- (BOOL) hasPendingCrashReport;
+
+- (NSData *) loadPendingCrashReportData;
+- (NSData *) loadPendingCrashReportDataAndReturnError: (NSError **) outError;
+
+- (BOOL) purgePendingCrashReport;
+- (BOOL) purgePendingCrashReportAndReturnError: (NSError **) outError;
+
 - (BOOL) enableCrashReporter;
 - (BOOL) enableCrashReporterAndReturnError: (NSError **) outError;
 

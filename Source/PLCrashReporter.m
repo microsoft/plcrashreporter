@@ -149,6 +149,71 @@ static void uncaught_exception_handler (NSException *exception) {
     return sharedReporter;
 }
 
+
+/**
+ * Returns YES if the application has previously crashed and
+ * an pending crash report is available.
+ */
+- (BOOL) hasPendingCrashReport {
+    /* Check for a live crash report file */
+    return [[NSFileManager defaultManager] fileExistsAtPath: [self crashReportPath]];
+}
+
+
+/**
+ * If an application has a pending crash report, this method returns the crash
+ * report data.
+ *
+ * You may use this to submit the report to your own HTTP server, over e-mail, or even parse and
+ * introspect the report locally using the PLCrashLog API.
+ *
+ * @return Returns nil if the crash report data could not be loaded.
+ */
+- (NSData *) loadPendingCrashReportData {
+    return [self loadPendingCrashReportDataAndReturnError: NULL];
+}
+
+
+/**
+ * If an application has a pending crash report, this method returns the crash
+ * report data.
+ *
+ * You may use this to submit the report to your own HTTP server, over e-mail, or even parse and
+ * introspect the report locally using the PLCrashLog API.
+ 
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the pending crash report could not be
+ * loaded. If no error occurs, this parameter will be left unmodified. You may specify
+ * nil for this parameter, and no error information will be provided.
+ *
+ * @return Returns nil if the crash report data could not be loaded.
+ */
+- (NSData *) loadPendingCrashReportDataAndReturnError: (NSError **) outError {
+    /* Load the (memory mapped) data */
+    return [NSData dataWithContentsOfFile: [self crashReportPath] options: NSMappedRead error: outError];
+}
+
+
+/**
+ * Purge a pending crash report.
+ *
+ * @return Returns YES on success, or NO on error.
+ */
+- (BOOL) purgePendingCrashReport {
+    return [self purgePendingCrashReportAndReturnError: NULL];
+}
+
+
+/**
+ * Purge a pending crash report.
+ *
+ * @return Returns YES on success, or NO on error.
+ */
+- (BOOL) purgePendingCrashReportAndReturnError: (NSError **) outError {
+    return [[NSFileManager defaultManager] removeItemAtPath: [self crashReportPath] error: outError];
+}
+
+
 /**
  * Enable the crash reporter. Once called, all application crashes will
  * result in a crash report being written prior to application exit.
