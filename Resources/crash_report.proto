@@ -133,6 +133,9 @@ message CrashReport {
 
         /* Signal code */
         required string code = 2;
+
+        /* Faulting instruction or address */
+        required uint64 address = 3;
     }
 
     /* The signal that triggered the crash */

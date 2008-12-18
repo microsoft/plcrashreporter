@@ -147,7 +147,7 @@
 
     /* Initialze faux crash data */
     {
-        info.si_addr = 0x0;
+        info.si_addr = (void *) 0x42;
         info.si_errno = 0;
         info.si_pid = getpid();
         info.si_uid = getuid();
@@ -211,7 +211,8 @@
         /* Check the signal info */
         STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
         STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
-
+        STAssertEquals((uint64_t) 0x42, crashReport->signal->address, @"Signal address incorrect");
+    
         /* Free it */
         protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
     }

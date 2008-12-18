@@ -142,7 +142,7 @@ int convert_command (int argc, char *argv[]) {
 
     /* Exception code */
     fprintf(output, "Exception Type:  %s\n", [crashLog.signalInfo.name UTF8String]);
-    fprintf(output, "Exception Codes: %s at [TODO]\n", [crashLog.signalInfo.code UTF8String]);
+    fprintf(output, "Exception Codes: %s at 0x%" PRIx64 "\n", [crashLog.signalInfo.code UTF8String], crashLog.signalInfo.address);
 
     for (PLCrashLogThreadInfo *thread in crashLog.threads) {
         if (thread.crashed) {
