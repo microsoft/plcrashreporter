@@ -165,7 +165,7 @@ static void uncaught_exception_handler (NSException *exception) {
  * report data.
  *
  * You may use this to submit the report to your own HTTP server, over e-mail, or even parse and
- * introspect the report locally using the PLCrashLog API.
+ * introspect the report locally using the PLCrashReport API.
  *
  * @return Returns nil if the crash report data could not be loaded.
  */
@@ -179,7 +179,7 @@ static void uncaught_exception_handler (NSException *exception) {
  * report data.
  *
  * You may use this to submit the report to your own HTTP server, over e-mail, or even parse and
- * introspect the report locally using the PLCrashLog API.
+ * introspect the report locally using the PLCrashReport API.
  
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error object indicating why the pending crash report could not be

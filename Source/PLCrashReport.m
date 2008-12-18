@@ -5,26 +5,26 @@
  * All rights reserved.
  */
 
-#import "PLCrashLog.h"
+#import "PLCrashReport.h"
 #import "CrashReporter.h"
 
 #import "crash_report.pb-c.h"
 
-struct _PLCrashLogDecoder {
+struct _PLCrashReportDecoder {
     Plcrash__CrashReport *crashReport;
 };
 
 #define IMAGE_UUID_DIGEST_LEN 16
 
-@interface PLCrashLog (PrivateMethods)
+@interface PLCrashReport (PrivateMethods)
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
-- (PLCrashLogSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError;
-- (PLCrashLogApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
+- (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError;
+- (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
 - (NSArray *) extractThreadInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (NSArray *) extractImageInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
-- (PLCrashLogApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
-- (PLCrashLogSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
+- (PLCrashReportApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
+- (PLCrashReportSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
 
 @end
 
@@ -36,7 +36,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
  *
  * @warning This API should be considered in-development and subject to change.
  */
-@implementation PLCrashLog
+@implementation PLCrashReport
 
 /**
  * Initialize with the provided crash log data. On error, nil will be returned, and
@@ -49,7 +49,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
  * will be provided.
  *
  * @par Designated Initializer
- * This method is the designated initializer for the PLCrashLog class.
+ * This method is the designated initializer for the PLCrashReport class.
  */
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError {
     if ((self = [super init]) == nil) {
@@ -60,7 +60,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
 
 
     /* Allocate the struct and attempt to parse */
-    _decoder = malloc(sizeof(_PLCrashLogDecoder));
+    _decoder = malloc(sizeof(_PLCrashReportDecoder));
     _decoder->crashReport = [self decodeCrashData: encodedData error: outError];
 
     /* Check if decoding failed. If so, outError has already been populated. */
@@ -133,8 +133,8 @@ error:
  * Return the binary image containing the given address, or nil if no binary image
  * is found.
  */
-- (PLCrashLogBinaryImageInfo *) imageForAddress: (uint64_t) address {
-    for (PLCrashLogBinaryImageInfo *imageInfo in self.images) {
+- (PLCrashReportBinaryImageInfo *) imageForAddress: (uint64_t) address {
+    for (PLCrashReportBinaryImageInfo *imageInfo in self.images) {
         if (imageInfo.imageBaseAddress <= address && address < (imageInfo.imageBaseAddress + imageInfo.imageSize))
             return imageInfo;
     }
@@ -165,7 +165,7 @@ error:
  * @internal
  * Private Methods
  */
-@implementation PLCrashLog (PrivateMethods)
+@implementation PLCrashReport (PrivateMethods)
 
 /**
  * Decode the crash log message.
@@ -174,34 +174,34 @@ error:
  * returned by this method via protobuf_c_message_free_unpacked().
  */
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError {
-    const struct PLCrashLogFileHeader *header;
+    const struct PLCrashReportFileHeader *header;
     const void *bytes;
 
     bytes = [data bytes];
     header = bytes;
 
     /* Verify that the crash log is sufficently large */
-    if (sizeof(struct PLCrashLogFileHeader) >= [data length]) {
+    if (sizeof(struct PLCrashReportFileHeader) >= [data length]) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, NSLocalizedString(@"Could not decode truncated crash log",
                                                                                              @"Crash log decoding error message"));
         return NULL;
     }
 
     /* Check the file magic */
-    if (memcmp(header->magic, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC)) != 0) {
+    if (memcmp(header->magic, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC)) != 0) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,NSLocalizedString(@"Could not decode invalid crash log header",
                                                                                             @"Crash log decoding error message"));
         return NULL;
     }
 
     /* Check the version */
-    if(header->version != PLCRASH_LOG_FILE_VERSION) {
+    if(header->version != PLCRASH_REPORT_FILE_VERSION) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, [NSString stringWithFormat: NSLocalizedString(@"Could not decode unsupported crash report version: %d", 
                                                                                                                          @"Crash log decoding message"), header->version]);
         return NULL;
     }
 
-    Plcrash__CrashReport *crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, [data length] - sizeof(struct PLCrashLogFileHeader), header->data);
+    Plcrash__CrashReport *crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
     if (crashReport == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, NSLocalizedString(@"An unknown error occured decoding the crash report", 
                                                                                              @"Crash log decoding error message"));
@@ -215,7 +215,7 @@ error:
 /**
  * Extract system information from the crash log. Returns nil on error.
  */
-- (PLCrashLogSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError {
+- (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError {
     NSDate *timestamp = nil;
     
     /* Validate */
@@ -238,7 +238,7 @@ error:
         timestamp = [NSDate dateWithTimeIntervalSince1970: systemInfo->timestamp];
     
     /* Done */
-    return [[[PLCrashLogSystemInfo alloc] initWithOperatingSystem: systemInfo->operating_system
+    return [[[PLCrashReportSystemInfo alloc] initWithOperatingSystem: systemInfo->operating_system
                                            operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
                                                      architecture: systemInfo->architecture
                                                         timestamp: timestamp] autorelease];
@@ -248,7 +248,7 @@ error:
 /**
  * Extract application information from the crash log. Returns nil on error.
  */
-- (PLCrashLogApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
+- (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
                                                  error: (NSError **) outError
 {    
     /* Validate */
@@ -279,7 +279,7 @@ error:
     NSString *identifier = [NSString stringWithUTF8String: applicationInfo->identifier];
     NSString *version = [NSString stringWithUTF8String: applicationInfo->version];
 
-    return [[[PLCrashLogApplicationInfo alloc] initWithApplicationIdentifier: identifier
+    return [[[PLCrashReportApplicationInfo alloc] initWithApplicationIdentifier: identifier
                                                           applicationVersion: version] autorelease];
 }
 
@@ -305,9 +305,9 @@ error:
         NSMutableArray *frames = [NSMutableArray arrayWithCapacity: thread->n_frames];
         for (size_t frame_idx = 0; frame_idx < thread->n_frames; frame_idx++) {
             Plcrash__CrashReport__Thread__StackFrame *frame = thread->frames[frame_idx];
-            PLCrashLogStackFrameInfo *frameInfo;
+            PLCrashReportStackFrameInfo *frameInfo;
 
-            frameInfo = [[[PLCrashLogStackFrameInfo alloc] initWithInstructionPointer: frame->pc] autorelease];
+            frameInfo = [[[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: frame->pc] autorelease];
             [frames addObject: frameInfo];
         }
 
@@ -315,7 +315,7 @@ error:
         NSMutableArray *registers = [NSMutableArray arrayWithCapacity: thread->n_registers];
         for (size_t reg_idx = 0; reg_idx < thread->n_registers; reg_idx++) {
             Plcrash__CrashReport__Thread__RegisterValue *reg = thread->registers[reg_idx];
-            PLCrashLogRegisterInfo *regInfo;
+            PLCrashReportRegisterInfo *regInfo;
 
             /* Handle missing register name (should not occur!) */
             if (reg->name == NULL) {
@@ -323,13 +323,13 @@ error:
                 return nil;
             }
 
-            regInfo = [[[PLCrashLogRegisterInfo alloc] initWithRegisterName: [NSString stringWithUTF8String: reg->name]
+            regInfo = [[[PLCrashReportRegisterInfo alloc] initWithRegisterName: [NSString stringWithUTF8String: reg->name]
                                                               registerValue: reg->value] autorelease];
             [registers addObject: regInfo];
         }
 
         /* Create the thread info instance */
-        PLCrashLogThreadInfo *threadInfo = [[[PLCrashLogThreadInfo alloc] initWithThreadNumber: thread->thread_number
+        PLCrashReportThreadInfo *threadInfo = [[[PLCrashReportThreadInfo alloc] initWithThreadNumber: thread->thread_number
                                                                                    stackFrames: frames 
                                                                                        crashed: thread->crashed 
                                                                                      registers: registers] autorelease];
@@ -356,7 +356,7 @@ error:
     NSMutableArray *images = [NSMutableArray arrayWithCapacity: crashReport->n_binary_images];
     for (size_t i = 0; i < crashReport->n_binary_images; i++) {
         Plcrash__CrashReport__BinaryImage *image = crashReport->binary_images[i];
-        PLCrashLogBinaryImageInfo *imageInfo;
+        PLCrashReportBinaryImageInfo *imageInfo;
 
         /* Validate */
         if (image->name == NULL) {
@@ -391,7 +391,7 @@ error:
         }
 
         assert(image->uuid.len == 0 || uuid != nil);
-        imageInfo = [[[PLCrashLogBinaryImageInfo alloc] initWithImageBaseAddress: image->base_address 
+        imageInfo = [[[PLCrashReportBinaryImageInfo alloc] initWithImageBaseAddress: image->base_address 
                                                                        imageSize: image->size 
                                                                        imageName: [NSString stringWithUTF8String: image->name]
                                                                        imageUUID: uuid] autorelease];
@@ -404,7 +404,7 @@ error:
 /**
  * Extract  exception information from the crash log. Returns nil on error.
  */
-- (PLCrashLogApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo
+- (PLCrashReportApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo
                                                error: (NSError **) outError
 {
     /* Validate */
@@ -435,13 +435,13 @@ error:
     NSString *name = [NSString stringWithUTF8String: exceptionInfo->name];
     NSString *reason = [NSString stringWithUTF8String: exceptionInfo->reason];
     
-    return [[[PLCrashLogExceptionInfo alloc] initWithExceptionName: name reason: reason] autorelease];
+    return [[[PLCrashReportExceptionInfo alloc] initWithExceptionName: name reason: reason] autorelease];
 }
 
 /**
  * Extract signal information from the crash log. Returns nil on error.
  */
-- (PLCrashLogSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo
+- (PLCrashReportSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo
                                        error: (NSError **) outError
 {
     /* Validate */
@@ -472,7 +472,7 @@ error:
     NSString *name = [NSString stringWithUTF8String: signalInfo->name];
     NSString *code = [NSString stringWithUTF8String: signalInfo->code];
     
-    return [[[PLCrashLogSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address] autorelease];
+    return [[[PLCrashReportSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address] autorelease];
 }
 
 @end

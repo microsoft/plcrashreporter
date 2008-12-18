@@ -6,34 +6,34 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "PLCrashLogSystemInfo.h"
-#import "PLCrashLogApplicationInfo.h"
-#import "PLCrashLogSignalInfo.h"
-#import "PLCrashLogThreadInfo.h"
-#import "PLCrashLogBinaryImageInfo.h"
-#import "PLCrashLogExceptionInfo.h"
+#import "PLCrashReportSystemInfo.h"
+#import "PLCrashReportApplicationInfo.h"
+#import "PLCrashReportSignalInfo.h"
+#import "PLCrashReportThreadInfo.h"
+#import "PLCrashReportBinaryImageInfo.h"
+#import "PLCrashReportExceptionInfo.h"
 
 /** 
  * @ingroup constants
  * Crash file magic identifier */
-#define PLCRASH_LOG_FILE_MAGIC "plcrash"
+#define PLCRASH_REPORT_FILE_MAGIC "plcrash"
 
 /** 
  * @ingroup constants
  * Crash format version byte identifier. Will not change outside of the introduction of
  * an entirely new crash log format. */
-#define PLCRASH_LOG_FILE_VERSION 1
+#define PLCRASH_REPORT_FILE_VERSION 1
 
 /**
  * @ingroup types
  * Crash log file header format.
  *
- * Crash log files start with 7 byte magic identifier (#PLCRASH_LOG_FILE_MAGIC),
- * followed by a single unsigned byte version number (#PLCRASH_LOG_FILE_VERSION).
+ * Crash log files start with 7 byte magic identifier (#PLCRASH_REPORT_FILE_MAGIC),
+ * followed by a single unsigned byte version number (#PLCRASH_REPORT_FILE_VERSION).
  * The crash log message format itself is extensible, so this version number will only
  * be incremented in the event of an incompatible encoding or format change.
  */
-struct PLCrashLogFileHeader {
+struct PLCrashReportFileHeader {
     /** Crash log magic identifier, not NULL terminated */
     const char magic[7];
 
@@ -49,59 +49,59 @@ struct PLCrashLogFileHeader {
  * @internal
  * Private decoder instance variables (used to hide the underlying protobuf parser).
  */
-typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
+typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 
-@interface PLCrashLog : NSObject {
+@interface PLCrashReport : NSObject {
 @private
     /** Private implementation variables (used to hide the underlying protobuf parser) */
-    _PLCrashLogDecoder *_decoder;
+    _PLCrashReportDecoder *_decoder;
 
     /** System info */
-    PLCrashLogSystemInfo *_systemInfo;
+    PLCrashReportSystemInfo *_systemInfo;
 
     /** Application info */
-    PLCrashLogApplicationInfo *_applicationInfo;
+    PLCrashReportApplicationInfo *_applicationInfo;
 
     /** Signal info */
-    PLCrashLogSignalInfo *_signalInfo;
+    PLCrashReportSignalInfo *_signalInfo;
 
-    /** Thread info (PLCrashLogThreadInfo instances) */
+    /** Thread info (PLCrashReportThreadInfo instances) */
     NSArray *_threads;
 
-    /** Binary images (PLCrashLogBinaryImageInfo instances */
+    /** Binary images (PLCrashReportBinaryImageInfo instances */
     NSArray *_images;
 
     /** Exception information (may be nil) */
-    PLCrashLogExceptionInfo *_exceptionInfo;
+    PLCrashReportExceptionInfo *_exceptionInfo;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
 
-- (PLCrashLogBinaryImageInfo *) imageForAddress: (uint64_t) address;
+- (PLCrashReportBinaryImageInfo *) imageForAddress: (uint64_t) address;
 
 /**
  * System information.
  */
-@property(nonatomic, readonly) PLCrashLogSystemInfo *systemInfo;
+@property(nonatomic, readonly) PLCrashReportSystemInfo *systemInfo;
 
 /**
  * Application information.
  */
-@property(nonatomic, readonly) PLCrashLogApplicationInfo *applicationInfo;
+@property(nonatomic, readonly) PLCrashReportApplicationInfo *applicationInfo;
 
 /**
  * Signal information. This provides the signal and signal code
  * of the fatal signal.
  */
-@property(nonatomic, readonly) PLCrashLogSignalInfo *signalInfo;
+@property(nonatomic, readonly) PLCrashReportSignalInfo *signalInfo;
 
 /**
- * Thread information. Returns a list of PLCrashLogThreadInfo instances.
+ * Thread information. Returns a list of PLCrashReportThreadInfo instances.
  */
 @property(nonatomic, readonly) NSArray *threads;
 
 /**
- * Binary image information. Returns a list of PLCrashLogBinaryImageInfo instances.
+ * Binary image information. Returns a list of PLCrashReportBinaryImageInfo instances.
  */
 @property(nonatomic, readonly) NSArray *images;
 
@@ -114,6 +114,6 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
  * Exception information. Only available if a crash was caused by an uncaught exception,
  * otherwise nil.
  */
-@property(nonatomic, readonly) PLCrashLogExceptionInfo *exceptionInfo;
+@property(nonatomic, readonly) PLCrashReportExceptionInfo *exceptionInfo;
 
 @end

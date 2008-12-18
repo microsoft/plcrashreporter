@@ -16,7 +16,7 @@
 
 #import <mach-o/dyld.h>
 
-#import "PLCrashLog.h"
+#import "PLCrashReport.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
@@ -245,14 +245,14 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
     uint32_t enumval;
 
     /* OS */
-    enumval = PLCrashLogHostOperatingSystem;
+    enumval = PLCrashReportHostOperatingSystem;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* OS Version */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.version);
 
     /* Machine type */
-    enumval = PLCrashLogHostArchitecture;
+    enumval = PLCrashReportHostArchitecture;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ARCHITECTURE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* Timestamp */
@@ -600,10 +600,10 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
 
     /* File header */
     {
-        uint8_t version = PLCRASH_LOG_FILE_VERSION;
+        uint8_t version = PLCRASH_REPORT_FILE_VERSION;
 
         /* Write the magic string (with no trailing NULL) and the version number */
-        plcrash_async_file_write(file, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC));
+        plcrash_async_file_write(file, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC));
         plcrash_async_file_write(file, &version, sizeof(version));
     }
 

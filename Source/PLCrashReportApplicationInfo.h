@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashLogApplicationInfo : NSObject {
+@interface PLCrashReportApplicationInfo : NSObject {
 @private
     /** Application identifier */
     NSString *_applicationIdentifier;

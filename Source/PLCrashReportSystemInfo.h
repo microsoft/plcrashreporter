@@ -1,10 +1,9 @@
-//
-//  PLCrashLogSystemInfo.h
-//  CrashReporter
-//
-//  Created by Landon Fuller on 12/17/08.
-//  Copyright 2008 Plausible Labs Cooperative, Inc.. All rights reserved.
-//
+/*
+ * Author: Landon Fuller <landonf@plausiblelabs.com>
+ *
+ * Copyright (c) 2008 Plausible Labs Cooperative, Inc.
+ * All rights reserved.
+ */
 
 #import <Foundation/Foundation.h>
 
@@ -18,14 +17,14 @@
  */
 typedef enum {
     /** Mac OS X. */
-    PLCrashLogOperatingSystemMacOSX = 0,
+    PLCrashReportOperatingSystemMacOSX = 0,
     
     /** iPhone OS */
-    PLCrashLogOperatingSystemiPhoneOS = 1,
+    PLCrashReportOperatingSystemiPhoneOS = 1,
     
     /** iPhone Simulator (Mac OS X with additional simulator-specific runtime libraries) */
-    PLCrashLogOperatingSystemiPhoneSimulator = 2
-} PLCrashLogOperatingSystem;
+    PLCrashReportOperatingSystemiPhoneSimulator = 2
+} PLCrashReportOperatingSystem;
 
 /**
  * @ingroup constants
@@ -37,43 +36,43 @@ typedef enum {
  */
 typedef enum {
     /** x86-32. */
-    PLCrashLogArchitectureX86_32 = 0,
+    PLCrashReportArchitectureX86_32 = 0,
     
     /** x86-64 */
-    PLCrashLogArchitectureX86_64 = 1,
+    PLCrashReportArchitectureX86_64 = 1,
     
     /** ARM */
-    PLCrashLogArchitectureARM = 2
-} PLCrashLogArchitecture;
+    PLCrashReportArchitectureARM = 2
+} PLCrashReportArchitecture;
 
 
-extern PLCrashLogOperatingSystem PLCrashLogHostOperatingSystem;
-extern PLCrashLogArchitecture PLCrashLogHostArchitecture;
+extern PLCrashReportOperatingSystem PLCrashReportHostOperatingSystem;
+extern PLCrashReportArchitecture PLCrashReportHostArchitecture;
 
-@interface PLCrashLogSystemInfo : NSObject {
+@interface PLCrashReportSystemInfo : NSObject {
 @private
     /** Operating system */
-    PLCrashLogOperatingSystem _operatingSystem;
+    PLCrashReportOperatingSystem _operatingSystem;
     
     /** Operating system version */
     NSString *_osVersion;
     
     /** Architecture */
-    PLCrashLogArchitecture _architecture;
+    PLCrashReportArchitecture _architecture;
     
     /** Date crash report was generated. May be nil if the date is unknown. */
     NSDate *_timestamp;
 }
 
-- (id) initWithOperatingSystem: (PLCrashLogOperatingSystem) operatingSystem 
+- (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem 
         operatingSystemVersion: (NSString *) operatingSystemVersion
-                  architecture: (PLCrashLogArchitecture) architecture
+                  architecture: (PLCrashReportArchitecture) architecture
                      timestamp: (NSDate *) timestamp;
 
 /**
  * The operating system.
  */
-@property(nonatomic, readonly) PLCrashLogOperatingSystem operatingSystem;
+@property(nonatomic, readonly) PLCrashReportOperatingSystem operatingSystem;
 
 /**
  * The operating system's release version.
@@ -83,7 +82,7 @@ extern PLCrashLogArchitecture PLCrashLogHostArchitecture;
 /**
  * Architecture.
  */
-@property(nonatomic, readonly) PLCrashLogArchitecture architecture;
+@property(nonatomic, readonly) PLCrashReportArchitecture architecture;
 
 /**
  * Date and time that the crash report was generated. This may

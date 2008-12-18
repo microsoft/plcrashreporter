@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 
-@interface PLCrashLogExceptionInfo : NSObject {
+@interface PLCrashReportExceptionInfo : NSObject {
 @private
     /** Name */
     NSString *_name;

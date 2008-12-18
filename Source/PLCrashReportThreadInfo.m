@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-#import "PLCrashLogThreadInfo.h"
+#import "PLCrashReportThreadInfo.h"
 
 /**
  * Crash log per-thread state information.
@@ -13,7 +13,7 @@
  * Provides thread state information, including a backtrace
  * and register state.
  */
-@implementation PLCrashLogThreadInfo
+@implementation PLCrashReportThreadInfo
 
 /**
  * Initialize the crash log thread information.
@@ -52,7 +52,7 @@
 /**
  * Crash log stack frame information.
  */
-@implementation PLCrashLogStackFrameInfo
+@implementation PLCrashReportStackFrameInfo
 
 /**
  * Initialize with the provided instruction pointer value.
@@ -74,7 +74,7 @@
 /**
  * Crash log general purpose register information.
  */
-@implementation PLCrashLogRegisterInfo
+@implementation PLCrashReportRegisterInfo
 
 /**
  * Initialize with the provided name and value.

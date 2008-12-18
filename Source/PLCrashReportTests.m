@@ -6,14 +6,14 @@
  */
 
 #import "GTMSenTestCase.h"
-#import "PLCrashLog.h"
+#import "PLCrashReport.h"
 #import "PLCrashReporter.h"
 #import "PLCrashFrameWalker.h"
 #import "PLCrashLogWriter.h"
 
 #import <fcntl.h>
 
-@interface PLCrashLogTests : SenTestCase {
+@interface PLCrashReportTests : SenTestCase {
 @private
     /* Path to crash log */
     NSString *_logPath;
@@ -24,7 +24,7 @@
 
 @end
 
-@implementation PLCrashLogTests
+@implementation PLCrashReportTests
 
 - (void) setUp {
     /* Create a temporary log path */
@@ -87,15 +87,15 @@
     plcrash_async_file_close(&file);
 
     /* Try to parse it */
-    PLCrashLog *crashLog = [[[PLCrashLog alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
+    PLCrashReport *crashLog = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
     STAssertNotNil(crashLog, @"Could not decode crash log: %@", error);
 
     /* System info */
     STAssertNotNil(crashLog.systemInfo, @"No system information available");
     STAssertNotNil(crashLog.systemInfo.operatingSystemVersion, @"OS version is nil");
     STAssertNotNil(crashLog.systemInfo.timestamp, @"Timestamp is nil");
-    STAssertEquals(crashLog.systemInfo.operatingSystem, PLCrashLogHostOperatingSystem, @"Operating system incorrect");
-    STAssertEquals(crashLog.systemInfo.architecture, PLCrashLogHostArchitecture, @"Architecture incorrect");
+    STAssertEquals(crashLog.systemInfo.operatingSystem, PLCrashReportHostOperatingSystem, @"Operating system incorrect");
+    STAssertEquals(crashLog.systemInfo.architecture, PLCrashReportHostArchitecture, @"Architecture incorrect");
 
     /* App info */
     STAssertNotNil(crashLog.applicationInfo, @"No application information available");
@@ -112,14 +112,14 @@
 
     NSUInteger thrNumber = 0;
     BOOL crashedFound = NO;
-    for (PLCrashLogThreadInfo *threadInfo in crashLog.threads) {
+    for (PLCrashReportThreadInfo *threadInfo in crashLog.threads) {
         STAssertNotNil(threadInfo.stackFrames, @"Thread stackframe list is nil");
         STAssertNotNil(threadInfo.registers, @"Thread register list is nil");
         STAssertEquals((NSInteger)thrNumber, threadInfo.threadNumber, @"Threads are listed out of order.");
 
         if (threadInfo.crashed) {
             STAssertNotEquals((NSUInteger)0, [threadInfo.registers count], @"No registers recorded for the crashed thread");
-            for (PLCrashLogRegisterInfo *registerInfo in threadInfo.registers) {
+            for (PLCrashReportRegisterInfo *registerInfo in threadInfo.registers) {
                 STAssertNotNil(registerInfo.registerName, @"Register name is nil");
             }
             crashedFound = YES;
@@ -131,7 +131,7 @@
 
     /* Image info */
     STAssertNotEquals((NSUInteger)0, [crashLog.images count], @"Crash log should contain at least one image");
-    for (PLCrashLogBinaryImageInfo *imageInfo in crashLog.images) {
+    for (PLCrashReportBinaryImageInfo *imageInfo in crashLog.images) {
         STAssertNotNil(imageInfo.imageName, @"Image name is nil");
         if (imageInfo.hasImageUUID == YES) {
             STAssertNotNil(imageInfo.imageUUID, @"Image UUID is nil");

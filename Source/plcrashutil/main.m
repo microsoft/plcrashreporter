@@ -80,7 +80,7 @@ int convert_command (int argc, char *argv[]) {
     }
     
     /* Decode it */
-    PLCrashLog *crashLog = [[PLCrashLog alloc] initWithData: data error: &error];
+    PLCrashReport *crashLog = [[PLCrashReport alloc] initWithData: data error: &error];
     if (crashLog == nil) {
         fprintf(stderr, "Could not decode crash log: %s\n", [[error localizedDescription] UTF8String]);
         return 1;
@@ -91,13 +91,13 @@ int convert_command (int argc, char *argv[]) {
     /* Map to apple style OS nane */
     const char *osName;
     switch (crashLog.systemInfo.operatingSystem) {
-        case PLCrashLogOperatingSystemMacOSX:
+        case PLCrashReportOperatingSystemMacOSX:
             osName = "Mac OS X";
             break;
-        case PLCrashLogOperatingSystemiPhoneOS:
+        case PLCrashReportOperatingSystemiPhoneOS:
             osName = "iPhone OS";
             break;
-        case PLCrashLogOperatingSystemiPhoneSimulator:
+        case PLCrashReportOperatingSystemiPhoneSimulator:
             osName = "Mac OS X";
             break;
         default:
@@ -108,13 +108,13 @@ int convert_command (int argc, char *argv[]) {
     /* Map to Apple-style code type */
     const char *codeType;
     switch (crashLog.systemInfo.architecture) {
-        case PLCrashLogArchitectureARM:
+        case PLCrashReportArchitectureARM:
             codeType = "ARM";
             break;
-        case PLCrashLogArchitectureX86_32:
+        case PLCrashReportArchitectureX86_32:
             codeType = "X86";
             break;
-        case PLCrashLogArchitectureX86_64:
+        case PLCrashReportArchitectureX86_64:
             codeType = "X86-64";
             break;
         default:
@@ -144,7 +144,7 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "Exception Type:  %s\n", [crashLog.signalInfo.name UTF8String]);
     fprintf(output, "Exception Codes: %s at 0x%" PRIx64 "\n", [crashLog.signalInfo.code UTF8String], crashLog.signalInfo.address);
 
-    for (PLCrashLogThreadInfo *thread in crashLog.threads) {
+    for (PLCrashReportThreadInfo *thread in crashLog.threads) {
         if (thread.crashed) {
             fprintf(output, "Crashed Thread:  %d\n", thread.threadNumber);
             break;
@@ -154,14 +154,14 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "\n");
 
     /* Threads */
-    for (PLCrashLogThreadInfo *thread in crashLog.threads) {
+    for (PLCrashReportThreadInfo *thread in crashLog.threads) {
         if (thread.crashed)
             fprintf(output, "Thread %d Crashed:\n", thread.threadNumber);
         else
             fprintf(output, "Thread %d:\n", thread.threadNumber);
         for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
-            PLCrashLogStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
-            PLCrashLogBinaryImageInfo *imageInfo;
+            PLCrashReportStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
+            PLCrashReportBinaryImageInfo *imageInfo;
 
             /* Base image address containing instrumention pointer, offset of the IP from that base
              * address, and the associated image name */
@@ -184,7 +184,7 @@ int convert_command (int argc, char *argv[]) {
 
     /* Images */
     fprintf(output, "Binary Images:\n");
-    for (PLCrashLogBinaryImageInfo *imageInfo in crashLog.images) {
+    for (PLCrashReportBinaryImageInfo *imageInfo in crashLog.images) {
         NSString *uuid;
         /* Fetch the UUID if it exists */
         if (imageInfo.hasImageUUID)

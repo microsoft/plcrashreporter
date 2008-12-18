@@ -5,13 +5,13 @@
  * All rights reserved.
  */
 
-#import "PLCrashLogSignalInfo.h"
+#import "PLCrashReportSignalInfo.h"
 
 
 /**
  * Provides access to the signal name and signal code.
  */
-@implementation PLCrashLogSignalInfo
+@implementation PLCrashReportSignalInfo
 
 /**
  * Initialize with the given signal name and reason.
