@@ -141,20 +141,24 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "\n");
 
     /* Exception code */
-    fprintf(output, "Exception Type:  [TODO]\n");
-    fprintf(output, "Exception Codes: [TODO]\n");
-    fprintf(output, "Crashed Thread:  [TODO]\n");
+    fprintf(output, "Exception Type:  %s\n", [crashLog.signalInfo.name UTF8String]);
+    fprintf(output, "Exception Codes: %s at [TODO]\n", [crashLog.signalInfo.code UTF8String]);
+
+    for (PLCrashLogThreadInfo *thread in crashLog.threads) {
+        if (thread.crashed) {
+            fprintf(output, "Crashed Thread:  %d\n", thread.threadNumber);
+            break;
+        }
+    }
 
     fprintf(output, "\n");
 
     /* Threads */
-    for (NSUInteger i = 0; i < [crashLog.threads count]; i++) {
-        PLCrashLogThreadInfo *thread = [crashLog.threads objectAtIndex: i];
-
+    for (PLCrashLogThreadInfo *thread in crashLog.threads) {
         if (thread.crashed)
-            fprintf(output, "Thread %d Crashed:\n", i);
+            fprintf(output, "Thread %d Crashed:\n", thread.threadNumber);
         else
-            fprintf(output, "Thread %d:\n", i);
+            fprintf(output, "Thread %d:\n", thread.threadNumber);
         for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
             PLCrashLogStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
             PLCrashLogBinaryImageInfo *imageInfo;
