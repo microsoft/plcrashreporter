@@ -16,6 +16,9 @@ PRIMARY_PLATFORM="MacOSX"
 # Base product name
 PRODUCT="CrashReporter"
 
+# Any additional targets
+EXTRA_TARGETS="plcrashutil"
+
 VERSION="`date +%Y%m%d`-snap"
 
 # List of all iPhone static libs. Populated by copy_build()
@@ -108,6 +111,12 @@ for platform in ${PLATFORMS}; do
         xcodebuild -configuration ${CONFIGURATION} -target Tests-${platform}
         check_failure "Unit tests for ${PRODUCT}-${platform} failed"
     fi
+done
+
+# Build extra targets
+for extra in ${EXTRA_TARGETS}; do
+    xcodebuild -configuration $CONFIGURATION -target ${extra}
+    check_failure "Build for ${extra} failed"
 done
 
 # Build the output directory
@@ -211,6 +220,10 @@ check_failure "Documentation generation failed"
 
 # Copy in the README file (TODO)
 #
+
+# Copy in plcrashutil
+mkdir -p "${OUTPUT_DIR}/bin"
+cp "build/${CONFIGURATION}-${PRIMARY_PLATFORM}/plcrashutil" "${OUTPUT_DIR}/bin"
 
 # Build the DMG
 hdiutil create -srcfolder "${OUTPUT_DIR}" "${OUTPUT_DIR}.dmg"
