@@ -9,6 +9,8 @@
 #import "PLCrashLogSystemInfo.h"
 #import "PLCrashLogApplicationInfo.h"
 #import "PLCrashLogThreadInfo.h"
+#import "PLCrashLogBinaryImageInfo.h"
+#import "PLCrashLogExceptionInfo.h"
 
 /** 
  * @ingroup constants
@@ -61,6 +63,12 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
 
     /** Thread info (PLCrashLogThreadInfo instances) */
     NSArray *_threads;
+
+    /** Binary images (PLCrashLogBinaryImageInfo instances */
+    NSArray *_images;
+
+    /** Exception information (may be nil) */
+    PLCrashLogExceptionInfo *_exceptionInfo;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
@@ -79,5 +87,21 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
  * Thread information. Returns a list of PLCrashLogThreadInfo instances.
  */
 @property(nonatomic, readonly) NSArray *threads;
+
+/**
+ * Binary image information. Returns a list of PLCrashLogBinaryImageInfo instances.
+ */
+@property(nonatomic, readonly) NSArray *images;
+
+/**
+ * YES if exception information is available.
+ */
+@property(nonatomic, readonly) BOOL hasExceptionInfo;
+
+/**
+ * Exception information. Only available if a crash was caused by an uncaught exception,
+ * otherwise nil.
+ */
+@property(nonatomic, readonly) PLCrashLogExceptionInfo *exceptionInfo;
 
 @end
