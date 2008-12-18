@@ -134,7 +134,10 @@ int convert_command (int argc, char *argv[]) {
     for (NSUInteger i = 0; i < [crashLog.threads count]; i++) {
         PLCrashLogThreadInfo *thread = [crashLog.threads objectAtIndex: i];
 
-        fprintf(output, "Thread %d:\n", i);
+        if (thread.crashed)
+            fprintf(output, "Thread %d Crashed:\n", i);
+        else
+            fprintf(output, "Thread %d:\n", i);
         for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
             PLCrashLogStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
             PLCrashLogBinaryImageInfo *imageInfo;
