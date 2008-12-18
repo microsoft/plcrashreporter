@@ -124,4 +124,17 @@ message CrashReport {
 
     /* The exception that triggered the crash (if any) */
     optional Exception exception = 5;
+
+
+    /* Signal Information */
+    message Signal {
+        /** Signal name */
+        required string name = 1;
+
+        /* Signal code */
+        required string code = 2;
+    }
+
+    /* The signal that triggered the crash */
+    required Signal signal = 6;
 }
