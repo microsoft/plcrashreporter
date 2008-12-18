@@ -13,7 +13,9 @@
 			buildPhases = (
 			);
 			dependencies = (
+				05E731EC0EFA1A8D005EDFB7 /* PBXTargetDependency */,
 				05CD31700EE939D8000FDE88 /* PBXTargetDependency */,
+				05E732100EFA1B61005EDFB7 /* PBXTargetDependency */,
 				05CD316E0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316C0EE939D8000FDE88 /* PBXTargetDependency */,
 				05F40DD80EF7B626008050CF /* PBXTargetDependency */,
@@ -116,6 +118,25 @@
 		05CD36D40EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */; };
 		05CD36D50EF25717000FDE88 /* PLCrashLogWriterEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */; };
 		05CD36D60EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */; };
+		05E731F80EFA1AE3005EDFB7 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
+		05E731F90EFA1AE3005EDFB7 /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
+		05E731FA0EFA1AE3005EDFB7 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
+		05E731FB0EFA1AE3005EDFB7 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
+		05E731FC0EFA1AE3005EDFB7 /* PLCrashFrameWalker_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05966A1B0EEE5280008A0601 /* PLCrashFrameWalker_arm.c */; };
+		05E731FD0EFA1AE3005EDFB7 /* PLCrashLogWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 059670260EEF6B1A008A0601 /* PLCrashLogWriter.m */; };
+		05E731FE0EFA1AE3005EDFB7 /* PLCrashAsync.c in Sources */ = {isa = PBXBuildFile; fileRef = 05CD36410EF24758000FDE88 /* PLCrashAsync.c */; };
+		05E731FF0EFA1AE3005EDFB7 /* PLCrashLogWriterEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */; };
+		05E732000EFA1AE3005EDFB7 /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
+		05E732010EFA1AE3005EDFB7 /* PLCrashLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411A50EF8DA31008050CF /* PLCrashLog.m */; };
+		05E732020EFA1AE3005EDFB7 /* crash_report.proto in Sources */ = {isa = PBXBuildFile; fileRef = 059670C70EEFAC3A008A0601 /* crash_report.proto */; };
+		05E732030EFA1AE3005EDFB7 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F40F830EF850FC008050CF /* protobuf-c.c */; };
+		05E732040EFA1AE3005EDFB7 /* PLCrashLogSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F413440EF995C0008050CF /* PLCrashLogSystemInfo.m */; };
+		05E732050EFA1AE3005EDFB7 /* PLCrashLogApplicationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */; };
+		05E732060EFA1AE3005EDFB7 /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
+		05E732070EFA1AE3005EDFB7 /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
+		05E732080EFA1AE3005EDFB7 /* PLCrashLogExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F415520EF9E078008050CF /* PLCrashLogExceptionInfo.m */; };
+		05E732140EFA1BAE005EDFB7 /* libCrashReporter-MacOSX-Static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */; };
+		05E7321D0EFA1BE1005EDFB7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E7321C0EFA1BE1005EDFB7 /* main.m */; };
 		05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
@@ -204,6 +225,18 @@
 			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
 		};
 		0596747B0EF0BA2F008A0601 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(INPUT_FILE_BASE).pb-c.c",
+				"$(INPUT_FILE_BASE).pb-c.h",
+			);
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+		};
+		05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
@@ -331,6 +364,20 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
+		05E731EB0EFA1A8D005EDFB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
+			remoteInfo = plcrashutil;
+		};
+		05E7320F0EFA1B61005EDFB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
+			remoteInfo = "CrashReporter-MacOSX-Static";
+		};
 		05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -412,6 +459,9 @@
 		05CD36480EF247A9000FDE88 /* PLCrashAsyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncTests.m; sourceTree = "<group>"; };
 		05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogWriterEncoding.h; sourceTree = "<group>"; };
 		05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashLogWriterEncoding.c; sourceTree = "<group>"; };
+		05E731E30EFA1A3E005EDFB7 /* plcrashutil */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = plcrashutil; sourceTree = BUILT_PRODUCTS_DIR; };
+		05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-MacOSX-Static.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05E7321C0EFA1BE1005EDFB7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		05F40ACA0EF7379F008050CF /* PLCrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporter.m; sourceTree = "<group>"; };
 		05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporterTests.m; sourceTree = "<group>"; };
 		05F40CE70EF7AB80008050CF /* DemoCrash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoCrash.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -478,6 +528,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		05E731E10EFA1A3E005EDFB7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05E732140EFA1BAE005EDFB7 /* libCrashReporter-MacOSX-Static.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05E731F10EFA1AAB005EDFB7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		05F40CE50EF7AB80008050CF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -507,6 +572,8 @@
 				05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */,
 				05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */,
 				05F40CE70EF7AB80008050CF /* DemoCrash.app */,
+				05E731E30EFA1A3E005EDFB7 /* plcrashutil */,
+				05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -624,6 +691,14 @@
 			name = "google-toolbox-for-mac-1-5-1";
 			sourceTree = "<group>";
 		};
+		05E7321B0EFA1BC4005EDFB7 /* plcrashutil */ = {
+			isa = PBXGroup;
+			children = (
+				05E7321C0EFA1BE1005EDFB7 /* main.m */,
+			);
+			path = plcrashutil;
+			sourceTree = "<group>";
+		};
 		05F40CF00EF7ABD6008050CF /* Crash Demo */ = {
 			isa = PBXGroup;
 			children = (
@@ -710,6 +785,7 @@
 				05F414280EF9BB19008050CF /* Crash Log */,
 				059672EF0EF0853A008A0601 /* Private API */,
 				05F40CF00EF7ABD6008050CF /* Crash Demo */,
+				05E7321B0EFA1BC4005EDFB7 /* plcrashutil */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -774,6 +850,13 @@
 				05F414820EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
 				05F4150D0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 				05F415530EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05E731EF0EFA1AAB005EDFB7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -900,6 +983,40 @@
 			productReference = 05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */;
 			productType = "com.apple.product-type.application";
 		};
+		05E731E20EFA1A3E005EDFB7 /* plcrashutil */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05E731EA0EFA1A56005EDFB7 /* Build configuration list for PBXNativeTarget "plcrashutil" */;
+			buildPhases = (
+				05E731E00EFA1A3E005EDFB7 /* Sources */,
+				05E731E10EFA1A3E005EDFB7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = plcrashutil;
+			productName = plcrashutil;
+			productReference = 05E731E30EFA1A3E005EDFB7 /* plcrashutil */;
+			productType = "com.apple.product-type.tool";
+		};
+		05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05E7320C0EFA1B09005EDFB7 /* Build configuration list for PBXNativeTarget "CrashReporter-MacOSX-Static" */;
+			buildPhases = (
+				05E731EF0EFA1AAB005EDFB7 /* Headers */,
+				05E731F00EFA1AAB005EDFB7 /* Sources */,
+				05E731F10EFA1AAB005EDFB7 /* Frameworks */,
+			);
+			buildRules = (
+				05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "CrashReporter-MacOSX-Static";
+			productName = "CrashReporter-MacOSX-Static";
+			productReference = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		05F40CE60EF7AB80008050CF /* DemoCrash */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 05F40CEC0EF7AB81008050CF /* Build configuration list for PBXNativeTarget "DemoCrash" */;
@@ -956,9 +1073,11 @@
 			projectRoot = "";
 			targets = (
 				05CD31680EE939D0000FDE88 /* CrashReporter */,
+				05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */,
 				05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */,
 				05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */,
+				05E731E20EFA1A3E005EDFB7 /* plcrashutil */,
 				05CD32680EE93DC3000FDE88 /* Tests-MacOSX */,
 				05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */,
 				05CD33230EE94439000FDE88 /* Tests-iPhoneOS */,
@@ -1191,6 +1310,38 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		05E731E00EFA1A3E005EDFB7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05E7321D0EFA1BE1005EDFB7 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		05E731F00EFA1AAB005EDFB7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05E731F80EFA1AE3005EDFB7 /* CrashReporter.m in Sources */,
+				05E731F90EFA1AE3005EDFB7 /* PLCrashSignalHandler.m in Sources */,
+				05E731FA0EFA1AE3005EDFB7 /* PLCrashFrameWalker.c in Sources */,
+				05E731FB0EFA1AE3005EDFB7 /* PLCrashFrameWalker_i386.c in Sources */,
+				05E731FC0EFA1AE3005EDFB7 /* PLCrashFrameWalker_arm.c in Sources */,
+				05E731FD0EFA1AE3005EDFB7 /* PLCrashLogWriter.m in Sources */,
+				05E731FE0EFA1AE3005EDFB7 /* PLCrashAsync.c in Sources */,
+				05E731FF0EFA1AE3005EDFB7 /* PLCrashLogWriterEncoding.c in Sources */,
+				05E732000EFA1AE3005EDFB7 /* PLCrashReporter.m in Sources */,
+				05E732010EFA1AE3005EDFB7 /* PLCrashLog.m in Sources */,
+				05E732020EFA1AE3005EDFB7 /* crash_report.proto in Sources */,
+				05E732030EFA1AE3005EDFB7 /* protobuf-c.c in Sources */,
+				05E732040EFA1AE3005EDFB7 /* PLCrashLogSystemInfo.m in Sources */,
+				05E732050EFA1AE3005EDFB7 /* PLCrashLogApplicationInfo.m in Sources */,
+				05E732060EFA1AE3005EDFB7 /* PLCrashLogThreadInfo.m in Sources */,
+				05E732070EFA1AE3005EDFB7 /* PLCrashLogBinaryImageInfo.m in Sources */,
+				05E732080EFA1AE3005EDFB7 /* PLCrashLogExceptionInfo.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		05F40CE40EF7AB80008050CF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1280,6 +1431,16 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05CD34290EEA5FFA000FDE88 /* PBXContainerItemProxy */;
+		};
+		05E731EC0EFA1A8D005EDFB7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
+			targetProxy = 05E731EB0EFA1A8D005EDFB7 /* PBXContainerItemProxy */;
+		};
+		05E732100EFA1B61005EDFB7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
+			targetProxy = 05E7320F0EFA1B61005EDFB7 /* PBXContainerItemProxy */;
 		};
 		05F40CFD0EF7AC9D008050CF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1593,6 +1754,110 @@
 			};
 			name = Release;
 		};
+		05E731E50EFA1A3E005EDFB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = plcrashutil;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		05E731E60EFA1A3E005EDFB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = plcrashutil;
+				SDKROOT = macosx10.5;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		05E731F40EFA1AAC005EDFB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "CrashReporter$(EFFECTIVE_PLATFORM_NAME)-Static";
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		05E731F50EFA1AAC005EDFB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "CrashReporter$(EFFECTIVE_PLATFORM_NAME)-Static";
+				SDKROOT = macosx10.5;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		05F40CEA0EF7AB81008050CF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1790,6 +2055,24 @@
 			buildConfigurations = (
 				05CD33270EE9443A000FDE88 /* Debug */,
 				05CD33280EE9443A000FDE88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		05E731EA0EFA1A56005EDFB7 /* Build configuration list for PBXNativeTarget "plcrashutil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05E731E50EFA1A3E005EDFB7 /* Debug */,
+				05E731E60EFA1A3E005EDFB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		05E7320C0EFA1B09005EDFB7 /* Build configuration list for PBXNativeTarget "CrashReporter-MacOSX-Static" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05E731F40EFA1AAC005EDFB7 /* Debug */,
+				05E731F50EFA1AAC005EDFB7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
