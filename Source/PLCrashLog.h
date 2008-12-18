@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "PLCrashLogSystemInfo.h"
 #import "PLCrashLogApplicationInfo.h"
+#import "PLCrashLogThreadInfo.h"
 
 /** 
  * @ingroup constants
@@ -57,6 +58,9 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
 
     /** Application info */
     PLCrashLogApplicationInfo *_applicationInfo;
+
+    /** Thread info (PLCrashLogThreadInfo instances) */
+    NSArray *_threads;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
@@ -70,5 +74,10 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
  * Application information.
  */
 @property(nonatomic, readonly) PLCrashLogApplicationInfo *applicationInfo;
+
+/**
+ * Thread information. Returns a list of PLCrashLogThreadInfo instances.
+ */
+@property(nonatomic, readonly) NSArray *threads;
 
 @end
