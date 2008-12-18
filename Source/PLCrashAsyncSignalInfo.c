@@ -15,13 +15,59 @@
  * @{
  */
 
+struct signal_name {
+    const int signal;
+    const char *name;
+};
+
 struct signal_code {
-    int signal;
-    int si_code;
+    const int signal;
+    const int si_code;
     const char *name;
 };
 
 #if __APPLE__
+/* Values derived from <sys/signal.h> */
+struct signal_name signal_names[] = {
+    { SIGHUP,   "SIGHUP" },
+    { SIGINT,   "SIGINT" },
+    { SIGQUIT,  "SIGQUIT" },
+    { SIGILL,   "SIGILL" },
+    { SIGTRAP,  "SIGTRAP" },
+    { SIGABRT,  "SIGABRT" },
+#ifdef SIGPOLL
+    // XXX Is this supported?
+    { SIGPOLL,  "SIGPOLL" },
+#endif
+    { SIGIOT,   "SIGIOT" },
+    { SIGEMT,   "SIGEMT" },
+    { SIGFPE,   "SIGFPE" },
+    { SIGKILL,  "SIGKILL" },
+    { SIGBUS,   "SIGBUS" },
+    { SIGSEGV,  "SIGSEGV" },
+    { SIGSYS,   "SIGSYS" },
+    { SIGPIPE,  "SIGPIPE" },
+    { SIGALRM,  "SIGALRM" },
+    { SIGTERM,  "SIGTERM" },
+    { SIGURG,   "SIGURG" },
+    { SIGSTOP,  "SIGSTOP" },
+    { SIGTSTP,  "SIGTSTP" },
+    { SIGCONT,  "SIGCONT" },
+    { SIGCHLD,  "SIGCHLD" },
+    { SIGTTIN,  "SIGTTIN" },
+    { SIGTTOU,  "SIGTTOU" },
+    { SIGIO,    "SIGIO" },
+    { SIGXCPU,  "SIGXCPU" },
+    { SIGXFSZ,  "SIGXFSZ" },
+    { SIGVTALRM, "SIGVTALRM" },
+    { SIGPROF,  "SIGPROF" },
+    { SIGWINCH, "SIGWINCH" },
+    { SIGINFO,  "SIGINFO" },
+    { SIGUSR1,  "SIGUSR1" },
+    { SIGUSR2,  "SIGUSR2" },
+    { 0, NULL }
+};
+
 struct signal_code signal_codes[] = {
     /* SIGILL */
     { SIGILL,   ILL_NOOP,       "ILL_NOOP"    },
@@ -77,6 +123,22 @@ const char *plcrash_async_signal_sigcode (int signal, int si_code) {
         /* Check for match */
         if (signal_codes[i].signal == signal && signal_codes[i].si_code == si_code)
             return signal_codes[i].name;
+    }
+
+    /* No match */
+    return NULL;
+}
+
+/**
+ * @internal
+ *
+ * Map a normalized signal value to a SIGNAME signal string.
+ */
+const char *plcrash_async_signal_signame (int signal) {
+    for (int i = 0; signal_names[i].name != NULL; i++) {
+        /* Check for match */
+        if (signal_names[i].signal == signal)
+            return signal_names[i].name;
     }
 
     /* No match */
