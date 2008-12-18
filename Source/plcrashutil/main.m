@@ -87,13 +87,31 @@ int convert_command (int argc, char *argv[]) {
     }
 
     /* Header */
+
+    /* Map to Apple-style code type */
+    const char *codeType;
+    switch (crashLog.systemInfo.architecture) {
+        case PLCrashLogArchitectureARM:
+            codeType = "ARM";
+            break;
+        case PLCrashLogArchitectureX86_32:
+            codeType = "X86";
+            break;
+        case PLCrashLogArchitectureX86_64:
+            codeType = "X86-64";
+            break;
+        default:
+            fprintf(stderr, "Unknown architecture type %d", crashLog.systemInfo.architecture);
+            return 1;
+    }
+
     fprintf(output, "Incident Identifier: [TODO]\n");
     fprintf(output, "CrashReporter Key:   [TODO]\n");
     fprintf(output, "Process:         [TODO]\n");
     fprintf(output, "Path:            [TODO]\n");
     fprintf(output, "Identifier:      %s\n", [crashLog.applicationInfo.applicationIdentifier UTF8String]);
     fprintf(output, "Version:         %s\n", [crashLog.applicationInfo.applicationVersion UTF8String]);
-    fprintf(output, "Code Type:       [TODO]\n");
+    fprintf(output, "Code Type:       %s\n", codeType);
     fprintf(output, "Parent Process:  [TODO]\n");
 
     fprintf(output, "\n");
@@ -133,7 +151,8 @@ int convert_command (int argc, char *argv[]) {
         else
             uuid = @"???";
     
-        fprintf(output, "0x%" PRIx64 " - 0x%" PRIx64 "  %s [ID] ([VERSION]) <%s> %s\n",
+        /* base_address - terminating_address file_name identifier (<version>) <uuid> file_path */
+        fprintf(output, "0x%" PRIx64 " - 0x%" PRIx64 "  %s \?\?\? (\?\?\?) <%s> %s\n",
             imageInfo.imageBaseAddress,
             imageInfo.imageBaseAddress + imageInfo.imageSize,
             [[imageInfo.imageName lastPathComponent] UTF8String],
