@@ -32,7 +32,7 @@
     [super dealloc];
 }
 
-@synthesize name = _name;
-@synthesize reason = _reason;
+@synthesize exceptionName = _name;
+@synthesize exceptionReason = _reason;
 
 @end
