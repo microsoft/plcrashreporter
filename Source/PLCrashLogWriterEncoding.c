@@ -219,7 +219,7 @@ static inline size_t sint64_pack (int64_t value, uint8_t *out)
 }
 static inline size_t fixed32_pack (uint32_t value, uint8_t *out)
 {
-#if LITTLE_ENDIAN
+#if __LITTLE_ENDIAN__
     memcpy (out, &value, 4);
 #else
     out[0] = value;
@@ -231,7 +231,7 @@ static inline size_t fixed32_pack (uint32_t value, uint8_t *out)
 }
 static inline size_t fixed64_pack (uint64_t value, uint8_t *out)
 {
-#if LITTLE_ENDIAN
+#if __LITTLE_ENDIAN__
     memcpy (out, &value, 8);
 #else
     fixed32_pack (value, out);
