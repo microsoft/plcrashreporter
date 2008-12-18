@@ -16,7 +16,7 @@
 /**
  * Initialize with the given exception name and reason.
  */
-- (id) initWithName: (NSString *) name reason: (NSString *) reason {
+- (id) initWithExceptionName: (NSString *) name reason: (NSString *) reason {
     if ((self = [super init]) == nil)
         return nil;
 
@@ -32,7 +32,7 @@
     [super dealloc];
 }
 
-@synthesize name = _name;
-@synthesize reason = _reason;
+@synthesize exceptionName = _name;
+@synthesize exceptionReason = _reason;
 
 @end

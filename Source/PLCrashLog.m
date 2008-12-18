@@ -107,9 +107,19 @@ error:
     [super dealloc];
 }
 
+// property getter. property is documented.
+// Returns YES if exception information is available.
+- (BOOL) hasExceptionInfo {
+    if (_exceptionInfo != nil)
+        return YES;
+    return NO;
+}
+
 @synthesize systemInfo = _systemInfo;
 @synthesize applicationInfo = _applicationInfo;
 @synthesize threads = _threads;
+@synthesize images = _images;
+@synthesize exceptionInfo = _exceptionInfo;
 
 @end
 
