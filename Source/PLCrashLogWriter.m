@@ -227,7 +227,7 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
  * @param file Output file
  * @param timestamp Timestamp to use (seconds since epoch). Must be same across calls, as varint encoding.
  */
-size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer, uint32_t timestamp) {
+static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer, uint32_t timestamp) {
     size_t rv = 0;
     uint32_t enumval;
 
@@ -257,7 +257,7 @@ size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcrash_log
  * @param app_identifier Application identifier
  * @param app_version Application version
  */
-size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const char *app_identifier, const char *app_version) {
+static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const char *app_identifier, const char *app_version) {
     size_t rv = 0;
 
     /* App identifier */
@@ -278,7 +278,7 @@ size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const char *ap
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const char *regname, plframe_greg_t regval) {
+static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const char *regname, plframe_greg_t regval) {
     uint64_t uint64val;
     size_t rv = 0;
 
@@ -300,7 +300,7 @@ size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const c
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, ucontext_t *uap) {
+static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, ucontext_t *uap) {
     plframe_cursor_t cursor;
     plframe_error_t frame_err;
     uint32_t regCount;
@@ -356,7 +356,7 @@ size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, uconte
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plframe_cursor_t *cursor) {
+static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plframe_cursor_t *cursor) {
     plframe_error_t err;
     uint64_t uint64val;
     size_t rv = 0;
@@ -383,7 +383,7 @@ size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plframe_cu
  * @param crashctx Context to use for currently running thread (rather than fetching the thread
  * context, which we've invalidated by running at all)
  */
-size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx) {
+static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx) {
     size_t rv = 0;
     plframe_cursor_t cursor;
     plframe_error_t ferr;
@@ -449,7 +449,7 @@ size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread,
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char *name, const struct mach_header *header) {
+static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char *name, const struct mach_header *header) {
     size_t rv = 0;
     uint64_t mach_size = 0;
 
@@ -519,7 +519,7 @@ size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
+static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
     size_t rv = 0;
 
     /* Write the name and reason */
