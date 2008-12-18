@@ -27,7 +27,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; };
+		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0550A10E0EECFEC80037F7C3 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter.a */; };
 		0550A1100EECFEDC0037F7C3 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter.a */; };
 		059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
@@ -73,7 +73,7 @@
 		0596749A0EF0BBB4008A0601 /* PLCrashFrameWalker_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05966A1B0EEE5280008A0601 /* PLCrashFrameWalker_arm.c */; };
 		0596749B0EF0BBB4008A0601 /* crash_report.proto in Sources */ = {isa = PBXBuildFile; fileRef = 059670C70EEFAC3A008A0601 /* crash_report.proto */; };
 		05CD314D0EE9364B000FDE88 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 05CD314C0EE9364B000FDE88 /* InfoPlist.strings */; };
-		05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
+		05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		05CD318D0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
 		05CD318E0EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -135,7 +135,7 @@
 		05F411A70EF8DA31008050CF /* PLCrashLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411A50EF8DA31008050CF /* PLCrashLog.m */; };
 		05F411A80EF8DA31008050CF /* PLCrashLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F411A40EF8DA31008050CF /* PLCrashLog.h */; };
 		05F411A90EF8DA31008050CF /* PLCrashLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411A50EF8DA31008050CF /* PLCrashLog.m */; };
-		05F411AA0EF8DA31008050CF /* PLCrashLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F411A40EF8DA31008050CF /* PLCrashLog.h */; };
+		05F411AA0EF8DA31008050CF /* PLCrashLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F411A40EF8DA31008050CF /* PLCrashLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05F411AB0EF8DA31008050CF /* PLCrashLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411A50EF8DA31008050CF /* PLCrashLog.m */; };
 		05F411AD0EF8DE68008050CF /* PLCrashLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411AC0EF8DE68008050CF /* PLCrashLogTests.m */; };
 		05F411AE0EF8DE68008050CF /* PLCrashLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F411AC0EF8DE68008050CF /* PLCrashLogTests.m */; };
@@ -150,29 +150,29 @@
 		05F413460EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F413440EF995C0008050CF /* PLCrashLogSystemInfo.m */; };
 		05F413470EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F413430EF995C0008050CF /* PLCrashLogSystemInfo.h */; };
 		05F413480EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F413440EF995C0008050CF /* PLCrashLogSystemInfo.m */; };
-		05F413490EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F413430EF995C0008050CF /* PLCrashLogSystemInfo.h */; };
+		05F413490EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F413430EF995C0008050CF /* PLCrashLogSystemInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05F4134A0EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F413440EF995C0008050CF /* PLCrashLogSystemInfo.m */; };
 		05F4141E0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */; };
 		05F4141F0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */; };
-		05F414200EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */; };
+		05F414200EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05F414210EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */; };
 		05F414220EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4141C0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h */; };
 		05F414230EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */; };
 		05F414820EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
 		05F414830EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
-		05F414840EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
+		05F414840EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05F414850EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
 		05F414860EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
 		05F414870EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
 		05F4150D0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; };
 		05F4150E0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
-		05F4150F0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; };
+		05F4150F0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05F415100EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
 		05F415110EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; };
 		05F415120EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
 		05F415530EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F415510EF9E078008050CF /* PLCrashLogExceptionInfo.h */; };
 		05F415540EF9E078008050CF /* PLCrashLogExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F415520EF9E078008050CF /* PLCrashLogExceptionInfo.m */; };
-		05F415550EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F415510EF9E078008050CF /* PLCrashLogExceptionInfo.h */; };
+		05F415550EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F415510EF9E078008050CF /* PLCrashLogExceptionInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05F415560EF9E078008050CF /* PLCrashLogExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F415520EF9E078008050CF /* PLCrashLogExceptionInfo.m */; };
 		05F415570EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F415510EF9E078008050CF /* PLCrashLogExceptionInfo.h */; };
 		05F415580EF9E078008050CF /* PLCrashLogExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F415520EF9E078008050CF /* PLCrashLogExceptionInfo.m */; };

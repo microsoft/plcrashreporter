@@ -74,7 +74,7 @@ typedef enum {
 
 /* Library Imports */
 #import "PLCrashReporter.h"
-
+#import "PLCrashLog.h"
 
 /**
  * @mainpage Plausible Crash Reporter
