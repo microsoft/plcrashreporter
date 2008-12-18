@@ -154,6 +154,14 @@
 		05E734870EFAD84B005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E734310EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c */; };
 		05E734880EFAD854005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E734310EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c */; };
 		05E734890EFAD85A005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E734310EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c */; };
+		05E734F70EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E734F50EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h */; };
+		05E734F80EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E734F60EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m */; };
+		05E734F90EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E734F50EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h */; };
+		05E734FA0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E734F60EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m */; };
+		05E734FB0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E734F50EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h */; };
+		05E734FC0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E734F60EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m */; };
+		05E734FD0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E734F50EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h */; };
+		05E734FE0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E734F60EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m */; };
 		05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
@@ -487,6 +495,8 @@
 		05E734300EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncSignalInfo.h; sourceTree = "<group>"; };
 		05E734310EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncSignalInfo.c; sourceTree = "<group>"; };
 		05E734830EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncSignalInfoTests.m; sourceTree = "<group>"; };
+		05E734F50EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogSignalInfo.h; sourceTree = "<group>"; };
+		05E734F60EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogSignalInfo.m; sourceTree = "<group>"; };
 		05F40ACA0EF7379F008050CF /* PLCrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporter.m; sourceTree = "<group>"; };
 		05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporterTests.m; sourceTree = "<group>"; };
 		05F40CE70EF7AB80008050CF /* DemoCrash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoCrash.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -764,6 +774,8 @@
 				05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */,
 				05F415510EF9E078008050CF /* PLCrashLogExceptionInfo.h */,
 				05F415520EF9E078008050CF /* PLCrashLogExceptionInfo.m */,
+				05E734F50EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h */,
+				05E734F60EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m */,
 			);
 			name = "Crash Log";
 			sourceTree = "<group>";
@@ -864,6 +876,7 @@
 				05F415110EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 				05F415570EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */,
 				05E734340EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h in Headers */,
+				05E734F90EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -884,6 +897,7 @@
 				05F4150D0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 				05F415530EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */,
 				05E734320EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h in Headers */,
+				05E734F70EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -892,6 +906,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				05E734380EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h in Headers */,
+				05E734FD0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -913,6 +928,7 @@
 				05F4150F0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 				05F415550EF9E078008050CF /* PLCrashLogExceptionInfo.h in Headers */,
 				05E734360EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h in Headers */,
+				05E734FB0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1248,6 +1264,7 @@
 				05F415120EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */,
 				05F415580EF9E078008050CF /* PLCrashLogExceptionInfo.m in Sources */,
 				05E734350EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
+				05E734FA0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1273,6 +1290,7 @@
 				05F4150E0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */,
 				05F415540EF9E078008050CF /* PLCrashLogExceptionInfo.m in Sources */,
 				05E734330EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
+				05E734F80EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1382,6 +1400,7 @@
 				05E732070EFA1AE3005EDFB7 /* PLCrashLogBinaryImageInfo.m in Sources */,
 				05E732080EFA1AE3005EDFB7 /* PLCrashLogExceptionInfo.m in Sources */,
 				05E734390EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
+				05E734FE0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1415,6 +1434,7 @@
 				05F415100EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */,
 				05F415560EF9E078008050CF /* PLCrashLogExceptionInfo.m in Sources */,
 				05E734370EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
+				05E734FC0EFAE59C005EDFB7 /* PLCrashLogSignalInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
