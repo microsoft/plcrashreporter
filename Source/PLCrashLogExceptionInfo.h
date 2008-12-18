@@ -19,7 +19,14 @@
 
 - (id) initWithExceptionName: (NSString *) name reason: (NSString *) reason;
 
-@property(nonatomic, readonly) NSString *exceptionName;
-@property(nonatomic, readonly) NSString *exceptionReason;
+/**
+ * The exception name.
+ */
+@property(nonatomic, readonly) NSString *name;
+
+/**
+ * The exception reason.
+ */
+@property(nonatomic, readonly) NSString *reason;
 
 @end
