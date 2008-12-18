@@ -8,6 +8,7 @@
 _PLCrashReporterException
 _PLCrashReporterErrorDomain
 .objc_class_name_PLCrashReporter
+.objc_class_name_PLCrashSignalHandler
 
 # PLCrashLog
 _PLCrashLogHostOperatingSystem
