@@ -202,13 +202,6 @@
     Plcrash__CrashReport *crashReport;
     crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size - sizeof(struct PLCrashLogFileHeader), header->data);
     
-    /* Output some debug decoding (TODO: Remove) */
-    fprintf(stderr, "Binary dump: ");
-    for (size_t i = 0; i < statbuf.st_size; i++) {
-        fprintf(stderr, "%.2hhx", ((uint8_t *) buf)[i]);
-    }
-    fprintf(stderr, "\n");
-    
     /* If reading the report didn't fail, test the contents */
     STAssertNotNULL(crashReport, @"Could not decode crash report");
     if (crashReport != NULL) {
