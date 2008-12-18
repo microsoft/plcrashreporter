@@ -13,6 +13,8 @@
     uint64_t _instructionPointer;
 }
 
+- (id) initWithInstructionPointer: (uint64_t) instructionPointer;
+
 /**
  * Frame's instruction pointer.
  */
@@ -29,6 +31,8 @@
     /** Register value */
     uint64_t _registerValue;
 }
+
+- (id) initWithRegisterName: (NSString *) registerName registerValue: (uint64_t) registerValue;
 
 /**
  * Register name.
@@ -57,6 +61,11 @@
     /** List of PLCrashLogRegister instances. Will be empty if _crashed is NO. */
     NSArray *_registers;
 }
+
+- (id) initWithThreadNumber: (NSInteger) threadNumber
+                stackFrames: (NSArray *) stackFrames
+                    crashed: (BOOL) crashed
+                  registers: (NSArray *) registers;
 
 /**
  * Application thread number.

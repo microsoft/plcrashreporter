@@ -102,6 +102,28 @@
     STAssertNotNil(crashLog.applicationInfo.applicationIdentifier, @"No application identifier available");
     STAssertNotNil(crashLog.applicationInfo.applicationVersion, @"No application version available");
 
+    /* Thread info */
+    STAssertNotNil(crashLog.threads, @"Thread list is nil");
+    STAssertNotEquals((NSUInteger)0, [crashLog.threads count], @"No thread values returned");
+
+    NSUInteger thrNumber = 0;
+    BOOL crashedFound = NO;
+    for (PLCrashLogThreadInfo *threadInfo in crashLog.threads) {
+        STAssertNotNil(threadInfo.stackFrames, @"Thread stackframe list is nil");
+        STAssertNotNil(threadInfo.registers, @"Thread register list is nil");
+        STAssertEquals((NSInteger)thrNumber, threadInfo.threadNumber, @"Threads are listed out of order.");
+
+        if (threadInfo.crashed) {
+            STAssertNotEquals((NSUInteger)0, [threadInfo.registers count], @"No registers recorded for the crashed thread");
+            for (PLCrashLogRegisterInfo *registerInfo in threadInfo.registers) {
+                STAssertNotNil(registerInfo.registerName, @"Register name is nil");
+            }
+            crashedFound = YES;
+        }
+        
+        thrNumber++;
+    }
+    STAssertTrue(crashedFound, @"No crashed thread was found in the crash log");
 }
 
 
