@@ -472,7 +472,7 @@ error:
     NSString *name = [NSString stringWithUTF8String: signalInfo->name];
     NSString *code = [NSString stringWithUTF8String: signalInfo->code];
     
-    return [[[PLCrashLogSignalInfo alloc] initWithSignalName: name code: code] autorelease];
+    return [[[PLCrashLogSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address] autorelease];
 }
 
 @end

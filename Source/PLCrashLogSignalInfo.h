@@ -14,9 +14,12 @@
     
     /** Signal code */
     NSString *_code;
+
+    /** Fauling instruction or address */
+    uint64_t _address;
 }
 
-- (id) initWithSignalName: (NSString *) name code: (NSString *) code;
+- (id) initWithSignalName: (NSString *) name code: (NSString *) code address: (uint64_t) address;
 
 /**
  * The signal name.
@@ -27,5 +30,10 @@
  * The signal code.
  */
 @property(nonatomic, readonly) NSString *code;
+
+/**
+ * The faulting instruction or address.
+ */
+@property(nonatomic, readonly) uint64_t address;
 
 @end

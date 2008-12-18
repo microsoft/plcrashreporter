@@ -118,6 +118,9 @@ enum {
 
     /** CrashReport.signal.code */
     PLCRASH_PROTO_SIGNAL_CODE_ID = 2,
+    
+    /** CrashReport.signal.address */
+    PLCRASH_PROTO_SIGNAL_ADDRESS_ID = 3,
 };
 
 
@@ -567,10 +570,14 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t
         snprintf(code_buf, sizeof(code_buf), "#%d", siginfo->si_code);
         code = code_buf;
     }
+    
+    /* Address value */
+    uint64_t addr = (intptr_t) siginfo->si_addr;
 
     /* Write it out */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_CODE_ID, PLPROTOBUF_C_TYPE_STRING, code);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ADDRESS_ID, PLPROTOBUF_C_TYPE_UINT64, &addr);
 
     return rv;
 }
