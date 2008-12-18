@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "PLCrashLogSystemInfo.h"
 #import "PLCrashLogApplicationInfo.h"
+#import "PLCrashLogSignalInfo.h"
 #import "PLCrashLogThreadInfo.h"
 #import "PLCrashLogBinaryImageInfo.h"
 #import "PLCrashLogExceptionInfo.h"
@@ -61,6 +62,9 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
     /** Application info */
     PLCrashLogApplicationInfo *_applicationInfo;
 
+    /** Signal info */
+    PLCrashLogSignalInfo *_signalInfo;
+
     /** Thread info (PLCrashLogThreadInfo instances) */
     NSArray *_threads;
 
@@ -84,6 +88,12 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
  * Application information.
  */
 @property(nonatomic, readonly) PLCrashLogApplicationInfo *applicationInfo;
+
+/**
+ * Signal information. This provides the signal and signal code
+ * of the fatal signal.
+ */
+@property(nonatomic, readonly) PLCrashLogSignalInfo *signalInfo;
 
 /**
  * Thread information. Returns a list of PLCrashLogThreadInfo instances.
