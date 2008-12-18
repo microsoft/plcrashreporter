@@ -5,13 +5,13 @@
  * All rights reserved.
  */
 
-#import "PLCrashLogExceptionInfo.h"
+#import "PLCrashReportExceptionInfo.h"
 
 /**
  * If a crash is triggered by an uncaught Objective-C exception, the
  * exception name and reason will be made available.
  */
-@implementation PLCrashLogExceptionInfo
+@implementation PLCrashReportExceptionInfo
 
 /**
  * Initialize with the given exception name and reason.

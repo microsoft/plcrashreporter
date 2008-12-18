@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashLogStackFrameInfo : NSObject {
+@interface PLCrashReportStackFrameInfo : NSObject {
 @private
     /** Frame instruction pointer. */
     uint64_t _instructionPointer;
@@ -23,7 +23,7 @@
 @end
 
 
-@interface PLCrashLogRegisterInfo : NSObject {
+@interface PLCrashReportRegisterInfo : NSObject {
 @private
     /** Register name */
     NSString *_registerName;
@@ -47,18 +47,18 @@
 @end
 
 
-@interface PLCrashLogThreadInfo : NSObject {
+@interface PLCrashReportThreadInfo : NSObject {
 @private
     /** The thread number. Should be unique within a given crash log. */
     NSInteger _threadNumber;
 
-    /** Ordered list of PLCrashLogStackFrame instances */
+    /** Ordered list of PLCrashReportStackFrame instances */
     NSArray *_stackFrames;
 
     /** YES if this thread crashed. */
     BOOL _crashed;
 
-    /** List of PLCrashLogRegister instances. Will be empty if _crashed is NO. */
+    /** List of PLCrashReportRegister instances. Will be empty if _crashed is NO. */
     NSArray *_registers;
 }
 
@@ -73,7 +73,7 @@
 @property(nonatomic, readonly) NSInteger threadNumber;
 
 /**
- * Thread backtrace. Provides an array of PLCrashLogStackFrame instances.
+ * Thread backtrace. Provides an array of PLCrashReportStackFrame instances.
  * The array is ordered, last callee to first.
  */
 @property(nonatomic, readonly) NSArray *stackFrames;
@@ -85,7 +85,7 @@
 
 /**
  * State of the general purpose and related registers, as a list of
- * PLCrashLogRegister instances. If this thead did not crash (crashed returns NO),
+ * PLCrashReportRegister instances. If this thead did not crash (crashed returns NO),
  * this list will be empty.
  */
 @property(nonatomic, readonly) NSArray *registers;

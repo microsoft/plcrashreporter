@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-#import "PLCrashLogApplicationInfo.h"
+#import "PLCrashReportApplicationInfo.h"
 
 /**
  * Crash log application data.
@@ -13,7 +13,7 @@
  * Provides the application identifier and version of the crashed
  * application.
  */
-@implementation PLCrashLogApplicationInfo
+@implementation PLCrashReportApplicationInfo
 
 /**
  * Initialize with the provided application identifier and version.

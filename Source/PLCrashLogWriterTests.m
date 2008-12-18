@@ -7,7 +7,7 @@
 
 #import "GTMSenTestCase.h"
 
-#import "PLCrashLog.h"
+#import "PLCrashReport.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
 
@@ -62,11 +62,11 @@
     if (systemInfo == NULL)
         return;
 
-    STAssertEquals(systemInfo->operating_system, PLCrashLogHostOperatingSystem, @"Unexpected OS value");
+    STAssertEquals(systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
-    STAssertEquals(systemInfo->architecture, PLCrashLogHostArchitecture, @"Unexpected machine type");
+    STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
@@ -190,15 +190,15 @@
     }
 
     /* Check the file magic. The file must be large enough for the value + version + data */
-    struct PLCrashLogFileHeader *header = buf;
-    STAssertTrue(statbuf.st_size > sizeof(struct PLCrashLogFileHeader), @"File is too small for magic + version + data");
+    struct PLCrashReportFileHeader *header = buf;
+    STAssertTrue(statbuf.st_size > sizeof(struct PLCrashReportFileHeader), @"File is too small for magic + version + data");
     // verifies correct byte ordering of the file magic
-    STAssertTrue(memcmp(header->magic, PLCRASH_LOG_FILE_MAGIC, strlen(PLCRASH_LOG_FILE_MAGIC)) == 0, @"File header is not 'plcrash', is: '%s'", (const char *) &header->magic);
-    STAssertEquals(header->version, (uint8_t) PLCRASH_LOG_FILE_VERSION, @"File version is not equal to 0");
+    STAssertTrue(memcmp(header->magic, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC)) == 0, @"File header is not 'plcrash', is: '%s'", (const char *) &header->magic);
+    STAssertEquals(header->version, (uint8_t) PLCRASH_REPORT_FILE_VERSION, @"File version is not equal to 0");
 
     /* Try to read the crash report */
     Plcrash__CrashReport *crashReport;
-    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size - sizeof(struct PLCrashLogFileHeader), header->data);
+    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size - sizeof(struct PLCrashReportFileHeader), header->data);
     
     /* If reading the report didn't fail, test the contents */
     STAssertNotNULL(crashReport, @"Could not decode crash report");

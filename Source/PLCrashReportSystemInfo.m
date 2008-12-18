@@ -5,20 +5,20 @@
  * All rights reserved.
  */
 
-#import "PLCrashLogSystemInfo.h"
+#import "PLCrashReportSystemInfo.h"
 
 /**
  * @ingroup constants
  *
  * The current host's operating system.
  */
-PLCrashLogOperatingSystem PLCrashLogHostOperatingSystem =
+PLCrashReportOperatingSystem PLCrashReportHostOperatingSystem =
 #if TARGET_IPHONE_SIMULATOR
-    PLCrashLogOperatingSystemiPhoneSimulator;
+    PLCrashReportOperatingSystemiPhoneSimulator;
 #elif TARGET_OS_IPHONE
-    PLCrashLogOperatingSystemiPhoneOS;
+    PLCrashReportOperatingSystemiPhoneOS;
 #elif TARGET_OS_MAC
-    PLCrashLogOperatingSystemMacOSX;
+    PLCrashReportOperatingSystemMacOSX;
 #else
     #error Unknown operating system
 #endif
@@ -31,13 +31,13 @@ PLCrashLogOperatingSystem PLCrashLogHostOperatingSystem =
  *
  * The current host's architecture.
  */
-PLCrashLogArchitecture PLCrashLogHostArchitecture =
+PLCrashReportArchitecture PLCrashReportHostArchitecture =
 #ifdef __x86_64__
-    PLCrashLogArchitectureX86_64;
+    PLCrashReportArchitectureX86_64;
 #elif defined(__i386__)
-    PLCrashLogArchitectureX86_32;
+    PLCrashReportArchitectureX86_32;
 #elif defined(__arm__)
-    PLCrashLogArchitectureARM;
+    PLCrashReportArchitectureARM;
 #else
     #error Unknown machine architecture
 #endif
@@ -48,7 +48,7 @@ PLCrashLogArchitecture PLCrashLogHostArchitecture =
  *
  * This contains information about the host system, including operating system and architecture.
  */
-@implementation PLCrashLogSystemInfo
+@implementation PLCrashReportSystemInfo
 
 /**
  * Initialize the system info data object.
@@ -58,9 +58,9 @@ PLCrashLogArchitecture PLCrashLogHostArchitecture =
  * @param architecture Architecture
  * @param timestamp Timestamp (may be nil).
  */
-- (id) initWithOperatingSystem: (PLCrashLogOperatingSystem) operatingSystem 
+- (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem 
         operatingSystemVersion: (NSString *) operatingSystemVersion
-                  architecture: (PLCrashLogArchitecture) architecture
+                  architecture: (PLCrashReportArchitecture) architecture
                      timestamp: (NSDate *) timestamp
 {
     if ((self = [super init]) == nil)

@@ -5,12 +5,12 @@
  * All rights reserved.
  */
 
-#import "PLCrashLogBinaryImageInfo.h"
+#import "PLCrashReportBinaryImageInfo.h"
 
 /**
  * Crash Log binary image info. Represents an executable or shared library.
  */
-@implementation PLCrashLogBinaryImageInfo
+@implementation PLCrashReportBinaryImageInfo
 
 /**
  * Initialize with the given binary image properties.

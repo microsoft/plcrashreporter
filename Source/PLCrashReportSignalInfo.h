@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashLogSignalInfo : NSObject {
+@interface PLCrashReportSignalInfo : NSObject {
 @private
     /** Signal name */
     NSString *_name;

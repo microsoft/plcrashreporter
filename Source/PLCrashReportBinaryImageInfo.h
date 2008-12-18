@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashLogBinaryImageInfo : NSObject {
+@interface PLCrashReportBinaryImageInfo : NSObject {
 @private
     /** Base image address */
     uint64_t _baseAddress;
