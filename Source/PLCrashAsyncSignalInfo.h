@@ -15,6 +15,7 @@
  * @{
  */
 
+const char *plcrash_async_signal_signame (int signal);
 const char *plcrash_async_signal_sigcode (int signal, int si_code);
 
 /**

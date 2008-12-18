@@ -14,11 +14,19 @@
 
 @implementation PLCrashAsyncSignalInfoTests
 
-- (void) testInvalidMapping {
+- (void) testInvalidSignalMapping {
+    STAssertNULL(plcrash_async_signal_signame(NSIG + 1), @"Invalid signal should return NULL");
+}
+
+- (void) testValidSignalMapping {
+    STAssertTrue(strcmp(plcrash_async_signal_signame(SIGSEGV), "SIGSEGV") == 0, @"Incorrect mapping performed");
+}
+
+- (void) testInvalidCodeMapping {
     STAssertNULL(plcrash_async_signal_sigcode(SIGIOT, 42), @"Invalid signal/code should return NULL");
 }
 
-- (void) testValidMapping {
+- (void) testValidCodeMapping {
     STAssertTrue(strcmp(plcrash_async_signal_sigcode(SIGSEGV, SEGV_NOOP), "SEGV_NOOP") == 0, @"Incorrect mapping performed");
 }
 
