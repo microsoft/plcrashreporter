@@ -16,7 +16,7 @@ PLCrashLogOperatingSystem PLCrashLogHostOperatingSystem =
 #if TARGET_IPHONE_SIMULATOR
     PLCrashLogOperatingSystemiPhoneSimulator;
 #elif TARGET_OS_IPHONE
-    PLCrashLogOperatingSystemiPhoneSimulator;
+    PLCrashLogOperatingSystemiPhoneOS;
 #elif TARGET_OS_MAC
     PLCrashLogOperatingSystemMacOSX;
 #else
