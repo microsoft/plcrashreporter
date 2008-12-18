@@ -73,6 +73,8 @@ typedef struct _PLCrashLogDecoder _PLCrashLogDecoder;
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
 
+- (PLCrashLogBinaryImageInfo *) imageForAddress: (uint64_t) address;
+
 /**
  * System information.
  */

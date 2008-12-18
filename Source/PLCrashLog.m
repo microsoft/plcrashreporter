@@ -122,6 +122,20 @@ error:
     [super dealloc];
 }
 
+/**
+ * Return the binary image containing the given address, or nil if no binary image
+ * is found.
+ */
+- (PLCrashLogBinaryImageInfo *) imageForAddress: (uint64_t) address {
+    for (PLCrashLogBinaryImageInfo *imageInfo in self.images) {
+        if (imageInfo.imageBaseAddress <= address && address < (imageInfo.imageBaseAddress + imageInfo.imageSize))
+            return imageInfo;
+    }
+
+    /* Not found */
+    return nil;
+}
+
 // property getter. property is documented.
 // Returns YES if exception information is available.
 - (BOOL) hasExceptionInfo {

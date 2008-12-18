@@ -120,6 +120,8 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "Date/Time:       %s\n", [[crashLog.systemInfo.timestamp description] UTF8String]);
     fprintf(output, "OS Version:      [TODO]\n");
     fprintf(output, "Report Version:  103\n");
+    
+    fprintf(output, "\n");
 
     /* Exception code */
     fprintf(output, "Exception Type:  [TODO]\n");
@@ -135,8 +137,23 @@ int convert_command (int argc, char *argv[]) {
         fprintf(output, "Thread %d:\n", i);
         for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
             PLCrashLogStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
+            PLCrashLogBinaryImageInfo *imageInfo;
+
+            /* Base image address containing instrumention pointer, offset of the IP from that base
+             * address, and the associated image name */
+            uint64_t baseAddress = 0x0;
+            uint64_t pcOffset = 0x0;
+            const char *imageName = "\?\?\?";
+            
+            imageInfo = [crashLog imageForAddress: frameInfo.instructionPointer];
+            if (imageInfo != nil) {
+                imageName = [[imageInfo.imageName lastPathComponent] UTF8String];
+                baseAddress = imageInfo.imageBaseAddress;
+                pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
+            }
     
-            fprintf(output, "%d %s\t\t\t0x%" PRIx64 " [TODO] + [TODO]\n", frame_idx, "<binary>", frameInfo.instructionPointer);
+            fprintf(output, "%d %s\t\t\t0x%" PRIx64 " 0x%" PRIx64 " + 0x%" PRIx64 "\n", 
+                    frame_idx, imageName, frameInfo.instructionPointer, baseAddress, pcOffset);
         }
         fprintf(output, "\n");
     }
