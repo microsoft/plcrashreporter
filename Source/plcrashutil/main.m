@@ -88,6 +88,23 @@ int convert_command (int argc, char *argv[]) {
 
     /* Header */
 
+    /* Map to apple style OS nane */
+    const char *osName;
+    switch (crashLog.systemInfo.operatingSystem) {
+        case PLCrashLogOperatingSystemMacOSX:
+            osName = "Mac OS X";
+            break;
+        case PLCrashLogOperatingSystemiPhoneOS:
+            osName = "iPhone OS";
+            break;
+        case PLCrashLogOperatingSystemiPhoneSimulator:
+            osName = "Mac OS X";
+            break;
+        default:
+            fprintf(stderr, "Unknown operating system type %d", crashLog.systemInfo.operatingSystem);
+            return 1;
+    }
+    
     /* Map to Apple-style code type */
     const char *codeType;
     switch (crashLog.systemInfo.architecture) {
@@ -110,7 +127,7 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "Process:         [TODO]\n");
     fprintf(output, "Path:            [TODO]\n");
     fprintf(output, "Identifier:      %s\n", [crashLog.applicationInfo.applicationIdentifier UTF8String]);
-    fprintf(output, "Version:         %s\n", [crashLog.applicationInfo.applicationVersion UTF8String]);
+    fprintf(output, "Version:         %s %s\n", osName, [crashLog.applicationInfo.applicationVersion UTF8String]);
     fprintf(output, "Code Type:       %s\n", codeType);
     fprintf(output, "Parent Process:  [TODO]\n");
 
