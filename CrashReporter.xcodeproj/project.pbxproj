@@ -140,9 +140,6 @@
 		05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
-		05F40AD80EF73A07008050CF /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
-		05F40AD90EF73A11008050CF /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
-		05F40ADA0EF73A18008050CF /* PLCrashSignalHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */; };
 		05F40ADE0EF73A39008050CF /* PLCrashReporterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */; };
 		05F40ADF0EF73A39008050CF /* PLCrashReporterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */; };
 		05F40AE00EF73A39008050CF /* PLCrashReporterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */; };
@@ -1250,7 +1247,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */,
-				05F40AD80EF73A07008050CF /* PLCrashSignalHandler.m in Sources */,
 				05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E30EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702E0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -1275,7 +1271,6 @@
 				05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
-				05F40AD90EF73A11008050CF /* PLCrashSignalHandler.m in Sources */,
 				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702F0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -1300,7 +1295,6 @@
 				05CD332C0EE94464000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
-				05F40ADA0EF73A18008050CF /* PLCrashSignalHandler.m in Sources */,
 				05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E40EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				059670300EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
