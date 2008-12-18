@@ -24,6 +24,8 @@ struct _PLCrashLogDecoder {
 - (NSArray *) extractThreadInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (NSArray *) extractImageInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (PLCrashLogApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
+- (PLCrashLogSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
+
 @end
 
 
@@ -75,6 +77,11 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     /* Application info */
     _applicationInfo = [[self extractApplicationInfo: _decoder->crashReport->application_info error: outError] retain];
     if (!_applicationInfo)
+        goto error;
+
+    /* Signal info */
+    _signalInfo = [[self extractSignalInfo: _decoder->crashReport->signal error: outError] retain];
+    if (!_signalInfo)
         goto error;
 
     /* Thread info */
@@ -146,6 +153,7 @@ error:
 
 @synthesize systemInfo = _systemInfo;
 @synthesize applicationInfo = _applicationInfo;
+@synthesize signalInfo = _signalInfo;
 @synthesize threads = _threads;
 @synthesize images = _images;
 @synthesize exceptionInfo = _exceptionInfo;
@@ -428,6 +436,43 @@ error:
     NSString *reason = [NSString stringWithUTF8String: exceptionInfo->reason];
     
     return [[[PLCrashLogExceptionInfo alloc] initWithExceptionName: name reason: reason] autorelease];
+}
+
+/**
+ * Extract signal information from the crash log. Returns nil on error.
+ */
+- (PLCrashLogSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo
+                                       error: (NSError **) outError
+{
+    /* Validate */
+    if (signalInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Signal Information section", 
+                                           @"Missing appinfo in crash report"));
+        return nil;
+    }
+    
+    /* Name available? */
+    if (signalInfo->name == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing signal name field", 
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+    
+    /* Code available? */
+    if (signalInfo->code == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing signal code field", 
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+    
+    /* Done */
+    NSString *name = [NSString stringWithUTF8String: signalInfo->name];
+    NSString *code = [NSString stringWithUTF8String: signalInfo->code];
+    
+    return [[[PLCrashLogSignalInfo alloc] initWithSignalName: name code: code] autorelease];
 }
 
 @end

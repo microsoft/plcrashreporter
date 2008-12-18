@@ -102,6 +102,10 @@
     STAssertNotNil(crashLog.applicationInfo.applicationIdentifier, @"No application identifier available");
     STAssertNotNil(crashLog.applicationInfo.applicationVersion, @"No application version available");
 
+    /* Signal info */
+    STAssertEqualStrings(@"SIGSEGV", crashLog.signalInfo.name, @"Signal is incorrect");
+    STAssertEqualStrings(@"SEGV_MAPERR", crashLog.signalInfo.code, @"Signal code is incorrect");
+
     /* Thread info */
     STAssertNotNil(crashLog.threads, @"Thread list is nil");
     STAssertNotEquals((NSUInteger)0, [crashLog.threads count], @"No thread values returned");
