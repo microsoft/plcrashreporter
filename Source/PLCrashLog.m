@@ -155,6 +155,7 @@ error:
     return crashReport;
 }
 
+
 /**
  * Extract system information from the crash log. Returns nil on error.
  */
