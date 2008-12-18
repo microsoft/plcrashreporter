@@ -359,7 +359,7 @@ error:
             const char hex[] = "0123456789abcdef";
 
             for (int i = 0; i < IMAGE_UUID_DIGEST_LEN; i++) {
-                char c = image->uuid.data[i];
+                unsigned char c = ((unsigned char *) image->uuid.data)[i];
                 output[i * 2 + 0] = hex[c >> 4];
                 output[i * 2 + 1] = hex[c & 0x0F];
             }
