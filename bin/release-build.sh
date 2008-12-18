@@ -206,7 +206,7 @@ fi
 doxygen
 check_failure "Documentation generation failed"
 
-mv docs "${OUTPUT_DIR}/Documentation"
+mv Documentation "${OUTPUT_DIR}"
 check_failure "Documentation generation failed"
 
 # Copy in the README file (TODO)
