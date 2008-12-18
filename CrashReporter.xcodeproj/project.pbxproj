@@ -379,7 +379,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
 		05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */ = {
