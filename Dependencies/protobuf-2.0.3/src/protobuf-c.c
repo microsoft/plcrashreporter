@@ -1439,7 +1439,11 @@ protobuf_c_message_unpack         (const ProtobufCMessageDescriptor *desc,
           }
         case PROTOBUF_C_WIRE_TYPE_START_GROUP:
         case PROTOBUF_C_WIRE_TYPE_END_GROUP:
-          PROTOBUF_C_ASSERT_NOT_REACHED ();
+          // landonf - 12/18/2008 (Do not assert unreachable if a group tag is found, as this
+          // crashed the decoder on valid input)
+          UNPACK_ERROR (("unsupported group tag at offset %u",
+                         (unsigned)(at-data)));
+          goto error_cleanup;
         case PROTOBUF_C_WIRE_TYPE_32BIT:
           if (rem < 4)
             {
