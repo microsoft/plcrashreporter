@@ -208,6 +208,10 @@
         [self checkThreads: crashReport];
         [self checkException: crashReport];
 
+        /* Check the signal info */
+        STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
+        STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
+
         /* Free it */
         protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
     }
