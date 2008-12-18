@@ -20,6 +20,7 @@
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
+#import "PLCrashAsyncSignalInfo.h"
 #import "PLCrashFrameWalker.h"
 
 #if TARGET_OS_IPHONE
@@ -108,6 +109,15 @@ enum {
     
     /** CrashReport.exception.reason */
     PLCRASH_PROTO_EXCEPTION_REASON_ID = 2,
+
+    /** CrashReport.signal */
+    PLCRASH_PROTO_SIGNAL_ID = 6,
+
+    /** CrashReport.signal.name */
+    PLCRASH_PROTO_SIGNAL_NAME_ID = 1,
+
+    /** CrashReport.signal.code */
+    PLCRASH_PROTO_SIGNAL_CODE_ID = 2,
 };
 
 
@@ -515,9 +525,8 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, con
  *
  * Write the crash Exception message
  *
- * @param writer Writer containing exception data
  * @param file Output file
- * @param cursor The cursor from which to acquire frame data.
+ * @param writer Writer containing exception data
  */
 static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
     size_t rv = 0;
@@ -530,7 +539,41 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
     return rv;
 }
 
+/**
+ * @internal
+ *
+ * Write the crash signal message
+ *
+ * @param file Output file
+ * @param siginfo The signal information
+ */
+static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t *siginfo) {
+    size_t rv = 0;
+    
+    /* Fetch the signal name */
+    char name_buf[10];
+    const char *name;
+    if ((name = plcrash_async_signal_signame(siginfo->si_signo)) == NULL) {
+        PLCF_DEBUG("Warning -- unhandled signal number (signo=%d). This is a bug.", siginfo->si_signo);
+        snprintf(name_buf, sizeof(name_buf), "#%d", siginfo->si_signo);
+        name = name_buf;
+    }
 
+    /* Fetch the signal code string */
+    char code_buf[10];
+    const char *code;
+    if ((code = plcrash_async_signal_sigcode(siginfo->si_signo, siginfo->si_code)) == NULL) {
+        PLCF_DEBUG("Warning -- unhandled signal sicode (signo=%d, code=%d). This is a bug.", siginfo->si_signo, siginfo->si_code);
+        snprintf(code_buf, sizeof(code_buf), "#%d", siginfo->si_code);
+        code = code_buf;
+    }
+
+    /* Write it out */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_CODE_ID, PLPROTOBUF_C_TYPE_STRING, code);
+
+    return rv;
+}
 
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
@@ -662,6 +705,16 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         size = plcrash_writer_write_exception(NULL, writer);
         plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_exception(file, writer);
+    }
+    
+    /* Signal */
+    {
+        uint32_t size;
+        
+        /* Calculate the message size */
+        size = plcrash_writer_write_signal(NULL, siginfo);
+        plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_signal(file, siginfo);
     }
     
     return PLCRASH_ESUCCESS;
