@@ -164,6 +164,12 @@
 		05F414850EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
 		05F414860EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */; };
 		05F414870EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */; };
+		05F4150D0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; };
+		05F4150E0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
+		05F4150F0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; };
+		05F415100EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
+		05F415110EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */; };
+		05F415120EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -418,6 +424,8 @@
 		05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogApplicationInfo.m; sourceTree = "<group>"; };
 		05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogThreadInfo.h; sourceTree = "<group>"; };
 		05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogThreadInfo.m; sourceTree = "<group>"; };
+		05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogBinaryImageInfo.h; sourceTree = "<group>"; };
+		05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogBinaryImageInfo.m; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -638,6 +646,8 @@
 				05F4141D0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m */,
 				05F414800EF9BFAC008050CF /* PLCrashLogThreadInfo.h */,
 				05F414810EF9BFAC008050CF /* PLCrashLogThreadInfo.m */,
+				05F4150B0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h */,
+				05F4150C0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m */,
 			);
 			name = "Crash Log";
 			sourceTree = "<group>";
@@ -733,6 +743,7 @@
 				05F413470EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */,
 				05F414220EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */,
 				05F414860EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
+				05F415110EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -750,6 +761,7 @@
 				05F413450EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */,
 				05F4141E0EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */,
 				05F414820EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
+				05F4150D0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -768,6 +780,7 @@
 				05F413490EF995C0008050CF /* PLCrashLogSystemInfo.h in Headers */,
 				05F414200EF9A6C4008050CF /* PLCrashLogApplicationInfo.h in Headers */,
 				05F414840EF9BFAC008050CF /* PLCrashLogThreadInfo.h in Headers */,
+				05F4150F0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1063,6 +1076,7 @@
 				05F413480EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */,
 				05F414230EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */,
 				05F414870EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */,
+				05F415120EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1085,6 +1099,7 @@
 				05F413460EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */,
 				05F4141F0EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */,
 				05F414830EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */,
+				05F4150E0EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1188,6 +1203,7 @@
 				05F4134A0EF995C0008050CF /* PLCrashLogSystemInfo.m in Sources */,
 				05F414210EF9A6C4008050CF /* PLCrashLogApplicationInfo.m in Sources */,
 				05F414850EF9BFAC008050CF /* PLCrashLogThreadInfo.m in Sources */,
+				05F415100EF9DD9B008050CF /* PLCrashLogBinaryImageInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1593,11 +1609,12 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				INFOPLIST_FILE = "DemoCrash-Info.plist";
+				INFOPLIST_FILE = "Resources/DemoCrash-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = (
 					"-framework",
