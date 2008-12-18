@@ -127,7 +127,7 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "Process:         [TODO]\n");
     fprintf(output, "Path:            [TODO]\n");
     fprintf(output, "Identifier:      %s\n", [crashLog.applicationInfo.applicationIdentifier UTF8String]);
-    fprintf(output, "Version:         %s %s\n", osName, [crashLog.applicationInfo.applicationVersion UTF8String]);
+    fprintf(output, "Version:         %s\n", [crashLog.applicationInfo.applicationVersion UTF8String]);
     fprintf(output, "Code Type:       %s\n", codeType);
     fprintf(output, "Parent Process:  [TODO]\n");
 
@@ -135,7 +135,7 @@ int convert_command (int argc, char *argv[]) {
 
     /* System info */
     fprintf(output, "Date/Time:       %s\n", [[crashLog.systemInfo.timestamp description] UTF8String]);
-    fprintf(output, "OS Version:      [TODO]\n");
+    fprintf(output, "OS Version:      %s %s\n", osName, [crashLog.systemInfo.operatingSystemVersion UTF8String]);
     fprintf(output, "Report Version:  103\n");
     
     fprintf(output, "\n");
