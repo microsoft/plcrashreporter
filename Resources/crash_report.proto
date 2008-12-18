@@ -97,10 +97,10 @@ message CrashReport {
 
     /* Binary image */
     message BinaryImage {
-        /* Virtual memory slide */
+        /* Image base address */
         required uint64 base_address = 1;
 
-        /* Size of mapped memory */
+        /* Segment size */
         required uint64 size = 2;
 
         /* Name of the binary image (should be a full path name) */
