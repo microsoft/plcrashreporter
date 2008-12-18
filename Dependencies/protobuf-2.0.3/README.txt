@@ -9,3 +9,4 @@ The source (see src/) directory, is an extraction of the protobuf-c runtime libr
 has been modified as follows:
     - Unintialized value compiler warnings were fixed, and marked
       with "landonf - 12/17/2008 (uninitialized compiler warning))"
+    - Use __LITTLE_ENDIAN__ to determine host endian-ness.

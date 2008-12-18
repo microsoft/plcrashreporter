@@ -475,7 +475,7 @@ static inline size_t sint64_pack (int64_t value, uint8_t *out)
 }
 static inline size_t fixed32_pack (uint32_t value, uint8_t *out)
 {
-#if IS_LITTLE_ENDIAN
+#if __LITTLE_ENDIAN__
   memcpy (out, &value, 4);
 #else
   out[0] = value;
@@ -487,7 +487,7 @@ static inline size_t fixed32_pack (uint32_t value, uint8_t *out)
 }
 static inline size_t fixed64_pack (uint64_t value, uint8_t *out)
 {
-#if IS_LITTLE_ENDIAN
+#if __LITTLE_ENDIAN__
   memcpy (out, &value, 8);
 #else
   fixed32_pack (value, out);
@@ -1038,7 +1038,7 @@ unzigzag32 (uint32_t v)
 static inline uint32_t
 parse_fixed_uint32 (const uint8_t *data)
 {
-#if IS_LITTLE_ENDIAN
+#if __LITTLE_ENDIAN__
   uint32_t t;
   memcpy (&t, data, 4);
   return t;
@@ -1075,7 +1075,7 @@ unzigzag64 (uint64_t v)
 static inline uint64_t
 parse_fixed_uint64 (const uint8_t *data)
 {
-#if IS_LITTLE_ENDIAN
+#if __LITTLE_ENDIAN__
   uint64_t t;
   memcpy (&t, data, 8);
   return t;
