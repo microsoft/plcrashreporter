@@ -80,11 +80,8 @@ typedef enum {
  * @mainpage Plausible Crash Reporter
  *
  * @section intro_sec Introduction
- *
- * Library classes supporting subclassing are explicitly documented. Due to =
- * Objective-C's fragile base classes, binary compatibility with subclasses is
- * NOT guaranteed. You should avoid subclassing library classes -- use class composition instead.
- *
+ * 
+ * TODO.
  *
  * @section doc_sections Documentation Sections
  * - @subpage error_handling
