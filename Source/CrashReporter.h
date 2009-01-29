@@ -101,12 +101,84 @@ typedef enum {
  * @mainpage Plausible Crash Reporter
  *
  * @section intro_sec Introduction
- * 
- * TODO.
+ *
+ * Plausile CrashReporter implements in-process crash reporting on the iPhone and Mac OS X.
+ *
+ * The following features are supported:
+ *
+ * - Implemented as an in-process signal handler.
+ * - Does not interfer with debugging in gdb..
+ * - Handles both uncaught Objective-C exceptions and fatal signals (SIGSEGV, SIGBUS, etc).
+ * - Full thread state for all active threads (backtraces, register dumps) is provided.
+ *
+ * If your application crashes, a crash report will be written. When the application is next run, you may check for a
+ * pending crash report, and submit the report to your own HTTP server, send an e-mail, or even introspect the
+ * report locally.
+ *
+ * @section intro_encoding Crash Report Format
+ *
+ * Crash logs are encoded using <a href="http://code.google.com/p/protobuf/">google protobuf</a>, and may be decoded
+ * using the provided PLCrashReport API. Additionally, the include plcrashutil handles conversion of binary crash reports to the 
+ * symbolicate-compatible iPhone text format.
  *
  * @section doc_sections Documentation Sections
+ * - @subpage example_usage_iphone
  * - @subpage error_handling
+ */
+
+/**
+ * @page example_usage_iphone Example iPhone Usage
  *
+ * @code
+ * //
+ * // Called to handle a pending crash report.
+ * //
+ * - (void) handleCrashReport {
+ *     PLCrashReporter *crashReporter = [PLCrashReporter sharedReporter];
+ *     NSData *crashData;
+ *     NSError *error;
+ *     
+ *     // Try loading the crash report
+ *     crashData = [crashReporter loadPendingCrashReportDataAndReturnError: &error];
+ *     if (crashData == nil) {
+ *         NSLog(@"Could not load crash report: %@", error);
+ *         goto finish;
+ *     }
+ *     
+ *     // We could send the report from here, but we'll just print out
+ *     // some debugging info instead
+ *     PLCrashReport *report = [[[PLCrashReport alloc] initWithData: crashData error: &error] autorelease];
+ *     if (report == nil) {
+ *         NSLog(@"Could not parse crash report");
+ *         goto finish;
+ *     }
+ *     
+ *     NSLog(@"Crashed on %@", report.systemInfo.timestamp);
+ *     NSLog(@"Crashed with signal %@ (code %@, address=0x%" PRIx64 ")", report.signalInfo.name,
+ *           report.signalInfo.code, report.signalInfo.address);
+ *     
+ *     // Purge the report
+ * finish:
+ *     [crashReporter purgePendingCrashReport];
+ *     return;
+ * }
+ * 
+ * // from UIApplicationDelegate protocol
+ * - (void) applicationDidFinishLaunching: (UIApplication *) application {
+ *     PLCrashReporter *crashReporter = [PLCrashReporter sharedReporter];
+ *     NSError *error;
+ *     
+ *     // Check if we previously crashed
+ *     if ([crashReporter hasPendingCrashReport])
+ *         [self handleCrashReport];
+    
+ *     // Enable the Crash Reporter
+ *     if (![crashReporter enableCrashReporterAndReturnError: &error])
+ *         NSLog(@"Warning: Could not enable crash reporter: %@", error);
+ *         
+ * }
+ * @endcode
+ * 
  */
 
 /**
