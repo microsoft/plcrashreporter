@@ -1,6 +1,6 @@
 /*
  * Copyright 2008, Dave Benson.
- * Copyright 2008 Plausible Labs Cooperative, Inc.
+ * Copyright 2008 - 2009 Plausible Labs Cooperative, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with
