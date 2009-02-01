@@ -135,20 +135,15 @@ copy_build () {
     # Input files/directories
     local PLATFORM_BUILD_DIR="build/${CONFIGURATION}-${platform}"
     local PLATFORM_FRAMEWORK="${PLATFORM_BUILD_DIR}/${PRODUCT}.framework"
-    local CANONICAL_FRAMEWORK="build/${CONFIGURATION}-${PRIMARY_PLATFORM}/${PRODUCT}.framework"
-    local PLATFORM_STATIC_LIB="${PLATFORM_BUILD_DIR}/lib${PRODUCT}.a"
     local PLATFORM_SDK_NAME=`echo ${PLATFORM} | tr '[A-Z]' '[a-z]'`
-    local PLATFORM_SPECIFIC_STATIC_LIB="${PLATFORM_BUILD_DIR}/lib${PRODUCT}-${PLATFORM_SDK_NAME}.a"
 
     # Output files/directories
     local PLATFORM_OUTPUT_DIR="${ROOT_OUTPUT_DIR}/${PRODUCT}-${PLATFORM}"
 
-    # For the iPhone-combined simulator/device platforms, a platform-specific static library name is used
+    # For the iPhone-combined simulator/device platforms, record the platform-specific library path
     if [ "${IPHONE_PLATFORM}" = "YES" ]; then
-        local PLATFORM_STATIC_LIB="${PLATFORM_SPECIFIC_STATIC_LIB}"
-        IPHONE_STATIC_LIBS="${IPHONE_STATIC_LIBS} ${PLATFORM_STATIC_LIB}"
+        IPHONE_STATIC_LIBS="${IPHONE_STATIC_LIBS} ${PLATFORM_FRAMEWORK}/Versions/Current/${PRODUCT}"
     fi
-
 
     # Check if the platform was built
     if [ ! -d "${PLATFORM_BUILD_DIR}" ]; then
@@ -172,11 +167,6 @@ copy_build () {
 
     # Update the framework version
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${VERSION}" "${PLATFORM_OUTPUT_DIR}/${PRODUCT}.framework/Versions/Current/Resources/Info.plist"
-
-    # Copy in static lib, if it exists
-    if [ -f "${PLATFORM_STATIC_LIB}" ]; then
-        cp "${PLATFORM_STATIC_LIB}" "${PLATFORM_OUTPUT_DIR}"
-    fi 
 }
 
 # Copy the platform build results
