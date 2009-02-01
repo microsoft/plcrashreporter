@@ -211,12 +211,16 @@ if [ ! -z "${IPHONE_STATIC_LIBS}" ]; then
     check_failure "Could not lipo iPhone framework"
 fi
 
-# Build the documentation
-doxygen
-check_failure "Documentation generation failed"
+# Build the documentation (if doxygen is available)
+if [ ! -z `which doxygen` ]; then
+    doxygen
+    check_failure "Documentation generation failed"
 
-mv Documentation/API "${OUTPUT_DIR}/Documentation"
-check_failure "Documentation generation failed"
+    mv Documentation/API "${OUTPUT_DIR}/Documentation"
+    check_failure "Documentation generation failed"
+else
+    echo "WARNING: Doxygen not available, skipping documentation generation"
+fi
 
 # Copy in the README file (TODO)
 #
