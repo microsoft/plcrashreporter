@@ -1548,6 +1548,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
 				);
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
@@ -1569,6 +1570,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
 				);
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
@@ -1592,6 +1594,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
 				);
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
@@ -1613,6 +1616,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
 				);
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
