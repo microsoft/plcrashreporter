@@ -363,7 +363,7 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
         /* Fetch the register value */
         if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
             // Should never happen
-            PLCF_DEBUG("Could not fetch register %i value: %s", i, strerror(frame_err));
+            PLCF_DEBUG("Could not fetch register %i value: %s", i, plframe_strerror(frame_err));
             regVal = 0;
         }
 
