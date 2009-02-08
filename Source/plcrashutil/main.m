@@ -46,6 +46,21 @@ void print_usage () {
                     "        iphone - Standard Apple iPhone-compatible text crash log\n");
 }
 
+/**
+ * Sort PLCrashReportBinaryImageInfo instances by their starting address.
+ */
+NSInteger binaryImageSort(id binary1, id binary2, void *context) {
+    uint64_t addr1 = [binary1 imageBaseAddress];
+    uint64_t addr2 = [binary2 imageBaseAddress];
+    
+    if (addr1 < addr2)
+        return NSOrderedAscending;
+    else if (addr1 > addr2)
+        return NSOrderedDescending;
+    else
+        return NSOrderedSame;
+}
+
 /*
  * Run a conversion.
  */
@@ -156,7 +171,7 @@ int convert_command (int argc, char *argv[]) {
 
     /* System info */
     fprintf(output, "Date/Time:       %s\n", [[crashLog.systemInfo.timestamp description] UTF8String]);
-    fprintf(output, "OS Version:      %s %s\n", osName, [crashLog.systemInfo.operatingSystemVersion UTF8String]);
+    fprintf(output, "OS Version:      %s %s (TODO)\n", osName, [crashLog.systemInfo.operatingSystemVersion UTF8String]);
     fprintf(output, "Report Version:  103\n");
     
     fprintf(output, "\n");
@@ -203,9 +218,9 @@ int convert_command (int argc, char *argv[]) {
         fprintf(output, "\n");
     }
 
-    /* Images */
+    /* Images. The iPhone crash report format sorts these in ascending order, by the base address */
     fprintf(output, "Binary Images:\n");
-    for (PLCrashReportBinaryImageInfo *imageInfo in crashLog.images) {
+    for (PLCrashReportBinaryImageInfo *imageInfo in [crashLog.images sortedArrayUsingFunction: binaryImageSort context: nil]) {
         NSString *uuid;
         /* Fetch the UUID if it exists */
         if (imageInfo.hasImageUUID)
