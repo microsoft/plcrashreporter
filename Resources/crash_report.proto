@@ -39,6 +39,12 @@ enum Architecture {
 
     /* ARM */
     ARM = 2;
+
+    /* PPC */
+    PPC = 3;
+
+    /** PPC64 */
+    PPC64 = 4;
 }
 
 /* Known operating system types */
