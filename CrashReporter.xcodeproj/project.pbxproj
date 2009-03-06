@@ -29,6 +29,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		050DE25E0F61B93900152ED3 /* libCrashReporter-MacOSX-Static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */; };
+		050DE2A90F61BD8D00152ED3 /* fuzz-main.m in Sources */ = {isa = PBXBuildFile; fileRef = 050DE2A80F61BD8D00152ED3 /* fuzz-main.m */; };
 		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0550A10E0EECFEC80037F7C3 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
 		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
@@ -309,6 +311,13 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
+		050DE25C0F61B92C00152ED3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
+			remoteInfo = "CrashReporter-MacOSX-Static";
+		};
 		054F50E80EEC50B30034B184 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -449,6 +458,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		050DE24D0F61B80B00152ED3 /* Fuzz Testing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Fuzz Testing"; sourceTree = BUILT_PRODUCTS_DIR; };
+		050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */ = {isa = PBXFileReference; lastKnownFileType = file; name = fuzz_report.plcrash; path = Resources/fuzz_report.plcrash; sourceTree = "<group>"; };
+		050DE2A80F61BD8D00152ED3 /* fuzz-main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "fuzz-main.m"; sourceTree = "<group>"; };
 		054F51070EEC73C80034B184 /* PLCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReporter.h; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameWalker.h; sourceTree = "<group>"; };
@@ -523,6 +535,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		050DE24B0F61B80B00152ED3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				050DE25E0F61B93900152ED3 /* libCrashReporter-MacOSX-Static.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		05CD31500EE936A9000FDE88 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -610,8 +630,18 @@
 				05F40CE70EF7AB80008050CF /* DemoCrash.app */,
 				05E731E30EFA1A3E005EDFB7 /* plcrashutil */,
 				05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */,
+				050DE24D0F61B80B00152ED3 /* Fuzz Testing */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		050DE2A70F61BD6D00152ED3 /* fuzz */ = {
+			isa = PBXGroup;
+			children = (
+				050DE2A80F61BD8D00152ED3 /* fuzz-main.m */,
+			);
+			name = fuzz;
+			path = Fuzz;
 			sourceTree = "<group>";
 		};
 		0596674D0EEDEBB1008A0601 /* Backtrace */ = {
@@ -801,6 +831,7 @@
 				05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */,
 				05CD33520EE9457D000FDE88 /* CrashReporter.exp */,
 				059670C70EEFAC3A008A0601 /* crash_report.proto */,
+				050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -817,6 +848,7 @@
 				059672EF0EF0853A008A0601 /* Private API */,
 				05F40CF00EF7ABD6008050CF /* Crash Demo */,
 				05E7321B0EFA1BC4005EDFB7 /* plcrashutil */,
+				050DE2A70F61BD6D00152ED3 /* fuzz */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -923,6 +955,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		050DE24C0F61B80B00152ED3 /* Fuzz Testing */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 050DE2590F61B81C00152ED3 /* Build configuration list for PBXNativeTarget "Fuzz Testing" */;
+			buildPhases = (
+				050DE24A0F61B80B00152ED3 /* Sources */,
+				050DE24B0F61B80B00152ED3 /* Frameworks */,
+				050DE28C0F61BAC700152ED3 /* Run Fuzzing */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				050DE25D0F61B92C00152ED3 /* PBXTargetDependency */,
+			);
+			name = "Fuzz Testing";
+			productName = "Fuzz Testing";
+			productReference = 050DE24D0F61B80B00152ED3 /* Fuzz Testing */;
+			productType = "com.apple.product-type.tool";
+		};
 		05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneOS" */;
@@ -1123,6 +1173,7 @@
 				05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */,
 				05CD33230EE94439000FDE88 /* Tests-iPhoneOS */,
 				05F40CE60EF7AB80008050CF /* DemoCrash */,
+				050DE24C0F61B80B00152ED3 /* Fuzz Testing */,
 			);
 		};
 /* End PBXProject section */
@@ -1167,6 +1218,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		050DE28C0F61BAC700152ED3 /* Run Fuzzing */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Fuzzing";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# If zzuf isn't available, nothing to do.\nwhich -s zzuf\nif [ $? != 0 ]; then\n\texit\nfi\n\n# Run 4 jobs at once.\n# Run from seed 0 to 100000.\n# Only fuzz .plcrash files\nzzuf -I '\\.plcrash$' -j 4 -s 0:100000 \"${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}\" \"${SRCROOT}/Resources/fuzz_report.plcrash\"\n";
+			showEnvVarsInLog = 0;
+		};
 		05CD321E0EE93B59000FDE88 /* Create Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1230,6 +1296,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		050DE24A0F61B80B00152ED3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				050DE2A90F61BD8D00152ED3 /* fuzz-main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		05CD314F0EE936A9000FDE88 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1429,6 +1503,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		050DE25D0F61B92C00152ED3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
+			targetProxy = 050DE25C0F61B92C00152ED3 /* PBXContainerItemProxy */;
+		};
 		054F50E90EEC50B30034B184 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
@@ -1523,6 +1602,54 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		050DE24F0F61B80C00152ED3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Fuzz Testing";
+			};
+			name = Debug;
+		};
+		050DE2500F61B80C00152ED3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Fuzz Testing";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		05CD31530EE936AA000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2078,6 +2205,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		050DE2590F61B81C00152ED3 /* Build configuration list for PBXNativeTarget "Fuzz Testing" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				050DE24F0F61B80C00152ED3 /* Debug */,
+				050DE2500F61B80C00152ED3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
