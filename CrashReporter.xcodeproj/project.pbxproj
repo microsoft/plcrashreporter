@@ -462,8 +462,6 @@
 		059670260EEF6B1A008A0601 /* PLCrashLogWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogWriter.m; sourceTree = "<group>"; };
 		0596702D0EEF6B51008A0601 /* PLCrashLogWriterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogWriterTests.m; sourceTree = "<group>"; };
 		059670C70EEFAC3A008A0601 /* crash_report.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = crash_report.proto; path = Resources/crash_report.proto; sourceTree = "<group>"; };
-		0596710F0EEFADA6008A0601 /* libprotobuf-MacOSX.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libprotobuf-MacOSX.3.dylib"; sourceTree = "<group>"; };
-		059671120EEFADA6008A0601 /* libprotoc-MacOSX.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libprotoc-MacOSX.3.dylib"; sourceTree = "<group>"; };
 		059671140EEFADA6008A0601 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 		059672F00EF08564008A0601 /* PLCrashAsync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsync.h; sourceTree = "<group>"; };
 		05CD314A0EE93647000FDE88 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -656,7 +654,6 @@
 				059670E50EEFADA6008A0601 /* bin */,
 				059670E70EEFADA6008A0601 /* include */,
 				05F40F7C0EF8503D008050CF /* src */,
-				0596710C0EEFADA6008A0601 /* lib */,
 				059671140EEFADA6008A0601 /* README.txt */,
 			);
 			path = "protobuf-2.0.3";
@@ -683,15 +680,6 @@
 			children = (
 			);
 			path = google;
-			sourceTree = "<group>";
-		};
-		0596710C0EEFADA6008A0601 /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				0596710F0EEFADA6008A0601 /* libprotobuf-MacOSX.3.dylib */,
-				059671120EEFADA6008A0601 /* libprotoc-MacOSX.3.dylib */,
-			);
-			path = lib;
 			sourceTree = "<group>";
 		};
 		059672EF0EF0853A008A0601 /* Private API */ = {
