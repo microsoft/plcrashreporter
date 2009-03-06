@@ -1203,9 +1203,9 @@ parse_required_member (ScannedMember *scanned_member,
         subm = protobuf_c_message_unpack (scanned_member->field->descriptor,
                                           allocator,
                                           len - pref_len, data + pref_len);
+        *pmessage = subm;
         if (subm == NULL)
           return 0;
-        *pmessage = subm;
         return 1;
       }
     }
@@ -1509,7 +1509,7 @@ protobuf_c_message_unpack         (const ProtobufCMessageDescriptor *desc,
           if (!parse_member (slab + j, rv, allocator))
             {
               UNPACK_ERROR (("error parsing member %s of %s",
-                             slab->field->name, desc->name));
+                             slab->field ? slab->field->name : "(unknown)", desc->name));
               goto error_cleanup;
             }
         }
@@ -1553,19 +1553,19 @@ protobuf_c_message_free_unpacked  (ProtobufCMessage    *message,
         {
           size_t n = STRUCT_MEMBER (size_t, message, desc->fields[f].quantifier_offset);
           void * arr = STRUCT_MEMBER (void *, message, desc->fields[f].offset);
-          if (desc->fields[f].type == PROTOBUF_C_TYPE_STRING)
+          if (desc->fields[f].type == PROTOBUF_C_TYPE_STRING && arr != NULL)
             {
               unsigned i;
               for (i = 0; i < n; i++)
                 FREE (allocator, ((char**)arr)[i]);
             }
-          else if (desc->fields[f].type == PROTOBUF_C_TYPE_BYTES)
+          else if (desc->fields[f].type == PROTOBUF_C_TYPE_BYTES && arr != NULL)
             {
               unsigned i;
               for (i = 0; i < n; i++)
                 FREE (allocator, ((ProtobufCBinaryData*)arr)[i].data);
             }
-          else if (desc->fields[f].type == PROTOBUF_C_TYPE_MESSAGE)
+          else if (desc->fields[f].type == PROTOBUF_C_TYPE_MESSAGE && arr != NULL)
             {
               unsigned i;
               for (i = 0; i < n; i++)
