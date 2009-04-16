@@ -1,0 +1,45 @@
+﻿/* 
+   Localizable.strings
+   CrashReporterDemo
+
+   Created by Andreas Linde on 04.03.09.
+   Copyright 2009 Andreas Linde. All rights reserved.
+ */
+
+/* Global strings */
+
+/* For dialogs yes buttons */
+"Yes" = "Нет";
+
+/* For dialogs no buttons */
+"No" = "Да";
+
+/* For dialogs ok buttons */
+"Ok" = "Ok";
+
+
+/* Crash dialog */
+
+/* Title showing in the alert box when crash report data has been found */
+"CrashDataFoundTitle" = "Найдены ошибки";
+
+/* Description explaining that crash data has been found and ask the user if the data might be uplaoded to the developers server */
+"CrashDataFoundDescription" = "Приложение было аварийно завершено. Вы хотели бы предоставить разработчику данные об ошибке, чтобы он смог в последствии их исправить?";
+
+/* Alert box button if the users wants to send crash data always automatically */
+"Always" = "Всегда";
+
+/* Text showing in a processing box that the crash data is being uploaded to the server */
+"Sending" = "Отправка...";
+
+/* Title for the alertview giving feedback about the crash */
+"CrashResponseTitle" = "Статус ошибки";
+
+/* Full text telling the bug is fixed and will be available in the next release */
+"CrashResponseNextRelease" = "Причина Вашей ошибки уже решена и исправление будет включено в следующую версию YOURAPPNAME";
+
+/* Full text telling the bug is fixed and the new release is waiting at Apple */
+"CrashResponseWaitingApple" = "Причина Вашей ошибки уже решена и новая версия YOURAPPNAME уже ожидает одобрения от Apple";
+
+/* Full text telling the bug is fixed and an update is available in the AppStore */
+"CrashResponseAvailable" = "Причина Вашей ошибки уже решена и новая версия YOURAPPNAME уже доступна. Пожалуйста, обновите программу!";

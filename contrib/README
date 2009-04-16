@@ -1,0 +1,10 @@
+This subtree contains user-contributed code that is not part of the core
+PLCrashReporter distribution. This software is not provided by or maintained
+by Plausible Labs, and no support is provided.
+
+Index:
+------
+- php-crashreporter-demo
+  A PHP webapp for accepting crash reports, and corresponding fully localized
+  client integration code.
+  Contributed by: Andreas Linde <mail (at) andreaslinde (dot) de>
