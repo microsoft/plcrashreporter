@@ -1,0 +1,15 @@
+﻿
+/* Settings title if crash data might be sent to the developer automatically */
+"SettingsAutoSendCrash" = "Automática de informes";
+
+/* Description text for automatic sending of crash data */
+"SettingsAutoSendCrashDescription" = "Si aparece un accidente, los datos serían enviados automáticamente a los desarrolladores sin pedir a los usuarios.";
+
+/* Allow the developer to contact the user via email */
+"SettingsAllowContact" = "Permitir el contacto";
+
+/* Email address the developer might use */
+"SettingsContactEmail" = "EMail";
+
+/* Description text for email contact usage */
+"SettingsContactDescription" = "La dirección de correo electrónico sólo se utiliza para ponerse en contacto con el usuario si puede haber más aclaraciones necesarias sobre el problema";

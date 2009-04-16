@@ -1,0 +1,45 @@
+﻿/* 
+   Localizable.strings
+   CrashReporterDemo
+
+   Created by Andreas Linde on 04.03.09.
+   Copyright 2009 Andreas Linde. All rights reserved.
+ */
+
+/* Global strings */
+
+/* For dialogs yes buttons */
+"Yes" = "Sim";
+
+/* For dialogs no buttons */
+"No" = "Não";
+
+/* For dialogs ok buttons */
+"Ok" = "Ok";
+
+
+/* Crash dialog */
+
+/* Title showing in the alert box when crash report data has been found */
+"CrashDataFoundTitle" = "Caiu dados encontrados";
+
+/* Description explaining that crash data has been found and ask the user if the data might be uplaoded to the developers server */
+"CrashDataFoundDescription" = "O app caiu anteriormente. Você gostaria de fornecer o dono da obra o caiu dados anónimos para que eles possam tentar resolver o problema?";
+
+/* Alert box button if the users wants to send crash data always automatically */
+"Always" = "Sempre";
+
+/* Text showing in a processing box that the crash data is being uploaded to the server */
+"Sending" = "Enviar ...";
+
+/* Title for the alertview giving feedback about the crash */
+"CrashResponseTitle" = "Bug estatuto";
+
+/* Full text telling the bug is fixed and will be available in the next release */
+"CrashResponseNextRelease" = "O bug que causou o problema já está resolvido, e a solução será incluído na próxima versão do YOURAPPNAME";
+
+/* Full text telling the bug is fixed and the new release is waiting at Apple */
+"CrashResponseWaitingApple" = "O bug que causou o problema já está resolvido e uma nova versão do YOURAPPNAME se à espera de aprovação da Apple";
+
+/* Full text telling the bug is fixed and an update is available in the AppStore */
+"CrashResponseAvailable" = "O bug que causou o problema já está resolvido e uma nova versão do YOURAPPNAME está disponível. Atualize!";
