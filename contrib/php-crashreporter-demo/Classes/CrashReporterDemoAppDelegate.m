@@ -173,12 +173,15 @@ NSString *kLastShutdownFreeMemory = @"LastShutdownFreeMemory";						// the amoun
 	time_t currentTime = time(0);
 	
 	// only assume a memory problem caused shutdown if the last memory warning timestamp was less than 3 seconds ago
+	// DEACTIVATED since that didn't proove to be reliable enough
+	/*
 	if (abs(currentTime) - abs(_memoryWarningTimestamp) < 3)
 	{
 		_memoryWarningReached = YES;
 	} else {
 		_memoryWarningReached = NO;
 	}
+	 */
 	
 	
 	// save current memory
