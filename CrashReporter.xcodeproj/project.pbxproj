@@ -1794,6 +1794,10 @@
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx10.5;
 				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-address",
+				);
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -1827,6 +1831,10 @@
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx10.5;
 				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-address",
+				);
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
 			};
@@ -1860,6 +1868,10 @@
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
 				SDKROOT = iphonesimulator3.0;
 				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-address",
+				);
 			};
 			name = Debug;
 		};
@@ -1891,6 +1903,10 @@
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
 				SDKROOT = iphonesimulator3.0;
 				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-address",
+				);
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1922,6 +1938,10 @@
 				PRODUCT_NAME = "Tests-iPhoneOS";
 				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-address",
+				);
 			};
 			name = Debug;
 		};
@@ -1952,6 +1972,10 @@
 				PRODUCT_NAME = "Tests-iPhoneOS";
 				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-address",
+				);
 				ZERO_LINK = NO;
 			};
 			name = Release;
