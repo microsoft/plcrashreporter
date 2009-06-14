@@ -27,5 +27,5 @@
 // Runs through all the registered classes and runs test methods on any
 // that are subclasses of SenTestCase. Prints results and run time to
 // the default output.
-- (void)runTests;
+- (BOOL)runTests;
 @end

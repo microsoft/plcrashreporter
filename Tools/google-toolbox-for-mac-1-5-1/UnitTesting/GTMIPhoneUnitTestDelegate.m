@@ -34,11 +34,6 @@ static int MethodSort(const void *a, const void *b) {
   return strcmp(nameA, nameB);
 }
 
-@interface UIApplication (iPhoneUnitTestAdditions)
-// "Private" method that we need
-- (void)terminate;
-@end
-
 @implementation GTMIPhoneUnitTestDelegate
 
 // Return YES if class is subclass (1 or more generations) of SenTestCase
@@ -58,15 +53,15 @@ static int MethodSort(const void *a, const void *b) {
 // that are subclasses of SenTestCase. Terminate the application upon
 // test completion.
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
-  [self runTests];
-  // Using private call to end our tests
-  [[UIApplication sharedApplication] terminate];
+  if (![self runTests])
+    exit(EXIT_FAILURE);
+  exit(EXIT_SUCCESS);
 }
 
 // Run through all the registered classes and run test methods on any
 // that are subclasses of SenTestCase. Print results and run time to
 // the default output.
-- (void)runTests {
+- (BOOL)runTests {
   int count = objc_getClassList(NULL, 0);
   Class *classes = (Class*)malloc(sizeof(Class) * count);
   _GTMDevAssert(classes, @"Couldn't allocate class list");
@@ -155,6 +150,11 @@ static int MethodSort(const void *a, const void *b) {
                               suiteEndTime, suiteEndTime];
   fputs([suiteEndString UTF8String], stderr);
   fflush(stderr);
+
+  if (suiteFailures > 0)
+    return NO;
+
+  return YES;
 }
 
 @end
