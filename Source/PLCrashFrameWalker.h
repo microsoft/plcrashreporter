@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <ucontext.h>
+#import <sys/ucontext.h>
 #import <pthread.h>
 
 #import <stdint.h>

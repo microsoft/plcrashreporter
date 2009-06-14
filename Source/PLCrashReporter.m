@@ -351,7 +351,7 @@ static void uncaught_exception_handler (NSException *exception) {
         }
 
         NSDEBUG(@"Warning -- bundle identifier, using process name %s", progname);
-        bundleIdentifier = [NSString stringWithCString: progname];
+        bundleIdentifier = [NSString stringWithUTF8String: progname];
     }
 
     /* Verify that the version is available */
