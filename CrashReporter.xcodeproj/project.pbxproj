@@ -1816,7 +1816,7 @@
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
-					"-Wno-address",
+					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
 				WRAPPER_EXTENSION = octest;
 			};
@@ -1853,7 +1853,7 @@
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
-					"-Wno-address",
+					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
@@ -1890,7 +1890,7 @@
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
-					"-Wno-address",
+					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
 			};
 			name = Debug;
@@ -1925,7 +1925,7 @@
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
-					"-Wno-address",
+					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
 				ZERO_LINK = NO;
 			};
@@ -1960,7 +1960,7 @@
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
-					"-Wno-address",
+					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
 			};
 			name = Debug;
@@ -1994,7 +1994,7 @@
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
-					"-Wno-address",
+					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
 				ZERO_LINK = NO;
 			};
@@ -2219,6 +2219,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
 				ONLY_ACTIVE_ARCH = NO;
+				OTHER_WARNING_NO_ADDRESS = "$(OTHER_WARNING_NO_ADDRESS_$(OTHER_WARNING_NO_ADDRESS_$(MAC_OS_X_VERSION_MAJOR)))";
+				OTHER_WARNING_NO_ADDRESS_ = "-Wno-address";
+				OTHER_WARNING_NO_ADDRESS_1050 = UNSUPPORTED;
+				OTHER_WARNING_NO_ADDRESS_UNSUPPORTED = "";
 				PL_CANONICAL_PLATFORM = MacOSX;
 				PL_CANONICAL_PRODUCT = CrashReporter;
 				PREBINDING = NO;
@@ -2237,6 +2241,10 @@
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
 				);
+				OTHER_WARNING_NO_ADDRESS = "$(OTHER_WARNING_NO_ADDRESS_$(OTHER_WARNING_NO_ADDRESS_$(MAC_OS_X_VERSION_MAJOR)))";
+				OTHER_WARNING_NO_ADDRESS_ = "-Wno-address";
+				OTHER_WARNING_NO_ADDRESS_1050 = UNSUPPORTED;
+				OTHER_WARNING_NO_ADDRESS_UNSUPPORTED = "";
 				PL_CANONICAL_PLATFORM = MacOSX;
 				PL_CANONICAL_PRODUCT = CrashReporter;
 				PREBINDING = NO;
