@@ -153,6 +153,9 @@ int convert_command (int argc, char *argv[]) {
         case PLCrashReportArchitectureX86_64:
             codeType = "X86-64";
             break;
+        case PLCrashReportArchitecturePPC:
+            codeType = "PPC";
+            break;
         default:
             fprintf(stderr, "Unknown architecture type %d", crashLog.systemInfo.architecture);
             return 1;

@@ -29,6 +29,11 @@
 #import <Foundation/Foundation.h>
 #import "CrashReporter.h"
 
+void stackFrame (void) {
+    /* Trigger a crash */
+    CFRelease(NULL);
+}
+
 int main (int argc, char *argv[]) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSError *error = nil;
@@ -38,8 +43,8 @@ int main (int argc, char *argv[]) {
         NSLog(@"Could not enable crash reporter: %@", error);
     }
 
-    /* Trigger a crash */
-    CFRelease(NULL);
+    /* Add another stack frame */
+    stackFrame();
 
     [pool release];
 }
