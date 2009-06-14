@@ -33,75 +33,75 @@ typedef uintptr_t plframe_pdef_greg_t;
 typedef uintptr_t plframe_pdef_fpreg_t;
 
 // Data we'll read off the stack frame
-#define PLFRAME_PDEF_STACKFRAME_LEN sizeof(intptr_t) * 2
+#define PLFRAME_PDEF_STACKFRAME_LEN 3
 
 /**
  * @internal
  * PPC Registers
  */
 typedef enum {
-	/** Instruction address register (PC) */
-	PLFRAME_PPC_SRR0 = 0,
-	
-	/** Machine state register (supervisor) */
-	PLFRAME_PPC_SRR1,
-	
-	PLFRAME_PPC_DAR,
-	PLFRAME_PPC_DSISR,
-	
-	PLFRAME_PPC_R0,
-	PLFRAME_PPC_R1,
-	PLFRAME_PPC_R2,
-	PLFRAME_PPC_R3,
-	PLFRAME_PPC_R4,
-	PLFRAME_PPC_R5,
-	PLFRAME_PPC_R6,
-	PLFRAME_PPC_R7,
-	PLFRAME_PPC_R8,
-	PLFRAME_PPC_R9,
-	PLFRAME_PPC_R10,
-	PLFRAME_PPC_R11,
-	PLFRAME_PPC_R12,
-	PLFRAME_PPC_R13,
-	PLFRAME_PPC_R14,
-	PLFRAME_PPC_R15,
-	PLFRAME_PPC_R16,
-	PLFRAME_PPC_R17,
-	PLFRAME_PPC_R18,
-	PLFRAME_PPC_R19,
-	PLFRAME_PPC_R20,
-	PLFRAME_PPC_R21,
-	PLFRAME_PPC_R22,
-	PLFRAME_PPC_R23,
-	PLFRAME_PPC_R24,
-	PLFRAME_PPC_R25,
-	PLFRAME_PPC_R26,
-	PLFRAME_PPC_R27,
-	PLFRAME_PPC_R28,
-	PLFRAME_PPC_R29,
-	PLFRAME_PPC_R30,
-	PLFRAME_PPC_R31,
+    /** Instruction address register (PC) */
+    PLFRAME_PPC_SRR0 = 0,
+    
+    /** Machine state register (supervisor) */
+    PLFRAME_PPC_SRR1,
+    
+    PLFRAME_PPC_DAR,
+    PLFRAME_PPC_DSISR,
+    
+    PLFRAME_PPC_R0,
+    PLFRAME_PPC_R1,
+    PLFRAME_PPC_R2,
+    PLFRAME_PPC_R3,
+    PLFRAME_PPC_R4,
+    PLFRAME_PPC_R5,
+    PLFRAME_PPC_R6,
+    PLFRAME_PPC_R7,
+    PLFRAME_PPC_R8,
+    PLFRAME_PPC_R9,
+    PLFRAME_PPC_R10,
+    PLFRAME_PPC_R11,
+    PLFRAME_PPC_R12,
+    PLFRAME_PPC_R13,
+    PLFRAME_PPC_R14,
+    PLFRAME_PPC_R15,
+    PLFRAME_PPC_R16,
+    PLFRAME_PPC_R17,
+    PLFRAME_PPC_R18,
+    PLFRAME_PPC_R19,
+    PLFRAME_PPC_R20,
+    PLFRAME_PPC_R21,
+    PLFRAME_PPC_R22,
+    PLFRAME_PPC_R23,
+    PLFRAME_PPC_R24,
+    PLFRAME_PPC_R25,
+    PLFRAME_PPC_R26,
+    PLFRAME_PPC_R27,
+    PLFRAME_PPC_R28,
+    PLFRAME_PPC_R29,
+    PLFRAME_PPC_R30,
+    PLFRAME_PPC_R31,
 
-	/** Condition register */
-	PLFRAME_PPC_CR,
-	
-	/** User integer exception register */
-	PLFRAME_PPC_XER,
+    /** Condition register */
+    PLFRAME_PPC_CR,
+    
+    /** User integer exception register */
+    PLFRAME_PPC_XER,
 
-	/** Link register */
-	PLFRAME_PPC_LR,
-	
-	/** Count register */
-	PLFRAME_PPC_CTR,
-	
-	/** Vector save reigster */
-	PLFRAME_PPC_VRSAVE,
+    /** Link register */
+    PLFRAME_PPC_LR,
+    
+    /** Count register */
+    PLFRAME_PPC_CTR,
+    
+    /** Vector save reigster */
+    PLFRAME_PPC_VRSAVE,
 
-	
+    
     PLFRAME_PDEF_REG_IP = PLFRAME_PPC_SRR0,
     
     /* Last register */
-    PLFRAME_PDEF_LAST_REG = 0
+    PLFRAME_PDEF_LAST_REG = PLFRAME_PPC_VRSAVE
 } plframe_ppc_regnum_t;
 
 #endif /* __ppc__ */
