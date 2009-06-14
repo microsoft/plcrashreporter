@@ -315,7 +315,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
 		054F50E80EEC50B30034B184 /* PBXContainerItemProxy */ = {
@@ -1667,7 +1667,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphoneos2.0;
+				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = NO;
 			};
 			name = Debug;
@@ -1689,7 +1689,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphoneos2.0;
+				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
@@ -1713,7 +1713,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator2.0;
+				SDKROOT = iphonesimulator3.0;
 				SKIP_INSTALL = NO;
 			};
 			name = Debug;
@@ -1735,7 +1735,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator2.0;
+				SDKROOT = iphonesimulator3.0;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
