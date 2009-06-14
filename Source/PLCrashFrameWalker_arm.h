@@ -33,7 +33,7 @@ typedef uintptr_t plframe_pdef_greg_t;
 typedef uintptr_t plframe_pdef_fpreg_t;
 
 // Data we'll read off the stack frame
-#define PLFRAME_PDEF_STACKFRAME_LEN sizeof(intptr_t) * 2
+#define PLFRAME_PDEF_STACKFRAME_LEN 2
 
 /**
  * @internal
