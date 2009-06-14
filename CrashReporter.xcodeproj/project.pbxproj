@@ -172,6 +172,7 @@
 		05E9240D0FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E924070FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h */; };
 		05E9240E0FE4910400E9A3AC /* PLCrashFrameWalker_ppc.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E924060FE4910400E9A3AC /* PLCrashFrameWalker_ppc.c */; };
 		05E9240F0FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E924070FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h */; };
+		05E9243B0FE4A24100E9A3AC /* PLCrashFrameWalker_ppc.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E924060FE4910400E9A3AC /* PLCrashFrameWalker_ppc.c */; };
 		05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
@@ -1386,6 +1387,7 @@
 				0596748E0EF0BB63008A0601 /* PLCrashFrameWalker.c in Sources */,
 				0596748F0EF0BB63008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
 				059674900EF0BB63008A0601 /* PLCrashFrameWalker_arm.c in Sources */,
+				05E9243B0FE4A24100E9A3AC /* PLCrashFrameWalker_ppc.c in Sources */,
 				059674790EF0BA07008A0601 /* crash_report.proto in Sources */,
 				05CD36440EF24758000FDE88 /* PLCrashAsync.c in Sources */,
 				05CD364A0EF247A9000FDE88 /* PLCrashAsyncTests.m in Sources */,
