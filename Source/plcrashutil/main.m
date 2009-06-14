@@ -190,11 +190,14 @@ int convert_command (int argc, char *argv[]) {
     fprintf(output, "\n");
 
     /* Threads */
+    PLCrashReportThreadInfo *crashed_thread = nil;
     for (PLCrashReportThreadInfo *thread in crashLog.threads) {
-        if (thread.crashed)
+        if (thread.crashed) {
             fprintf(output, "Thread %d Crashed:\n", thread.threadNumber);
-        else
+            crashed_thread = thread;
+        } else {
             fprintf(output, "Thread %d:\n", thread.threadNumber);
+        }
         for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
             PLCrashReportStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
             PLCrashReportBinaryImageInfo *imageInfo;
@@ -215,6 +218,25 @@ int convert_command (int argc, char *argv[]) {
             fprintf(output, "%-4d%-36s0x%08" PRIx64 " 0x%" PRIx64 " + %" PRId64 "\n", 
                     frame_idx, imageName, frameInfo.instructionPointer, baseAddress, pcOffset);
         }
+        fprintf(output, "\n");
+    }
+    
+    /* Registers */
+    if (crashed_thread != nil) {
+        fprintf(output, "Thread %d crashed with %s Thread State:\n", crashed_thread.threadNumber, codeType);
+        
+        int regColumn = 1;
+        for (PLCrashReportRegisterInfo *reg in crashed_thread.registers) {
+            fprintf(output, "%6s:\t0x%08" PRIx64 " ", [reg.registerName UTF8String], reg.registerValue);
+            
+            if (regColumn % 4 == 0)
+                fprintf(output, "\n");
+            regColumn++;
+        }
+        
+        if (regColumn % 4 != 0)
+            fprintf(output, "\n");
+            
         fprintf(output, "\n");
     }
 
