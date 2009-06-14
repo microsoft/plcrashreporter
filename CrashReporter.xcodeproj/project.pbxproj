@@ -1623,6 +1623,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Fuzz Testing";
+				SDKROOT = macosx10.5;
 			};
 			name = Debug;
 		};
@@ -1646,6 +1647,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Fuzz Testing";
+				SDKROOT = macosx10.5;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1790,6 +1792,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
+				SDKROOT = macosx10.5;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = octest;
 			};
@@ -1822,6 +1825,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
+				SDKROOT = macosx10.5;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
@@ -1854,7 +1858,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator2.0;
+				SDKROOT = iphonesimulator3.0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -1885,7 +1889,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator2.0;
+				SDKROOT = iphonesimulator3.0;
 				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
@@ -1916,7 +1920,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos2.0;
+				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -1946,7 +1950,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos2.0;
+				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
@@ -2078,7 +2082,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = DemoCrash;
-				SDKROOT = macosx10.5;
+				SDKROOT = "";
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -2104,6 +2108,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = DemoCrash;
+				SDKROOT = "";
 				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
@@ -2168,8 +2173,6 @@
 			buildSettings = {
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
 				ONLY_ACTIVE_ARCH = NO;
 				PL_CANONICAL_PLATFORM = MacOSX;
@@ -2186,8 +2189,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
