@@ -59,6 +59,8 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
     PLCrashReportArchitectureX86_32;
 #elif defined(__arm__)
     PLCrashReportArchitectureARM;
+#elif defined(__ppc__)
+    PLCrashReportArchitecturePPC;
 #else
     #error Unknown machine architecture
 #endif
