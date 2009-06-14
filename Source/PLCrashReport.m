@@ -408,7 +408,7 @@ error:
             }
             output[sizeof(output)] = '\0';
     
-            uuid = [NSString stringWithCString: output length: sizeof(output) - 1];
+            uuid = [[[NSString alloc] initWithBytes: output length: sizeof(output) - 1 encoding: NSASCIIStringEncoding] autorelease];
         }
 
         assert(image->uuid.len == 0 || uuid != nil);
