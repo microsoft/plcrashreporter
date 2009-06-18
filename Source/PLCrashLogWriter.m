@@ -480,17 +480,42 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
  * Write a binary image frame
  *
  * @param file Output file
- * @param cursor The cursor from which to acquire frame data.
+ * @param name binary image path (or name).
+ * @param image_base Mach-O image base.
  */
-static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char *name, const struct mach_header *header) {
+static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char *name, const void *header) {
     size_t rv = 0;
     uint64_t mach_size = 0;
+    uint32_t ncmds;
+    const struct mach_header *header32 = (const struct mach_header *) header;
+    const struct mach_header_64 *header64 = (const struct mach_header_64 *) header;
+    struct load_command *cmd;
+
+    /* Check for 32-bit/64-bit header and extract required values */
+    switch (header32->magic) {
+        /* 32-bit */
+        case MH_MAGIC:
+        case MH_CIGAM:
+            ncmds = header32->ncmds;
+            cmd = (struct load_command *) (header32 + 1);
+            break;
+
+        /* 64-bit */
+        case MH_MAGIC_64:
+        case MH_CIGAM_64:
+            ncmds = header64->ncmds;
+            cmd = (struct load_command *) (header64 + 1);
+            break;
+
+        default:
+            PLCF_DEBUG("Invalid Mach-O header magic value: %x", header32->magic);
+            return 0;
+    }
 
     /* Compute the image size and search for a UUID */
-    struct load_command *cmd = (struct load_command *) (header + 1);
     struct uuid_command *uuid = NULL;
 
-    for (uint32_t i = 0; cmd != NULL && i < header->ncmds; i++) {
+    for (uint32_t i = 0; cmd != NULL && i < ncmds; i++) {
         /* 32-bit text segment */
         if (cmd->cmd == LC_SEGMENT) {
             struct segment_command *segment = (struct segment_command *) cmd;
