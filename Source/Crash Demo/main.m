@@ -31,7 +31,7 @@
 
 void stackFrame (void) {
     /* Trigger a crash */
-    CFRelease(NULL);
+    ((char *)NULL)[1] = 0;
 }
 
 int main (int argc, char *argv[]) {
