@@ -196,6 +196,15 @@ int convert_command (int argc, char *argv[]) {
     }
 
     fprintf(output, "\n");
+    
+    /* Uncaught Exception */
+    if (crashLog.hasExceptionInfo) {
+        fprintf(output, "Application Specific Information:\n");
+        fprintf(output, "*** Terminating app due to uncaught exception '%s', reason: '%s'\n",
+                [crashLog.exceptionInfo.exceptionName UTF8String], [crashLog.exceptionInfo.exceptionReason UTF8String]);
+
+        fprintf(output, "\n");
+    }
 
     /* Threads */
     PLCrashReportThreadInfo *crashed_thread = nil;
