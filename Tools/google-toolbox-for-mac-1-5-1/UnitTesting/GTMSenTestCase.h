@@ -72,7 +72,7 @@ do { \
     OSStatus a1value = (a1); \
     if (a1value != noErr) { \
       NSString *_expression = [NSString stringWithFormat:@"Expected noErr, got %ld for (%s)", a1value, #a1]; \
-      if (description) { \
+      if (description != nil) { \
         _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(description, ##__VA_ARGS__)]; \
       } \
       [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
@@ -103,7 +103,7 @@ do { \
     OSStatus a2value = (a2); \
     if (a1value != a2value) { \
       NSString *_expression = [NSString stringWithFormat:@"Expected %s(%ld) but got %ld for (%s)", #a2, a2value, a1value, #a1]; \
-      if (description) { \
+      if (description != nil) { \
         _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(description, ##__VA_ARGS__)]; \
       } \
       [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
@@ -133,7 +133,7 @@ do { \
     const void* a1value = (a1); \
     if (a1value == NULL) { \
       NSString *_expression = [NSString stringWithFormat:@"(%s) != NULL", #a1]; \
-      if (description) { \
+      if (description != nil) { \
         _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(description, ##__VA_ARGS__)]; \
       } \
       [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
@@ -162,7 +162,7 @@ do { \
     const void* a1value = (a1); \
     if (a1value != NULL) { \
       NSString *_expression = [NSString stringWithFormat:@"(%s) == NULL", #a1]; \
-      if (description) { \
+      if (description != nil) { \
         _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(description, ##__VA_ARGS__)]; \
       } \
       [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
@@ -201,7 +201,7 @@ do { \
       NSValue *a2encoded = [NSValue value:&a2value withObjCType:@encode(__typeof__(a2))]; \
       if ([a1encoded isEqualToValue:a2encoded]) { \
         NSString *_expression = [NSString stringWithFormat:@"(%s) != (%s)", #a1, #a2]; \
-        if (description) { \
+        if (description != nil) { \
           _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(description, ##__VA_ARGS__)]; \
         } \
         [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
@@ -235,7 +235,7 @@ do { \
          (@encode(__typeof__(a2value)) == @encode(id)) && \
          ![(id)a1value isEqual:(id)a2value] ) continue; \
          NSString *_expression = [NSString stringWithFormat:@"%s('%@') != %s('%@')", #a1, [a1 description], #a2, [a2 description]]; \
-         if (desc) { \
+         if (desc != nil) { \
            _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(desc, ##__VA_ARGS__)]; \
          } \
          [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
@@ -273,7 +273,7 @@ do { \
         double a1DoubleValue = a1value; \
         double a2DoubleValue = a2value; \
         NSString *_expression = [NSString stringWithFormat:@"%s (%lg) %s %s (%lg)", #a1, a1DoubleValue, #op, #a2, a2DoubleValue]; \
-        if (description) { \
+        if (description != nil) { \
           _expression = [NSString stringWithFormat:@"%@: %@", _expression, STComposeString(description, ##__VA_ARGS__)]; \
         } \
         [self failWithException:[NSException failureInFile:[NSString stringWithUTF8String:__FILE__] \
