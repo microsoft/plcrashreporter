@@ -362,28 +362,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 058812B81040582D009128FB /* CrashReporter-iPhone */;
+			remoteGlobalIDString = 058812B81040582D009128FB;
 			remoteInfo = "CrashReporter-iPhone";
 		};
 		058812CD104058E7009128FB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
 			remoteInfo = "CrashReporter-iPhoneOS";
 		};
 		058812CF104058EA009128FB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			remoteGlobalIDString = 05CD31620EE93905000FDE88;
 			remoteInfo = "CrashReporter-iPhoneSimulator";
 		};
 		058812F01040597D009128FB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31680EE939D0000FDE88 /* CrashReporter */;
+			remoteGlobalIDString = 05CD31680EE939D0000FDE88;
 			remoteInfo = CrashReporter;
 		};
 		05CD316B0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
@@ -401,20 +401,6 @@
 			remoteInfo = "CrashReporter-iPhoneOS";
 		};
 		05CD316F0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
-			remoteInfo = "CrashReporter-MacOSX";
-		};
-		05CD31710EE939DC000FDE88 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
-			remoteInfo = "CrashReporter-MacOSX";
-		};
-		05CD31730EE939DF000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
@@ -1099,7 +1085,6 @@
 				05F411FE0EF8E070008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
-				05CD31720EE939DC000FDE88 /* PBXTargetDependency */,
 			);
 			name = "CrashReporter-iPhoneOS";
 			productName = "CrashReporter-iPhoneOS";
@@ -1118,7 +1103,6 @@
 				05F411FF0EF8E070008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
-				05CD31740EE939DF000FDE88 /* PBXTargetDependency */,
 			);
 			name = "CrashReporter-iPhoneSimulator";
 			productName = "CrashReporter-iPhoneSimulator";
@@ -1686,16 +1670,6 @@
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05CD316F0EE939D8000FDE88 /* PBXContainerItemProxy */;
 		};
-		05CD31720EE939DC000FDE88 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
-			targetProxy = 05CD31710EE939DC000FDE88 /* PBXContainerItemProxy */;
-		};
-		05CD31740EE939DF000FDE88 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
-			targetProxy = 05CD31730EE939DF000FDE88 /* PBXContainerItemProxy */;
-		};
 		05CD32720EE93E24000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
@@ -1896,6 +1870,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GENERATE_MASTER_OBJECT_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
@@ -1918,6 +1893,7 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GENERATE_MASTER_OBJECT_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
@@ -2160,6 +2136,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
@@ -2194,6 +2171,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/lib\"",
@@ -2246,7 +2224,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
@@ -2272,7 +2250,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				COPY_PHASE_STRIP = NO;
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
@@ -2300,7 +2278,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
@@ -2328,7 +2306,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				COPY_PHASE_STRIP = NO;
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2356,7 +2334,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
@@ -2384,7 +2362,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2413,7 +2391,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(PL_MACOSX_ARCHS)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2443,10 +2421,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
 				ONLY_ACTIVE_ARCH = NO;
-				OTHER_WARNING_NO_ADDRESS = "$(OTHER_WARNING_NO_ADDRESS_$(OTHER_WARNING_NO_ADDRESS_$(MAC_OS_X_VERSION_MAJOR)))";
-				OTHER_WARNING_NO_ADDRESS_ = "-Wno-address";
-				OTHER_WARNING_NO_ADDRESS_1050 = UNSUPPORTED;
-				OTHER_WARNING_NO_ADDRESS_UNSUPPORTED = "";
+				PL_MACOSX_ARCHS = "i386 ppc x86_64";
 				PREBINDING = NO;
 				WARNING_CFLAGS = (
 					"-Wall",
@@ -2464,10 +2439,7 @@
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
 				);
-				OTHER_WARNING_NO_ADDRESS = "$(OTHER_WARNING_NO_ADDRESS_$(OTHER_WARNING_NO_ADDRESS_$(MAC_OS_X_VERSION_MAJOR)))";
-				OTHER_WARNING_NO_ADDRESS_ = "-Wno-address";
-				OTHER_WARNING_NO_ADDRESS_1050 = UNSUPPORTED;
-				OTHER_WARNING_NO_ADDRESS_UNSUPPORTED = "";
+				PL_MACOSX_ARCHS = "i386 ppc x86_64";
 				PREBINDING = NO;
 				WARNING_CFLAGS = (
 					"-Wall",
