@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
+		058812D410405908009128FB /* Disk Image */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */;
+			buildPhases = (
+				058812D310405908009128FB /* Create Disk Image */,
+			);
+			dependencies = (
+				058812F11040597D009128FB /* PBXTargetDependency */,
+			);
+			name = "Disk Image";
+			productName = "Disk Image";
+		};
 		05CD31680EE939D0000FDE88 /* CrashReporter */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = 05CD31790EE939E0000FDE88 /* Build configuration list for PBXAggregateTarget "CrashReporter" */;
@@ -18,6 +30,7 @@
 				05E732100EFA1B61005EDFB7 /* PBXTargetDependency */,
 				05CD316E0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316C0EE939D8000FDE88 /* PBXTargetDependency */,
+				058812CA104058DA009128FB /* PBXTargetDependency */,
 				05F40DD80EF7B626008050CF /* PBXTargetDependency */,
 				05CD32720EE93E24000FDE88 /* PBXTargetDependency */,
 				05CD32EA0EE94105000FDE88 /* PBXTargetDependency */,
@@ -345,6 +358,34 @@
 			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
 			remoteInfo = "CrashReporter-iPhoneOS";
 		};
+		058812C9104058DA009128FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 058812B81040582D009128FB /* CrashReporter-iPhone */;
+			remoteInfo = "CrashReporter-iPhone";
+		};
+		058812CD104058E7009128FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			remoteInfo = "CrashReporter-iPhoneOS";
+		};
+		058812CF104058EA009128FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			remoteInfo = "CrashReporter-iPhoneSimulator";
+		};
+		058812F01040597D009128FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD31680EE939D0000FDE88 /* CrashReporter */;
+			remoteInfo = CrashReporter;
+		};
 		05CD316B0EE939D8000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -483,6 +524,7 @@
 		050DE2A80F61BD8D00152ED3 /* fuzz-main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "fuzz-main.m"; sourceTree = "<group>"; };
 		054F51070EEC73C80034B184 /* PLCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReporter.h; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		058812B91040582D009128FB /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameWalker.h; sourceTree = "<group>"; };
 		059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameWalker.c; sourceTree = "<group>"; };
 		059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashFrameWalkerTests.m; sourceTree = "<group>"; };
@@ -564,6 +606,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				050DE25E0F61B93900152ED3 /* libCrashReporter-MacOSX-Static.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		058812B71040582D009128FB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -655,6 +704,7 @@
 				05E731E30EFA1A3E005EDFB7 /* plcrashutil */,
 				05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */,
 				050DE24D0F61B80B00152ED3 /* Fuzz Testing */,
+				058812B91040582D009128FB /* CrashReporter.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -907,6 +957,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		058812B41040582D009128FB /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		05CD314E0EE936A9000FDE88 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1009,6 +1066,27 @@
 			productReference = 050DE24D0F61B80B00152ED3 /* Fuzz Testing */;
 			productType = "com.apple.product-type.tool";
 		};
+		058812B81040582D009128FB /* CrashReporter-iPhone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 058812BE1040582E009128FB /* Build configuration list for PBXNativeTarget "CrashReporter-iPhone" */;
+			buildPhases = (
+				058812B41040582D009128FB /* Headers */,
+				058812B51040582D009128FB /* Resources */,
+				058812B61040582D009128FB /* Sources */,
+				058812B71040582D009128FB /* Frameworks */,
+				058812C6104058AB009128FB /* Lipo BInary */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				058812CE104058E7009128FB /* PBXTargetDependency */,
+				058812D0104058EA009128FB /* PBXTargetDependency */,
+			);
+			name = "CrashReporter-iPhone";
+			productName = "PLCrashReporter-iPhone";
+			productReference = 058812B91040582D009128FB /* CrashReporter.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneOS" */;
@@ -1016,7 +1094,6 @@
 				05CD314E0EE936A9000FDE88 /* Headers */,
 				05CD314F0EE936A9000FDE88 /* Sources */,
 				05CD31500EE936A9000FDE88 /* Frameworks */,
-				05CD321E0EE93B59000FDE88 /* Create Framework */,
 			);
 			buildRules = (
 				05F411FE0EF8E070008050CF /* PBXBuildRule */,
@@ -1036,7 +1113,6 @@
 				05CD315F0EE93905000FDE88 /* Headers */,
 				05CD31600EE93905000FDE88 /* Sources */,
 				05CD31610EE93905000FDE88 /* Frameworks */,
-				05CD32200EE93B72000FDE88 /* Create Framework */,
 			);
 			buildRules = (
 				05F411FF0EF8E070008050CF /* PBXBuildRule */,
@@ -1200,8 +1276,10 @@
 			projectRoot = "";
 			targets = (
 				05CD31680EE939D0000FDE88 /* CrashReporter */,
+				058812D410405908009128FB /* Disk Image */,
 				05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */,
+				058812B81040582D009128FB /* CrashReporter-iPhone */,
 				05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */,
 				05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */,
 				05E731E20EFA1A3E005EDFB7 /* plcrashutil */,
@@ -1215,6 +1293,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		058812B51040582D009128FB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		05CD32640EE93DC3000FDE88 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1269,35 +1354,33 @@
 			shellScript = "# If zzuf isn't available, nothing to do.\nwhich -s zzuf\nif [ $? != 0 ]; then\n\texit\nfi\n\n# Run 4 jobs at once.\n# Run from seed 0 to 100000.\n# Only fuzz .plcrash files\nzzuf -I '\\.plcrash$' -j 4 -s 0:100000 \"${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}\" \"${SRCROOT}/Resources/fuzz_report.plcrash\"\n";
 			showEnvVarsInLog = 0;
 		};
-		05CD321E0EE93B59000FDE88 /* Create Framework */ = {
+		058812C6104058AB009128FB /* Lipo BInary */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Create Framework";
+			name = "Lipo BInary";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Copy in the canonical framework\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-${PL_CANONICAL_PLATFORM}\" -cf - \"${PL_CANONICAL_PRODUCT}.framework\" | tar -C \"${BUILT_PRODUCTS_DIR}\" -xf -\n\n# Copy in the static library we'll be using to replace the canonical framework's dylib\ncp \"${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}\" \"${BUILT_PRODUCTS_DIR}/${PL_CANONICAL_PRODUCT}.framework/Versions/Current/${PL_CANONICAL_PRODUCT}\"\nstrip -S \"${BUILT_PRODUCTS_DIR}/${PL_CANONICAL_PRODUCT}.framework/Versions/Current/${PL_CANONICAL_PRODUCT}\"";
-			showEnvVarsInLog = 0;
+			shellScript = "FRAMEWORK=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.framework\"\n\nlipo \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libCrashReporter-iPhoneOS.a\" \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/libCrashReporter-iPhoneSimulator.a\" \\\n\t-create -output \"${FRAMEWORK}/Versions/Current/${PRODUCT_NAME}\"\n\ncd \"${FRAMEWORK}\" && ln -sf \"Versions/Current/${PRODUCT_NAME}\" ./";
 		};
-		05CD32200EE93B72000FDE88 /* Create Framework */ = {
+		058812D310405908009128FB /* Create Disk Image */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Create Framework";
+			name = "Create Disk Image";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Copy in the canonical framework\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-${PL_CANONICAL_PLATFORM}\" -cf - \"${PL_CANONICAL_PRODUCT}.framework\" | tar -C \"${BUILT_PRODUCTS_DIR}\" -xf -\n\n# Copy in the static library we'll be using to replace the canonical framework's dylib\ncp \"${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}\" \"${BUILT_PRODUCTS_DIR}/${PL_CANONICAL_PRODUCT}.framework/Versions/Current/${PL_CANONICAL_PRODUCT}\"\nstrip -S \"${BUILT_PRODUCTS_DIR}/${PL_CANONICAL_PRODUCT}.framework/Versions/Current/${PL_CANONICAL_PRODUCT}\"";
-			showEnvVarsInLog = 0;
+			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework destinations\nIPHONE_DEST=\"${DESTROOT}/iPhone Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nDOC_DEST=\"${DESTROOT}/Documentation\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-iphone\" -cf - \"CrashReporter.framework\" | tar -C \"${IPHONE_DEST}\" -xf - \n\nmkdir -p \"${MAC_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-MacOSX\" -cf - \"CrashReporter.framework\" | tar -C \"${MAC_DEST}\" -xf - \n\nif [ ! -z `which doxygen` ]; then\n\tpushd \"${SRCROOT}\" >/dev/null\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
 		};
 		05CD32670EE93DC3000FDE88 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1337,6 +1420,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				050DE2A90F61BD8D00152ED3 /* fuzz-main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		058812B61040582D009128FB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1561,6 +1651,26 @@
 			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
 			targetProxy = 054F50E80EEC50B30034B184 /* PBXContainerItemProxy */;
 		};
+		058812CA104058DA009128FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 058812B81040582D009128FB /* CrashReporter-iPhone */;
+			targetProxy = 058812C9104058DA009128FB /* PBXContainerItemProxy */;
+		};
+		058812CE104058E7009128FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			targetProxy = 058812CD104058E7009128FB /* PBXContainerItemProxy */;
+		};
+		058812D0104058EA009128FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			targetProxy = 058812CF104058EA009128FB /* PBXContainerItemProxy */;
+		};
+		058812F11040597D009128FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD31680EE939D0000FDE88 /* CrashReporter */;
+			targetProxy = 058812F01040597D009128FB /* PBXContainerItemProxy */;
+		};
 		05CD316C0EE939D8000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
@@ -1696,6 +1806,83 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx10.5;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		058812BC1040582E009128FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EFFECTIVE_PLATFORM_NAME = "-iphone";
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = CrashReporter;
+			};
+			name = Debug;
+		};
+		058812BD1040582E009128FB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EFFECTIVE_PLATFORM_NAME = "-iphone";
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = CrashReporter;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		058812D510405908009128FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = PLCrashReporter;
+			};
+			name = Debug;
+		};
+		058812D610405908009128FB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = PLCrashReporter;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -2251,6 +2438,7 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = "1.0-rc3";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
@@ -2259,8 +2447,6 @@
 				OTHER_WARNING_NO_ADDRESS_ = "-Wno-address";
 				OTHER_WARNING_NO_ADDRESS_1050 = UNSUPPORTED;
 				OTHER_WARNING_NO_ADDRESS_UNSUPPORTED = "";
-				PL_CANONICAL_PLATFORM = MacOSX;
-				PL_CANONICAL_PRODUCT = CrashReporter;
 				PREBINDING = NO;
 				WARNING_CFLAGS = (
 					"-Wall",
@@ -2272,6 +2458,7 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = "1.0-rc3";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
@@ -2281,8 +2468,6 @@
 				OTHER_WARNING_NO_ADDRESS_ = "-Wno-address";
 				OTHER_WARNING_NO_ADDRESS_1050 = UNSUPPORTED;
 				OTHER_WARNING_NO_ADDRESS_UNSUPPORTED = "";
-				PL_CANONICAL_PLATFORM = MacOSX;
-				PL_CANONICAL_PRODUCT = CrashReporter;
 				PREBINDING = NO;
 				WARNING_CFLAGS = (
 					"-Wall",
@@ -2299,6 +2484,24 @@
 			buildConfigurations = (
 				050DE24F0F61B80C00152ED3 /* Debug */,
 				050DE2500F61B80C00152ED3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		058812BE1040582E009128FB /* Build configuration list for PBXNativeTarget "CrashReporter-iPhone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				058812BC1040582E009128FB /* Debug */,
+				058812BD1040582E009128FB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				058812D510405908009128FB /* Debug */,
+				058812D610405908009128FB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
