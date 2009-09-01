@@ -1060,7 +1060,7 @@
 				058812B51040582D009128FB /* Resources */,
 				058812B61040582D009128FB /* Sources */,
 				058812B71040582D009128FB /* Frameworks */,
-				058812C6104058AB009128FB /* Lipo BInary */,
+				058812C6104058AB009128FB /* Lipo Binary */,
 			);
 			buildRules = (
 			);
@@ -1338,14 +1338,14 @@
 			shellScript = "# If zzuf isn't available, nothing to do.\nwhich -s zzuf\nif [ $? != 0 ]; then\n\texit\nfi\n\n# Run 4 jobs at once.\n# Run from seed 0 to 100000.\n# Only fuzz .plcrash files\nzzuf -I '\\.plcrash$' -j 4 -s 0:100000 \"${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}\" \"${SRCROOT}/Resources/fuzz_report.plcrash\"\n";
 			showEnvVarsInLog = 0;
 		};
-		058812C6104058AB009128FB /* Lipo BInary */ = {
+		058812C6104058AB009128FB /* Lipo Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Lipo BInary";
+			name = "Lipo Binary";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
