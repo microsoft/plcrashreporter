@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DocSetNodes version="1.0">
+  <TOC>
+    <Node>
+      <Name>Root</Name>
+      <Path>index.html</Path>
+      <Subnodes>
+       <Node>
+        <Name>Plausible Crash Reporter</Name>
+        <Path>index.html</Path>
+        <Subnodes>
+         <Node>
+          <Name>Example iPhone Usage</Name>
+          <Path>example_usage_iphone.html</Path>
+          <Subnodes>
+          </Subnodes>
+         </Node>
+         <Node>
+          <Name>Error Handling Programming Guide</Name>
+          <Path>error_handling.html</Path>
+          <Subnodes>
+          </Subnodes>
+         </Node>
+        </Subnodes>
+       </Node>
+       <Node>
+        <Name>Modules</Name>
+        <Path>modules.html</Path>
+        <Subnodes>
+         <Node>
+          <Name>Crash Reporter Functions Reference</Name>
+          <Path>group__functions.html</Path>
+          <Subnodes>
+          </Subnodes>
+         </Node>
+         <Node>
+          <Name>Crash Reporter Data Types Reference</Name>
+          <Path>group__types.html</Path>
+          <Subnodes>
+          </Subnodes>
+         </Node>
+         <Node>
+          <Name>Crash Reporter Constants Reference</Name>
+          <Path>group__constants.html</Path>
+          <Subnodes>
+           <Node>
+            <Name>Enumerations</Name>
+            <Path>group__enums.html</Path>
+            <Subnodes>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>Global Variables</Name>
+            <Path>group__globals.html</Path>
+            <Subnodes>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>Exceptions</Name>
+            <Path>group__exceptions.html</Path>
+            <Subnodes>
+            </Subnodes>
+           </Node>
+          </Subnodes>
+         </Node>
+         <Node>
+          <Name>Crash Reporter Internal Documentation</Name>
+          <Path>group__plcrash__internal.html</Path>
+          <Subnodes>
+           <Node>
+            <Name>Crash Log Writer</Name>
+            <Path>group__plcrash__log__writer.html</Path>
+            <Subnodes>
+            </Subnodes>
+           </Node>
+          </Subnodes>
+         </Node>
+         <Node>
+          <Name>Signal Information</Name>
+          <Path>group__plcrash__async__signal__info.html</Path>
+          <Subnodes>
+          </Subnodes>
+         </Node>
+        </Subnodes>
+       </Node>
+       <Node>
+        <Name>Class List</Name>
+        <Path>annotated.html</Path>
+        <Subnodes>
+         <Node>
+          <Name>plcrash_bfd_binary</Name>
+          <Path>structplcrash__bfd__binary.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReport</Name>
+          <Path>interface_p_l_crash_report.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportApplicationInfo</Name>
+          <Path>interface_p_l_crash_report_application_info.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportBinaryImageInfo</Name>
+          <Path>interface_p_l_crash_report_binary_image_info.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReporter</Name>
+          <Path>interface_p_l_crash_reporter.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportExceptionInfo</Name>
+          <Path>interface_p_l_crash_report_exception_info.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportFileHeader</Name>
+          <Path>struct_p_l_crash_report_file_header.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportRegisterInfo</Name>
+          <Path>interface_p_l_crash_report_register_info.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportSignalInfo</Name>
+          <Path>interface_p_l_crash_report_signal_info.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportStackFrameInfo</Name>
+          <Path>interface_p_l_crash_report_stack_frame_info.html</Path>
+         </Node>
+         <Node>
+          <Name>PLCrashReportThreadInfo</Name>
+          <Path>interface_p_l_crash_report_thread_info.html</Path>
+         </Node>
+        </Subnodes>
+       </Node>
+       <Node>
+        <Name>Class Members</Name>
+        <Path>functions.html</Path>
+       </Node>
+      </Subnodes>
+    </Node>
+  </TOC>
+</DocSetNodes>

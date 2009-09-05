@@ -1,0 +1,3 @@
+<area shape="rect" id="node2" href="$interface_p_l_crash_report_application_info.html" title="Crash log application data." alt="" coords="5,5,227,35">
+<area shape="rect" id="node6" href="$interface_p_l_crash_report_exception_info.html" title="If a crash is triggered by an uncaught Objective&#45;C exception, the exception name..." alt="" coords="8,112,224,141">
+<area shape="rect" id="node10" href="$interface_p_l_crash_report_signal_info.html" title="Provides access to the signal name and signal code." alt="" coords="23,219,209,248">
