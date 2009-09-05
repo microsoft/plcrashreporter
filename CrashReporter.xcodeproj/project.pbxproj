@@ -15,6 +15,7 @@
 			);
 			dependencies = (
 				058812F11040597D009128FB /* PBXTargetDependency */,
+				05EC525A10531C9300DB9D39 /* PBXTargetDependency */,
 			);
 			name = "Disk Image";
 			productName = "Disk Image";
@@ -197,6 +198,23 @@
 		05E9240E0FE4910400E9A3AC /* PLCrashFrameWalker_ppc.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E924060FE4910400E9A3AC /* PLCrashFrameWalker_ppc.c */; };
 		05E9240F0FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E924070FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h */; };
 		05E9243B0FE4A24100E9A3AC /* PLCrashFrameWalker_ppc.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E924060FE4910400E9A3AC /* PLCrashFrameWalker_ppc.c */; };
+		05EC51D7105316E900DB9D39 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51D8105316E900DB9D39 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
+		05EC51D9105316E900DB9D39 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51DA105316E900DB9D39 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
+		05EC51DB105316E900DB9D39 /* PLCrashFrameWalker_arm.h in Headers */ = {isa = PBXBuildFile; fileRef = 05966A1A0EEE5280008A0601 /* PLCrashFrameWalker_arm.h */; };
+		05EC51DC105316E900DB9D39 /* PLCrashLogWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 059670250EEF6B1A008A0601 /* PLCrashLogWriter.h */; };
+		05EC51DD105316E900DB9D39 /* PLCrashLogWriterEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */; };
+		05EC51DE105316E900DB9D39 /* PLCrashReport.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F411A40EF8DA31008050CF /* PLCrashReport.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51DF105316E900DB9D39 /* PLCrashReportSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F413430EF995C0008050CF /* PLCrashReportSystemInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51E0105316E900DB9D39 /* PLCrashReportApplicationInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4141C0EF9A6C4008050CF /* PLCrashReportApplicationInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51E1105316E900DB9D39 /* PLCrashReportThreadInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F414800EF9BFAC008050CF /* PLCrashReportThreadInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51E2105316E900DB9D39 /* PLCrashReportBinaryImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F4150B0EF9DD9B008050CF /* PLCrashReportBinaryImageInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51E3105316E900DB9D39 /* PLCrashReportExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F415510EF9E078008050CF /* PLCrashReportExceptionInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51E4105316E900DB9D39 /* PLCrashAsyncSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E734300EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h */; };
+		05EC51E5105316E900DB9D39 /* PLCrashReportSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E734F50EFAE59C005EDFB7 /* PLCrashReportSignalInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05EC51E6105316E900DB9D39 /* PLCrashFrameWalker_ppc.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E924070FE4910400E9A3AC /* PLCrashFrameWalker_ppc.h */; };
+		05EC51E7105316E900DB9D39 /* PLCrashFrameWalker_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B447170FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.h */; };
 		05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
@@ -462,6 +480,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
+		};
+		05EC525910531C9300DB9D39 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
+			remoteInfo = plcrashutil;
 		};
 		05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -947,6 +972,23 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05EC51D7105316E900DB9D39 /* CrashReporter.h in Headers */,
+				05EC51D8105316E900DB9D39 /* PLCrashSignalHandler.h in Headers */,
+				05EC51D9105316E900DB9D39 /* PLCrashReporter.h in Headers */,
+				05EC51DA105316E900DB9D39 /* PLCrashFrameWalker.h in Headers */,
+				05EC51DB105316E900DB9D39 /* PLCrashFrameWalker_arm.h in Headers */,
+				05EC51DC105316E900DB9D39 /* PLCrashLogWriter.h in Headers */,
+				05EC51DD105316E900DB9D39 /* PLCrashLogWriterEncoding.h in Headers */,
+				05EC51DE105316E900DB9D39 /* PLCrashReport.h in Headers */,
+				05EC51DF105316E900DB9D39 /* PLCrashReportSystemInfo.h in Headers */,
+				05EC51E0105316E900DB9D39 /* PLCrashReportApplicationInfo.h in Headers */,
+				05EC51E1105316E900DB9D39 /* PLCrashReportThreadInfo.h in Headers */,
+				05EC51E2105316E900DB9D39 /* PLCrashReportBinaryImageInfo.h in Headers */,
+				05EC51E3105316E900DB9D39 /* PLCrashReportExceptionInfo.h in Headers */,
+				05EC51E4105316E900DB9D39 /* PLCrashAsyncSignalInfo.h in Headers */,
+				05EC51E5105316E900DB9D39 /* PLCrashReportSignalInfo.h in Headers */,
+				05EC51E6105316E900DB9D39 /* PLCrashFrameWalker_ppc.h in Headers */,
+				05EC51E7105316E900DB9D39 /* PLCrashFrameWalker_x86_64.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1364,7 +1406,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework destinations\nIPHONE_DEST=\"${DESTROOT}/iPhone Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nDOC_DEST=\"${DESTROOT}/Documentation\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-iphone\" -cf - \"CrashReporter.framework\" | tar -C \"${IPHONE_DEST}\" -xf - \n\nmkdir -p \"${MAC_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-MacOSX\" -cf - \"CrashReporter.framework\" | tar -C \"${MAC_DEST}\" -xf - \n\nif [ ! -z `which doxygen` ]; then\n\tpushd \"${SRCROOT}\" >/dev/null\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
+			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework destinations\nIPHONE_DEST=\"${DESTROOT}/iPhone Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nDOC_DEST=\"${DESTROOT}/Documentation\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-iphone\" -cf - \"CrashReporter.framework\" | tar -C \"${IPHONE_DEST}\" -xf - \n\nmkdir -p \"${MAC_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-MacOSX\" -cf - \"CrashReporter.framework\" | tar -C \"${MAC_DEST}\" -xf -\n\nmkdir -p \"${TOOL_DEST}\"\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\"\n\nif [ ! -z `which doxygen` ]; then\n\tpushd \"${SRCROOT}\" >/dev/null\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
 		};
 		05CD32670EE93DC3000FDE88 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1709,6 +1751,11 @@
 			isa = PBXTargetDependency;
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
 			targetProxy = 05E7325C0EFA1F6C005EDFB7 /* PBXContainerItemProxy */;
+		};
+		05EC525A10531C9300DB9D39 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
+			targetProxy = 05EC525910531C9300DB9D39 /* PBXContainerItemProxy */;
 		};
 		05F40CFD0EF7AC9D008050CF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2427,7 +2474,7 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.0-rc3";
+				CURRENT_PROJECT_VERSION = 1.0;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
@@ -2444,7 +2491,7 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.0-rc3";
+				CURRENT_PROJECT_VERSION = 1.0;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
