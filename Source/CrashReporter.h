@@ -28,9 +28,6 @@
 
 #import <Foundation/Foundation.h>
 
-/* Dependencies */
-#import <Foundation/Foundation.h>
-
 #ifdef __APPLE__
 #import <AvailabilityMacros.h>
 #endif
