@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2010 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -32,6 +32,7 @@
 #import <string.h>
 #import <stdbool.h>
 
+#import <sys/sysctl.h>
 #import <sys/time.h>
 
 #import <mach-o/dyld.h>
@@ -141,6 +142,25 @@ enum {
     
     /** CrashReport.signal.address */
     PLCRASH_PROTO_SIGNAL_ADDRESS_ID = 3,
+    
+    
+    /** CrashReport.process_info */
+    PLCRASH_PROTO_PROCESS_INFO_ID = 7,
+    
+    /** CrashReport.process_info.process_name */
+    PLCRASH_PROTO_PROCESS_INFO_PROCESS_NAME_ID = 1,
+    
+    /** CrashReport.process_info.process_id */
+    PLCRASH_PROTO_PROCESS_INFO_PROCESS_ID_ID = 2,
+    
+    /** CrashReport.process_info.process_path */
+    PLCRASH_PROTO_PROCESS_INFO_PROCESS_PATH_ID = 3,
+    
+    /** CrashReport.process_info.parent_process_name */
+    PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_NAME_ID = 4,
+    
+    /** CrashReport.process_info.parent_process_id */
+    PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID = 5,
 };
 
 
@@ -166,6 +186,55 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
     {
         writer->application_info.app_identifier = strdup([app_identifier UTF8String]);
         writer->application_info.app_version = strdup([app_version UTF8String]);
+    }
+    
+    /* Fetch the process information */
+    {
+        /* MIB used to fetch process info */
+        struct kinfo_proc process_info;
+        size_t process_info_len = sizeof(process_info);
+        int process_info_mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, 0 };
+        int process_info_mib_len = 4;
+
+        /* Current process */
+        {            
+            /* Retrieve PID */
+            writer->process_info.process_id = getpid();
+
+            /* Retrieve name */
+            process_info_mib[3] = writer->process_info.process_id;
+            if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
+                writer->process_info.process_name = strdup(process_info.kp_proc.p_comm);
+            } else {
+                PLCF_DEBUG("Could not retreive process name: %s", strerror(errno));
+            }
+
+            /* Retrieve path */
+            char *process_path = NULL;
+            uint32_t process_path_len = 0;
+
+            _NSGetExecutablePath(NULL, &process_path_len);
+            if (process_path_len > 0) {
+                process_path = malloc(process_path_len);
+                _NSGetExecutablePath(process_path, &process_path_len);
+                writer->process_info.process_path = process_path;
+            }
+        }
+
+        /* Parent process */
+        {            
+            /* Retrieve PID */
+            writer->process_info.parent_process_id = getppid();
+
+            /* Retrieve name */
+            process_info_mib[3] = writer->process_info.parent_process_id;
+            if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
+                writer->process_info.parent_process_name = strdup(process_info.kp_proc.p_comm);
+            } else {
+                PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
+            }
+
+        }
     }
 
     /* Fetch the OS information */
@@ -238,6 +307,14 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     if (writer->application_info.app_version != NULL)
         free(writer->application_info.app_version);
 
+    /* Free the process info */
+    if (writer->process_info.process_name != NULL) 
+        free(writer->process_info.process_name);
+    if (writer->process_info.process_path != NULL) 
+        free(writer->process_info.process_path);
+    if (writer->process_info.parent_process_name != NULL) 
+        free(writer->process_info.parent_process_name);
+    
     /* Free the system info */
     if (writer->system_info.version != NULL)
         free(writer->system_info.version);
@@ -302,6 +379,44 @@ static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const c
     return rv;
 }
 
+/**
+ * @internal
+ *
+ * Write the process info message.
+ *
+ * @param file Output file
+ * @param process_name Process name
+ * @param process_id Process ID
+ * @param process_path Process path
+ * @param parent_process_name Parent process name
+ * @param parent_process_id Parent process ID
+ */
+static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, const char *process_name, 
+                                                 const pid_t process_id, const char *process_path, 
+                                                 const char *parent_process_name, const pid_t parent_process_id) 
+{
+    size_t rv = 0;
+
+    /* Process name */
+    if (process_name != NULL)
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, process_name);
+
+    /* Process ID */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT64, &process_id);
+
+    /* Process path */
+    if (process_path != NULL)
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_PATH_ID, PLPROTOBUF_C_TYPE_STRING, process_path);
+
+    /* Parent process name */
+    if (parent_process_name != NULL)
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, parent_process_name);
+
+    /* Parent process ID */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT64, &parent_process_id);
+    
+    return rv;
+}
 
 /**
  * @internal
@@ -685,7 +800,23 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_app_info(file, writer->application_info.app_identifier, writer->application_info.app_version);
     }
-
+    
+    /* Process info */
+    {
+        uint32_t size;
+        
+        /* Determine size */
+        size = plcrash_writer_write_process_info(NULL, writer->process_info.process_name, writer->process_info.process_id, 
+                                                 writer->process_info.process_path, writer->process_info.parent_process_name,
+                                                 writer->process_info.parent_process_id);
+        
+        /* Write message */
+        plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_process_info(file, writer->process_info.process_name, writer->process_info.process_id, 
+                                          writer->process_info.process_path, writer->process_info.parent_process_name, 
+                                          writer->process_info.parent_process_id);
+    }
+    
     /* Threads */
     {
         task_t self = mach_task_self();

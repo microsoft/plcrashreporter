@@ -1,0 +1,81 @@
+/*
+ * Author: Damian Morris <damian@moso.com.au>
+ *
+ * Copyright (c) 2010 MOSO Corporation, Pty Ltd.
+ * Copyright (c) 2010 Plausible Labs Cooperative, Inc.
+ *
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#import "PLCrashReportProcessInfo.h"
+
+/**
+ * Crash log process data.
+ *
+ * Provides the process name, ID, path, parent process name and ID for the crashed
+ * application process.
+ */
+@implementation PLCrashReportProcessInfo
+
+/**
+ * Initialize with the provided process details.
+ *
+ * @param processName Process name. May be nil.
+ * @param processID Process PID.
+ * @param processPath Full path to the process' binary. May be nil.
+ * @param parentProcessName Parent process' name. May be nil.
+ * @param parentProcessID Parent process' PID.
+ */
+- (id) initWithProcessName: (NSString *) processName
+                 processID: (NSUInteger) processID
+               processPath: (NSString *) processPath
+         parentProcessName: (NSString *) parentProcessName
+           parentProcessID: (NSUInteger) parentProcessID
+{
+    if ((self = [super init]) == nil)
+        return nil;
+    
+    _processName = [processName retain];
+    _processID = processID;
+    _processPath = [processPath retain];
+    _parentProcessName = [parentProcessName retain];
+    _parentProcessID = parentProcessID;
+    
+    return self;
+}
+
+- (void) dealloc {
+    [_processName release];
+    [_processPath release];
+    [_parentProcessName release];
+    [super dealloc];
+}
+
+@synthesize processName = _processName;
+@synthesize processID = _processID;
+@synthesize processPath = _processPath;
+@synthesize parentProcessName = _parentProcessName;
+@synthesize parentProcessID = _parentProcessID;
+
+@end
