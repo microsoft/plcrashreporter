@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2010 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -42,9 +42,10 @@ struct _PLCrashReportDecoder {
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
 - (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError;
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
+- (PLCrashReportProcessInfo *) extractProcessInfo: (Plcrash__CrashReport__ProcessInfo *) processInfo error: (NSError **) outError;
 - (NSArray *) extractThreadInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (NSArray *) extractImageInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
-- (PLCrashReportApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
+- (PLCrashReportExceptionInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
 - (PLCrashReportSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
 
 @end
@@ -99,6 +100,13 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     _applicationInfo = [[self extractApplicationInfo: _decoder->crashReport->application_info error: outError] retain];
     if (!_applicationInfo)
         goto error;
+    
+    /* Process info. Handle missing info gracefully -- it is only included in v1.1+ crash reports. */
+    if (_decoder->crashReport->process_info != NULL) {
+        _processInfo = [[self extractProcessInfo: _decoder->crashReport->process_info error:outError] retain];
+        if (!_processInfo)
+            goto error;
+    }
 
     /* Signal info */
     _signalInfo = [[self extractSignalInfo: _decoder->crashReport->signal error: outError] retain];
@@ -164,8 +172,14 @@ error:
     return nil;
 }
 
-// property getter. property is documented.
-// Returns YES if exception information is available.
+// property getter. Returns YES if process information is available.
+- (BOOL) hasProcessInfo {
+    if (_processInfo != nil)
+        return YES;
+    return NO;
+}
+
+// property getter. Returns YES if exception information is available.
 - (BOOL) hasExceptionInfo {
     if (_exceptionInfo != nil)
         return YES;
@@ -174,6 +188,7 @@ error:
 
 @synthesize systemInfo = _systemInfo;
 @synthesize applicationInfo = _applicationInfo;
+@synthesize processInfo = _processInfo;
 @synthesize signalInfo = _signalInfo;
 @synthesize threads = _threads;
 @synthesize images = _images;
@@ -270,13 +285,13 @@ error:
  * Extract application information from the crash log. Returns nil on error.
  */
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
-                                                 error: (NSError **) outError
+                                                    error: (NSError **) outError
 {    
     /* Validate */
     if (applicationInfo == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
                          NSLocalizedString(@"Crash report is missing Application Information section", 
-                                           @"Missing appinfo in crash report"));
+                                           @"Missing app info in crash report"));
         return nil;
     }
 
@@ -284,7 +299,7 @@ error:
     if (applicationInfo->identifier == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
                          NSLocalizedString(@"Crash report is missing Application Information app identifier field", 
-                                           @"Missing appinfo operating system in crash report"));
+                                           @"Missing app identifier in crash report"));
         return nil;
     }
 
@@ -292,7 +307,7 @@ error:
     if (applicationInfo->version == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
                          NSLocalizedString(@"Crash report is missing Application Information app version field", 
-                                           @"Missing appinfo operating system in crash report"));
+                                           @"Missing app version in crash report"));
         return nil;
     }
     
@@ -302,6 +317,48 @@ error:
 
     return [[[PLCrashReportApplicationInfo alloc] initWithApplicationIdentifier: identifier
                                                           applicationVersion: version] autorelease];
+}
+
+
+/**
+ * Extract process information from the crash log. Returns nil on error.
+ */
+- (PLCrashReportProcessInfo *) extractProcessInfo: (Plcrash__CrashReport__ProcessInfo *) processInfo 
+                                            error: (NSError **) outError
+{    
+    /* Validate */
+    if (processInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Process Information section", 
+                                           @"Missing process info in crash report"));
+        return nil;
+    }
+    
+    /* Name available? */
+    NSString *processName = nil;
+    if (processInfo->process_name != NULL)
+        processName = [NSString stringWithUTF8String: processInfo->process_name];
+    
+    /* Path available? */
+    NSString *processPath = nil;
+    if (processInfo->process_path != NULL)
+        processPath = [NSString stringWithUTF8String: processInfo->process_path];
+    
+    /* Parent Name available? */
+    NSString *parentProcessName = nil;
+    if (processInfo->parent_process_name != NULL)
+        parentProcessName = [NSString stringWithUTF8String: processInfo->parent_process_name];
+
+    /* Required elements */
+    NSUInteger processID = processInfo->process_id;
+    NSUInteger parentProcessID = processInfo->parent_process_id;
+
+    /* Done */
+    return [[[PLCrashReportProcessInfo alloc] initWithProcessName: processName
+                                                        processID: processID
+                                                      processPath: processPath
+                                                parentProcessName: parentProcessName
+                                                  parentProcessID: parentProcessID] autorelease];
 }
 
 /**
@@ -425,7 +482,7 @@ error:
 /**
  * Extract  exception information from the crash log. Returns nil on error.
  */
-- (PLCrashReportApplicationInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo
+- (PLCrashReportExceptionInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo
                                                error: (NSError **) outError
 {
     /* Validate */

@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2010 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -168,12 +168,45 @@ int convert_command (int argc, char *argv[]) {
 
     fprintf(output, "Incident Identifier: [TODO]\n");
     fprintf(output, "CrashReporter Key:   [TODO]\n");
-    fprintf(output, "Process:         [TODO]\n");
-    fprintf(output, "Path:            [TODO]\n");
-    fprintf(output, "Identifier:      %s\n", [crashLog.applicationInfo.applicationIdentifier UTF8String]);
-    fprintf(output, "Version:         %s\n", [crashLog.applicationInfo.applicationVersion UTF8String]);
-    fprintf(output, "Code Type:       %s\n", codeType);
-    fprintf(output, "Parent Process:  [TODO]\n");
+
+    /* Application and process info */
+    {
+        const char *unknownString = "???";
+
+        const char *processName = unknownString;
+        const char *processId = unknownString;
+        const char *processPath = unknownString;
+        const char *parentProcessName = unknownString;
+        const char *parentProcessId = unknownString;
+
+        /* Process information was not available in earlier crash report versions */
+        if (crashLog.hasProcessInfo) {
+            /* Process Name */
+            if (crashLog.processInfo.processName != nil)
+                processName = [crashLog.processInfo.processName UTF8String];
+            
+            /* PID */
+            processId = [[[NSNumber numberWithUnsignedInteger: crashLog.processInfo.processID] stringValue] UTF8String];
+
+            /* Process Path */
+            if (crashLog.processInfo.processPath != nil)
+                processPath = [crashLog.processInfo.processPath UTF8String];
+
+            /* Parent Process Name */
+            if (crashLog.processInfo.parentProcessName != nil)
+                parentProcessName = [crashLog.processInfo.parentProcessName UTF8String];
+    
+            /* Parent Process ID */
+            parentProcessId = [[[NSNumber numberWithUnsignedInteger: crashLog.processInfo.parentProcessID] stringValue] UTF8String];
+        }
+
+        fprintf(output, "Process:         %s [%s]\n", processName, processId);
+        fprintf(output, "Path:            %s\n", processPath);
+        fprintf(output, "Identifier:      %s\n", [crashLog.applicationInfo.applicationIdentifier UTF8String]);
+        fprintf(output, "Version:         %s\n", [crashLog.applicationInfo.applicationVersion UTF8String]);
+        fprintf(output, "Code Type:       %s\n", codeType);
+        fprintf(output, "Parent Process:  %s [%s]\n", parentProcessName, parentProcessId);
+    }
 
     fprintf(output, "\n");
 
@@ -259,7 +292,7 @@ int convert_command (int argc, char *argv[]) {
             regColumn++;
         }
         
-        if (regColumn % 4 != 0)
+        if (regColumn % 3 != 0)
             fprintf(output, "\n");
             
         fprintf(output, "\n");

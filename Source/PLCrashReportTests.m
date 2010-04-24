@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2010 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -122,7 +122,13 @@
     STAssertNotNil(crashLog.applicationInfo, @"No application information available");
     STAssertNotNil(crashLog.applicationInfo.applicationIdentifier, @"No application identifier available");
     STAssertNotNil(crashLog.applicationInfo.applicationVersion, @"No application version available");
-
+    
+    /* Process info */
+    STAssertNotNil(crashLog.processInfo, @"No process information available");
+    STAssertNotNil(crashLog.processInfo.processName, @"No process name available");
+    STAssertNotNil(crashLog.processInfo.processPath, @"No process path available");
+    STAssertNotNil(crashLog.processInfo.parentProcessName, @"No parent process name available");
+    
     /* Signal info */
     STAssertEqualStrings(@"SIGSEGV", crashLog.signalInfo.name, @"Signal is incorrect");
     STAssertEqualStrings(@"SEGV_MAPERR", crashLog.signalInfo.code, @"Signal code is incorrect");

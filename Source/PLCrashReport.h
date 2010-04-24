@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2010 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "PLCrashReportSystemInfo.h"
 #import "PLCrashReportApplicationInfo.h"
+#import "PLCrashReportProcessInfo.h"
 #import "PLCrashReportSignalInfo.h"
 #import "PLCrashReportThreadInfo.h"
 #import "PLCrashReportBinaryImageInfo.h"
@@ -82,6 +83,9 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 
     /** Application info */
     PLCrashReportApplicationInfo *_applicationInfo;
+    
+    /** Process info */
+    PLCrashReportProcessInfo *_processInfo;
 
     /** Signal info */
     PLCrashReportSignalInfo *_signalInfo;
@@ -111,8 +115,18 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 @property(nonatomic, readonly) PLCrashReportApplicationInfo *applicationInfo;
 
 /**
- * Signal information. This provides the signal and signal code
- * of the fatal signal.
+ * YES if process information is available.
+ */
+@property(nonatomic, readonly) BOOL hasProcessInfo;
+
+/**
+ * Process information. Only available in later (v1.1+) crash report format versions. If not available,
+ * will be nil.
+ */
+@property(nonatomic, readonly) PLCrashReportProcessInfo *processInfo;
+
+/**
+ * Signal information. This provides the signal and signal code of the fatal signal.
  */
 @property(nonatomic, readonly) PLCrashReportSignalInfo *signalInfo;
 

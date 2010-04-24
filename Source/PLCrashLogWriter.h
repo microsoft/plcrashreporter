@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2010 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -59,6 +59,24 @@ typedef struct plcrash_log_writer {
         /** Application version */
         char *app_version;
     } application_info;
+    
+    /** Process data */
+    struct {
+        /** Process name (may be null) */
+        char *process_name;
+        
+        /** Process ID */
+        pid_t process_id;
+        
+        /** Process path (may be null) */
+        char *process_path;
+        
+        /** Parent process name (may be null) */
+        char *parent_process_name;
+        
+        /** Parent process ID */
+        pid_t parent_process_id;
+    } process_info;
 
     /** Uncaught exception (if any) */
     struct {
