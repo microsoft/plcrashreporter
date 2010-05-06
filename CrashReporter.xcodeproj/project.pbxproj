@@ -32,10 +32,6 @@
 				05CD316E0EE939D8000FDE88 /* PBXTargetDependency */,
 				05CD316C0EE939D8000FDE88 /* PBXTargetDependency */,
 				058812CA104058DA009128FB /* PBXTargetDependency */,
-				05F40DD80EF7B626008050CF /* PBXTargetDependency */,
-				05CD32720EE93E24000FDE88 /* PBXTargetDependency */,
-				05CD32EA0EE94105000FDE88 /* PBXTargetDependency */,
-				05CD33310EE94473000FDE88 /* PBXTargetDependency */,
 			);
 			name = CrashReporter;
 			productName = CrashReporter;
@@ -435,33 +431,12 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
-		05CD32710EE93E24000FDE88 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05CD32680EE93DC3000FDE88;
-			remoteInfo = "Tests-MacOSX";
-		};
-		05CD32E90EE94105000FDE88 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05CD32A80EE94062000FDE88;
-			remoteInfo = "Tests-iPhoneSimulator";
-		};
 		05CD32F20EE94153000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 05CD31620EE93905000FDE88;
 			remoteInfo = "CrashReporter-iPhoneSimulator";
-		};
-		05CD33300EE94473000FDE88 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05CD33230EE94439000FDE88;
-			remoteInfo = "Tests-iPhoneOS";
 		};
 		05CD34290EEA5FFA000FDE88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -504,13 +479,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
-		};
-		05F40DD70EF7B626008050CF /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05F40CE60EF7AB80008050CF;
-			remoteInfo = DemoCrash;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1736,25 +1704,10 @@
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05CD316F0EE939D8000FDE88 /* PBXContainerItemProxy */;
 		};
-		05CD32720EE93E24000FDE88 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
-			targetProxy = 05CD32710EE93E24000FDE88 /* PBXContainerItemProxy */;
-		};
-		05CD32EA0EE94105000FDE88 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */;
-			targetProxy = 05CD32E90EE94105000FDE88 /* PBXContainerItemProxy */;
-		};
 		05CD32F30EE94153000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
 			targetProxy = 05CD32F20EE94153000FDE88 /* PBXContainerItemProxy */;
-		};
-		05CD33310EE94473000FDE88 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05CD33230EE94439000FDE88 /* Tests-iPhoneOS */;
-			targetProxy = 05CD33300EE94473000FDE88 /* PBXContainerItemProxy */;
 		};
 		05CD342A0EEA5FFA000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1785,11 +1738,6 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */;
-		};
-		05F40DD80EF7B626008050CF /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05F40CE60EF7AB80008050CF /* DemoCrash */;
-			targetProxy = 05F40DD70EF7B626008050CF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1986,7 +1934,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator3.0;
+				SDKROOT = iphonesimulator3.2;
 				SKIP_INSTALL = NO;
 			};
 			name = Debug;
@@ -2004,7 +1952,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator3.0;
+				SDKROOT = iphonesimulator3.2;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
@@ -2129,7 +2077,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator3.0;
+				SDKROOT = iphonesimulator3.2;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -2160,7 +2108,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator3.0;
+				SDKROOT = iphonesimulator3.2;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
