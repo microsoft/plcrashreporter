@@ -159,6 +159,9 @@ static void uncaught_exception_handler (NSException *exception) {
 
 /* Create the shared crash reporter singleton. */
 + (void) initialize {
+    if ([self class] != [PLCrashReporter class])
+        return;
+
     sharedReporter = NULL;
     sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
 }
