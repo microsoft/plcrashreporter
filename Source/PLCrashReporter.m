@@ -63,9 +63,7 @@ static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
 /**
  * @internal
  *
- * Crash reporter singleton. Must default to NULL,
- * or the -[PLCrashReporter init] method will fail when attempting
- * to detect if another crash reporter exists.
+ * Crash reporter singleton.
  */
 static PLCrashReporter *sharedReporter = NULL;
 
@@ -162,7 +160,6 @@ static void uncaught_exception_handler (NSException *exception) {
     if ([self class] != [PLCrashReporter class])
         return;
 
-    sharedReporter = NULL;
     sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
 }
 
