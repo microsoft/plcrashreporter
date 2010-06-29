@@ -34,6 +34,7 @@
 
 #import "PLCrashReporter.h"
 #import "PLCrashReport.h"
+#import "PLCrashReportTextFormatter.h"
 
 /**
  * @defgroup functions Crash Reporter Functions Reference
@@ -93,6 +94,7 @@ typedef enum {
 /* Library Imports */
 #import "PLCrashReporter.h"
 #import "PLCrashReport.h"
+#import "PLCrashReportTextFormatter.h"
 
 /**
  * @mainpage Plausible Crash Reporter
