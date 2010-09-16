@@ -28,6 +28,8 @@
 
 
 /**
+ * @internal
+ *
  * @defgroup plcrash_async_signal_info Signal Information
  * @ingroup plcrash_async
  *

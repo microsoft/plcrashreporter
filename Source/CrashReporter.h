@@ -49,6 +49,7 @@
  */
 
 /**
+ * @internal
  * @defgroup plcrash_internal Crash Reporter Internal Documentation
  */
 
