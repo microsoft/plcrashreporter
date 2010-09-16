@@ -72,7 +72,12 @@ static struct {
     /** @internal
      * Crash signal callback context */
     void *crashCallbackContext;
-} SharedHandlerContext;
+} SharedHandlerContext = {
+    .handlerRegistered = NO,
+    .sharedHandler = nil,
+    .crashCallback = NULL,
+    .crashCallbackContext = NULL
+};
 
 
 /** @internal
@@ -119,18 +124,16 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
  */
 @implementation PLCrashSignalHandler
 
-
-/* Set up the singleton signal handler */
-+ (void) initialize {
-    memset(&SharedHandlerContext, 0, sizeof(SharedHandlerContext));
-    SharedHandlerContext.sharedHandler = [[PLCrashSignalHandler alloc] init];
-}
-
-
 /**
  * Return the process signal handler. Only one signal handler may be registered per process.
  */
 + (PLCrashSignalHandler *) sharedHandler {
+    /* Initialize the context, if required */
+    if (SharedHandlerContext.sharedHandler == NULL) {
+        memset(&SharedHandlerContext, 0, sizeof(SharedHandlerContext));
+        SharedHandlerContext.sharedHandler = [[PLCrashSignalHandler alloc] init];
+    }
+
     return SharedHandlerContext.sharedHandler;
 }
 
