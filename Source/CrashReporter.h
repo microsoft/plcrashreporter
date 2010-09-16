@@ -123,6 +123,7 @@ typedef enum {
  * @section doc_sections Documentation Sections
  * - @subpage example_usage_iphone
  * - @subpage error_handling
+ * - @subpage async_safety
  */
 
 /**
@@ -190,10 +191,36 @@ typedef enum {
  * error codes may be added at any time. If you do not wish to report on the error cause, many methods
  * support a simple form that requires no NSError argument.
  *
- * @section Error Domains, Codes, and User Info
+ * @section error_domains Error Domains, Codes, and User Info
  *
  * @subsection crashreporter_errors Crash Reporter Errors
  *
  * Any errors in Plausible Crash Reporter use the #PLCrashReporterErrorDomain error domain, and and one
  * of the error codes defined in #PLCrashReporterError.
+ */
+
+/**
+ * @page async_safety Async-Safe Programming Guide
+ *
+ * Plausible CrashReporter now provides support for executing your own code in the context of the crash reporter's
+ * signal handler, after the crash report has been written to disk. This was a regularly requested feature, and provides
+ * a convenient point for performing application finalization. However, there is an important caveat to be aware to
+ * when writing code intended for execution inside of a signal handler -- specifically, your code must be async-safe.
+ *
+ * @section program_flow Program Flow and Signal Handlers
+ *
+ * When the signal handler is called, the normal flow of the program is interrupted, and your program is an entirely
+ * unknown state. Locks may be held, the heap may be corrupt (or in the process of being updated), and your signal
+ * handler may invoke a function that was being executed at the time of the signal. This may result in deadlocks,
+ * data corruption, and program termination.
+ *
+ * @section functions Async-Safe Functions
+ *
+ * A subset of functions are defined to be async-safe by the OS, and are safely callable from within a signal handler. If
+ * you do implement a custom post-crash handler, it must be async-safe. A table of POSIX-defined async-safe functions
+ * and additional information is available from the
+ * <a href="https://www.securecoding.cert.org/confluence/display/seccode/SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers">CERT programming guide - SIG30-C</a>
+ *
+ *
+ * @sa PLCrashReporter::setPostCrashCallbacks:
  */

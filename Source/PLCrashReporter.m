@@ -91,6 +91,17 @@ static plcrashreporter_handler_ctx_t signal_handler_context;
 
 /**
  * @internal
+ * 
+ * The optional user-supplied callbacks invoked after the crash report has been written.
+ */
+static PLCrashReporterPostCrashCallbacks postCrashCallbacks = {
+    .version = 0,
+    .context = NULL,
+    .handleSignal = NULL
+};
+
+/**
+ * @internal
  *
  * Signal handler callback.
  */
@@ -115,6 +126,10 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     /* Finished */
     plcrash_async_file_flush(&file);
     plcrash_async_file_close(&file);
+
+    /* Call any post-crash callback */
+    if (postCrashCallbacks.handleSignal != NULL)
+        postCrashCallbacks.handleSignal(info, uap, postCrashCallbacks.context);
 }
 
 
@@ -288,6 +303,24 @@ static void uncaught_exception_handler (NSException *exception) {
     /* Success */
     _enabled = YES;
     return YES;
+}
+
+/**
+ * Return the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.
+ */
+- (PLCrashReporterPostCrashCallbacks) postCrashCallbacks {
+    return postCrashCallbacks;
+}
+
+/**
+ * Set the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.
+ *
+ * @param callbacks The callback structure.
+ *
+ * @sa @ref async_safety
+ */
+- (void) setPostCrashCallbacks: (PLCrashReporterPostCrashCallbacks) callbacks {
+    postCrashCallbacks = callbacks;
 }
 
 
