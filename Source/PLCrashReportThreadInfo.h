@@ -94,7 +94,7 @@
 @property(nonatomic, readonly) NSInteger threadNumber;
 
 /**
- * Thread backtrace. Provides an array of PLCrashReportStackFrame instances.
+ * Thread backtrace. Provides an array of PLCrashReportStackFrameInfo instances.
  * The array is ordered, last callee to first.
  */
 @property(nonatomic, readonly) NSArray *stackFrames;
