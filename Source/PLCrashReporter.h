@@ -28,6 +28,42 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+ * @ingroup functions
+ *
+ * Prototype of a callback function used to execute additional user code with signal information as provided
+ * by PLCrashReporter. Called upon completion of crash handling, after the crash report has been written to disk.
+ *
+ * @param info The signal info.
+ * @param uap The crash's threads context.
+ * @param context The API client's supplied context value.
+ *
+ * @sa @ref async_safety
+ * @sa PLCrashReporter::setPostCrashCallbacks:
+ */
+typedef void (*PLCrashReporterPostCrashSignalCallback)(siginfo_t *info, ucontext_t *uap, void *context);
+
+/**
+ * @ingroup types
+ *
+ * This structure contains callbacks implemented by the PLCrashReporter to allow end-user software to perform
+ * additional tasks prior to program termination after a crash has occured andbeen recorded by PLCrashReporter.
+ *
+ * @sa @ref async_safety
+ */
+typedef struct PLCrashReporterPostCrashCallbacks {
+    /** The version number of this structure. If not one of the defined version numbers for this type, the behavior
+     * is undefined. The current version of this structure is 0. */
+    uint16_t version;
+    
+    /** An arbitrary user-supplied context value. This value may be NULL. */
+    void *context;
+
+    /** The callback used to report caught signal information. In version 0 of this structure, all crashes will be
+     * reported via this function. */
+    PLCrashReporterPostCrashSignalCallback handleSignal;
+} PLCrashReporterPostCrashCallbacks;
+
 @interface PLCrashReporter : NSObject {
 @private
     /** YES if the crash reporter has been enabled */
@@ -55,5 +91,8 @@
 
 - (BOOL) enableCrashReporter;
 - (BOOL) enableCrashReporterAndReturnError: (NSError **) outError;
+
+- (PLCrashReporterPostCrashCallbacks) postCrashCallbacks;
+- (void) setPostCrashCallbacks: (PLCrashReporterPostCrashCallbacks) callbacks;
 
 @end
