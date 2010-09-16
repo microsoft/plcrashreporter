@@ -1321,7 +1321,14 @@
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* CrashReporter */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
@@ -1932,11 +1939,11 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 				SKIP_INSTALL = NO;
 			};
 			name = Debug;
@@ -1950,11 +1957,11 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
@@ -1970,11 +1977,12 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "$(inherited)";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphonesimulator4.1;
 				SKIP_INSTALL = NO;
 			};
 			name = Debug;
@@ -1988,11 +1996,12 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphonesimulator4.1;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
@@ -2108,6 +2117,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -2117,7 +2127,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphonesimulator4.1;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -2139,6 +2149,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -2148,7 +2159,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator4.0;
+				SDKROOT = iphonesimulator4.1;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -2171,7 +2182,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -2181,7 +2192,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WARNING_CFLAGS = (
@@ -2204,7 +2215,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = 2.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -2214,7 +2225,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WARNING_CFLAGS = (
