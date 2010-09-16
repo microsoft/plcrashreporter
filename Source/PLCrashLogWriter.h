@@ -32,6 +32,7 @@
 #import "PLCrashAsync.h"
 
 /**
+ * @internal
  * @defgroup plcrash_log_writer Crash Log Writer
  * @ingroup plcrash_internal
  *
