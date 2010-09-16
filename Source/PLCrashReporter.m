@@ -62,10 +62,9 @@ static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
 
 /**
  * @internal
- *
  * Crash reporter singleton.
  */
-static PLCrashReporter *sharedReporter = NULL;
+static PLCrashReporter *sharedReporter = nil;
 
 
 /**
@@ -170,18 +169,13 @@ static void uncaught_exception_handler (NSException *exception) {
  */
 @implementation PLCrashReporter
 
-/* Create the shared crash reporter singleton. */
-+ (void) initialize {
-    if ([self class] != [PLCrashReporter class])
-        return;
-
-    sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
-}
-
 /**
  * Return the application's crash reporter instance.
  */
 + (PLCrashReporter *) sharedReporter {
+    if (sharedReporter == nil)
+        sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
+
     return sharedReporter;
 }
 
