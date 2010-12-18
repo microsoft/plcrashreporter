@@ -146,8 +146,8 @@ static void uncaught_exception_handler (NSException *exception) {
     /* Set the uncaught exception */
     plcrash_log_writer_set_exception(&signal_handler_context.writer, exception);
 
-    /* Trigger the crash handler */
-    raise(SIGTRAP);
+    /* Synchronously trigger the crash handler */
+    abort();
 }
 
 
