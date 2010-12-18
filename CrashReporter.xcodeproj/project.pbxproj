@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
+		0502E45A12BD0CFF00ACDCB5 /* Tests */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 0502E46712BD0D1400ACDCB5 /* Build configuration list for PBXAggregateTarget "Tests" */;
+			buildPhases = (
+			);
+			dependencies = (
+				0502E46212BD0D0600ACDCB5 /* PBXTargetDependency */,
+				0502E46012BD0D0600ACDCB5 /* PBXTargetDependency */,
+				0502E45E12BD0D0600ACDCB5 /* PBXTargetDependency */,
+			);
+			name = Tests;
+			productName = Tests;
+		};
 		058812D410405908009128FB /* Disk Image */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */;
@@ -383,6 +396,27 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
+		0502E45D12BD0D0600ACDCB5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD33230EE94439000FDE88 /* Tests-iPhoneOS */;
+			remoteInfo = "Tests-iPhoneOS";
+		};
+		0502E45F12BD0D0600ACDCB5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */;
+			remoteInfo = "Tests-iPhoneSimulator";
+		};
+		0502E46112BD0D0600ACDCB5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
+			remoteInfo = "Tests-MacOSX";
+		};
 		050DE25C0F61B92C00152ED3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -1342,6 +1376,7 @@
 				05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */,
 				05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */,
 				05E731E20EFA1A3E005EDFB7 /* plcrashutil */,
+				0502E45A12BD0CFF00ACDCB5 /* Tests */,
 				05CD32680EE93DC3000FDE88 /* Tests-MacOSX */,
 				05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */,
 				05CD33230EE94439000FDE88 /* Tests-iPhoneOS */,
@@ -1710,6 +1745,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		0502E45E12BD0D0600ACDCB5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD33230EE94439000FDE88 /* Tests-iPhoneOS */;
+			targetProxy = 0502E45D12BD0D0600ACDCB5 /* PBXContainerItemProxy */;
+		};
+		0502E46012BD0D0600ACDCB5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */;
+			targetProxy = 0502E45F12BD0D0600ACDCB5 /* PBXContainerItemProxy */;
+		};
+		0502E46212BD0D0600ACDCB5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05CD32680EE93DC3000FDE88 /* Tests-MacOSX */;
+			targetProxy = 0502E46112BD0D0600ACDCB5 /* PBXContainerItemProxy */;
+		};
 		050DE25D0F61B92C00152ED3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
@@ -1804,6 +1854,27 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0502E45B12BD0D0000ACDCB5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = Tests;
+			};
+			name = Debug;
+		};
+		0502E45C12BD0D0000ACDCB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = Tests;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		050DE24F0F61B80C00152ED3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2489,6 +2560,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0502E46712BD0D1400ACDCB5 /* Build configuration list for PBXAggregateTarget "Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0502E45B12BD0D0000ACDCB5 /* Debug */,
+				0502E45C12BD0D0000ACDCB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		050DE2590F61B81C00152ED3 /* Build configuration list for PBXNativeTarget "Fuzz Testing" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
