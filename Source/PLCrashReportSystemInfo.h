@@ -61,12 +61,22 @@ typedef enum {
     
     /** x86-64 */
     PLCrashReportArchitectureX86_64 = 1,
-    
-    /** ARM */
-    PLCrashReportArchitectureARM = 2,
+
+    /** ARMv6 */
+    PLCrashReportArchitectureARMv6 = 2,
+
+    /**
+     * ARMv6
+     * @deprecated
+     * @sa PLCrashReportArchitectureARMv6
+     */
+    PLCrashReportArchitectureARM = PLCrashReportArchitectureARMv6,
 
     /** PPC */
-    PLCrashReportArchitecturePPC = 3
+    PLCrashReportArchitecturePPC = 3,
+    
+    /** ARMv7 */
+    PLCrashReportArchitectureARMv7 = 4,
 } PLCrashReportArchitecture;
 
 

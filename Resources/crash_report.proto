@@ -37,14 +37,17 @@ enum Architecture {
     /* x86-64 */
     X86_64 = 1;
 
-    /* ARM */
-    ARM = 2;
+    /* ARMv6 */
+    ARMV6 = 2;
 
     /* PPC */
     PPC = 3;
 
     /** PPC64 */
     PPC64 = 4;
+
+    /* ARMv7 */
+    ARMV7 = 5;
 }
 
 /* Known operating system types */
