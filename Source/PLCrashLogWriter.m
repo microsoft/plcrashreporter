@@ -537,48 +537,59 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
     plframe_error_t ferr;
     bool crashed_thread = false;
 
-    /* Write the thread ID */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PLPROTOBUF_C_TYPE_UINT32, &thread_number);
-    
-    /* Is this the crashed thread? */
-    thread_t thr_self = mach_thread_self();
-    if (MACH_PORT_INDEX(thread) == MACH_PORT_INDEX(thr_self))
-        crashed_thread = true;
-
-    /* Set up the frame cursor. */
+    /* Write the required elements first; fatal errors may occur below, in which case we need to have
+     * written out required elements before returning. */
     {
-        /* Use the crashctx if we're running on the crashed thread */
-        if (crashed_thread) {
-            ferr = plframe_cursor_init(&cursor, crashctx);
-        } else {
-            ferr = plframe_cursor_thread_init(&cursor, thread);
+        /* Write the thread ID */
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_THREAD_NUMBER_ID, PLPROTOBUF_C_TYPE_UINT32, &thread_number);
+
+        /* Is this the crashed thread? */
+        thread_t thr_self = mach_thread_self();
+        if (MACH_PORT_INDEX(thread) == MACH_PORT_INDEX(thr_self))
+            crashed_thread = true;
+
+        /* Note crashed status */
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_CRASHED_ID, PLPROTOBUF_C_TYPE_BOOL, &crashed_thread);
+    }
+
+
+    /* Write out the stack frames. */
+    {
+        /* Set up the frame cursor. */
+        {
+            /* Use the crashctx if we're running on the crashed thread */
+            if (crashed_thread) {
+                ferr = plframe_cursor_init(&cursor, crashctx);
+            } else {
+                ferr = plframe_cursor_thread_init(&cursor, thread);
+            }
+
+            /* Did cursor initialization succeed? If not, it is impossible to proceed */
+            if (ferr != PLFRAME_ESUCCESS) {
+                PLCF_DEBUG("An error occured initializing the frame cursor: %s", plframe_strerror(ferr));
+                return rv;
+            }
         }
 
-        /* Did cursor initialization succeed? */
-        if (ferr != PLFRAME_ESUCCESS) {
-            PLCF_DEBUG("An error occured initializing the frame cursor: %s", plframe_strerror(ferr));
-            return 0;
+        /* Walk the stack */
+        while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS) {
+            uint32_t frame_size;
+
+            /* Determine the size */
+            frame_size = plcrash_writer_write_thread_frame(NULL, &cursor);
+            
+            rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
+            rv += plcrash_writer_write_thread_frame(file, &cursor);
+        }
+
+        /* Did we reach the end successfully? */
+        if (ferr != PLFRAME_ENOFRAME) {
+            /* This is non-fatal, and in some circumstances -could- be caused by reaching the end of the stack if the
+             * final frame pointer is not NULL. */
+            PLCF_DEBUG("Terminated stack walking early: %s", plframe_strerror(ferr));
         }
     }
 
-    /* Walk the stack */
-    while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS) {
-        uint32_t frame_size;
-
-        /* Determine the size */
-        frame_size = plcrash_writer_write_thread_frame(NULL, &cursor);
-        
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
-        rv += plcrash_writer_write_thread_frame(file, &cursor);
-    }
-
-    /* Did we reach the end successfully? */
-    if (ferr != PLFRAME_ENOFRAME)
-        PLCF_DEBUG("Terminated stack walking early: %s", plframe_strerror(ferr));
-
-    /* Note crashed status */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_CRASHED_ID, PLPROTOBUF_C_TYPE_BOOL, &crashed_thread);
-    
     /* Dump registers for the crashed thread */
     if (crashed_thread) {
         rv += plcrash_writer_write_thread_registers(file, crashctx);
