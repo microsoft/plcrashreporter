@@ -57,8 +57,10 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
     PLCrashReportArchitectureX86_64;
 #elif defined(__i386__)
     PLCrashReportArchitectureX86_32;
-#elif defined(__arm__)
-    PLCrashReportArchitectureARM;
+#elif defined(__ARM_ARCH_6K__)
+    PLCrashReportArchitectureARMv6;
+#elif defined(__ARM_ARCH_7A__)
+    PLCrashReportArchitectureARMv7;
 #elif defined(__ppc__)
     PLCrashReportArchitecturePPC;
 #else

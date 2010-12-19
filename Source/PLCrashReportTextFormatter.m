@@ -80,7 +80,8 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     /* Map to Apple-style code type, and mark whether architecture is LP64 (64-bit) */
     NSString *codeType;
     switch (report.systemInfo.architecture) {
-        case PLCrashReportArchitectureARM:
+        case PLCrashReportArchitectureARMv6:
+        case PLCrashReportArchitectureARMv7:
             codeType = @"ARM";
             lp64 = false;
             break;
