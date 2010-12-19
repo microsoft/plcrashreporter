@@ -550,7 +550,6 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
         /* Use the crashctx if we're running on the crashed thread */
         if (crashed_thread) {
             ferr = plframe_cursor_init(&cursor, crashctx);
-            crashed_thread = true;
         } else {
             ferr = plframe_cursor_thread_init(&cursor, thread);
         }
