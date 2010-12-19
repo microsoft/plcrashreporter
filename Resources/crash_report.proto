@@ -117,8 +117,8 @@ message CrashReport {
             required uint64 value = 2;
         }
 
-        /* Thread registers (required if this is the
-         * crashed thread, optional otherwise) */
+        /* Thread registers (required if this is the crashed thread, optional otherwise). Note that if an error occurs
+         * during crash report generation, the register values may be missing for the crashed thread. */
         repeated RegisterValue registers = 4;
     }
 
