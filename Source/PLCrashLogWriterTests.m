@@ -127,7 +127,11 @@
         
         for (int j = 0; j < thread->n_frames; j++) {
             Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[j];
-            STAssertNotEquals((uint64_t)0, f->pc, @"Backtrace includes NULL pc");
+
+            /* It is possible for a mach thread to have pc=0 in the first frame. This is the case when a mach thread is
+             * first created -- its initial state is 0, and it has a suspend count of 1. */
+            if (j > 0)
+                STAssertNotEquals((uint64_t)0, f->pc, @"Backtrace includes NULL pc");
         }
     }
 
