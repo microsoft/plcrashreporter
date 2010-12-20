@@ -51,12 +51,12 @@ int main (int argc, char *argv[]) {
     }
     
     /* Set up post-crash callbacks */
-    PLCrashReporterPostCrashCallbacks cb = {
+    PLCrashReporterCallbacks cb = {
         .version = 0,
         .context = (void *) 0xABABABAB,
         .handleSignal = post_crash_callback
     };
-    [[PLCrashReporter sharedReporter] setPostCrashCallbacks: cb];
+    [[PLCrashReporter sharedReporter] setCrashCallbacks: &cb];
 
     /* Add another stack frame */
     stackFrame();
