@@ -2032,7 +2032,7 @@
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphoneos4.1;
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
@@ -2072,7 +2072,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
-				SDKROOT = iphonesimulator4.1;
+				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = NO;
 				ZERO_LINK = NO;
 			};
@@ -2230,7 +2230,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneSimulator";
-				SDKROOT = iphonesimulator4.1;
+				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -2296,7 +2296,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-iPhoneOS";
-				SDKROOT = iphoneos4.1;
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WARNING_CFLAGS = (
