@@ -16,7 +16,7 @@ int main (int argc, char *argv[]) {
         return 1;
 
     /* Try to open and decode a crash report passed as the second argument */
-    NSString *file = [NSString stringWithCString: argv[1]];
+    NSString *file = [NSString stringWithUTF8String: argv[1]];
     NSData *data = [NSData dataWithContentsOfFile: file];
     if (data == nil) {
         NSLog(@"Could not load crash report data from %@", file);
