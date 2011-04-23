@@ -83,6 +83,18 @@ static struct {
 /** @internal
  * Root fatal signal handler */
 static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
+    /* Remove all signal handlers -- if the dump code fails, the default terminate
+     * action will occur */
+    for (int i = 0; i < n_fatal_signals; i++) {
+        struct sigaction sa;
+        
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = SIG_DFL;
+        sigemptyset(&sa.sa_mask);
+        
+        sigaction(fatal_signals[i], &sa, NULL);
+    }
+
     /* Call the callback handler */
     if (SharedHandlerContext.crashCallback != NULL)
         SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext);
@@ -163,7 +175,7 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     
     /* Configure action */
     memset(&sa, 0, sizeof(sa));
-    sa.sa_flags = SA_SIGINFO|SA_ONSTACK|SA_RESETHAND;
+    sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
     sigemptyset(&sa.sa_mask);
     sa.sa_sigaction = &fatal_signal_handler;
     
