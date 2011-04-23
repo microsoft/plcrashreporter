@@ -141,6 +141,8 @@ error:
     /* Free the data objects */
     [_systemInfo release];
     [_applicationInfo release];
+    [_processInfo release];
+    [_signalInfo release];
     [_threads release];
     [_images release];
     [_exceptionInfo release];
