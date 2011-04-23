@@ -320,10 +320,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		0596747A0EF0BA2F008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -332,10 +332,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		0596747B0EF0BA2F008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -344,10 +344,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -356,10 +356,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		05F411F10EF8DF79008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -368,10 +368,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		05F411FE0EF8E070008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -380,10 +380,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		05F411FF0EF8E070008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -392,10 +392,10 @@
 			fileType = pattern.proxy;
 			isEditable = 1;
 			outputFiles = (
-				"$(INPUT_FILE_BASE).pb-c.c",
-				"$(INPUT_FILE_BASE).pb-c.h",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
+				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 /* End PBXBuildRule section */
 
@@ -618,11 +618,11 @@
 		05CD328B0EE93F5E000FDE88 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMDefines.h; path = "google-toolbox-for-mac-1-5-1/GTMDefines.h"; sourceTree = "<group>"; };
 		05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMSenTestCase.h; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMSenTestCase.h"; sourceTree = "<group>"; };
 		05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMSenTestCase.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMSenTestCase.m"; sourceTree = "<group>"; };
-		05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iPhoneSimulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iOS-Simulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD32AF0EE94086000FDE88 /* Tests-iPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Tests-iPhone-Info.plist"; path = "Resources/Tests-iPhone-Info.plist"; sourceTree = "<group>"; };
 		05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestDelegate.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMIPhoneUnitTestDelegate.m"; sourceTree = "<group>"; };
 		05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestMain.m; path = "google-toolbox-for-mac-1-5-1/UnitTesting/GTMIPhoneUnitTestMain.m"; sourceTree = "<group>"; };
-		05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iPhoneOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iOS-Device.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD33520EE9457D000FDE88 /* CrashReporter.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; name = CrashReporter.exp; path = Resources/CrashReporter.exp; sourceTree = "<group>"; };
 		05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashSignalHandler.h; sourceTree = "<group>"; };
 		05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSignalHandler.m; sourceTree = "<group>"; };
@@ -784,8 +784,8 @@
 				05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */,
 				05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */,
 				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */,
-				05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */,
-				05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */,
+				05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */,
+				05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */,
 				05F40CE70EF7AB80008050CF /* DemoCrash.app */,
 				05E731E30EFA1A3E005EDFB7 /* plcrashutil */,
 				05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */,
@@ -1235,9 +1235,9 @@
 			productReference = 052A464F136355FD00987004 /* DemoCrash-iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		058812B81040582D009128FB /* CrashReporter-iPhone */ = {
+		058812B81040582D009128FB /* CrashReporter-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 058812BE1040582E009128FB /* Build configuration list for PBXNativeTarget "CrashReporter-iPhone" */;
+			buildConfigurationList = 058812BE1040582E009128FB /* Build configuration list for PBXNativeTarget "CrashReporter-iOS" */;
 			buildPhases = (
 				058812B41040582D009128FB /* Headers */,
 				058812B51040582D009128FB /* Resources */,
@@ -1251,14 +1251,14 @@
 				058812CE104058E7009128FB /* PBXTargetDependency */,
 				058812D0104058EA009128FB /* PBXTargetDependency */,
 			);
-			name = "CrashReporter-iPhone";
+			name = "CrashReporter-iOS";
 			productName = "PLCrashReporter-iPhone";
 			productReference = 058812B91040582D009128FB /* CrashReporter.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */ = {
+		05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneOS" */;
+			buildConfigurationList = 05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iOS-Device" */;
 			buildPhases = (
 				05CD314E0EE936A9000FDE88 /* Headers */,
 				05CD314F0EE936A9000FDE88 /* Sources */,
@@ -1269,14 +1269,14 @@
 			);
 			dependencies = (
 			);
-			name = "CrashReporter-iPhoneOS";
+			name = "CrashReporter-iOS-Device";
 			productName = "CrashReporter-iPhoneOS";
 			productReference = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */ = {
+		05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD31660EE9392C000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneSimulator" */;
+			buildConfigurationList = 05CD31660EE9392C000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iOS-Simulator" */;
 			buildPhases = (
 				05CD315F0EE93905000FDE88 /* Headers */,
 				05CD31600EE93905000FDE88 /* Sources */,
@@ -1287,7 +1287,7 @@
 			);
 			dependencies = (
 			);
-			name = "CrashReporter-iPhoneSimulator";
+			name = "CrashReporter-iOS-Simulator";
 			productName = "CrashReporter-iPhoneSimulator";
 			productReference = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */;
 			productType = "com.apple.product-type.library.static";
@@ -1313,9 +1313,9 @@
 			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */;
 			productType = "com.apple.product-type.bundle";
 		};
-		05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */ = {
+		05CD32A80EE94062000FDE88 /* Tests-iOS-Simulator */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD32AE0EE94063000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iPhoneSimulator" */;
+			buildConfigurationList = 05CD32AE0EE94063000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iOS-Simulator" */;
 			buildPhases = (
 				05CD32A50EE94062000FDE88 /* Resources */,
 				05CD32A60EE94062000FDE88 /* Sources */,
@@ -1328,14 +1328,14 @@
 			dependencies = (
 				05CD32F30EE94153000FDE88 /* PBXTargetDependency */,
 			);
-			name = "Tests-iPhoneSimulator";
+			name = "Tests-iOS-Simulator";
 			productName = "Tests-iPhoneSimulator";
-			productReference = 05CD32A90EE94062000FDE88 /* Tests-iPhoneSimulator.app */;
+			productReference = 05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */;
 			productType = "com.apple.product-type.application";
 		};
-		05CD33230EE94439000FDE88 /* Tests-iPhoneOS */ = {
+		05CD33230EE94439000FDE88 /* Tests-iOS-Device */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iPhoneOS" */;
+			buildConfigurationList = 05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iOS-Device" */;
 			buildPhases = (
 				05CD33200EE94439000FDE88 /* Resources */,
 				05CD33210EE94439000FDE88 /* Sources */,
@@ -1347,9 +1347,9 @@
 			dependencies = (
 				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
 			);
-			name = "Tests-iPhoneOS";
+			name = "Tests-iOS-Device";
 			productName = "Tests-iPhoneOS";
-			productReference = 05CD33240EE94439000FDE88 /* Tests-iPhoneOS.app */;
+			productReference = 05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */;
 			productType = "com.apple.product-type.application";
 		};
 		05E731E20EFA1A3E005EDFB7 /* plcrashutil */ = {
@@ -1454,14 +1454,14 @@
 				05CD31680EE939D0000FDE88 /* CrashReporter */,
 				05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */,
-				058812B81040582D009128FB /* CrashReporter-iPhone */,
-				05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */,
-				05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */,
+				058812B81040582D009128FB /* CrashReporter-iOS */,
+				05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */,
+				05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */,
 				05E731E20EFA1A3E005EDFB7 /* plcrashutil */,
 				0502E45A12BD0CFF00ACDCB5 /* Tests */,
 				05CD32680EE93DC3000FDE88 /* Tests-MacOSX */,
-				05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */,
-				05CD33230EE94439000FDE88 /* Tests-iPhoneOS */,
+				05CD32A80EE94062000FDE88 /* Tests-iOS-Simulator */,
+				05CD33230EE94439000FDE88 /* Tests-iOS-Device */,
 				05F40CE60EF7AB80008050CF /* DemoCrash */,
 				052A45CE136353FB00987004 /* DemoCrash-iOS-Device */,
 				052A4644136355FD00987004 /* DemoCrash-iOS-Simulator */,
@@ -1861,12 +1861,12 @@
 /* Begin PBXTargetDependency section */
 		0502E45E12BD0D0600ACDCB5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD33230EE94439000FDE88 /* Tests-iPhoneOS */;
+			target = 05CD33230EE94439000FDE88 /* Tests-iOS-Device */;
 			targetProxy = 0502E45D12BD0D0600ACDCB5 /* PBXContainerItemProxy */;
 		};
 		0502E46012BD0D0600ACDCB5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD32A80EE94062000FDE88 /* Tests-iPhoneSimulator */;
+			target = 05CD32A80EE94062000FDE88 /* Tests-iOS-Simulator */;
 			targetProxy = 0502E45F12BD0D0600ACDCB5 /* PBXContainerItemProxy */;
 		};
 		0502E46212BD0D0600ACDCB5 /* PBXTargetDependency */ = {
@@ -1881,37 +1881,37 @@
 		};
 		052A45DC1363542E00987004 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 058812B81040582D009128FB /* CrashReporter-iPhone */;
+			target = 058812B81040582D009128FB /* CrashReporter-iOS */;
 			targetProxy = 052A45DB1363542E00987004 /* PBXContainerItemProxy */;
 		};
 		052A46251363553400987004 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */;
 			targetProxy = 052A46241363553400987004 /* PBXContainerItemProxy */;
 		};
 		052A46581363562100987004 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			target = 05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */;
 			targetProxy = 052A46571363562100987004 /* PBXContainerItemProxy */;
 		};
 		054F50E90EEC50B30034B184 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */;
 			targetProxy = 054F50E80EEC50B30034B184 /* PBXContainerItemProxy */;
 		};
 		058812CA104058DA009128FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 058812B81040582D009128FB /* CrashReporter-iPhone */;
+			target = 058812B81040582D009128FB /* CrashReporter-iOS */;
 			targetProxy = 058812C9104058DA009128FB /* PBXContainerItemProxy */;
 		};
 		058812CE104058E7009128FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */;
 			targetProxy = 058812CD104058E7009128FB /* PBXContainerItemProxy */;
 		};
 		058812D0104058EA009128FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			target = 05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */;
 			targetProxy = 058812CF104058EA009128FB /* PBXContainerItemProxy */;
 		};
 		058812F11040597D009128FB /* PBXTargetDependency */ = {
@@ -1921,12 +1921,12 @@
 		};
 		05CD316C0EE939D8000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			target = 05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */;
 			targetProxy = 05CD316B0EE939D8000FDE88 /* PBXContainerItemProxy */;
 		};
 		05CD316E0EE939D8000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iPhoneOS */;
+			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */;
 			targetProxy = 05CD316D0EE939D8000FDE88 /* PBXContainerItemProxy */;
 		};
 		05CD31700EE939D8000FDE88 /* PBXTargetDependency */ = {
@@ -1936,7 +1936,7 @@
 		};
 		05CD32F30EE94153000FDE88 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05CD31620EE93905000FDE88 /* CrashReporter-iPhoneSimulator */;
+			target = 05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */;
 			targetProxy = 05CD32F20EE94153000FDE88 /* PBXContainerItemProxy */;
 		};
 		05CD342A0EEA5FFA000FDE88 /* PBXTargetDependency */ = {
@@ -2445,7 +2445,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "Tests-iPhoneSimulator";
+				PRODUCT_NAME = "Tests-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
@@ -2478,7 +2478,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "Tests-iPhoneSimulator";
+				PRODUCT_NAME = "Tests-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
@@ -2511,7 +2511,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "Tests-iPhoneOS";
+				PRODUCT_NAME = "Tests-iOS-Device";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2544,7 +2544,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "Tests-iPhoneOS";
+				PRODUCT_NAME = "Tests-iOS-Device";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2847,7 +2847,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		058812BE1040582E009128FB /* Build configuration list for PBXNativeTarget "CrashReporter-iPhone" */ = {
+		058812BE1040582E009128FB /* Build configuration list for PBXNativeTarget "CrashReporter-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				058812BC1040582E009128FB /* Debug */,
@@ -2865,7 +2865,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneOS" */ = {
+		05CD315E0EE936E4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iOS-Device" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD31530EE936AA000FDE88 /* Debug */,
@@ -2874,7 +2874,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD31660EE9392C000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iPhoneSimulator" */ = {
+		05CD31660EE9392C000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter-iOS-Simulator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD31640EE93906000FDE88 /* Debug */,
@@ -2901,7 +2901,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD32AE0EE94063000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iPhoneSimulator" */ = {
+		05CD32AE0EE94063000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iOS-Simulator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD32AC0EE94063000FDE88 /* Debug */,
@@ -2910,7 +2910,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iPhoneOS" */ = {
+		05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests-iOS-Device" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD33270EE9443A000FDE88 /* Debug */,
