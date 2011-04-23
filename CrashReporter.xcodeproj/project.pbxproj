@@ -2103,10 +2103,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					"$(NATIVE_ARCH_64_BIT)",
-					"$(NATIVE_ARCH_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
@@ -2127,7 +2124,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -2141,10 +2138,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					"$(NATIVE_ARCH_64_BIT)",
-					"$(NATIVE_ARCH_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
@@ -2164,7 +2158,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Tests-MacOSX";
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -2189,6 +2183,7 @@
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				MACOSX_DEPLOYMENT_TARGET = "";
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -2221,6 +2216,7 @@
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				MACOSX_DEPLOYMENT_TARGET = "";
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -2383,6 +2379,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter$(EFFECTIVE_PLATFORM_NAME)-Static";
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -2409,6 +2406,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter$(EFFECTIVE_PLATFORM_NAME)-Static";
+				SDKROOT = macosx;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -2489,7 +2487,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = CrashReporter;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -2511,7 +2509,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = CrashReporter;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
