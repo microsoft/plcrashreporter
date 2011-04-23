@@ -165,8 +165,8 @@ enum {
 
 
 /**
- * Initialize a new crash log writer instance. This fetches all necessary environment
- * information.
+ * Initialize a new crash log writer instance and issue a memory barrier upon completion. This fetches all necessary
+ * environment information.
  *
  * @param writer Writer instance to be initialized.
  * @param app_identifier Unique per-application identifier. On Mac OS X, this is likely the CFBundleIdentifier.
@@ -175,8 +175,7 @@ enum {
  * @note If this function fails, plcrash_log_writer_free() should be called
  * to free any partially allocated data.
  *
- * @warning This function is not guaranteed to be async-safe, and must be
- * called prior to entering the crash handler.
+ * @warning This function is not guaranteed to be async-safe, and must be called prior to enabling the crash handler.
  */
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString *app_identifier, NSString *app_version) {
     /* Default to 0 */
@@ -267,6 +266,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
 #else
 #error Unsupported Platform
 #endif
+    
+    /* Ensure that any signal handler has a consistent view of the above initialization. */
+    OSMemoryBarrier();
 
     return PLCRASH_ESUCCESS;
 }
