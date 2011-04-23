@@ -37,6 +37,8 @@
 
 #import <mach-o/dyld.h>
 
+#import <libkern/OSAtomic.h>
+
 #import "PLCrashReport.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
