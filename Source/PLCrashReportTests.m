@@ -33,6 +33,7 @@
 #import "PLCrashLogWriter.h"
 
 #import <fcntl.h>
+#import <mach-o/dyld.h>
 
 @interface PLCrashReportTests : SenTestCase {
 @private
@@ -96,7 +97,13 @@
     
     /* Set an exception */
     plcrash_log_writer_set_exception(&writer, [NSException exceptionWithName: @"TestException" reason: @"TestReason" userInfo: nil]);
-    
+
+    /* Provide binary image info */
+    uint32_t image_count = _dyld_image_count();
+    for (uint32_t i = 0; i < image_count; i++) {
+        plcrash_log_writer_add_image(&writer, _dyld_get_image_header(i));
+    }            
+
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
     

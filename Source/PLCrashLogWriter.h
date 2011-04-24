@@ -30,6 +30,7 @@
 #import <Foundation/Foundation.h>
 
 #import "PLCrashAsync.h"
+#import "PLCrashAsyncImage.h"
 
 /**
  * @internal
@@ -79,6 +80,12 @@ typedef struct plcrash_log_writer {
         /** Parent process ID */
         pid_t parent_process_id;
     } process_info;
+    
+    /** Binary image data */
+    struct {
+        /** The list of the processes' loaded images, as provided by dyld. */
+        plcrash_async_image_list_t image_list;
+    } image_info;
 
     /** Uncaught exception (if any) */
     struct {
@@ -96,6 +103,10 @@ typedef struct plcrash_log_writer {
 
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString *app_identifier, NSString *app_version);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
+
+void plcrash_log_writer_add_image (plcrash_log_writer_t *writer, const void *header_addr);
+void plcrash_log_writer_remove_image (plcrash_log_writer_t *writer, const void *header_addr);
+
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx);
 plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer);
 void plcrash_log_writer_free (plcrash_log_writer_t *writer);
