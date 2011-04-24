@@ -304,9 +304,17 @@ static void uncaught_exception_handler (NSException *exception) {
  *
  * @param callbacks A pointer to an initialized PLCrashReporterCallbacks structure.
  *
+ * @note This method must be called prior to PLCrashReporter::enableCrashReporter or
+ * PLCrashReporter::enableCrashReporterAndReturnError:
+ *
  * @sa @ref async_safety
  */
 - (void) setCrashCallbacks: (PLCrashReporterCallbacks *) callbacks {
+    /* Check for programmer error; this should not be called after the signal handler is enabled as to ensure that
+     * the signal handler can never fire with a partially initialized callback structure. */
+    if (_enabled)
+        [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+
     assert(callbacks->version == 0);
 
     /* Re-initialize our internal callback structure */
