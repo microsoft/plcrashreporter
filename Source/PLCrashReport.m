@@ -163,6 +163,8 @@ error:
 /**
  * Return the binary image containing the given address, or nil if no binary image
  * is found.
+ *
+ * @param address The address to search for.
  */
 - (PLCrashReportBinaryImageInfo *) imageForAddress: (uint64_t) address {
     for (PLCrashReportBinaryImageInfo *imageInfo in self.images) {
