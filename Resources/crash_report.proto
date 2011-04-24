@@ -76,7 +76,7 @@ message CrashReport {
 
         /* Date crash report was generated (as seconds since epoch). 0 if the time
          * is unknown or can not be determined. */
-        required uint32 timestamp = 4;
+        required int64 timestamp = 4;
     }
 
     /* Host data */
