@@ -28,6 +28,7 @@
 
 #import <Foundation/Foundation.h>
 #import "PLCrashReportSystemInfo.h"
+#import "PLCrashReportMachineInfo.h"
 #import "PLCrashReportApplicationInfo.h"
 #import "PLCrashReportProcessInfo.h"
 #import "PLCrashReportSignalInfo.h"
