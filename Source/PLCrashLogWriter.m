@@ -388,7 +388,7 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
  * @param file Output file
  * @param timestamp Timestamp to use (seconds since epoch). Must be same across calls, as varint encoding.
  */
-static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer, uint32_t timestamp) {
+static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer, int64_t timestamp) {
     size_t rv = 0;
     uint32_t enumval;
 
@@ -404,7 +404,7 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ARCHITECTURE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* Timestamp */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PLPROTOBUF_C_TYPE_UINT32, &timestamp);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PLPROTOBUF_C_TYPE_INT64, &timestamp);
 
     return rv;
 }
@@ -832,16 +832,13 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
 
     /* System Info */
     {
-        struct timeval tv;
-        uint32_t timestamp;
+        time_t timestamp;
         uint32_t size;
 
         /* Must stay the same across both calls, so get the timestamp here */
-        if (gettimeofday(&tv, NULL) != 0) {
+        if (time(&timestamp) == (time_t)-1) {
             PLCF_DEBUG("Failed to fetch timestamp: %s", strerror(errno));
             timestamp = 0;
-        } else {
-            timestamp = tv.tv_sec;
         }
 
         /* Determine size */
