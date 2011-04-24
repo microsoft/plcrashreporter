@@ -220,7 +220,7 @@ static inline size_t sint64_pack (int64_t value, uint8_t *out)
 static inline size_t fixed32_pack (uint32_t value, uint8_t *out)
 {
 #if __LITTLE_ENDIAN__
-    memcpy (out, &value, 4);
+    plcrash_async_memcpy (out, &value, 4);
 #else
     out[0] = value;
     out[1] = value>>8;
@@ -232,7 +232,7 @@ static inline size_t fixed32_pack (uint32_t value, uint8_t *out)
 static inline size_t fixed64_pack (uint64_t value, uint8_t *out)
 {
 #if __LITTLE_ENDIAN__
-    memcpy (out, &value, 8);
+    plcrash_async_memcpy (out, &value, 8);
 #else
     fixed32_pack (value, out);
     fixed32_pack (value>>32, out+4);
@@ -248,7 +248,7 @@ static inline size_t string_pack (const char * str, uint8_t *out)
 {
     size_t len = strlen (str);
     size_t rv = uint32_pack (len, out);
-    memcpy (out + rv, str, len);
+    plcrash_async_memcpy (out + rv, str, len);
     return rv + len;
 }
 

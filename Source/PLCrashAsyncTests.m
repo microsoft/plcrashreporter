@@ -65,6 +65,27 @@
     [_outputFile release];
 }
 
+- (void) testMemcpy {
+    size_t size = 1024;
+    uint8_t template[size];
+    uint8_t src[size+1];
+    uint8_t dest[size+1];
+
+    /* Create our template. We don't use the template as the source, as it's possible the memcpy implementation
+     * could modify src in error, while validation could still succeed if src == dest. */
+    memset_pattern4(template, (const uint8_t[]){ 0xC, 0xA, 0xF, 0xE }, size);
+    memcpy(src, template, size);
+
+    /* Add mismatched sentinals to the destination and src; serves as a simple check for overrun on write. */
+    src[1024] = 0xD;
+    dest[1024] = 0xB;
+
+    plcrash_async_memcpy(dest, src, size);
+
+    STAssertTrue(memcmp(template, dest, size) == 0, @"The copied destination does not match the source");
+    STAssertTrue(dest[1024] == (uint8_t)0xB, @"Sentinal was overwritten (0x%" PRIX8 ")", dest[1024]);
+}
+
 - (void) testWriteLimits {
     plcrash_async_file_t file;
     uint32_t data = 1;

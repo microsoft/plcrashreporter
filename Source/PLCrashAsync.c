@@ -68,6 +68,23 @@ const char *plcrash_strerror (plcrash_error_t error) {
 }
 
 /**
+ * An intentionally naive async-safe implementation of memcpy(). memcpy() itself is not declared to be async-safe.
+ *
+ * @param dest Destination.
+ * @param source Source.
+ * @param n Number of bytes to copy.
+ */
+void *plcrash_async_memcpy (void *dest, const void *source, size_t n) {
+    uint8_t *s = (uint8_t *) source;
+    uint8_t *d = (uint8_t *) dest;
+
+    for (size_t count = 0; count < n; count++)
+        *d++ = *s++;
+
+    return (void *) source;
+}
+
+/**
  * @internal
  * @ingroup plcrash_async
  * @defgroup plcrash_async_bufio Async-safe Buffered IO
@@ -148,7 +165,7 @@ bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, siz
     
     /* Check if the new data fits within the buffer, if so, buffer it */
     if (len + file->buflen <= sizeof(file->buffer)) {
-        memcpy(file->buffer + file->buflen, data, len);
+        plcrash_async_memcpy(file->buffer + file->buflen, data, len);
         file->buflen += len;
         
         return true;

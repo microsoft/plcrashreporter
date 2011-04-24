@@ -68,6 +68,7 @@ typedef enum  {
 
 const char *plcrash_strerror (plcrash_error_t error);
 
+void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
 
 /**
  * @internal
