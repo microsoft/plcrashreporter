@@ -331,7 +331,7 @@ static void uncaught_exception_handler (NSException *exception) {
  * @internal
  *
  * This is the designated initializer, but it is not intended
- * to be called externally. If 
+ * to be called externally.
  */
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion {
     /* Only allow one instance to be created, no matter what */
