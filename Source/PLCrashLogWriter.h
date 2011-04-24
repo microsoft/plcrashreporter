@@ -90,9 +90,6 @@ typedef struct plcrash_log_writer {
 
         /** Exception reason (may be null) */
         char *reason;
-
-        /** Actual exception. Can not be accessed async safe! */
-        NSException *exception;
     } uncaught_exception;
 } plcrash_log_writer_t;
 
