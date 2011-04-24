@@ -191,6 +191,7 @@ error:
 }
 
 @synthesize systemInfo = _systemInfo;
+@synthesize machineInfo = _machineInfo;
 @synthesize applicationInfo = _applicationInfo;
 @synthesize processInfo = _processInfo;
 @synthesize signalInfo = _signalInfo;

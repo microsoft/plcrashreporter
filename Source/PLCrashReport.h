@@ -80,6 +80,9 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 
     /** System info */
     PLCrashReportSystemInfo *_systemInfo;
+    
+    /** Machine info */
+    PLCrashReportMachineInfo *_machineInfo;
 
     /** Application info */
     PLCrashReportApplicationInfo *_applicationInfo;
@@ -108,6 +111,11 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * System information.
  */
 @property(nonatomic, readonly) PLCrashReportSystemInfo *systemInfo;
+
+/**
+ * Machine information.
+ */
+@property(nonatomic, readonly) PLCrashReportMachineInfo *machineInfo;
 
 /**
  * Application information.
