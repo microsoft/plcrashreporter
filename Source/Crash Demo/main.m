@@ -44,11 +44,6 @@ void stackFrame (void) {
 int main (int argc, char *argv[]) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSError *error = nil;
-
-    /* Register the crash reporter */
-    if (![[PLCrashReporter sharedReporter] enableCrashReporterAndReturnError: &error]) {
-        NSLog(@"Could not enable crash reporter: %@", error);
-    }
     
     /* Set up post-crash callbacks */
     PLCrashReporterCallbacks cb = {
@@ -57,6 +52,11 @@ int main (int argc, char *argv[]) {
         .handleSignal = post_crash_callback
     };
     [[PLCrashReporter sharedReporter] setCrashCallbacks: &cb];
+
+    /* Enable the crash reporter */
+    if (![[PLCrashReporter sharedReporter] enableCrashReporterAndReturnError: &error]) {
+        NSLog(@"Could not enable crash reporter: %@", error);
+    }
 
     /* Add another stack frame */
     stackFrame();
