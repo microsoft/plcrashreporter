@@ -596,8 +596,8 @@
 		050DE24D0F61B80B00152ED3 /* Fuzz Testing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Fuzz Testing"; sourceTree = BUILT_PRODUCTS_DIR; };
 		050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */ = {isa = PBXFileReference; lastKnownFileType = file; name = fuzz_report.plcrash; path = Resources/fuzz_report.plcrash; sourceTree = "<group>"; };
 		050DE2A80F61BD8D00152ED3 /* fuzz-main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "fuzz-main.m"; sourceTree = "<group>"; };
-		052A45CF136353FB00987004 /* DemoCrash-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		052A464F136355FD00987004 /* DemoCrash-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		052A45CF136353FB00987004 /* DemoCrash-iOS-Device.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS-Device.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		052A464F136355FD00987004 /* DemoCrash-iOS-Simulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS-Simulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		052A46BC1363650100987004 /* PLCrashAsyncImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncImage.h; sourceTree = "<group>"; };
 		052A46BD1363650100987004 /* PLCrashAsyncImage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncImage.c; sourceTree = "<group>"; };
 		052A46F713637DE000987004 /* PLCrashAsyncImageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncImageTests.m; sourceTree = "<group>"; };
@@ -805,8 +805,8 @@
 				05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */,
 				050DE24D0F61B80B00152ED3 /* Fuzz Testing */,
 				058812B91040582D009128FB /* CrashReporter.framework */,
-				052A45CF136353FB00987004 /* DemoCrash-iOS.app */,
-				052A464F136355FD00987004 /* DemoCrash-iOS.app */,
+				052A45CF136353FB00987004 /* DemoCrash-iOS-Device.app */,
+				052A464F136355FD00987004 /* DemoCrash-iOS-Simulator.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1234,7 +1234,7 @@
 			);
 			name = "DemoCrash-iOS-Device";
 			productName = "DemoCrash-iOS";
-			productReference = 052A45CF136353FB00987004 /* DemoCrash-iOS.app */;
+			productReference = 052A45CF136353FB00987004 /* DemoCrash-iOS-Device.app */;
 			productType = "com.apple.product-type.application";
 		};
 		052A4644136355FD00987004 /* DemoCrash-iOS-Simulator */ = {
@@ -1252,7 +1252,7 @@
 			);
 			name = "DemoCrash-iOS-Simulator";
 			productName = "DemoCrash-iOS";
-			productReference = 052A464F136355FD00987004 /* DemoCrash-iOS.app */;
+			productReference = 052A464F136355FD00987004 /* DemoCrash-iOS-Simulator.app */;
 			productType = "com.apple.product-type.application";
 		};
 		058812B81040582D009128FB /* CrashReporter-iOS */ = {
@@ -2107,7 +2107,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "DemoCrash-iOS";
+				PRODUCT_NAME = "DemoCrash-iOS-Device";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -2137,7 +2137,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "DemoCrash-iOS";
+				PRODUCT_NAME = "DemoCrash-iOS-Device";
 				SDKROOT = iphoneos;
 				ZERO_LINK = NO;
 			};
@@ -2169,7 +2169,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "DemoCrash-iOS";
+				PRODUCT_NAME = "DemoCrash-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 			};
 			name = Debug;
@@ -2200,7 +2200,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "DemoCrash-iOS";
+				PRODUCT_NAME = "DemoCrash-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				ZERO_LINK = NO;
 			};
