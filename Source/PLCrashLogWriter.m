@@ -53,6 +53,13 @@
 
 /**
  * @internal
+ * Maximum number of frames that will be written to the crash report for a single thread. Used as a safety measure
+ * to avoid overrunning our output limit when writing a crash report triggered by frame recursion.
+ */
+#define MAX_THREAD_FRAMES 512 // matches Apple's crash reporting on Snow Leopard
+
+/**
+ * @internal
  * Protobuf Field IDs, as defined in crashreport.proto
  */
 enum {
@@ -615,8 +622,9 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
             }
         }
 
-        /* Walk the stack */
-        while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS) {
+        /* Walk the stack, limiting the total number of frames that are output. */
+        uint32_t frame_count = 0;
+        while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < MAX_THREAD_FRAMES) {
             uint32_t frame_size;
 
             /* Determine the size */
@@ -624,6 +632,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
             
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
             rv += plcrash_writer_write_thread_frame(file, &cursor);
+            frame_count++;
         }
 
         /* Did we reach the end successfully? */
