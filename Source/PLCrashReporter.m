@@ -34,6 +34,7 @@
 #import "PLCrashLogWriter.h"
 
 #import <fcntl.h>
+#import <mach-o/dyld.h>
 
 #define NSDEBUG(msg, args...) {\
     NSLog(@"[PLCrashReporter] " msg, ## args); \
@@ -129,6 +130,22 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     /* Call any post-crash callback */
     if (crashCallbacks.handleSignal != NULL)
         crashCallbacks.handleSignal(info, uap, crashCallbacks.context);
+}
+
+/**
+ * @internal
+ * dyld image add notification callback.
+ */
+static void image_add_callback (const struct mach_header *mh, intptr_t vmaddr_slide) {
+    plcrash_log_writer_add_image(&signal_handler_context.writer, mh);
+}
+
+/**
+ * @internal
+ * dyld image remove notification callback.
+ */
+static void image_remove_callback (const struct mach_header *mh, intptr_t vmaddr_slide) {
+    plcrash_log_writer_remove_image(&signal_handler_context.writer, mh);
 }
 
 
@@ -286,6 +303,10 @@ static void uncaught_exception_handler (NSException *exception) {
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion);
+    
+    /* Enable dyld image monitoring */
+    _dyld_register_func_for_add_image(image_add_callback);
+    _dyld_register_func_for_remove_image(image_remove_callback);
 
     /* Enable the signal handler */
     if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])

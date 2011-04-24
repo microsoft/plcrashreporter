@@ -31,6 +31,7 @@
 #import <errno.h>
 #import <string.h>
 #import <stdbool.h>
+#import <dlfcn.h>
 
 #import <sys/sysctl.h>
 #import <sys/time.h>
@@ -269,10 +270,46 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
 #error Unsupported Platform
 #endif
     
+    /* Initialize the image info list. */
+    plcrash_async_image_list_init(&writer->image_info.image_list);
+
     /* Ensure that any signal handler has a consistent view of the above initialization. */
     OSMemoryBarrier();
 
     return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Register a binary image with this writer.
+ *
+ * @param writer The writer to which the image's information will be added.
+ * @param header_addr The image's address.
+ *
+ * @warning This function is not async safe, and must be called outside of a signal handler.
+ */
+void plcrash_log_writer_add_image (plcrash_log_writer_t *writer, const void *header_addr) {
+    Dl_info info;
+
+    /* Look up the image info */
+    if (dladdr(header_addr, &info) == 0) {
+        PLCF_DEBUG("dladdr(%p, ...) failed", header_addr);
+        return;
+    }
+
+    /* Register the image */
+    plcrash_async_image_list_append(&writer->image_info.image_list, (intptr_t)header_addr, info.dli_fname);
+}
+
+/**
+ * Deregister a binary image from this writer.
+ *
+ * @param writer The writer from which the image's information will be removed.
+ * @param header_addr The image's address.
+ *
+ * @warning This function is not async safe, and must be called outside of a signal handler.
+ */
+void plcrash_log_writer_remove_image (plcrash_log_writer_t *writer, const void *header_addr) {
+    plcrash_async_image_list_remove(&writer->image_info.image_list, (intptr_t)header_addr);
 }
 
 /**
@@ -322,6 +359,9 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     /* Free the system info */
     if (writer->system_info.version != NULL)
         free(writer->system_info.version);
+    
+    /* Free the binary image info */
+    plcrash_async_image_list_free(&writer->image_info.image_list);
 
     /* Free the exception data */
     if (writer->uncaught_exception.has_exception) {
@@ -878,21 +918,20 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
     }
 
     /* Binary Images */
-    uint32_t image_count = _dyld_image_count();
-    for (uint32_t i = 0; i < image_count; i++) {
-        const struct mach_header *header;
-        const char *name;
+    plcrash_async_image_list_set_reading(&writer->image_info.image_list, true);
+
+    plcrash_async_image_t *image = NULL;
+    while ((image = plcrash_async_image_list_next(&writer->image_info.image_list, image)) != NULL) {
         uint32_t size;
 
-        /* Fetch the info */
-        header = _dyld_get_image_header(i);
-        name = _dyld_get_image_name(i);
-
         /* Calculate the message size */
-        size = plcrash_writer_write_binary_image(NULL, name, header);
+        // TODO - switch to plframe_read_addr()
+        size = plcrash_writer_write_binary_image(NULL, image->name, (const void *) image->header);
         plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_binary_image(file, name, header);
+        plcrash_writer_write_binary_image(file, image->name, (const void *) image->header);
     }
+
+    plcrash_async_image_list_set_reading(&writer->image_info.image_list, false);
 
     /* Exception */
     if (writer->uncaught_exception.has_exception) {
