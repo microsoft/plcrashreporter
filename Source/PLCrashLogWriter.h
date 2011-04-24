@@ -48,6 +48,7 @@
  * Crash log writer context.
  */
 typedef struct plcrash_log_writer {
+    /** System data */
     struct {
         char *version;
     } system_info;
