@@ -96,29 +96,6 @@ message CrashReport {
         optional Subtype cpu_subtype = 2 [default = SUBTYPE_UNKNOWN];
     }
 
-    /*
-     * Host architecture information.
-     */
-    message MachineInfo {    
-        /* Hardware model (eg, MacBookPro6,1) */
-        required string model = 1;
-
-        /* The host processor. */
-        required Processor processor = 2;
-
-        /*
-         * The number of actual physical processor cores. Note that the number of active processors may be managed by the
-         * operating system's power management system, and this value may not reflect the number of active
-         * processors at the time of the crash. */
-        required uint32 processor_count = 3;
-
-        /* The number of logical processors.  Note that the number of active processors may be managed by the
-         * operating system's power management system, and this value may not reflect the number of active
-         * processors at the time of the crash.
-         */
-        required uint32 logical_processor_count = 4;
-    }
-
     message SystemInfo {
         /* Known operating system types */
         enum OperatingSystem {
@@ -141,7 +118,7 @@ message CrashReport {
         /* OS version */
         required string os_version = 2;
 
-        /* Processor architecture (deprecated in favor of MachineInfo) */
+        /* Processor architecture (deprecated in favor of machine_info) */
         required Architecture architecture = 3 [default = ARCHITECTURE_UNKNOWN /* deprecated = true (TODO: unsupported by embedded protobuf-c version) */];
 
         /* Date crash report was generated (as seconds since epoch). 0 if the time
@@ -150,13 +127,9 @@ message CrashReport {
 
         /* OS build number (eg, 10J869) */
         optional string os_build = 5;
-        
-        /* Host architecture information. This field is required for all v1.1+ crash reports. If unavailable, the information
-         * should be derived from the deprecated architecture field. */
-        optional MachineInfo machine = 6;
     }
 
-    /* Host data */
+    /* Host system data */
     required SystemInfo system_info = 1;
 
     message ApplicationInfo {
@@ -275,4 +248,31 @@ message CrashReport {
   
     /* The process info. Required for all v1.1+ crash reports. */
     optional ProcessInfo process_info = 7;
+    
+     /*
+      * Host architecture information.
+      */
+     message MachineInfo {    
+         /* Hardware model (eg, MacBookPro6,1) */
+         required string model = 1;
+
+         /* The host processor. */
+         required Processor processor = 2;
+
+         /*
+          * The number of actual physical processor cores. Note that the number of active processors may be managed by the
+          * operating system's power management system, and this value may not reflect the number of active
+          * processors at the time of the crash. */
+         required uint32 processor_count = 3;
+
+         /* The number of logical processors.  Note that the number of active processors may be managed by the
+          * operating system's power management system, and this value may not reflect the number of active
+          * processors at the time of the crash.
+          */
+         required uint32 logical_processor_count = 4;
+     }
+
+    /* Host architecture information. Required for all v1.1+ crash reports. If unavailable, the information
+     * should be derived from the deprecated SystemInfo.architecture field. */
+     optional MachineInfo machine = 8;
 }
