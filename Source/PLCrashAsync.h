@@ -31,12 +31,21 @@
 #import <unistd.h>
 #import <stdbool.h>
 
-// Debug output support. Lines are capped at 128 (stack space is scarce)
+// Debug output support. Lines are capped at 128 (stack space is scarce). This implemention
+// is not async-safe and should not be enabled in release builds
+#ifdef PLCF_RELEASE_BUILD
+
+#define PLCF_DEBUG(msg, args...)
+
+#else
+
 #define PLCF_DEBUG(msg, args...) {\
     char output[128];\
     snprintf(output, sizeof(output), "[PLCrashReport] " msg "\n", ## args); \
     write(STDERR_FILENO, output, strlen(output));\
 }
+
+#endif /* PLCF_RELEASE_BUILD */
 
 
 /**

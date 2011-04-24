@@ -2805,6 +2805,11 @@
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-D$(PL_BUILD_CONFIG_FLAG)=1",
+				);
+				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
 				PREBINDING = NO;
 				SDKROOT = macosx10.6;
 				VALID_ARCHS = "i386 ppc armv7 armv6 x86_64";
@@ -2826,6 +2831,11 @@
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-D$(PL_BUILD_CONFIG_FLAG)=1",
+				);
+				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
 				PREBINDING = NO;
 				SDKROOT = macosx10.6;
 				VALID_ARCHS = "i386 ppc armv7 armv6 x86_64";
