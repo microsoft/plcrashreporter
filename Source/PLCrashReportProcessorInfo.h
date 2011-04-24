@@ -66,10 +66,10 @@ typedef enum {
     PLCrashReportCPUSubtypeUnkwown = 0,
         
     /* ARMv6 */
-    PLCrashReportCPUTypeARM_V6 = 100,
+    PLCrashReportCPUSubtypeARMv6 = 100,
 
     /* ARMv7 */
-    PLCrashReportCPUTypeARM_V7 = 101,
+    PLCrashReportCPUSubtypeARMv7 = 101,
 } PLCrashReportCPUSubtype;
 
 
