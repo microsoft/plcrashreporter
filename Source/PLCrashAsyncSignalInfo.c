@@ -127,6 +127,9 @@ struct signal_code signal_codes[] = {
     { SIGTRAP,  TRAP_BRKPT,     "TRAP_BRKPT"  },
     { SIGTRAP,  TRAP_TRACE,     "TRAP_TRACE"  },
 
+    /* SIGABRT */
+    { SIGABRT,  0,              "#0"          },
+
     { 0, 0, NULL }
 };
 #else
