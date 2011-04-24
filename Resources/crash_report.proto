@@ -29,7 +29,7 @@
 package plcrash;
 option java_package = "com.plausiblelabs.crashreporter";
 
-/* Known processor architecture types */
+/* Legacy processor architecture type codes. These codes have been deprecated. */
 enum Architecture {
     /* x86 */
     X86_32 = 0;
@@ -48,35 +48,112 @@ enum Architecture {
 
     /* ARMv7 */
     ARMV7 = 5;
-}
 
-/* Known operating system types */
-enum OperatingSystem {
-    /* Mac OS X */
-    MAC_OS_X = 0;
-
-    /* iPhone OS */
-    IPHONE_OS = 1;
-
-    /* iPhone Simulator (Mac OS X w/ simulator runtime environment) */
-    IPHONE_SIMULATOR = 2;
+    /* Unknown processor type. */
+    ARCHITECTURE_UNKNOWN = 6;
 }
 
 /* A crash report */
 message CrashReport {
+    /*
+     * Processor information
+     */
+    message Processor {
+        /* Supported processor types. */
+        enum Type {
+            /* Unknown processor type. */
+            TYPE_UNKNOWN = 0;
+
+            /* x86-32 */
+            X86_32 = 1;
+            
+            /* x86-64 */
+            X86_64 = 2;
+
+            /* ARM */
+            ARM = 3;
+
+            /* PPC (32-bit) */
+            PPC = 4;
+        }
+
+        /* Supported processor subtypes. */
+        enum Subtype {
+            /* Unknown processor subtype. */
+            SUBTYPE_UNKNOWN = 0;
+
+            /* ARMv6 */
+            ARM_V6 = 100;
+
+            /* ARMv7 */
+            ARM_V7 = 101;
+        }
+
+        /** The CPU type. */
+        optional Type cpu_type = 1 [default = TYPE_UNKNOWN];
+
+        /** The CPU subtype, or NONE if no subtype. */
+        optional Subtype cpu_subtype = 2 [default = SUBTYPE_UNKNOWN];
+    }
+
+    /*
+     * Host architecture information.
+     */
+    message MachineInfo {    
+        /* Hardware model (eg, MacBookPro6,1) */
+        required string model = 1;
+
+        /* The host processor. */
+        required Processor processor = 2;
+
+        /*
+         * The number of actual physical processor cores. Note that the number of active processors may be managed by the
+         * operating system's power management system, and this value may not reflect the number of active
+         * processors at the time of the crash. */
+        required uint32 processor_count = 3;
+
+        /* The number of logical processors.  Note that the number of active processors may be managed by the
+         * operating system's power management system, and this value may not reflect the number of active
+         * processors at the time of the crash.
+         */
+        required uint32 logical_processor_count = 4;
+    }
+
     message SystemInfo {
+        /* Known operating system types */
+        enum OperatingSystem {
+            /* Mac OS X */
+            MAC_OS_X = 0;
+
+            /* iPhone OS */
+            IPHONE_OS = 1;
+
+            /* iPhone Simulator (Mac OS X w/ simulator runtime environment) */
+            IPHONE_SIMULATOR = 2;
+            
+            /* Unknown operating system. */
+            OS_UNKNOWN = 3;
+        }
+
         /* Operating system */
-        required OperatingSystem operating_system = 1;
+        optional OperatingSystem operating_system = 1 [default = OS_UNKNOWN];
 
         /* OS version */
         required string os_version = 2;
 
-        /* Processor architecture */
-        required Architecture architecture = 3;
+        /* Processor architecture (deprecated in favor of MachineInfo) */
+        required Architecture architecture = 3 [default = ARCHITECTURE_UNKNOWN /* deprecated = true (TODO: unsupported by embedded protobuf-c version) */];
 
         /* Date crash report was generated (as seconds since epoch). 0 if the time
          * is unknown or can not be determined. */
         required int64 timestamp = 4;
+
+        /* OS build number (eg, 10J869) */
+        optional string os_build = 5;
+        
+        /* Host architecture information. This field is required for all v1.1+ crash reports. If unavailable, the information
+         * should be derived from the deprecated architecture field. */
+        optional MachineInfo machine = 6;
     }
 
     /* Host data */
@@ -138,6 +215,11 @@ message CrashReport {
 
         /* 128-bit object UUID (matches Mach-O DWARF dSYM files) */
         optional bytes uuid = 4;
+
+        /* The image's code type. If excluded the code type should be assumed to be equivalent to host
+         * processor. The code type may differ in the case of architectures with forwards-compatible
+         * code types, such as ARM, where armv6 and armv7 images may be freely mixed. */
+        optional Processor code_type = 5;
     }
 
     /* All loaded binary images */
@@ -190,5 +272,7 @@ message CrashReport {
         /* Application parent process ID */
         required uint32 parent_process_id = 5;
     }
+  
+    /* The process info. Required for all v1.1+ crash reports. */
     optional ProcessInfo process_info = 7;
 }

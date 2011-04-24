@@ -119,8 +119,7 @@ extern PLCrashReportArchitecture PLCrashReportHostArchitecture;
 @property(nonatomic, readonly) PLCrashReportArchitecture architecture;
 
 /**
- * Date and time that the crash report was generated. This may
- * be unavailable, and this property will be nil.
+ * Date and time that the crash report was generated. This may be unavailable, and this property will be nil.
  */
 @property(nonatomic, readonly) NSDate *timestamp;
 

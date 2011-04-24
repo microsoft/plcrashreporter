@@ -31,8 +31,7 @@
 /**
  * Crash log per-thread state information.
  *
- * Provides thread state information, including a backtrace
- * and register state.
+ * Provides thread state information, including a backtrace and register state.
  */
 @implementation PLCrashReportThreadInfo
 
