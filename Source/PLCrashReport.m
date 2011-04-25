@@ -258,6 +258,7 @@ error:
  */
 - (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError {
     NSDate *timestamp = nil;
+    NSString *osBuild = nil;
     
     /* Validate */
     if (systemInfo == NULL) {
@@ -273,6 +274,10 @@ error:
                                            @"Missing sysinfo operating system in crash report"));
         return nil;
     }
+
+    /* Set up the build, if available */
+    if (systemInfo->os_build != NULL)
+        osBuild = [NSString stringWithUTF8String: systemInfo->os_build];
     
     /* Set up the timestamp, if available */
     if (systemInfo->timestamp != 0)
@@ -280,9 +285,10 @@ error:
     
     /* Done */
     return [[[PLCrashReportSystemInfo alloc] initWithOperatingSystem: systemInfo->operating_system
-                                           operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
-                                                     architecture: systemInfo->architecture
-                                                        timestamp: timestamp] autorelease];
+                                              operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
+                                                operatingSystemBuild: osBuild
+                                                        architecture: systemInfo->architecture
+                                                           timestamp: timestamp] autorelease];
 }
 
 

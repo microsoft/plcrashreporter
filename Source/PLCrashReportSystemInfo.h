@@ -91,6 +91,9 @@ extern PLCrashReportArchitecture PLCrashReportHostArchitecture;
     /** Operating system version */
     NSString *_osVersion;
     
+    /** OS build. May be nil. */
+    NSString *_osBuild;
+    
     /** Architecture */
     PLCrashReportArchitecture _architecture;
     
@@ -103,24 +106,25 @@ extern PLCrashReportArchitecture PLCrashReportHostArchitecture;
                   architecture: (PLCrashReportArchitecture) architecture
                      timestamp: (NSDate *) timestamp;
 
-/**
- * The operating system.
- */
+- (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem 
+        operatingSystemVersion: (NSString *) operatingSystemVersion
+          operatingSystemBuild: (NSString *) operatingSystemBuild
+                  architecture: (PLCrashReportArchitecture) architecture
+                     timestamp: (NSDate *) timestamp;
+
+/** The operating system. */
 @property(nonatomic, readonly) PLCrashReportOperatingSystem operatingSystem;
 
-/**
- * The operating system's release version.
- */
+/** The operating system's release version. */
 @property(nonatomic, readonly) NSString *operatingSystemVersion;
 
-/**
- * Architecture.
- */
+/** The operating system's build identifier (eg, 10J869). This may be unavailable, and this property will be nil. */
+@property(nonatomic, readonly) NSString *operatingSystemBuild;
+
+/** Architecture. */
 @property(nonatomic, readonly) PLCrashReportArchitecture architecture;
 
-/**
- * Date and time that the crash report was generated. This may be unavailable, and this property will be nil.
- */
+/** Date and time that the crash report was generated. This may be unavailable, and this property will be nil. */
 @property(nonatomic, readonly) NSDate *timestamp;
 
 @end
