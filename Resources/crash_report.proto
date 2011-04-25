@@ -59,41 +59,34 @@ message CrashReport {
      * Processor information
      */
     message Processor {
-        /* Supported processor types. */
-        enum Type {
-            /* Unknown processor type. */
-            TYPE_UNKNOWN = 0;
+        /* 
+         * CPU Type Encodings
+         *
+         * The wire format maintains support for multiple CPU type encodings; it is expected that different operating
+         * systems may target different processors, and the reported CPU type and subtype information may not be
+         * easily or directly expressed when not using the vendor's own defined types.
+         *
+         * Currently, only Apple Mach CPU type/subtype information is supported by the wire protocol. These types are
+         * stable, intended to be encoded in Mach-O files, and are defined in mach/machine.h on Mac OS X.
+         *
+         * Implementations must gracefully handle the addition of unknown type encodings.
+         */
+        enum TypeEncoding {
+            /* Unknown processor type encoding. */
+            TYPE_ENCODING_UNKNOWN = 0;
 
-            /* x86-32 */
-            X86_32 = 1;
-            
-            /* x86-64 */
-            X86_64 = 2;
-
-            /* ARM */
-            ARM = 3;
-
-            /* PPC (32-bit) */
-            PPC = 4;
+            /* Apple Mach-defined processor types. */
+            TYPE_ENCODING_MACH = 1;
         }
-
-        /* Supported processor subtypes. */
-        enum Subtype {
-            /* Unknown processor subtype. */
-            SUBTYPE_UNKNOWN = 0;
-
-            /* ARMv6 */
-            ARM_V6 = 100;
-
-            /* ARMv7 */
-            ARM_V7 = 101;
-        }
+        
+        /** The CPU type encoding that should be used to interpret cpu_type and cpu_subtype. This value is required. */
+        optional TypeEncoding encoding = 1 [default = TYPE_ENCODING_UNKNOWN];
 
         /** The CPU type. */
-        optional Type cpu_type = 1 [default = TYPE_UNKNOWN];
+        required uint64 cpu_type = 1;
 
         /** The CPU subtype, or NONE if no subtype. */
-        optional Subtype cpu_subtype = 2 [default = SUBTYPE_UNKNOWN];
+        required uint64 cpu_subtype = 2;
     }
 
     message SystemInfo {
@@ -254,7 +247,7 @@ message CrashReport {
       */
      message MachineInfo {    
          /* Hardware model (eg, MacBookPro6,1) */
-         required string model = 1;
+         optional string model = 1;
 
          /* The host processor. */
          required Processor processor = 2;
@@ -274,5 +267,5 @@ message CrashReport {
 
     /* Host architecture information. Required for all v1.1+ crash reports. If unavailable, the information
      * should be derived from the deprecated SystemInfo.architecture field. */
-     optional MachineInfo machine = 8;
+     optional MachineInfo machine_info = 8;
 }
