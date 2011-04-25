@@ -83,10 +83,10 @@ message CrashReport {
         optional TypeEncoding encoding = 1 [default = TYPE_ENCODING_UNKNOWN];
 
         /** The CPU type. */
-        required uint64 cpu_type = 1;
+        required uint64 type = 2;
 
-        /** The CPU subtype, or NONE if no subtype. */
-        required uint64 cpu_subtype = 2;
+        /** The CPU subtype. */
+        required uint64 subtype = 3;
     }
 
     message SystemInfo {
