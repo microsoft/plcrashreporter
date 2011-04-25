@@ -44,7 +44,10 @@ typedef enum {
     PLCrashReportOperatingSystemiPhoneOS = 1,
     
     /** iPhone Simulator (Mac OS X with additional simulator-specific runtime libraries) */
-    PLCrashReportOperatingSystemiPhoneSimulator = 2
+    PLCrashReportOperatingSystemiPhoneSimulator = 2,
+    
+    /** Unknown operating system */
+    PLCrashReportOperatingSystemUnknown = 3,
 } PLCrashReportOperatingSystem;
 
 /**
