@@ -27,67 +27,48 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <mach/machine.h>
 
 /**
  * @ingroup constants
  *
- * Known CPU types.
+ * The type encodings supported for CPU types and subtypes. Currently only Apple
+ * Mach-O defined encodings are supported.
  *
  * @internal
  * These enum values match the protobuf values. Keep them synchronized.
  */
 typedef enum {
-    /** Unknown CPU type. */
-    PLCrashReportCPUTypeUnkown = 0,
+    /** Unknown cpu type encoding. */
+    PLCrashReportProcessorTypeEncodingUnknown = 0,
 
-    /** x86-32. */
-    PLCrashReportCPUTypeX86_32 = 1,
-    
-    /** x86-64 */
-    PLCrashReportCPUTypeX86_64 = 2,
-    
-    /** ARM */
-    PLCrashReportCPUTypeARM = 3,
-    
-    /** PPC */
-    PLCrashReportCPUTypePPC = 4
-} PLCrashReportCPUType;
-
-/**
- * @ingroup constants
- *
- * Known CPU subtypes.
- *
- * @internal
- * These enum values match the protobuf values. Keep them synchronized.
- */
-typedef enum {
-    /** Unknown CPU subtype. */
-    PLCrashReportCPUSubtypeUnkwown = 0,
-        
-    /* ARMv6 */
-    PLCrashReportCPUSubtypeARMv6 = 100,
-
-    /* ARMv7 */
-    PLCrashReportCPUSubtypeARMv7 = 101,
-} PLCrashReportCPUSubtype;
-
+    /** Apple Mach-defined processor types. */
+    PLCrashReportProcessorTypeEncodingMach = 1
+} PLCrashReportProcessorTypeEncoding;
 
 @interface PLCrashReportProcessorInfo : NSObject {
 @private
+    /** Type encoding */
+    PLCrashReportProcessorTypeEncoding _typeEncoding;
+
     /** CPU type */
-    PLCrashReportCPUType _type;
+    cpu_type_t _type;
 
     /** CPU subtype */
-    PLCrashReportCPUSubtype _subtype;
+    cpu_subtype_t _subtype;
 }
 
-- (id) initWithType: (PLCrashReportCPUType) type subtype: (PLCrashReportCPUSubtype) subtype;
+- (id) initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) typeEncoding
+                       type: (cpu_type_t) type
+                    subtype: (cpu_subtype_t) subtype;
+
+/** The CPU type encoding. */
+@property(nonatomic, readonly) PLCrashReportProcessorTypeEncoding typeEncoding;
 
 /** The CPU type. */
-@property(nonatomic, readonly) PLCrashReportCPUType type;
+@property(nonatomic, readonly) cpu_type_t type;
 
 /** The CPU subtype. */
-@property(nonatomic, readonly) PLCrashReportCPUSubtype subtype;
+@property(nonatomic, readonly) cpu_subtype_t subtype;
 
 @end

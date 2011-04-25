@@ -33,22 +33,37 @@
  *
  * This contains information about a specific processor type and subtype, and may be used
  * to differentiate between processor variants (eg, ARMv6 vs ARMv7).
+ *
+ * @par CPU Type Encodings
+ *
+ * The wire format maintains support for multiple CPU type encodings; it is expected that different operating
+ * systems may target different processors, and the reported CPU type and subtype information may not be
+ * easily or directly expressed when not using the vendor's own defined types.
+ *
+ * Currently, only Apple Mach CPU type/subtype information is supported by the wire protocol. These types are
+ * stable, intended to be encoded in Mach-O files, and are defined in mach/machine.h on Mac OS X.
  */
 @implementation PLCrashReportProcessorInfo
 
+@synthesize typeEncoding = _typeEncoding;
 @synthesize type = _type;
 @synthesize subtype = _subtype;
 
 /**
  * Initialize the processor info data object.
  *
+ * @param typeEncoding The CPU type encoding.
  * @param type The CPU type.
  * @param subtype The CPU subtype
  */
-- (id) initWithType: (PLCrashReportCPUType) type subtype: (PLCrashReportCPUSubtype) subtype {
+- (id) initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) typeEncoding
+                       type: (cpu_type_t) type
+                    subtype: (cpu_subtype_t) subtype
+{
     if ((self = [super init]) == nil)
         return nil;
-    
+
+    _typeEncoding = typeEncoding;
     _type = type;
     _subtype = subtype;
 
