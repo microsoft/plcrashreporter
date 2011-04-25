@@ -51,7 +51,11 @@
 typedef struct plcrash_log_writer {
     /** System data */
     struct {
+        /** The host OS version. */
         char *version;
+
+        /** The host OS build number. This may be NULL. */
+        char *build;
     } system_info;
 
     /** Application data */

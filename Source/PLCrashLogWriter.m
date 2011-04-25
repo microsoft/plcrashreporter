@@ -47,6 +47,8 @@
 #import "PLCrashAsyncSignalInfo.h"
 #import "PLCrashFrameWalker.h"
 
+#import "PLCrashSysctl.h"
+
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h> // For UIDevice
 #endif
@@ -77,6 +79,9 @@ enum {
 
     /** CrashReport.system_info.timestamp */
     PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID = 4,
+
+    /** CrashReport.system_info.os_build */
+    PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID = 5,
 
     /** CrashReport.app_info */
     PLCRASH_PROTO_APP_INFO_ID = 2,
@@ -173,7 +178,6 @@ enum {
     PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID = 5,
 };
 
-
 /**
  * Initialize a new crash log writer instance and issue a memory barrier upon completion. This fetches all necessary
  * environment information.
@@ -246,7 +250,12 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
         }
     }
 
-    /* Fetch the OS information */
+    /* Fetch the OS information */    
+    writer->system_info.build = plcrash_sysctl_string("kern.osversion");
+    if (writer->system_info.build == NULL) {
+        PLCF_DEBUG("Could not retrive {CTL_KERN, KERN_OSVERSION}: %s", strerror(errno));
+    }
+
 #if TARGET_OS_IPHONE
     /* iPhone OS */
     writer->system_info.version = strdup([[[UIDevice currentDevice] systemVersion] UTF8String]);
@@ -271,7 +280,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
         }
 
         /* Compose the string */
-        asprintf(&writer->system_info.version, "%d.%d.%d", major, minor, bugfix);
+        asprintf(&writer->system_info.version, "%" PRId32 ".%" PRId32 ".%" PRId32, major, minor, bugfix);
     }
 #else
 #error Unsupported Platform
@@ -367,6 +376,9 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     if (writer->system_info.version != NULL)
         free(writer->system_info.version);
     
+    if (writer->system_info.build != NULL)
+        free(writer->system_info.build);
+
     /* Free the binary image info */
     plcrash_async_image_list_free(&writer->image_info.image_list);
 
@@ -398,6 +410,9 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
 
     /* OS Version */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.version);
+    
+    /* OS Build */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.build);
 
     /* Machine type */
     enumval = PLCrashReportHostArchitecture;
