@@ -38,7 +38,7 @@
  */
 typedef enum {
     /** Unknown CPU type. */
-    PLCrashReportCPUTypeUnkwown = 0,
+    PLCrashReportCPUTypeUnkown = 0,
 
     /** x86-32. */
     PLCrashReportCPUTypeX86_32 = 1,
