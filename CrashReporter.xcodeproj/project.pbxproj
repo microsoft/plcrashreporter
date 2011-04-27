@@ -90,6 +90,8 @@
 		05654F770EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F780EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F790EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
+		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
 		059666DD0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
 		059666DE0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
@@ -147,11 +149,11 @@
 		05BB83CE1364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
 		05BB83CF1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
 		05BB83D01364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
-		05BB83D11364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
+		05BB83D11364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05BB83D21364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
 		05BB83D31364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
 		05BB83D41364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
-		05BB83F11364AD3E00D53B84 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; };
+		05BB83F11364AD3E00D53B84 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05BB83F21364AD3E00D53B84 /* PLCrashReportMachineInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83F01364AD3E00D53B84 /* PLCrashReportMachineInfo.m */; };
 		05BB83F31364AD3E00D53B84 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; };
 		05BB83F41364AD3E00D53B84 /* PLCrashReportMachineInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83F01364AD3E00D53B84 /* PLCrashReportMachineInfo.m */; };
@@ -1229,6 +1231,8 @@
 				2D0E104E1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h in Headers */,
 				054627AD11D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */,
 				054627BD11D99D06007891C7 /* PLCrashReportFormatter.h in Headers */,
+				05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */,
+				05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
