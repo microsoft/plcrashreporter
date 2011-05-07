@@ -52,23 +52,23 @@ typedef enum {
     PLCrashReportProcessorTypeEncoding _typeEncoding;
 
     /** CPU type */
-    cpu_type_t _type;
+    uint64_t _type;
 
     /** CPU subtype */
-    cpu_subtype_t _subtype;
+    uint64_t _subtype;
 }
 
 - (id) initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) typeEncoding
-                       type: (cpu_type_t) type
-                    subtype: (cpu_subtype_t) subtype;
+                       type: (uint64_t) type
+                    subtype: (uint64_t) subtype;
 
 /** The CPU type encoding. */
 @property(nonatomic, readonly) PLCrashReportProcessorTypeEncoding typeEncoding;
 
 /** The CPU type. */
-@property(nonatomic, readonly) cpu_type_t type;
+@property(nonatomic, readonly) uint64_t type;
 
 /** The CPU subtype. */
-@property(nonatomic, readonly) cpu_subtype_t subtype;
+@property(nonatomic, readonly) uint64_t subtype;
 
 @end

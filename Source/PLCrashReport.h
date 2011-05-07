@@ -114,7 +114,8 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 @property(nonatomic, readonly) PLCrashReportSystemInfo *systemInfo;
 
 /**
- * Machine information.
+ * Machine information. Only available in later (v1.1+) crash report format versions. If not available,
+ * will be nil.
  */
 @property(nonatomic, readonly) PLCrashReportMachineInfo *machineInfo;
 
