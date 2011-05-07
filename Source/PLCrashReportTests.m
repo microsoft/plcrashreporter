@@ -33,6 +33,8 @@
 #import "PLCrashLogWriter.h"
 
 #import <fcntl.h>
+
+#import <mach-o/arch.h>
 #import <mach-o/dyld.h>
 
 @interface PLCrashReportTests : SenTestCase {
@@ -51,7 +53,7 @@
 - (void) setUp {
     /* Create a temporary log path */
     _logPath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
-    
+
     /* Create the test thread */
     plframe_test_thread_spawn(&_thr_args);
 }
@@ -125,6 +127,16 @@
     STAssertNotNil(crashLog.systemInfo.timestamp, @"Timestamp is nil");
     STAssertEquals(crashLog.systemInfo.operatingSystem, PLCrashReportHostOperatingSystem, @"Operating system incorrect");
     STAssertEquals(crashLog.systemInfo.architecture, PLCrashReportHostArchitecture, @"Architecture incorrect");
+    
+    /* Machine info */
+    const NXArchInfo *archInfo = NXGetLocalArchInfo();
+    STAssertNotNil(crashLog.machineInfo, @"No machine information available");
+    STAssertNotNil(crashLog.machineInfo.modelName, @"Model is nil");
+    STAssertEquals(PLCrashReportProcessorTypeEncodingMach, crashLog.machineInfo.processorInfo.typeEncoding, @"Incorrect processor type encoding");
+    STAssertEquals((uint64_t)archInfo->cputype, crashLog.machineInfo.processorInfo.type, @"Incorrect processor type");
+    STAssertEquals((uint64_t)archInfo->cpusubtype, crashLog.machineInfo.processorInfo.subtype, @"Incorrect processor subtype");
+    STAssertNotEquals((NSUInteger)0, crashLog.machineInfo.processorCount, @"No processor count");
+    STAssertNotEquals((NSUInteger)0, crashLog.machineInfo.logicalProcessorCount, @"No logical processor count");
 
     /* App info */
     STAssertNotNil(crashLog.applicationInfo, @"No application information available");

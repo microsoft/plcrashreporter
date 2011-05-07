@@ -57,8 +57,8 @@
  * @param subtype The CPU subtype
  */
 - (id) initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) typeEncoding
-                       type: (cpu_type_t) type
-                    subtype: (cpu_subtype_t) subtype
+                       type: (uint64_t) type
+                    subtype: (uint64_t) subtype
 {
     if ((self = [super init]) == nil)
         return nil;

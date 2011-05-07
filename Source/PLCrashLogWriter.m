@@ -176,6 +176,32 @@ enum {
     
     /** CrashReport.process_info.parent_process_id */
     PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID = 5,
+    
+    
+    /** CrashReport.Processor.encoding */
+    PLCRASH_PROTO_PROCESSOR_ENCODING_ID = 1,
+    
+    /** CrashReport.Processor.encoding */
+    PLCRASH_PROTO_PROCESSOR_TYPE_ID = 2,
+    
+    /** CrashReport.Processor.encoding */
+    PLCRASH_PROTO_PROCESSOR_SUBTYPE_ID = 3,
+
+
+    /** CrashReport.machine_info */
+    PLCRASH_PROTO_MACHINE_INFO_ID = 8,
+
+    /** CrashReport.machine_info.model */
+    PLCRASH_PROTO_MACHINE_INFO_MODEL_ID = 1,
+
+    /** CrashReport.machine_info.processor */
+    PLCRASH_PROTO_MACHINE_INFO_PROCESSOR_ID = 2,
+
+    /** CrashReport.machine_info.processor_count */
+    PLCRASH_PROTO_MACHINE_INFO_PROCESSOR_COUNT_ID = 3,
+
+    /** CrashReport.machine_info.logical_processor_count */
+    PLCRASH_PROTO_MACHINE_INFO_LOGICAL_PROCESSOR_COUNT_ID = 4,
 };
 
 /**
@@ -250,10 +276,51 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
         }
     }
 
+    /* Fetch the machine information */
+    {
+        /* Model */
+        writer->machine_info.model = plcrash_sysctl_string("hw.model");
+        if (writer->machine_info.model == NULL) {
+            PLCF_DEBUG("Could not retrive hw.model: %s", strerror(errno));
+        }
+        
+        /* CPU */
+        {
+            int retval;
+
+            /* Fetch the CPU types */
+            if (plcrash_sysctl_int("hw.cputype", &retval)) {
+                writer->machine_info.cpu_type = retval;
+            } else {
+                PLCF_DEBUG("Could not retrive hw.cputype: %s", strerror(errno));
+            }
+            
+            if (plcrash_sysctl_int("hw.cpusubtype", &retval)) {
+                writer->machine_info.cpu_subtype = retval;
+            } else {
+                PLCF_DEBUG("Could not retrive hw.cpusubtype: %s", strerror(errno));
+            }
+
+            /* Processor count */
+            if (plcrash_sysctl_int("hw.physicalcpu_max", &retval)) {
+                writer->machine_info.processor_count = retval;
+            } else {
+                PLCF_DEBUG("Could not retrive hw.physicalcpu_max: %s", strerror(errno));
+            }
+
+            if (plcrash_sysctl_int("hw.logicalcpu_max", &retval)) {
+                writer->machine_info.logical_processor_count = retval;
+            } else {
+                PLCF_DEBUG("Could not retrive hw.logicalcpu_max: %s", strerror(errno));
+            }
+        }        
+        
+    }
+
     /* Fetch the OS information */    
     writer->system_info.build = plcrash_sysctl_string("kern.osversion");
     if (writer->system_info.build == NULL) {
-        PLCF_DEBUG("Could not retrive {CTL_KERN, KERN_OSVERSION}: %s", strerror(errno));
+        PLCF_DEBUG("Could not retrive kern.osversion: %s", strerror(errno));
     }
 
 #if TARGET_OS_IPHONE
@@ -378,6 +445,10 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     
     if (writer->system_info.build != NULL)
         free(writer->system_info.build);
+    
+    /* Free the machine info */
+    if (writer->machine_info.model != NULL)
+        free(writer->machine_info.model);
 
     /* Free the binary image info */
     plcrash_async_image_list_free(&writer->image_info.image_list);
@@ -421,6 +492,67 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
     /* Timestamp */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_TIMESTAMP_ID, PLPROTOBUF_C_TYPE_INT64, &timestamp);
 
+    return rv;
+}
+
+/**
+ * @internal
+ *
+ * Write the processor info message.
+ *
+ * @param file Output file
+ * @param cpu_type The Mach CPU type.
+ * @param cpu_subtype_t The Mach CPU subtype
+ */
+static size_t plcrash_writer_write_processor_info (plcrash_async_file_t *file, uint64_t cpu_type, uint64_t cpu_subtype) {
+    size_t rv = 0;
+    uint32_t enumval;
+    
+    /* Encoding */
+    enumval = PLCrashReportProcessorTypeEncodingMach;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESSOR_ENCODING_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
+
+    /* Type */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESSOR_TYPE_ID, PLPROTOBUF_C_TYPE_UINT64, &cpu_type);
+
+    /* Subtype */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESSOR_SUBTYPE_ID, PLPROTOBUF_C_TYPE_UINT64, &cpu_subtype);
+    
+    return rv;
+}
+
+/**
+ * @internal
+ *
+ * Write the machine info message.
+ *
+ * @param file Output file
+ */
+static size_t plcrash_writer_write_machine_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
+    size_t rv = 0;
+    
+    /* Model */
+    if (writer->machine_info.model != NULL)
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_MODEL_ID, PLPROTOBUF_C_TYPE_STRING, writer->machine_info.model);
+
+    /* Processor */
+    {
+        uint32_t size;
+
+        /* Determine size */
+        size = plcrash_writer_write_processor_info(NULL, writer->machine_info.cpu_type, writer->machine_info.cpu_subtype);
+
+        /* Write message */
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_PROCESSOR_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        rv += plcrash_writer_write_processor_info(file, writer->machine_info.cpu_type, writer->machine_info.cpu_subtype);
+    }
+
+    /* Physical Processor Count */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_PROCESSOR_COUNT_ID, PLPROTOBUF_C_TYPE_UINT32, &writer->machine_info.processor_count);
+    
+    /* Logical Processor Count */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_LOGICAL_PROCESSOR_COUNT_ID, PLPROTOBUF_C_TYPE_UINT32, &writer->machine_info.logical_processor_count);
+    
     return rv;
 }
 
@@ -864,6 +996,18 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         plcrash_writer_write_system_info(file, writer, timestamp);
     }
     
+    /* Machine Info */
+    {
+        uint32_t size;
+
+        /* Determine size */
+        size = plcrash_writer_write_machine_info(NULL, writer);
+
+        /* Write message */
+        plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_machine_info(file, writer);
+    }
+
     /* App info */
     {
         uint32_t size;

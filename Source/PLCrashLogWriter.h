@@ -58,6 +58,24 @@ typedef struct plcrash_log_writer {
         char *build;
     } system_info;
 
+    /* Machine data */
+    struct {
+        /** The host model */
+        char *model;
+
+        /** The host CPU type. */
+        uint64_t cpu_type;
+
+        /** The host CPU subtype. */
+        uint64_t cpu_subtype;
+        
+        /** The total number of physical cores */
+        uint32_t processor_count;
+        
+        /** The total number of logical cores */
+        uint32_t logical_processor_count;
+    } machine_info;
+
     /** Application data */
     struct {
         /** Application identifier */

@@ -41,6 +41,8 @@ struct _PLCrashReportDecoder {
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
 - (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError;
+- (PLCrashReportProcessorInfo *) extractProcessorInfo: (Plcrash__CrashReport__Processor *) processorInfo error: (NSError **) outError;
+- (PLCrashReportMachineInfo *) extractMachineInfo: (Plcrash__CrashReport__MachineInfo *) machineInfo error: (NSError **) outError;
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
 - (PLCrashReportProcessInfo *) extractProcessInfo: (Plcrash__CrashReport__ProcessInfo *) processInfo error: (NSError **) outError;
 - (NSArray *) extractThreadInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
@@ -94,6 +96,11 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     /* System info */
     _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info error: outError] retain];
     if (!_systemInfo)
+        goto error;
+    
+    /* Machine info */
+    _machineInfo = [[self extractMachineInfo: _decoder->crashReport->machine_info error: outError] retain];
+    if (!_machineInfo)
         goto error;
 
     /* Application info */
@@ -291,6 +298,53 @@ error:
                                                            timestamp: timestamp] autorelease];
 }
 
+/**
+ * Extract processor information from the crash log. Returns nil on error.
+ */
+- (PLCrashReportProcessorInfo *) extractProcessorInfo: (Plcrash__CrashReport__Processor *) processorInfo error: (NSError **) outError {   
+    /* Validate */
+    if (processorInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing processor info section", 
+                                           @"Missing processor info in crash report"));
+        return nil;
+    }
+
+    return [[[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: processorInfo->encoding
+                                                                type: processorInfo->type
+                                                             subtype: processorInfo->subtype] autorelease];
+}
+
+/**
+ * Extract machine information from the crash log. Returns nil on error.
+ */
+- (PLCrashReportMachineInfo *) extractMachineInfo: (Plcrash__CrashReport__MachineInfo *) machineInfo error: (NSError **) outError {
+    NSString *model = nil;
+    PLCrashReportProcessorInfo *processorInfo;
+
+    /* Validate */
+    if (machineInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
+                         NSLocalizedString(@"Crash report is missing Machine Information section", 
+                                           @"Missing machine_info in crash report"));
+        return nil;
+    }
+
+    /* Set up the model, if available */
+    if (machineInfo->model != NULL)
+        model = [NSString stringWithUTF8String: machineInfo->model];
+
+    /* Set up the processor info. */
+    processorInfo = [self extractProcessorInfo: machineInfo->processor error: outError];
+    if (processorInfo == nil)
+        return nil;
+
+    /* Done */
+    return [[[PLCrashReportMachineInfo alloc] initWithModelName: model
+                                                  processorInfo: processorInfo
+                                                 processorCount: machineInfo->processor_count
+                                          logicalProcessorCount: machineInfo->logical_processor_count] autorelease];
+}
 
 /**
  * Extract application information from the crash log. Returns nil on error.
