@@ -2,7 +2,7 @@
 # CrashReporter
 #
 # Created by Landon Fuller on 12/5/08.
-# Copyright 2008-2010 Plausible Labs Cooperative, Inc. All rights reserved.
+# Copyright 2008-2011 Plausible Labs Cooperative, Inc. All rights reserved.
 
 # PLCrashReporter
 _PLCrashReporterException
@@ -23,5 +23,7 @@ _PLCrashReportHostArchitecture
 .objc_class_name_PLCrashReportStackFrameInfo
 .objc_class_name_PLCrashReportBinaryImageInfo
 .objc_class_name_PLCrashReportExceptionInfo
+.objc_class_name_PLCrashReportProcessorInfo
+.objc_class_name_PLCrashReportMachineInfo
 
 .objc_class_name_PLCrashReportTextFormatter
