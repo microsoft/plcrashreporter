@@ -130,6 +130,7 @@
     
     /* Machine info */
     const NXArchInfo *archInfo = NXGetLocalArchInfo();
+    STAssertTrue(crashLog.hasMachineInfo, @"No machine information available");
     STAssertNotNil(crashLog.machineInfo, @"No machine information available");
     STAssertNotNil(crashLog.machineInfo.modelName, @"Model is nil");
     STAssertEquals(PLCrashReportProcessorTypeEncodingMach, crashLog.machineInfo.processorInfo.typeEncoding, @"Incorrect processor type encoding");

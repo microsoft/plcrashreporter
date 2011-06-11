@@ -183,6 +183,13 @@ error:
     return nil;
 }
 
+// property getter. Returns YES if machine information is available.
+- (BOOL) hasMachineInfo {
+    if (_machineInfo != nil)
+        return YES;
+    return NO;
+}
+
 // property getter. Returns YES if process information is available.
 - (BOOL) hasProcessInfo {
     if (_processInfo != nil)
