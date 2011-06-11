@@ -55,6 +55,9 @@ typedef enum {
  *
  * Indicates the architecture under which a Crash Log was generated.
  *
+ * @deprecated The architecture value has been deprecated in v1.1 and later crash reports. All new reports
+ * will make use of the new PLCrashReportProcessorInfo CPU type encodings.
+ *
  * @internal
  * These enum values match the protobuf values. Keep them synchronized.
  */
@@ -78,8 +81,14 @@ typedef enum {
     /** PPC */
     PLCrashReportArchitecturePPC = 3,
     
+    /** PPC64 */
+    PLCrashReportArchitecturePPC64 = 4,
+    
     /** ARMv7 */
-    PLCrashReportArchitectureARMv7 = 4,
+    PLCrashReportArchitectureARMv7 = 5,
+    
+    /** Unknown */
+    PLCrashReportArchitectureUnknown = 6
 } PLCrashReportArchitecture;
 
 
