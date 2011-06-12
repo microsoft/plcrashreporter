@@ -46,12 +46,15 @@
  * @param processPath Full path to the process' binary. May be nil.
  * @param parentProcessName Parent process' name. May be nil.
  * @param parentProcessID Parent process' PID.
+ * @param process Flag designating whether this process is native. If false, the process is being run via process-level
+ * CPU emulation (such as Rosetta).
  */
 - (id) initWithProcessName: (NSString *) processName
                  processID: (NSUInteger) processID
                processPath: (NSString *) processPath
          parentProcessName: (NSString *) parentProcessName
            parentProcessID: (NSUInteger) parentProcessID
+                    native: (BOOL) native
 {
     if ((self = [super init]) == nil)
         return nil;
@@ -61,7 +64,8 @@
     _processPath = [processPath retain];
     _parentProcessName = [parentProcessName retain];
     _parentProcessID = parentProcessID;
-    
+    _native = native;
+
     return self;
 }
 
@@ -77,5 +81,6 @@
 @synthesize processPath = _processPath;
 @synthesize parentProcessName = _parentProcessName;
 @synthesize parentProcessID = _parentProcessID;
+@synthesize native = _native;
 
 @end

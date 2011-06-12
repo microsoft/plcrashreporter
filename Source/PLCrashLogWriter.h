@@ -101,6 +101,9 @@ typedef struct plcrash_log_writer {
         
         /** Parent process ID */
         pid_t parent_process_id;
+        
+        /** If false, the reporting process is being run under process emulation (such as Rosetta). */
+        bool native;
     } process_info;
     
     /** Binary image data */

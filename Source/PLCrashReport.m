@@ -430,7 +430,8 @@ error:
                                                         processID: processID
                                                       processPath: processPath
                                                 parentProcessName: parentProcessName
-                                                  parentProcessID: parentProcessID] autorelease];
+                                                  parentProcessID: parentProcessID
+                                                           native: processInfo->native] autorelease];
 }
 
 /**

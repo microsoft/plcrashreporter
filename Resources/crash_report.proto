@@ -237,6 +237,9 @@ message CrashReport {
         
         /* Application parent process ID */
         required uint32 parent_process_id = 5;
+        
+        /** If false, the process is being run via process-level CPU emulation (such as Rosetta). */
+        required bool native = 6;
     }
   
     /* The process info. Required for all v1.1+ crash reports. */

@@ -177,6 +177,9 @@ enum {
     /** CrashReport.process_info.parent_process_id */
     PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID = 5,
     
+    /** CrashReport.process_info.native */
+    PLCRASH_PROTO_PROCESS_INFO_NATIVE_ID = 6,
+
     
     /** CrashReport.Processor.encoding */
     PLCRASH_PROTO_PROCESSOR_ENCODING_ID = 1,
@@ -313,8 +316,23 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
             } else {
                 PLCF_DEBUG("Could not retrive hw.logicalcpu_max: %s", strerror(errno));
             }
-        }        
+        }
         
+        /* Check if emulated. This sysctl is defined here: */
+        {
+            int retval;
+
+            if (plcrash_sysctl_int("sysctl.proc_native", &retval)) {
+                if (retval == 0) {
+                    writer->process_info.native = false;
+                } else {
+                    writer->process_info.native = true;
+                }
+            } else {
+                /* If the sysctl is not available, the process can be assumed to be native. */
+                writer->process_info.native = true;
+            }
+        }
     }
 
     /* Fetch the OS information */    
@@ -588,10 +606,12 @@ static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const c
  * @param process_path Process path
  * @param parent_process_name Parent process name
  * @param parent_process_id Parent process ID
+ * @param native If false, process is running under emulation.
  */
 static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, const char *process_name, 
                                                  const pid_t process_id, const char *process_path, 
-                                                 const char *parent_process_name, const pid_t parent_process_id) 
+                                                 const char *parent_process_name, const pid_t parent_process_id,
+                                                 bool native) 
 {
     size_t rv = 0;
 
@@ -612,7 +632,10 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 
     /* Parent process ID */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT64, &parent_process_id);
-    
+
+    /* Native process. */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_NATIVE_ID, PLPROTOBUF_C_TYPE_BOOL, &native);
+
     return rv;
 }
 
@@ -1027,13 +1050,13 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         /* Determine size */
         size = plcrash_writer_write_process_info(NULL, writer->process_info.process_name, writer->process_info.process_id, 
                                                  writer->process_info.process_path, writer->process_info.parent_process_name,
-                                                 writer->process_info.parent_process_id);
+                                                 writer->process_info.parent_process_id, writer->process_info.native);
         
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_process_info(file, writer->process_info.process_name, writer->process_info.process_id, 
                                           writer->process_info.process_path, writer->process_info.parent_process_name, 
-                                          writer->process_info.parent_process_id);
+                                          writer->process_info.parent_process_id, writer->process_info.native);
     }
     
     /* Threads */

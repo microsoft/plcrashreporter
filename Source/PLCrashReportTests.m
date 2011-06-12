@@ -149,6 +149,7 @@
     STAssertNotNil(crashLog.processInfo.processName, @"No process name available");
     STAssertNotNil(crashLog.processInfo.processPath, @"No process path available");
     STAssertNotNil(crashLog.processInfo.parentProcessName, @"No parent process name available");
+    STAssertTrue(crashLog.processInfo.native, @"Process should be native");
     
     /* Signal info */
     STAssertEqualStrings(@"SIGSEGV", crashLog.signalInfo.name, @"Signal is incorrect");
