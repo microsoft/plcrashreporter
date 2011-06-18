@@ -318,7 +318,12 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
             }
         }
         
-        /* Check if emulated. This sysctl is defined here: */
+        /*
+         * Check if the process is emulated. This sysctl is defined in the Universal Binary Programming Guidelines,
+         * Second Edition:
+         *
+         * http://developer.apple.com/legacy/mac/library/documentation/MacOSX/Conceptual/universal_binary/universal_binary.pdf
+         */
         {
             int retval;
 
