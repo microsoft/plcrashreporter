@@ -134,6 +134,10 @@
 		059674990EF0BBB4008A0601 /* PLCrashFrameWalker_i386.c in Sources */ = {isa = PBXBuildFile; fileRef = 059667590EEDECA7008A0601 /* PLCrashFrameWalker_i386.c */; };
 		0596749A0EF0BBB4008A0601 /* PLCrashFrameWalker_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05966A1B0EEE5280008A0601 /* PLCrashFrameWalker_arm.c */; };
 		0596749B0EF0BBB4008A0601 /* crash_report.proto in Sources */ = {isa = PBXBuildFile; fileRef = 059670C70EEFAC3A008A0601 /* crash_report.proto */; };
+		059C9D7613AE46C50071956F /* PLCrashSysctl.c in Sources */ = {isa = PBXBuildFile; fileRef = 05BB84851364EDF200D53B84 /* PLCrashSysctl.c */; };
+		059C9D7913AE46CD0071956F /* PLCrashAsyncImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 052A46BD1363650100987004 /* PLCrashAsyncImage.c */; };
+		059C9D7C13AE46E10071956F /* PLCrashSysctl.c in Sources */ = {isa = PBXBuildFile; fileRef = 05BB84851364EDF200D53B84 /* PLCrashSysctl.c */; };
+		059C9D7D13AE46E40071956F /* PLCrashAsyncImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 052A46BD1363650100987004 /* PLCrashAsyncImage.c */; };
 		05B447180FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.c in Sources */ = {isa = PBXBuildFile; fileRef = 05B447160FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.c */; };
 		05B447190FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B447170FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.h */; };
 		05B4471A0FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.c in Sources */ = {isa = PBXBuildFile; fileRef = 05B447160FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.c */; };
@@ -1928,8 +1932,10 @@
 				05E734880EFAD854005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
 				05E734850EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m in Sources */,
 				05B447210FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.c in Sources */,
+				059C9D7D13AE46E40071956F /* PLCrashAsyncImage.c in Sources */,
 				052A46F813637DE000987004 /* PLCrashAsyncImageTests.m in Sources */,
 				05BB84901364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */,
+				059C9D7C13AE46E10071956F /* PLCrashSysctl.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1957,8 +1963,10 @@
 				05E734870EFAD84B005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
 				05E734860EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m in Sources */,
 				05B447220FE4DA1E00E0506B /* PLCrashFrameWalker_x86_64.c in Sources */,
+				059C9D7913AE46CD0071956F /* PLCrashAsyncImage.c in Sources */,
 				052A46F913637DE000987004 /* PLCrashAsyncImageTests.m in Sources */,
 				05BB84911364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */,
+				059C9D7613AE46C50071956F /* PLCrashSysctl.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2453,8 +2461,9 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GENERATE_MASTER_OBJECT_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				MACH_O_TYPE = staticlib;
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos;
@@ -2471,8 +2480,9 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GENERATE_MASTER_OBJECT_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				MACH_O_TYPE = staticlib;
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos;
@@ -2490,9 +2500,10 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GENERATE_MASTER_OBJECT_FILE = YES;
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				MACH_O_TYPE = staticlib;
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
@@ -2510,8 +2521,9 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GENERATE_MASTER_OBJECT_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				MACH_O_TYPE = staticlib;
+				MACH_O_TYPE = mh_object;
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
