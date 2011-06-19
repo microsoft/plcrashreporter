@@ -7,23 +7,11 @@
 # PLCrashReporter
 _PLCrashReporterException
 _PLCrashReporterErrorDomain
-.objc_class_name_PLCrashReporter
-.objc_class_name_PLCrashSignalHandler
+
+# Export all Objective-C classes; they're picked up by the runtime regardless.
+.objc_class_name_PL*
+_OBJC_CLASS_$_PL*
 
 # PLCrashReport
 _PLCrashReportHostOperatingSystem
 _PLCrashReportHostArchitecture
-.objc_class_name_PLCrashReport
-.objc_class_name_PLCrashReportSystemInfo
-.objc_class_name_PLCrashReportApplicationInfo
-.objc_class_name_PLCrashReportProcessInfo
-.objc_class_name_PLCrashReportSignalInfo
-.objc_class_name_PLCrashReportThreadInfo
-.objc_class_name_PLCrashReportRegisterInfo
-.objc_class_name_PLCrashReportStackFrameInfo
-.objc_class_name_PLCrashReportBinaryImageInfo
-.objc_class_name_PLCrashReportExceptionInfo
-.objc_class_name_PLCrashReportProcessorInfo
-.objc_class_name_PLCrashReportMachineInfo
-
-.objc_class_name_PLCrashReportTextFormatter
