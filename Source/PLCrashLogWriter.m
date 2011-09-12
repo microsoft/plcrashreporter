@@ -370,7 +370,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
         }
 
         /* Compose the string */
-        asprintf(&writer->system_info.version, "%" PRId32 ".%" PRId32 ".%" PRId32, major, minor, bugfix);
+        asprintf(&writer->system_info.version, "%" PRId32 ".%" PRId32 ".%" PRId32, (int32_t)major, (int32_t)minor, (int32_t)bugfix);
     }
 #else
 #error Unsupported Platform
