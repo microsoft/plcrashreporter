@@ -43,7 +43,6 @@
  * length will be returned in @a length.
  *
  * @param name The sysctl MIB name.
- * @param namelen The number of entries in @a name.
  * @param length On success, will be populated with the length of the result. If NULL, length will not be supplied.
  *
  * @return Returns a malloc-allocated buffer containing the sysctl result on success. On failure, NULL is returned
