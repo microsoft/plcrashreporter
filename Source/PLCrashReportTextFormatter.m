@@ -148,12 +148,18 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     [text appendString: @"\n"];
     
     /* System info */
-    [text appendFormat: @"Date/Time:       %@\n", report.systemInfo.timestamp];
-    [text appendFormat: @"OS Version:      %@ %@ (TODO)\n", osName, report.systemInfo.operatingSystemVersion];
-    [text appendFormat: @"Report Version:  103\n"];
-    
+    {
+        NSString *osBuild = @"???";
+        if (report.systemInfo.operatingSystemBuild != nil)
+            osBuild = report.systemInfo.operatingSystemBuild;
+        
+        [text appendFormat: @"Date/Time:       %@\n", report.systemInfo.timestamp];
+        [text appendFormat: @"OS Version:      %@ %@ (%@)\n", osName, report.systemInfo.operatingSystemVersion, osBuild];
+        [text appendFormat: @"Report Version:  103\n"];        
+    }
+
     [text appendString: @"\n"];
-    
+
     /* Exception code */
     [text appendFormat: @"Exception Type:  %@\n", report.signalInfo.name];
     [text appendFormat: @"Exception Codes: %@ at 0x%" PRIx64 "\n", report.signalInfo.code, report.signalInfo.address];
