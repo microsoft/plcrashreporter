@@ -99,9 +99,11 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         goto error;
     
     /* Machine info */
-    _machineInfo = [[self extractMachineInfo: _decoder->crashReport->machine_info error: outError] retain];
-    if (!_machineInfo)
-        goto error;
+    if (_decoder->crashReport->machine_info != NULL) {
+        _machineInfo = [[self extractMachineInfo: _decoder->crashReport->machine_info error: outError] retain];
+        if (!_machineInfo)
+            goto error;
+    }
 
     /* Application info */
     _applicationInfo = [[self extractApplicationInfo: _decoder->crashReport->application_info error: outError] retain];
@@ -528,7 +530,7 @@ error:
             /* Valid UUID */
     
             /* Convert to ascii */
-            char output[(IMAGE_UUID_DIGEST_LEN * 2) + 1];
+            char output[(IMAGE_UUID_DIGEST_LEN * 2)];
             const char hex[] = "0123456789abcdef";
 
             for (int i = 0; i < IMAGE_UUID_DIGEST_LEN; i++) {
@@ -536,9 +538,8 @@ error:
                 output[i * 2 + 0] = hex[c >> 4];
                 output[i * 2 + 1] = hex[c & 0x0F];
             }
-            output[IMAGE_UUID_DIGEST_LEN] = '\0';
     
-            uuid = [[[NSString alloc] initWithBytes: output length: sizeof(output) - 1 encoding: NSASCIIStringEncoding] autorelease];
+            uuid = [[[NSString alloc] initWithBytes: output length: sizeof(output) encoding: NSASCIIStringEncoding] autorelease];
         }
 
         assert(image->uuid.len == 0 || uuid != nil);
