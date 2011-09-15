@@ -282,7 +282,13 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
     /* Fetch the machine information */
     {
         /* Model */
+#if TARGET_OS_IPHONE
+        /* On iOS, we want hw.machine (e.g. hw.machine = iPad2,1; hw.model = K93AP) */
+        writer->machine_info.model = plcrash_sysctl_string("hw.machine");
+#else
+        /* On Mac OS X, we want hw.model (e.g. hw.machine = x86_64; hw.model = Macmini5,3) */
         writer->machine_info.model = plcrash_sysctl_string("hw.model");
+#endif
         if (writer->machine_info.model == NULL) {
             PLCF_DEBUG("Could not retrive hw.model: %s", strerror(errno));
         }
