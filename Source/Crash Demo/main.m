@@ -41,9 +41,44 @@ void stackFrame (void) {
     ((char *)NULL)[1] = 0;
 }
 
+/* If a crash report exists, make it accessible via iTunes document sharing. This is a no-op on Mac OS X. */
+static void save_crash_report () {
+    if (![[PLCrashReporter sharedReporter] hasPendingCrashReport]) 
+        return;
+
+#if TARGET_OS_IPHONE
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *error;
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    if (![fm createDirectoryAtPath: documentsDirectory withIntermediateDirectories: YES attributes:nil error: &error]) {
+        NSLog(@"Could not create documents directory: %@", error);
+        return;
+    }
+
+
+    NSData *data = [[PLCrashReporter sharedReporter] loadPendingCrashReportDataAndReturnError: &error];
+    if (data == nil) {
+        NSLog(@"Failed to load crash report data: %@", error);
+        return;
+    }
+
+    NSString *outputPath = [documentsDirectory stringByAppendingPathComponent: @"demo.plcrash"];
+    if (![data writeToFile: outputPath atomically: YES]) {
+        NSLog(@"Failed to write crash report");
+    }
+    
+    NSLog(@"Saved crash report to: %@", outputPath);
+#endif
+}
+
 int main (int argc, char *argv[]) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSError *error = nil;
+
+    /* Save any existing crash report. */
+    save_crash_report();
     
     /* Set up post-crash callbacks */
     PLCrashReporterCallbacks cb = {
