@@ -78,31 +78,77 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     }
     
     /* Map to Apple-style code type, and mark whether architecture is LP64 (64-bit) */
-    NSString *codeType;
-    switch (report.systemInfo.architecture) {
-        case PLCrashReportArchitectureARMv6:
-        case PLCrashReportArchitectureARMv7:
-            codeType = @"ARM";
-            lp64 = false;
-            break;
-        case PLCrashReportArchitectureX86_32:
-            codeType = @"X86";
-            lp64 = false;
-            break;
-        case PLCrashReportArchitectureX86_64:
-            codeType = @"X86-64";
-            lp64 = true;
-            break;
-        case PLCrashReportArchitecturePPC:
-            codeType = @"PPC";
-            lp64 = false;
-            break;
-        default:
-            codeType = [NSString stringWithFormat: @"Unknown (%d)", report.systemInfo.architecture];
-            lp64 = true;
-            break;
+    NSString *codeType = nil;
+    {
+        /* Attempt to derive the code type from the binary images */
+        for (PLCrashReportBinaryImageInfo *image in report.images) {
+            /* Skip images with no specified type */
+            if (image.codeType == nil)
+                continue;
+
+            /* Skip unknown encodings */
+            if (image.codeType.typeEncoding != PLCrashReportProcessorTypeEncodingMach)
+                continue;
+            
+            switch (image.codeType.type) {
+                case CPU_TYPE_ARM:
+                    codeType = @"ARM";
+                    lp64 = false;
+                    break;
+
+                case CPU_TYPE_X86:
+                    codeType = @"X86";
+                    lp64 = false;
+                    break;
+
+                case CPU_TYPE_X86_64:
+                    codeType = @"X86-64";
+                    lp64 = true;
+                    break;
+
+                case CPU_TYPE_POWERPC:
+                    codeType = @"PPC";
+                    lp64 = false;
+                    break;
+                    
+                default:
+                    // Do nothing, handled below.
+                    break;
+            }
+
+            /* Stop immediately if code type was discovered */
+            if (codeType != nil)
+                break;
+        }
+
+        /* If we were unable to determine the code type, fall back on the legacy architecture value. */
+        if (codeType == nil) {
+            switch (report.systemInfo.architecture) {
+                case PLCrashReportArchitectureARMv6:
+                case PLCrashReportArchitectureARMv7:
+                    codeType = @"ARM";
+                    lp64 = false;
+                    break;
+                case PLCrashReportArchitectureX86_32:
+                    codeType = @"X86";
+                    lp64 = false;
+                    break;
+                case PLCrashReportArchitectureX86_64:
+                    codeType = @"X86-64";
+                    lp64 = true;
+                    break;
+                case PLCrashReportArchitecturePPC:
+                    codeType = @"PPC";
+                    lp64 = false;
+                    break;
+                default:
+                    codeType = [NSString stringWithFormat: @"Unknown (%d)", report.systemInfo.architecture];
+                    lp64 = true;
+                    break;
+            }
+        }
     }
-    
+
     {
         NSString *hardwareModel = @"???";
         if (report.hasMachineInfo && report.machineInfo.modelName != nil)
