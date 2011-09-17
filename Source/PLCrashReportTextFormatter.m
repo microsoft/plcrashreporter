@@ -208,7 +208,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         
         [text appendFormat: @"Date/Time:       %@\n", report.systemInfo.timestamp];
         [text appendFormat: @"OS Version:      %@ %@ (%@)\n", osName, report.systemInfo.operatingSystemVersion, osBuild];
-        [text appendFormat: @"Report Version:  103\n"];        
+        [text appendFormat: @"Report Version:  104\n"];        
     }
 
     [text appendString: @"\n"];
@@ -303,18 +303,57 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
             uuid = imageInfo.imageUUID;
         else
             uuid = @"???";
+        
+        /* Determine the architecture string */
+        NSString *archName = @"???";
+        if (imageInfo.codeType != nil && imageInfo.codeType.typeEncoding == PLCrashReportProcessorTypeEncodingMach) {
+            switch (imageInfo.codeType.type) {
+                case CPU_TYPE_ARM:
+                    /* Apple includes subtype for ARM binaries. */
+                    switch (imageInfo.codeType.subtype) {
+                        case CPU_SUBTYPE_ARM_V6:
+                            archName = @"armv6";
+                            break;
+
+                        case CPU_SUBTYPE_ARM_V7:
+                            archName = @"armv7";
+                            break;
+                            
+                        default:
+                            archName = @"arm-unknown";
+                            break;
+                    }
+                    break;
+                    
+                case CPU_TYPE_X86:
+                    archName = @"i386";
+                    break;
+                    
+                case CPU_TYPE_X86_64:
+                    archName = @"x86_64";
+                    break;
+
+                case CPU_TYPE_POWERPC:
+                    archName = @"powerpc";
+                    break;
+
+                default:
+                    // Use the default archName value (initialized above).
+                    break;
+            }
+        }
 
         /* Determine if this is the main executable */
         NSString *binaryDesignator = @" ";
         if ([imageInfo.imageName isEqual: report.processInfo.processPath])
             binaryDesignator = @"+";
         
-        /* base_address - terminating_address [designator]file_name identifier (<version>) <uuid> file_path */
+        /* base_address - terminating_address [designator]file_name arch <uuid> file_path */
         NSString *fmt = nil;
         if (lp64) {
-            fmt = @"%18#" PRIx64 " - %18#" PRIx64 " %@%@ \?\?\? (\?\?\?) <%@> %@\n";
+            fmt = @"%18#" PRIx64 " - %18#" PRIx64 " %@%@ %@  <%@> %@\n";
         } else {
-            fmt = @"%10#" PRIx64 " - %10#" PRIx64 " %@%@ \?\?\? (\?\?\?) <%@> %@\n";
+            fmt = @"%10#" PRIx64 " - %10#" PRIx64 " %@%@ %@  <%@> %@\n";
         }
 
         [text appendFormat: fmt,
@@ -322,6 +361,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
                             imageInfo.imageBaseAddress + imageInfo.imageSize,
                             binaryDesignator,
                             [imageInfo.imageName lastPathComponent],
+                            archName,
                             uuid,
                             imageInfo.imageName];
     }
