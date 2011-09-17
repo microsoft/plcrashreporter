@@ -182,9 +182,9 @@ message CrashReport {
         /* 128-bit object UUID (matches Mach-O DWARF dSYM files) */
         optional bytes uuid = 4;
 
-        /* The image's code type. If excluded the code type should be assumed to be equivalent to host
-         * processor. The code type may differ in the case of architectures with forwards-compatible
-         * code types, such as ARM, where armv6 and armv7 images may be freely mixed. */
+        /* The image's code type. Required for all v1.1+ crash reports. If excluded, should be assumed to be equivalent
+         * to the host architecture. The code type may differ between binaries in the case of architectures with
+         * forwards-compatible code types, such as ARM, where armv6 and armv7 images may be mixed. */
         optional Processor code_type = 5;
     }
 
