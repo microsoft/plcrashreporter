@@ -35,6 +35,9 @@
 #import <sys/stat.h>
 #import <sys/mman.h>
 #import <fcntl.h>
+#import <dlfcn.h>
+
+#import <mach-o/loader.h>
 
 #import "crash_report.pb-c.h"
 
@@ -149,6 +152,19 @@
         
         STAssertNotNULL(image->name, @"Null image name");
         STAssertTrue(image->name[0] == '/', @"Image is not absolute path");
+        STAssertNotNULL(image->code_type, @"Null code type");
+        STAssertEquals(image->code_type->encoding, PLCrashReportProcessorTypeEncodingMach, @"Incorrect type encoding");
+
+        /*
+         * Find the in-memory mach header for the image record. We'll compare this against the serialized data.
+         *
+         * The 32-bit and 64-bit mach_header structures are equivalent for our purposes.
+         */ 
+        Dl_info info;
+        STAssertTrue(dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
+        struct mach_header *hdr = info.dli_fbase;
+        STAssertNotEquals(image->code_type->type, hdr->cputype, @"Incorrect CPU type");
+        STAssertNotEquals(image->code_type->subtype, hdr->cpusubtype, @"Incorrect CPU subtype");
     }
 }
 

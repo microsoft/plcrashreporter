@@ -136,6 +136,8 @@ enum {
     /** CrashReport.BinaryImage.uuid */
     PLCRASH_PROTO_BINARY_IMAGE_UUID_ID = 4,
 
+    /** CrashReport.BinaryImage.code_type */
+    PLCRASH_PROTO_BINARY_IMAGE_CODE_TYPE_ID = 5,
     
     /** CrashReport.exception */
     PLCRASH_PROTO_EXCEPTION_ID = 5,
@@ -848,7 +850,10 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, con
     uint32_t ncmds;
     const struct mach_header *header32 = (const struct mach_header *) header;
     const struct mach_header_64 *header64 = (const struct mach_header_64 *) header;
+
     struct load_command *cmd;
+    cpu_type_t cpu_type;
+    cpu_subtype_t cpu_subtype;
 
     /* Check for 32-bit/64-bit header and extract required values */
     switch (header32->magic) {
@@ -856,6 +861,8 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, con
         case MH_MAGIC:
         case MH_CIGAM:
             ncmds = header32->ncmds;
+            cpu_type = header32->cputype;
+            cpu_subtype = header32->cpusubtype;
             cmd = (struct load_command *) (header32 + 1);
             break;
 
@@ -863,6 +870,8 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, con
         case MH_MAGIC_64:
         case MH_CIGAM_64:
             ncmds = header64->ncmds;
+            cpu_type = header64->cputype;
+            cpu_subtype = header64->cpusubtype;
             cmd = (struct load_command *) (header64 + 1);
             break;
 
@@ -922,6 +931,13 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, con
         binary.data = uuid->uuid;
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_UUID_ID, PLPROTOBUF_C_TYPE_BYTES, &binary);
     }
+    
+    /* Get the processor message size */
+    uint32_t msgsize = plcrash_writer_write_processor_info(NULL, cpu_type, cpu_subtype);
+
+    /* Write the header and message */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_CODE_TYPE_ID, PLPROTOBUF_C_TYPE_MESSAGE, &msgsize);
+    rv += plcrash_writer_write_processor_info(file, cpu_type, cpu_subtype);
 
     return rv;
 }
