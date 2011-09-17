@@ -33,6 +33,7 @@
 #import "PLCrashLogWriter.h"
 
 #import <fcntl.h>
+#import <dlfcn.h>
 
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
@@ -188,6 +189,20 @@
         } else if (!imageInfo.hasImageUUID) {
             STAssertNil(imageInfo.imageUUID, @"Info declares no UUID, but the imageUUID property is non-nil");
         }
+        
+        STAssertNotNil(imageInfo.codeType, @"Image code type is nil");
+        STAssertEquals(imageInfo.codeType.typeEncoding, PLCrashReportProcessorTypeEncodingMach, @"Incorrect type encoding");
+        
+        /*
+         * Find the in-memory mach header for the image record. We'll compare this against the serialized data.
+         *
+         * The 32-bit and 64-bit mach_header structures are equivalent for our purposes.
+         */ 
+        Dl_info info;
+        STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
+        struct mach_header *hdr = info.dli_fbase;
+        STAssertEquals(imageInfo.codeType.type, (uint64_t)hdr->cputype, @"Incorrect CPU type");
+        STAssertEquals(imageInfo.codeType.subtype, (uint64_t)hdr->cpusubtype, @"Incorrect CPU subtype");
     }
 }
 
