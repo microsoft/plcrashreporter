@@ -517,36 +517,27 @@ error:
             return nil;
         }
 
-        /* Convert UUID to hex string */
-        NSString *uuid = nil;
+        /* Extract UUID value */
+        NSData *uuid = nil;
         if (image->uuid.len == 0) {
             /* No UUID */
             uuid = nil;
-        } else if (image->uuid.len != IMAGE_UUID_DIGEST_LEN) {
-            /* Invalid UUID */
-            populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, @"Invalid image binary UUID length");
-            return nil;
-        } else if (image->uuid.len != 0) {
-            /* Valid UUID */
-    
-            /* Convert to ascii */
-            char output[(IMAGE_UUID_DIGEST_LEN * 2)];
-            const char hex[] = "0123456789abcdef";
-
-            for (int i = 0; i < IMAGE_UUID_DIGEST_LEN; i++) {
-                unsigned char c = ((unsigned char *) image->uuid.data)[i];
-                output[i * 2 + 0] = hex[c >> 4];
-                output[i * 2 + 1] = hex[c & 0x0F];
-            }
-    
-            uuid = [[[NSString alloc] initWithBytes: output length: sizeof(output) encoding: NSASCIIStringEncoding] autorelease];
+        } else {
+            uuid = [NSData dataWithBytes: image->uuid.data length: image->uuid.len];
         }
-
         assert(image->uuid.len == 0 || uuid != nil);
-        imageInfo = [[[PLCrashReportBinaryImageInfo alloc] initWithImageBaseAddress: image->base_address 
-                                                                       imageSize: image->size 
-                                                                       imageName: [NSString stringWithUTF8String: image->name]
-                                                                       imageUUID: uuid] autorelease];
+        
+        /* Extract code type (if available). */
+        PLCrashReportProcessorInfo *codeType = nil;
+        if ((codeType = [self extractProcessorInfo: image->code_type error: outError]) == nil)
+            return nil;
+
+
+        imageInfo = [[[PLCrashReportBinaryImageInfo alloc] initWithCodeType: codeType
+                                                                baseAddress: image->base_address
+                                                                       size: image->size
+                                                                       name: [NSString stringWithUTF8String: image->name]
+                                                                       uuid: uuid] autorelease];
         [images addObject: imageInfo];
     }
 
