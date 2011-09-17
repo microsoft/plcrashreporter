@@ -303,11 +303,24 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
             uuid = imageInfo.imageUUID;
         else
             uuid = @"???";
+
+        /* Determine if this is the main executable */
+        NSString *binaryDesignator = @" ";
+        if ([imageInfo.imageName isEqual: report.processInfo.processPath])
+            binaryDesignator = @"+";
         
-        /* base_address - terminating_address file_name identifier (<version>) <uuid> file_path */
-        [text appendFormat: @"0x%" PRIx64 " - 0x%" PRIx64 "  %@ \?\?\? (\?\?\?) <%@> %@\n",
+        /* base_address - terminating_address [designator]file_name identifier (<version>) <uuid> file_path */
+        NSString *fmt = nil;
+        if (lp64) {
+            fmt = @"%18#" PRIx64 " - %18#" PRIx64 " %@%@ \?\?\? (\?\?\?) <%@> %@\n";
+        } else {
+            fmt = @"%10#" PRIx64 " - %10#" PRIx64 " %@%@ \?\?\? (\?\?\?) <%@> %@\n";
+        }
+
+        [text appendFormat: fmt,
                             imageInfo.imageBaseAddress,
                             imageInfo.imageBaseAddress + imageInfo.imageSize,
+                            binaryDesignator,
                             [imageInfo.imageName lastPathComponent],
                             uuid,
                             imageInfo.imageName];
