@@ -163,8 +163,8 @@
         Dl_info info;
         STAssertTrue(dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
         struct mach_header *hdr = info.dli_fbase;
-        STAssertNotEquals(image->code_type->type, hdr->cputype, @"Incorrect CPU type");
-        STAssertNotEquals(image->code_type->subtype, hdr->cpusubtype, @"Incorrect CPU subtype");
+        STAssertEquals(image->code_type->type, hdr->cputype, @"Incorrect CPU type");
+        STAssertEquals(image->code_type->subtype, hdr->cpusubtype, @"Incorrect CPU subtype");
     }
 }
 
