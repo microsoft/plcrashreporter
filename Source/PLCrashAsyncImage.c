@@ -88,7 +88,7 @@ void plcrash_async_image_list_free (plcrash_async_image_list_t *list) {
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_image_list_append (plcrash_async_image_list_t *list, intptr_t header, const char *name) {
+void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_t header, const char *name) {
     /* Initialize the new entry. */
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
     new->header = header;
@@ -135,7 +135,7 @@ void plcrash_async_image_list_append (plcrash_async_image_list_t *list, intptr_t
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, intptr_t header) {
+void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, uintptr_t header) {
     /* Lock the list from other writers. */
     OSSpinLockLock(&list->write_lock); {
         /* Find the record. */

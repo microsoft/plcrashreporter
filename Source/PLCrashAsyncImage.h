@@ -38,7 +38,7 @@
  */
 typedef struct plcrash_async_image {
     /** The binary image's header address. */
-    intptr_t header;
+    uintptr_t header;
     
     /** The binary image's name/path. */
     char *name;
@@ -77,8 +77,8 @@ typedef struct plcrash_async_image_list {
 
 void plcrash_async_image_list_init (plcrash_async_image_list_t *list);
 void plcrash_async_image_list_free (plcrash_async_image_list_t *list);
-void plcrash_async_image_list_append (plcrash_async_image_list_t *list, intptr_t header, const char *name);
-void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, intptr_t header);
+void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_t header, const char *name);
+void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, uintptr_t header);
 
 void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, bool enable);
 plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t *list, plcrash_async_image_t *current);

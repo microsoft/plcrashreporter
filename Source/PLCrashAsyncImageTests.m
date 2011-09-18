@@ -59,7 +59,7 @@
     
     /* Verify the appended elements */
     plcrash_async_image_t *item = NULL;
-    for (intptr_t i = 0; i <= 5; i++) {
+    for (uintptr_t i = 0; i <= 5; i++) {
         /* Fetch the next item */
         item = plcrash_async_image_list_next(&_list, item);
         if (i <= 4) {
@@ -101,7 +101,7 @@
 
     /* Verify the contents of the list */
     plcrash_async_image_t *item = NULL;
-    intptr_t val = 0x0; 
+    uintptr_t val = 0x0; 
     for (int i = 0; i <= 3; i++) {
         /* Fetch the next item */
         item = plcrash_async_image_list_next(&_list, item);

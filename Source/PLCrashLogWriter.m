@@ -416,7 +416,7 @@ void plcrash_log_writer_add_image (plcrash_log_writer_t *writer, const void *hea
     }
 
     /* Register the image */
-    plcrash_async_image_list_append(&writer->image_info.image_list, (intptr_t)header_addr, info.dli_fname);
+    plcrash_async_image_list_append(&writer->image_info.image_list, (uintptr_t)header_addr, info.dli_fname);
 }
 
 /**
@@ -428,7 +428,7 @@ void plcrash_log_writer_add_image (plcrash_log_writer_t *writer, const void *hea
  * @warning This function is not async safe, and must be called outside of a signal handler.
  */
 void plcrash_log_writer_remove_image (plcrash_log_writer_t *writer, const void *header_addr) {
-    plcrash_async_image_list_remove(&writer->image_info.image_list, (intptr_t)header_addr);
+    plcrash_async_image_list_remove(&writer->image_info.image_list, (uintptr_t)header_addr);
 }
 
 /**
