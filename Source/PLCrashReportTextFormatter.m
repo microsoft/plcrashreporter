@@ -36,6 +36,9 @@
 
 @interface PLCrashReportTextFormatter (PrivateAPI)
 NSInteger binaryImageSort(id binary1, id binary2, void *context);
++ (NSString *) formatStackFrame: (PLCrashReportStackFrameInfo *) frameInfo 
+                     frameIndex: (NSUInteger) frameIndex
+                         report: (PLCrashReport *) report;
 @end
 
 
@@ -237,6 +240,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     
     /* Threads */
     PLCrashReportThreadInfo *crashed_thread = nil;
+    NSInteger maxThreadNum = 0;
     for (PLCrashReportThreadInfo *thread in report.threads) {
         if (thread.crashed) {
             [text appendFormat: @"Thread %ld Crashed:\n", (long) thread.threadNumber];
@@ -246,27 +250,31 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         }
         for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
             PLCrashReportStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
-            PLCrashReportBinaryImageInfo *imageInfo;
-            
-            /* Base image address containing instrumention pointer, offset of the IP from that base
-             * address, and the associated image name */
-            uint64_t baseAddress = 0x0;
-            uint64_t pcOffset = 0x0;
-            NSString *imageName = @"\?\?\?";
-            
-            imageInfo = [report imageForAddress: frameInfo.instructionPointer];
-            if (imageInfo != nil) {
-                imageName = [imageInfo.imageName lastPathComponent];
-                baseAddress = imageInfo.imageBaseAddress;
-                pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
-            }
-            
-            [text appendFormat: @"%-4ld%-36s0x%08" PRIx64 " 0x%" PRIx64 " + %" PRId64 "\n", 
-                    (long) frame_idx, [imageName UTF8String], frameInfo.instructionPointer, baseAddress, pcOffset];
+            [text appendString: [self formatStackFrame: frameInfo frameIndex: frame_idx report: report]];
+        }
+        [text appendString: @"\n"];
+
+        /* Track the highest thread number */
+        maxThreadNum = MAX(maxThreadNum, thread.threadNumber);
+    }
+    
+    /* If an exception stack trace is available, output a pseudo-thread to provide the frame info */
+    if (report.exceptionInfo != nil && report.exceptionInfo.stackFrames != nil && [report.exceptionInfo.stackFrames count] > 0) {
+        PLCrashReportExceptionInfo *exception = report.exceptionInfo;
+        NSInteger threadNum = maxThreadNum + 1;
+
+        /* Create the pseudo-thread header. We use the named thread format to mark this thread */
+        [text appendFormat: @"Thread %ld name:  Exception Backtrace\n", threadNum];
+        [text appendFormat: @"Thread %ld:\n", (long) threadNum];
+
+        /* Write out the frames */
+        for (NSUInteger frame_idx = 0; frame_idx < [exception.stackFrames count]; frame_idx++) {
+            PLCrashReportStackFrameInfo *frameInfo = [exception.stackFrames objectAtIndex: frame_idx];
+            [text appendString: [self formatStackFrame: frameInfo frameIndex: frame_idx report: report]];
         }
         [text appendString: @"\n"];
     }
-    
+
     /* Registers */
     if (crashed_thread != nil) {
         [text appendFormat: @"Thread %ld crashed with %@ Thread State:\n", (long) crashed_thread.threadNumber, codeType];
@@ -409,6 +417,40 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
 
 
 @implementation PLCrashReportTextFormatter (PrivateMethods)
+
+/**
+ * Format a stack frame for display in a thread backtrace.
+ *
+ * @param frameInfo The stack frame to format
+ * @param frameIndex The frame's index
+ * @param report The report from which this frame was acquired.
+ *
+ * @return Returns a formatted frame line.
+ */
++ (NSString *) formatStackFrame: (PLCrashReportStackFrameInfo *) frameInfo 
+                     frameIndex: (NSUInteger) frameIndex
+                         report: (PLCrashReport *) report
+{
+    /* Base image address containing instrumention pointer, offset of the IP from that base
+     * address, and the associated image name */
+    uint64_t baseAddress = 0x0;
+    uint64_t pcOffset = 0x0;
+    NSString *imageName = @"\?\?\?";
+    
+    PLCrashReportBinaryImageInfo *imageInfo = [report imageForAddress: frameInfo.instructionPointer];
+    if (imageInfo != nil) {
+        imageName = [imageInfo.imageName lastPathComponent];
+        baseAddress = imageInfo.imageBaseAddress;
+        pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
+    }
+    
+    return [NSString stringWithFormat: @"%-4ld%-36s0x%08" PRIx64 " 0x%" PRIx64 " + %" PRId64 "\n", 
+            (long) frameIndex,
+            [imageName UTF8String],
+            frameInfo.instructionPointer, 
+            baseAddress, 
+            pcOffset];
+}
 
 /**
  * Sort PLCrashReportBinaryImageInfo instances by their starting address.
