@@ -455,7 +455,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
         size_t i = 0;
         for (NSNumber *num in callStackArray) {
             assert(i < count);
-            writer->uncaught_exception.callstack[i] = (void *)(intptr_t)[num unsignedLongLongValue];
+            writer->uncaught_exception.callstack[i] = (void *)(uintptr_t)[num unsignedLongLongValue];
             i++;
         }
     }
@@ -986,7 +986,7 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
     /* Write the stack frames, if any */
     uint32_t frame_count = 0;
     for (size_t i = 0; i < writer->uncaught_exception.callstack_count && frame_count < MAX_THREAD_FRAMES; i++) {
-        uint64_t pc = (uint64_t)(intptr_t) writer->uncaught_exception.callstack[i];
+        uint64_t pc = (uint64_t)(uintptr_t) writer->uncaught_exception.callstack[i];
         
         /* Determine the size */
         uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, pc);
@@ -1029,7 +1029,7 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t
     }
     
     /* Address value */
-    uint64_t addr = (intptr_t) siginfo->si_addr;
+    uint64_t addr = (uintptr_t) siginfo->si_addr;
 
     /* Write it out */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
