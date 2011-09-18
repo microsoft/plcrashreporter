@@ -178,6 +178,9 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
         case PLFRAME_ARM_PC:
             RETGEN(pc, ss, uap, reg);
             
+        case PLFRAME_ARM_CPSR:
+            RETGEN(cpsr, ss, uap, reg);
+            
         default:
             return PLFRAME_ENOTSUP;
     }
@@ -230,6 +233,9 @@ const char *plframe_get_regname (plframe_regnum_t regnum) {
             
         case PLFRAME_ARM_PC:
             return "pc";
+
+        case PLFRAME_ARM_CPSR:
+            return "cpsr";
             
         default:
             // Unsupported register
