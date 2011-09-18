@@ -281,7 +281,18 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
             else
                 reg_fmt = @"%6s: 0x%08" PRIx64 " ";
             
-            [text appendFormat: reg_fmt, [reg.registerName UTF8String], reg.registerValue];
+            /* Remap register names to match Apple's crash reports */
+            NSString *regName = reg.registerName;
+            if (report.machineInfo != nil && report.machineInfo.processorInfo.typeEncoding == PLCrashReportProcessorTypeEncodingMach) {
+                PLCrashReportProcessorInfo *pinfo = report.machineInfo.processorInfo;
+                cpu_type_t arch_type = pinfo.type & ~CPU_ARCH_MASK;
+
+                /* Apple uses 'ip' rather than 'r12' on ARM */
+                if (arch_type == CPU_TYPE_ARM && [regName isEqual: @"r12"]) {
+                    regName = @"ip";
+                }
+            }
+            [text appendFormat: reg_fmt, [regName UTF8String], reg.registerValue];
 
             regColumn++;
             if (regColumn == 4) {
