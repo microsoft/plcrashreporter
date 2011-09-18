@@ -66,13 +66,16 @@ typedef enum {
 
     /** Program counter (r15) */
     PLFRAME_ARM_PC,
+    
+    /** Current program status register */
+    PLFRAME_ARM_CPSR,
 
     /* Common registers */
     
     PLFRAME_PDEF_REG_IP = PLFRAME_ARM_PC,
     
     /** Last register */
-    PLFRAME_PDEF_LAST_REG = PLFRAME_ARM_PC
+    PLFRAME_PDEF_LAST_REG = PLFRAME_ARM_CPSR
 } plframe_arm_regnum_t;
 
 #endif
