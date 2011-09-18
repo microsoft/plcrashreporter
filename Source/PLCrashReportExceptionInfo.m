@@ -29,31 +29,48 @@
 #import "PLCrashReportExceptionInfo.h"
 
 /**
- * If a crash is triggered by an uncaught Objective-C exception, the
- * exception name and reason will be made available.
+ * If a crash is triggered by an uncaught Objective-C exception, the exception name and reason will be made available.
  */
 @implementation PLCrashReportExceptionInfo
 
+@synthesize exceptionName = _name;
+@synthesize exceptionReason = _reason;
+@synthesize stackFrames = _stackFrames;
+
 /**
  * Initialize with the given exception name and reason.
+ *
+ * @param name Exception name.
+ * @param reason Exception reason.
  */
 - (id) initWithExceptionName: (NSString *) name reason: (NSString *) reason {
+    return [self initWithExceptionName: name reason: reason stackFrames: nil];
+}
+
+/**
+ * Initialize with the given exception name, reason, and call stack.
+ *
+ * @param name Exception name.
+ * @param reason Exception reason.
+ * @param stackFrames The exception's original call stack, as an array of PLCrashReportStackFrameInfo instances.
+ */
+- (id) initWithExceptionName: (NSString *) name reason: (NSString *) reason stackFrames: (NSArray *) stackFrames {
     if ((self = [super init]) == nil)
         return nil;
-
+    
     _name = [name retain];
     _reason = [reason retain];
-
+    _stackFrames = [stackFrames retain];
+    
     return self;
 }
 
 - (void) dealloc {
     [_name release];
     [_reason release];
+    [_stackFrames release];
+
     [super dealloc];
 }
-
-@synthesize exceptionName = _name;
-@synthesize exceptionReason = _reason;
 
 @end
