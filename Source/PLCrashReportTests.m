@@ -98,8 +98,15 @@
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
     
-    /* Set an exception */
-    plcrash_log_writer_set_exception(&writer, [NSException exceptionWithName: @"TestException" reason: @"TestReason" userInfo: nil]);
+    /* Set an exception with a valid return address call stack. */
+    NSException *exception;
+    @try {
+        [NSException raise: @"TestException" format: @"TestReason"];
+    }
+    @catch (NSException *e) {
+        exception = e;
+    }
+    plcrash_log_writer_set_exception(&writer, exception);
 
     /* Provide binary image info */
     uint32_t image_count = _dyld_image_count();
@@ -155,6 +162,17 @@
     /* Signal info */
     STAssertEqualStrings(@"SIGSEGV", crashLog.signalInfo.name, @"Signal is incorrect");
     STAssertEqualStrings(@"SEGV_MAPERR", crashLog.signalInfo.code, @"Signal code is incorrect");
+    
+    /* Exception info */
+    STAssertNotNil(crashLog.exceptionInfo, @"Exception info is nil");
+    STAssertEqualStrings(crashLog.exceptionInfo.exceptionName, [exception name], @"Exceptio name is incorrect");
+    STAssertEqualStrings(crashLog.exceptionInfo.exceptionReason, [exception reason], @"Exception name is incorrect");
+    NSUInteger exceptionFrameCount = [[exception callStackReturnAddresses] count];
+    for (NSUInteger i = 0; i < exceptionFrameCount; i++) {
+        NSNumber *retAddr = [[exception callStackReturnAddresses] objectAtIndex: i];
+        PLCrashReportStackFrameInfo *sf = [crashLog.exceptionInfo.stackFrames objectAtIndex: i];
+        STAssertEquals(sf.instructionPointer, [retAddr unsignedLongLongValue], @"Stack frame address is incorrect");
+    }
 
     /* Thread info */
     STAssertNotNil(crashLog.threads, @"Thread list is nil");
