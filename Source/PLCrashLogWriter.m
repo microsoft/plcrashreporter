@@ -102,13 +102,13 @@ enum {
 
     /** CrashReports.thread.frames */
     PLCRASH_PROTO_THREAD_FRAMES_ID = 2,
-    
-    /** CrashReport.thread.frame.pc */
-    PLCRASH_PROTO_THREAD_FRAME_PC_ID = 3,
 
     /** CrashReport.thread.crashed */
     PLCRASH_PROTO_THREAD_CRASHED_ID = 3,
 
+
+    /** CrashReport.thread.frame.pc */
+    PLCRASH_PROTO_THREAD_FRAME_PC_ID = 3,
 
 
     /** CrashReport.thread.registers */
@@ -138,6 +138,7 @@ enum {
 
     /** CrashReport.BinaryImage.code_type */
     PLCRASH_PROTO_BINARY_IMAGE_CODE_TYPE_ID = 5,
+
     
     /** CrashReport.exception */
     PLCRASH_PROTO_EXCEPTION_ID = 5,
@@ -147,6 +148,10 @@ enum {
     
     /** CrashReport.exception.reason */
     PLCRASH_PROTO_EXCEPTION_REASON_ID = 2,
+    
+    /** CrashReports.exception.frames */
+    PLCRASH_PROTO_EXCEPTION_FRAMES_ID = 3,
+
 
     /** CrashReport.signal */
     PLCRASH_PROTO_SIGNAL_ID = 6,
@@ -439,6 +444,24 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
     writer->uncaught_exception.has_exception = true;
     writer->uncaught_exception.name = strdup([[exception name] UTF8String]);
     writer->uncaught_exception.reason = strdup([[exception reason] UTF8String]);
+
+    /* Save the call stack, if available */
+    NSArray *callStackArray = [exception callStackReturnAddresses];
+    if (callStackArray != nil && [callStackArray count] > 0) {
+        size_t count = [callStackArray count];
+        writer->uncaught_exception.callstack_count = count;
+        writer->uncaught_exception.callstack = malloc(sizeof(void *) * count);
+
+        size_t i = 0;
+        for (NSNumber *num in callStackArray) {
+            assert(i < count);
+            writer->uncaught_exception.callstack[i] = (void *)(intptr_t)[num unsignedLongLongValue];
+            i++;
+        }
+    }
+
+    /* Ensure that any signal handler has a consistent view of the above initialization. */
+    OSMemoryBarrier();
 }
 
 /**
@@ -491,6 +514,9 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
 
         if (writer->uncaught_exception.reason != NULL)
             free(writer->uncaught_exception.reason);
+        
+        if (writer->uncaught_exception.callstack != NULL)
+            free(writer->uncaught_exception.callstack);
     }
 }
 
@@ -736,21 +762,12 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
  * Write a thread backtrace frame
  *
  * @param file Output file
- * @param cursor The cursor from which to acquire frame data.
+ * @param pcval The frame PC value.
  */
-static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plframe_cursor_t *cursor) {
-    plframe_error_t err;
-    uint64_t uint64val;
+static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uint64_t pcval) {
     size_t rv = 0;
 
-    /* PC */
-    plframe_greg_t pc = 0;
-    if ((err = plframe_get_reg(cursor, PLFRAME_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
-        PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(err));
-        return 0;
-    }
-    uint64val = pc;
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &uint64val);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &pcval);
 
     return rv;
 }
@@ -810,11 +827,18 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
         while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < MAX_THREAD_FRAMES) {
             uint32_t frame_size;
 
+            /* Fetch the PC value */
+            plframe_greg_t pc = 0;
+            if ((ferr = plframe_get_reg(&cursor, PLFRAME_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
+                PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(ferr));
+                break;
+            }
+
             /* Determine the size */
-            frame_size = plcrash_writer_write_thread_frame(NULL, &cursor);
+            frame_size = plcrash_writer_write_thread_frame(NULL, pc);
             
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
-            rv += plcrash_writer_write_thread_frame(file, &cursor);
+            rv += plcrash_writer_write_thread_frame(file, pc);
             frame_count++;
         }
 
@@ -958,6 +982,19 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
     assert(writer->uncaught_exception.has_exception);
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_NAME_ID, PLPROTOBUF_C_TYPE_STRING, writer->uncaught_exception.name);
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_REASON_ID, PLPROTOBUF_C_TYPE_STRING, writer->uncaught_exception.reason);
+    
+    /* Write the stack frames, if any */
+    uint32_t frame_count = 0;
+    for (size_t i = 0; i < writer->uncaught_exception.callstack_count && frame_count < MAX_THREAD_FRAMES; i++) {
+        uint64_t pc = (uint64_t)(intptr_t) writer->uncaught_exception.callstack[i];
+        
+        /* Determine the size */
+        uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, pc);
+        
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
+        rv += plcrash_writer_write_thread_frame(file, pc);
+        frame_count++;
+    }
 
     return rv;
 }

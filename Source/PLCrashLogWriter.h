@@ -122,6 +122,12 @@ typedef struct plcrash_log_writer {
 
         /** Exception reason (may be null) */
         char *reason;
+
+        /** The original exception call stack (may be null) */
+        void **callstack;
+        
+        /** Call stack frame count, or 0 if the call stack is unavailable */
+        size_t callstack_count;
     } uncaught_exception;
 } plcrash_log_writer_t;
 
