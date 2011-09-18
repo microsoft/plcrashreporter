@@ -198,6 +198,10 @@ message CrashReport {
 
         /* The exception reason */
         required string reason = 2;
+        
+        /* The exception's original call stack, if available. This may be preserved across rethrow of an exception,
+         * and can be used to determine the original call stack. */
+        repeated Thread.StackFrame frames = 3;
     }
 
     /* The exception that triggered the crash (if any) */

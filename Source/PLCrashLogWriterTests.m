@@ -174,6 +174,12 @@
     STAssertNotNULL(exception, @"No exception was written");
     STAssertTrue(strcmp(exception->name, "TestException") == 0, @"Exception name was not correctly serialized");
     STAssertTrue(strcmp(exception->reason, "TestReason") == 0, @"Exception reason was not correctly serialized");
+
+    STAssertTrue(exception->n_frames, @"0 exception frames were written");
+    for (int i = 0; i < exception->n_frames; i++) {
+        Plcrash__CrashReport__Thread__StackFrame *f = exception->frames[i];
+        STAssertNotEquals((uint64_t)0, f->pc, @"Backtrace includes NULL pc");
+    }
 }
 
 
@@ -204,8 +210,15 @@
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
 
-    /* Set an exception */
-    plcrash_log_writer_set_exception(&writer, [NSException exceptionWithName: @"TestException" reason: @"TestReason" userInfo: nil]);
+    /* Set an exception with a valid return address call stack. */
+    NSException *e;
+    @try {
+        [NSException raise: @"TestException" format: @"TestReason"];
+    }
+    @catch (NSException *exception) {
+        e = exception;
+    }
+    plcrash_log_writer_set_exception(&writer, e);
 
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
