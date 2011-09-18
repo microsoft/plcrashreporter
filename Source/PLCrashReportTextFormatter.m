@@ -271,24 +271,26 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     if (crashed_thread != nil) {
         [text appendFormat: @"Thread %ld crashed with %@ Thread State:\n", (long) crashed_thread.threadNumber, codeType];
         
-        int regColumn = 1;
+        int regColumn = 0;
         for (PLCrashReportRegisterInfo *reg in crashed_thread.registers) {
             NSString *reg_fmt;
             
             /* Use 32-bit or 64-bit fixed width format for the register values */
             if (lp64)
-                reg_fmt = @"%6s:\t0x%016" PRIx64 " ";
+                reg_fmt = @"%6s: 0x%016" PRIx64 " ";
             else
-                reg_fmt = @"%6s:\t0x%08" PRIx64 " ";
+                reg_fmt = @"%6s: 0x%08" PRIx64 " ";
             
             [text appendFormat: reg_fmt, [reg.registerName UTF8String], reg.registerValue];
-            
-            if (regColumn % 4 == 0)
-                [text appendString: @"\n"];
+
             regColumn++;
+            if (regColumn == 4) {
+                [text appendString: @"\n"];
+                regColumn = 0;
+            }
         }
         
-        if (regColumn % 3 != 0)
+        if (regColumn != 0)
             [text appendString: @"\n"];
         
         [text appendString: @"\n"];
