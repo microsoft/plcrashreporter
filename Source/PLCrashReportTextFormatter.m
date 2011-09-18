@@ -358,7 +358,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
 
         [text appendFormat: fmt,
                             imageInfo.imageBaseAddress,
-                            imageInfo.imageBaseAddress + imageInfo.imageSize,
+                            imageInfo.imageBaseAddress + (MAX(1, imageInfo.imageSize) - 1), // The Apple format uses an inclusive range
                             binaryDesignator,
                             [imageInfo.imageName lastPathComponent],
                             archName,
