@@ -59,7 +59,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
  */
 + (NSString *) stringValueForCrashReport: (PLCrashReport *) report withTextFormat: (PLCrashReportTextFormat) textFormat {
 	NSMutableString* text = [NSMutableString string];
-	boolean_t lp64;
+	boolean_t lp64 = true; // quiesce GCC uninitialized value warning
     
 	/* Header */
 	
