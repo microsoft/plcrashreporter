@@ -473,13 +473,6 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
-		052A45DB1363542E00987004 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 058812B81040582D009128FB;
-			remoteInfo = "CrashReporter-iPhone";
-		};
 		052A46241363553400987004 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -1551,7 +1544,6 @@
 				05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */,
 			);
 			dependencies = (
-				052A45DC1363542E00987004 /* PBXTargetDependency */,
 			);
 			name = "CrashReporter-MacOSX-Static";
 			productName = "CrashReporter-MacOSX-Static";
@@ -2077,11 +2069,6 @@
 			isa = PBXTargetDependency;
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */;
 			targetProxy = 050DE25C0F61B92C00152ED3 /* PBXContainerItemProxy */;
-		};
-		052A45DC1363542E00987004 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 058812B81040582D009128FB /* CrashReporter-iOS */;
-			targetProxy = 052A45DB1363542E00987004 /* PBXContainerItemProxy */;
 		};
 		052A46251363553400987004 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
