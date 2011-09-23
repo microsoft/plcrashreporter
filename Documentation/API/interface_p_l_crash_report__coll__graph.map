@@ -1,0 +1,8 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$interface_p_l_crash_report_application_info.html" title="Crash log application data." alt="" coords="349,5,557,32"/>
+<area shape="rect" id="node4" href="$interface_p_l_crash_report_exception_info.html" title="If a crash is triggered by an uncaught Objective&#45;C exception, the exception name and reason will be m..." alt="" coords="353,56,553,83"/>
+<area shape="rect" id="node6" href="$interface_p_l_crash_report_signal_info.html" title="Provides access to the signal name and signal code." alt="" coords="365,107,542,133"/>
+<area shape="rect" id="node8" href="$interface_p_l_crash_report_process_info.html" title="Crash log process data." alt="" coords="359,157,547,184"/>
+<area shape="rect" id="node10" href="$interface_p_l_crash_report_machine_info.html" title="Crash log host architecture information." alt="" coords="358,208,549,235"/>
+<area shape="rect" id="node12" href="$interface_p_l_crash_report_processor_info.html" title="Crash log processor record." alt="" coords="6,208,207,235"/>
+</map>
