@@ -49,7 +49,7 @@ struct signal_code {
 
 #if __APPLE__
 /* Values derived from <sys/signal.h> */
-struct signal_name signal_names[] = {
+static struct signal_name signal_names[] = {
     { SIGHUP,   "SIGHUP" },
     { SIGINT,   "SIGINT" },
     { SIGQUIT,  "SIGQUIT" },
@@ -89,7 +89,7 @@ struct signal_name signal_names[] = {
     { 0, NULL }
 };
 
-struct signal_code signal_codes[] = {
+static struct signal_code signal_codes[] = {
     /* SIGILL */
     { SIGILL,   ILL_NOOP,       "ILL_NOOP"    },
     { SIGILL,   ILL_ILLOPC,     "ILL_ILLOPC"  },
