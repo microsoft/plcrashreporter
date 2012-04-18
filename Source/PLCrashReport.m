@@ -149,6 +149,7 @@ error:
 - (void) dealloc {
     /* Free the data objects */
     [_systemInfo release];
+    [_machineInfo release];
     [_applicationInfo release];
     [_processInfo release];
     [_signalInfo release];
