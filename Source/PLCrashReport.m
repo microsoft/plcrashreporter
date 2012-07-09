@@ -330,7 +330,7 @@ error:
  */
 - (PLCrashReportMachineInfo *) extractMachineInfo: (Plcrash__CrashReport__MachineInfo *) machineInfo error: (NSError **) outError {
     NSString *model = nil;
-    PLCrashReportProcessorInfo *processorInfo;
+    PLCrashReportProcessorInfo *processorInfo = nil;
 
     /* Validate */
     if (machineInfo == NULL) {
@@ -345,9 +345,11 @@ error:
         model = [NSString stringWithUTF8String: machineInfo->model];
 
     /* Set up the processor info. */
-    processorInfo = [self extractProcessorInfo: machineInfo->processor error: outError];
-    if (processorInfo == nil)
-        return nil;
+    if (machineInfo->processor != NULL) {
+        processorInfo = [self extractProcessorInfo: machineInfo->processor error: outError];
+        if (processorInfo == nil)
+            return nil;
+    }
 
     /* Done */
     return [[[PLCrashReportMachineInfo alloc] initWithModelName: model
@@ -547,8 +549,10 @@ error:
         
         /* Extract code type (if available). */
         PLCrashReportProcessorInfo *codeType = nil;
-        if ((codeType = [self extractProcessorInfo: image->code_type error: outError]) == nil)
-            return nil;
+        if (image->code_type != NULL) {
+            if ((codeType = [self extractProcessorInfo: image->code_type error: outError]) == nil)
+                return nil;
+        }
 
 
         imageInfo = [[[PLCrashReportBinaryImageInfo alloc] initWithCodeType: codeType
