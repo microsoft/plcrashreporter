@@ -45,7 +45,7 @@
  * Initialize a new machine info data object.
  *
  * @param modelName The hardware model name (eg, MacBookPro6,1). This may be nil.
- * @param processorInfo The processor type.
+ * @param processorInfo The processor type, or nil if unavailable.
  * @param processorCount The number of actual physical processor cores. Note that the number of active processors may be managed by the
  * operating system's power management system, and this value may not reflect the number of active
  * processors at the time of the crash.
