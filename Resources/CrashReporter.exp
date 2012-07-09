@@ -4,14 +4,17 @@
 # Created by Landon Fuller on 12/5/08.
 # Copyright 2008-2011 Plausible Labs Cooperative, Inc. All rights reserved.
 
+# Prefix wild-cards are used to support the case where a third-party integrator
+# adds their own class prefix via PLCrashReporterNamespace.h
+
 # PLCrashReporter
-_PLCrashReporterException
-_PLCrashReporterErrorDomain
+_*PLCrashReporterException
+_*PLCrashReporterErrorDomain
 
 # Export all Objective-C classes; they're picked up by the runtime regardless.
-.objc_class_name_PL*
-_OBJC_CLASS_$_PL*
+.objc_class_name_*PL*
+_OBJC_CLASS_$_*PL*
 
 # PLCrashReport
-_PLCrashReportHostOperatingSystem
-_PLCrashReportHostArchitecture
+_*PLCrashReportHostOperatingSystem
+_*PLCrashReportHostArchitecture
