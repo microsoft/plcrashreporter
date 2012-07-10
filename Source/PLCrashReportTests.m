@@ -31,6 +31,7 @@
 #import "PLCrashReporter.h"
 #import "PLCrashFrameWalker.h"
 #import "PLCrashLogWriter.h"
+#import "PLCrashAsyncImage.h"
 
 #import <fcntl.h>
 #import <dlfcn.h>
@@ -75,6 +76,7 @@
     plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
+    plcrash_async_image_list_t image_list;
     NSError *error = nil;
     
     /* Initialze faux crash data */
@@ -109,17 +111,19 @@
     plcrash_log_writer_set_exception(&writer, exception);
 
     /* Provide binary image info */
+    plcrash_async_image_list_init(&image_list);
     uint32_t image_count = _dyld_image_count();
     for (uint32_t i = 0; i < image_count; i++) {
-        plcrash_log_writer_add_image(&writer, _dyld_get_image_header(i));
-    }            
+        plcrash_async_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
+    }
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
-    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &image_list, &file, &info, cursor.uap), @"Crash log failed");
+
     /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
+    plcrash_async_image_list_free(&image_list);
 
     plcrash_async_file_flush(&file);
     plcrash_async_file_close(&file);
