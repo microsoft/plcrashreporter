@@ -84,7 +84,11 @@ static struct {
  * Root fatal signal handler */
 static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     /* Remove all signal handlers -- if the dump code fails, the default terminate
-     * action will occur */
+     * action will occur.
+     *
+     * NOTE: SA_RESETHAND breaks SA_SIGINFO on ARM, so we reset the handlers manually.
+     * http://openradar.appspot.com/11839803
+     */
     for (int i = 0; i < n_fatal_signals; i++) {
         struct sigaction sa;
         
