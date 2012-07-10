@@ -39,4 +39,12 @@
     STAssertTrue([PLCrashReporter sharedReporter] == [PLCrashReporter sharedReporter], @"Crash reporter did not return singleton instance");
 }
 
+/**
+ * Test generation of a 'live' crash report.
+ */
+- (void) testGenerateLiveReport {
+    // TODO
+    [[PLCrashReporter sharedReporter] generateLiveReport];
+}
+
 @end
