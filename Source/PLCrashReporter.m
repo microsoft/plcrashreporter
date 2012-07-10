@@ -34,6 +34,7 @@
 #import "PLCrashLogWriter.h"
 
 #import <fcntl.h>
+#import <dlfcn.h>
 #import <mach-o/dyld.h>
 
 #define NSDEBUG(msg, args...) {\
@@ -80,6 +81,13 @@ typedef struct signal_handler_ctx {
     const char *path;
 } plcrashreporter_handler_ctx_t;
 
+/**
+ * @internal
+ *
+ * Shared dyld image list.
+ */
+static plcrash_async_image_list_t shared_image_list;
+
 
 /**
  * @internal
@@ -120,7 +128,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
     /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write(&sigctx->writer, &file, info, uap);
+    plcrash_log_writer_write(&sigctx->writer, &shared_image_list, &file, info, uap);
     plcrash_log_writer_close(&sigctx->writer);
 
     /* Finished */
@@ -137,7 +145,16 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
  * dyld image add notification callback.
  */
 static void image_add_callback (const struct mach_header *mh, intptr_t vmaddr_slide) {
-    plcrash_log_writer_add_image(&signal_handler_context.writer, mh);
+    Dl_info info;
+    
+    /* Look up the image info */
+    if (dladdr(mh, &info) == 0) {
+        NSLog(@"%s: dladdr(%p, ...) failed", __FUNCTION__, mh);
+        return;
+    }
+
+    /* Register the image */
+    plcrash_async_image_list_append(&shared_image_list, (uintptr_t) mh, info.dli_fname);    
 }
 
 /**
@@ -145,7 +162,7 @@ static void image_add_callback (const struct mach_header *mh, intptr_t vmaddr_sl
  * dyld image remove notification callback.
  */
 static void image_remove_callback (const struct mach_header *mh, intptr_t vmaddr_slide) {
-    plcrash_log_writer_remove_image(&signal_handler_context.writer, mh);
+    plcrash_async_image_list_remove(&shared_image_list, (uintptr_t) mh);
 }
 
 
@@ -185,6 +202,16 @@ static void uncaught_exception_handler (NSException *exception) {
  * Shared application crash reporter.
  */
 @implementation PLCrashReporter
+
++ (void) initialize {
+    if (![[self class] isEqual: [PLCrashReporter class]])
+        return;
+
+    /* Enable dyld image monitoring */
+    plcrash_async_image_list_init(&shared_image_list);
+    _dyld_register_func_for_add_image(image_add_callback);
+    _dyld_register_func_for_remove_image(image_remove_callback);
+}
 
 /**
  * Return the application's crash reporter instance.
@@ -303,10 +330,6 @@ static void uncaught_exception_handler (NSException *exception) {
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion);
-    
-    /* Enable dyld image monitoring */
-    _dyld_register_func_for_add_image(image_add_callback);
-    _dyld_register_func_for_remove_image(image_remove_callback);
 
     /* Enable the signal handler */
     if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])

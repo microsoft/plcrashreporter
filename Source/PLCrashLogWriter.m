@@ -388,47 +388,11 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString 
 #else
 #error Unsupported Platform
 #endif
-    
-    /* Initialize the image info list. */
-    plcrash_async_image_list_init(&writer->image_info.image_list);
 
     /* Ensure that any signal handler has a consistent view of the above initialization. */
     OSMemoryBarrier();
 
     return PLCRASH_ESUCCESS;
-}
-
-/**
- * Register a binary image with this writer.
- *
- * @param writer The writer to which the image's information will be added.
- * @param header_addr The image's address.
- *
- * @warning This function is not async safe, and must be called outside of a signal handler.
- */
-void plcrash_log_writer_add_image (plcrash_log_writer_t *writer, const void *header_addr) {
-    Dl_info info;
-
-    /* Look up the image info */
-    if (dladdr(header_addr, &info) == 0) {
-        PLCF_DEBUG("dladdr(%p, ...) failed", header_addr);
-        return;
-    }
-
-    /* Register the image */
-    plcrash_async_image_list_append(&writer->image_info.image_list, (uintptr_t)header_addr, info.dli_fname);
-}
-
-/**
- * Deregister a binary image from this writer.
- *
- * @param writer The writer from which the image's information will be removed.
- * @param header_addr The image's address.
- *
- * @warning This function is not async safe, and must be called outside of a signal handler.
- */
-void plcrash_log_writer_remove_image (plcrash_log_writer_t *writer, const void *header_addr) {
-    plcrash_async_image_list_remove(&writer->image_info.image_list, (uintptr_t)header_addr);
 }
 
 /**
@@ -503,9 +467,6 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     /* Free the machine info */
     if (writer->machine_info.model != NULL)
         free(writer->machine_info.model);
-
-    /* Free the binary image info */
-    plcrash_async_image_list_free(&writer->image_info.image_list);
 
     /* Free the exception data */
     if (writer->uncaught_exception.has_exception) {
@@ -1043,6 +1004,7 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t
  * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
  * @param writer The writer context
+ * @param image_list The current list of loaded binary images.
  * @param file The output file.
  * @param siginfo Signal information
  * @param crashctx Context of the crashed thread.
@@ -1051,7 +1013,7 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t
  * to the provided crashctx. Failure to adhere to this requirement will result in an invalid stack trace
  * and thread dump.
  */
-plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
+plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_async_image_list_t *image_list, plcrash_async_file_t *file, siginfo_t *siginfo, ucontext_t *crashctx) {
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
 
@@ -1170,10 +1132,10 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
     }
 
     /* Binary Images */
-    plcrash_async_image_list_set_reading(&writer->image_info.image_list, true);
+    plcrash_async_image_list_set_reading(image_list, true);
 
     plcrash_async_image_t *image = NULL;
-    while ((image = plcrash_async_image_list_next(&writer->image_info.image_list, image)) != NULL) {
+    while ((image = plcrash_async_image_list_next(image_list, image)) != NULL) {
         uint32_t size;
 
         /* Calculate the message size */
@@ -1183,7 +1145,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         plcrash_writer_write_binary_image(file, image->name, (const void *) image->header);
     }
 
-    plcrash_async_image_list_set_reading(&writer->image_info.image_list, false);
+    plcrash_async_image_list_set_reading(image_list, false);
 
     /* Exception */
     if (writer->uncaught_exception.has_exception) {

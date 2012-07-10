@@ -31,6 +31,7 @@
 #import "PLCrashReport.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
+#import "PLCrashAsyncImage.h"
 
 #import <sys/stat.h>
 #import <sys/mman.h>
@@ -188,6 +189,7 @@
     plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
+    plcrash_async_image_list_t image_list;
 
     /* Initialze faux crash data */
     {
@@ -209,6 +211,9 @@
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
+    
+    /* Initialize the image list */
+    plcrash_async_image_list_init(&image_list);
 
     /* Set an exception with a valid return address call stack. */
     NSException *e;
@@ -221,11 +226,12 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &file, &info, cursor.uap), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &image_list, &file, &info, cursor.uap), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
+    plcrash_async_image_list_free(&image_list);
 
     /* Flush the output */
     plcrash_async_file_flush(&file);
