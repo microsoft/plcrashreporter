@@ -27,6 +27,8 @@
  */
 
 #import "GTMSenTestCase.h"
+
+#import "PLCrashReport.h"
 #import "PLCrashReporter.h"
 
 @interface PLCrashReporterTests : SenTestCase
@@ -43,8 +45,12 @@
  * Test generation of a 'live' crash report.
  */
 - (void) testGenerateLiveReport {
-    // TODO
-    [[PLCrashReporter sharedReporter] generateLiveReport];
+    NSError *error = nil; // TODO - nil until we add NSError reporting
+    NSData *reportData = [[PLCrashReporter sharedReporter] generateLiveReportAndReturnError: &error];
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
 }
 
 @end
