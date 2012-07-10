@@ -320,6 +320,35 @@ static void uncaught_exception_handler (NSException *exception) {
     return YES;
 }
 
+
+/**
+ * Generate a live crash report, without triggering an actual crash condition. This may be used to log
+ * current process state without actually crashing. The crash report data will be returned on
+ * success.
+ * 
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the pending crash report could not be
+ * loaded. If no error occurs, this parameter will be left unmodified. You may specify
+ * nil for this parameter, and no error information will be provided.
+ *
+ * @return Returns nil if the crash report data could not be loaded.
+ */
+- (NSData *) generateLiveReport {
+    return [self generateLiveReportAndReturnError: NULL];
+}
+
+/**
+ * Generate a live crash report, without triggering an actual crash condition. This may be used to log
+ * current process state without actually crashing. The crash report data will be returned on
+ * success.
+ * 
+ * @return Returns nil if the crash report data could not be loaded.
+ */
+- (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
+    // TODO
+    return nil;
+}
+
 /**
  * Set the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.
  *
