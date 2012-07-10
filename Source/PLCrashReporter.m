@@ -32,6 +32,7 @@
 
 #import "PLCrashAsync.h"
 #import "PLCrashLogWriter.h"
+#import "PLCrashFrameWalker.h"
 
 #import <fcntl.h>
 #import <dlfcn.h>
@@ -368,8 +369,49 @@ static void uncaught_exception_handler (NSException *exception) {
  * @return Returns nil if the crash report data could not be loaded.
  */
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
-    // TODO
-    return nil;
+    plcrash_log_writer_t writer;
+    plcrash_async_file_t file;
+    plframe_cursor_t cursor;
+    
+    /* Open the output file */
+    const char *path = "/tmp/reportsdf"; // TODO, use temporary path
+    int fd = open(path, O_RDWR|O_CREAT|O_TRUNC, 0644);
+    if (fd < 0) {
+        if (outError != NULL) {
+            // TODO - populate error
+            PLCF_DEBUG("Could not open the crashlog output file: %s", strerror(errno));
+        }
+        return nil;
+    }
+    
+    /* Initialize the output context */
+    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion);
+    plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
+
+    /* Fetch our thread context */
+    // TODO - getcontext implementation?
+    plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(pthread_self()));
+
+    /* Create a siginfo_t */
+    siginfo_t info;
+    
+    // TODO: provide real siginfo_t data
+    memset(&info, 0, sizeof(info));
+
+    /* Write the crash log using the already-initialized writer */
+    plcrash_log_writer_write(&writer, &shared_image_list, &file, &info, cursor.uap);
+    plcrash_log_writer_close(&writer);
+
+    /* Finished -- clean up. */
+    plcrash_async_file_flush(&file);
+    plcrash_async_file_close(&file);
+
+    plcrash_log_writer_free(&writer);
+
+    NSData *data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
+    // TODO - delete temporary file
+    // TODO - detect error reading the temporary path
+    return data;
 }
 
 /**
