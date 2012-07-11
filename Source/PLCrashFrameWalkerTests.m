@@ -87,4 +87,11 @@
     }
 }
 
+/* test plframe_getcontext() */
+- (void) testGetContext {
+    ucontext_t ctx;
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_getcontext(&ctx), @"Failed to fetch context");
+    // TODO - check the context
+}
+
 @end

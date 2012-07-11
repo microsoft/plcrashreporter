@@ -159,6 +159,13 @@ void plframe_test_thread_stop (plframe_test_thead_t *args);
 /* Platform specific funtions */
 
 /**
+ * Save the calling thread's current context to @a uap.
+ *
+ * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
+ */
+plframe_error_t plframe_getcontext (ucontext_t *uap);
+
+/**
  * Initialize the frame cursor.
  *
  * @param cursor Cursor record to be initialized.
