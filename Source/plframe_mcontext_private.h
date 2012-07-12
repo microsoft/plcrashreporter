@@ -33,20 +33,3 @@
 
 #define PLFRAME_MCONTEXT_ESUCCESS 0
 
-
-#if __x86_64__
-
-/* Offset to __ss.__rax in the mcontext_t */
-#define PLFRAME_MCONTEXT_SS_RAX 16
-
-#elif __i386__
-
-#elif defined(__arm__)
-
-#else
-
-#error Unimplemented on this architecture
-
-#endif
-
-

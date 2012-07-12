@@ -54,7 +54,7 @@ VALIDATE(MCONTEXT_SIZE, sizeof(_STRUCT_MCONTEXT) == 712);
 #define OFF(reg, offset) (offsetof(_STRUCT_MCONTEXT, __ss.__##reg) == offset)
 #define VOFF(reg, offset) VALIDATE(MCONTEXT_SS_OFFSET_##reg##_, OFF(reg, offset))
 
-VOFF(rax, PLFRAME_MCONTEXT_SS_RAX);
+VOFF(rax, 16);
 VOFF(rbx, 24);
 VOFF(rcx, 32);
 VOFF(rdx, 40);
@@ -81,8 +81,35 @@ VOFF(gs, 176);
 
 #elif __i386__
 
+/* Verify the expected size */
 VALIDATE(MCONTEXT_SIZE, sizeof(_STRUCT_MCONTEXT) == 600);
 
+
+/* Verify the expected offsets */
+#define OFF(struct, reg, offset) (offsetof(_STRUCT_MCONTEXT, __##struct.__##reg) == offset)
+#define VOFF(struct, reg, offset) VALIDATE(MCONTEXT_SS_OFFSET_##reg##_, OFF(struct, reg, offset))
+
+VOFF(ss, eax, 12);
+VOFF(ss, ebx, 16);
+VOFF(ss, ecx, 20);
+VOFF(ss, edx, 24);
+VOFF(ss, edi, 28);
+VOFF(ss, esi, 32);
+VOFF(ss, ebp, 36);
+VOFF(ss, esp, 40);
+// ss
+VOFF(ss, eflags, 48);
+VOFF(ss, eip, 52);
+VOFF(ss, cs, 56);
+VOFF(ss, ds, 60);
+VOFF(ss, es, 64);
+VOFF(ss, fs, 68);
+VOFF(ss, gs, 72);
+
+VOFF(es, trapno, 0);
+
+#undef OFF
+#undef VOFF
 
 
 #elif defined(__arm__)
