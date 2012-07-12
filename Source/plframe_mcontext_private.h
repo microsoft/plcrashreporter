@@ -26,45 +26,27 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define PLFRAME_ESUCCESS 0
+#pragma once
 
-/* Enable thumb on ARMv7 */
-#if __arm__
-#  ifdef _ARM_ARCH_7
-.thumb
-.thumb_func _plframe_getcontext
-#  else
-.arm
-#  endif
-#endif
+/* Note: This header is shared across assembler and non-assembler files, and is used to sanity-check
+ * and autodetect changes in structure sizes and offsets across releases. */
 
-.text
-.globl _plframe_getcontext
-_plframe_getcontext:
+#define PLFRAME_MCONTEXT_ESUCCESS 0
+
 
 #if __x86_64__
 
-    // TODO
-    xorl %eax, %eax
-    ret
+/* Offset to __ss.__rax in the mcontext_t */
+#define PLFRAME_MCONTEXT_SS_RAX 16
 
 #elif __i386__
 
-    // TODO
-    xorl %eax, %eax
-    ret
-
-#elif __powerpc__
-
-#error Unimplemented on PPC
-
 #elif defined(__arm__)
 
-    // TODO
-    bx lr
- 
 #else
 
-#error Unimplemented
+#error Unimplemented on this architecture
 
 #endif
+
+

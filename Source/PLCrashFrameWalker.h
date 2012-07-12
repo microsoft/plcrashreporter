@@ -159,11 +159,16 @@ void plframe_test_thread_stop (plframe_test_thead_t *args);
 /* Platform specific funtions */
 
 /**
- * Save the calling thread's current context to @a uap.
+ * Save the calling thread's current machine context to @a mctx. Currently, only the general purpose
+ * registers required by PLCrashReporter are saved.
+ *
+ * @param mctx An uninitialized mcontext_t structure.
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
+ *
+ * @note The @a mctx value should be zeroed prior to calling this function.
  */
-plframe_error_t plframe_getcontext (ucontext_t *uap);
+plframe_error_t plframe_getmcontext (mcontext_t mctx);
 
 /**
  * Initialize the frame cursor.
