@@ -168,7 +168,7 @@ void plframe_test_thread_stop (plframe_test_thead_t *args);
  *
  * @note The @a mctx value should be zeroed prior to calling this function.
  */
-plframe_error_t plframe_getmcontext (mcontext_t mctx);
+plframe_error_t plframe_getmcontext (_STRUCT_MCONTEXT *mctx);
 
 /**
  * Initialize the frame cursor.

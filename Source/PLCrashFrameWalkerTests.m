@@ -143,7 +143,27 @@
     size_t stacksize = pthread_get_stacksize_np(pthread_self());
     STAssertTrue((uint8_t *)ctx.__ss.__esp < stackaddr && (uint8_t *)ctx.__ss.__esp >= stackaddr-stacksize, @"ESP outside of stack range");
 
-#elif __ARM__
+#elif __arm__
+    _STRUCT_MCONTEXT ctx;
+    memset(&ctx, 0, sizeof(ctx));
+    
+    uintptr_t expectedIP;    
+    plframe_error_t ret = plframe_getmcontext(&ctx);
+    __asm__ (
+        "mov %0, pc\n"
+         : "=r" (expectedIP)
+    );
+    
+    STAssertEquals(PLFRAME_ESUCCESS, ret, @"Failed to fetch context");
+    
+    /* Validate IP. Rather than handcode the call to plframe_getmcontext, we just sanity check the result. */
+    STAssertTrue(expectedIP - (uintptr_t)ctx.__ss.__pc <= 20, @"Incorrect IP: %p", (void *) ctx.__ss.__pc);
+    
+    /* Verify that ESP is sane. */
+    uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
+    size_t stacksize = pthread_get_stacksize_np(pthread_self());
+    STAssertTrue((uint8_t *)ctx.__ss.__r[7] < stackaddr && (uint8_t *)ctx.__ss.__r[7] >= stackaddr-stacksize, @"ESP outside of stack range");
+    
 #endif
 
 }
