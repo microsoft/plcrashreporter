@@ -26,10 +26,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#import <pthread.h>
+
 #import "GTMSenTestCase.h"
 
 #import "PLCrashFrameWalker.h"
-
 
 @interface PLCrashFrameWalkerTests : SenTestCase {
 @private
@@ -89,9 +90,42 @@
 
 /* test plframe_getcontext() */
 - (void) testGetContext {
-    ucontext_t ctx;
-    STAssertEquals(PLFRAME_ESUCCESS, plframe_getcontext(&ctx), @"Failed to fetch context");
-    // TODO - check the context
+#if __x86_64__
+    _STRUCT_MCONTEXT ctx;
+    memset(&ctx, 0, sizeof(ctx));
+
+    uintptr_t expectedIP, leaqSize;
+    plframe_error_t ret;
+    __asm__ (
+        "movq %[ctx], %%rdi\n"
+        "call _plframe_getmcontext\n"
+        "leaq (%%rip), %[eip]\n"
+        "leaq (%%rip), %[leaqSize]\n"
+        "movl %%eax, %[ret]\n"
+        : [eip] "=r" (expectedIP), [ret] "=r" (ret), [leaqSize] "=r" (leaqSize)
+        : [ctx] "r" (ctx)
+        : "rdi", "eax"
+    );
+
+    STAssertEquals(PLFRAME_ESUCCESS, ret, @"Failed to fetch context");
+
+    /* Adjust our computed IP to account for the size of the leaq instruction */
+    expectedIP -= leaqSize - expectedIP;
+
+    /* Validate IP. */
+    STAssertEquals(expectedIP, ctx.__ss.__rip, @"Incorrect IP");
+
+    /* Verify that RSP is sane. */
+    uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
+    size_t stacksize = pthread_get_stacksize_np(pthread_self());
+    STAssertTrue((uint8_t *)ctx.__ss.__rsp < stackaddr && (uint8_t *)ctx.__ss.__rsp >= stackaddr-stacksize, @"RSP outside of stack range");
+#elif __i386__
+#elif __ARM__
+#endif
+}
+
+    
+    
 }
 
 @end
