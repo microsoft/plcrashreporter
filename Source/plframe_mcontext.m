@@ -115,7 +115,6 @@ VOFF(es, trapno, 0);
 #elif defined(__arm__)
 
 // TODO
-#error TODO
 
 #else
 

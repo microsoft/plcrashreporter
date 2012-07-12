@@ -30,10 +30,13 @@
 
 /* Enable thumb on ARMv7 */
 #if __arm__
+.align 2
+
 #  include <arm/arch.h>
 #  ifdef _ARM_ARCH_7
 .thumb
 .thumb_func _plframe_getmcontext
+.code 16
 #  else
 .arm
 #  endif
@@ -130,6 +133,7 @@ _plframe_getmcontext:
 #elif defined(__arm__)
 
     // TODO
+    mov r0, #PLFRAME_MCONTEXT_ESUCCESS
     bx lr
  
 #else
