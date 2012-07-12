@@ -106,7 +106,7 @@
         "movl %%eax, %[ret]\n"
         : [eip] "=r" (expectedIP), [ret] "=r" (ret), [leaqSize] "=r" (leaqSize)
         : [ctx] "r" (ctx)
-        : "rdi", "eax"
+        : "rdi", "rcx", "rax" // update this if getmcontext stomps more registers.
     );
 
     STAssertEquals(PLFRAME_ESUCCESS, ret, @"Failed to fetch context");
