@@ -45,11 +45,8 @@ _plframe_getmcontext:
 
 #if __x86_64__
 
-#if TEST_MODE
-#  define MOVQ(reg, offset) movq %##reg, offset(%rdi)
-#else
-#  define MOVQ(reg, offset) movq %##reg, offset(%rdi)
-#endif
+
+#define MOVQ(reg, offset) movq %##reg, offset(%rdi)
 
     // These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
     MOVQ(rax,   16)
@@ -88,7 +85,41 @@ _plframe_getmcontext:
 
 #elif __i386__
 
-    // TODO
+#define MOVL(reg, offset) movl %##reg, offset(%ecx)
+
+    // mctx in first argument
+    movl 0x4(%esp), %ecx 
+
+    // These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
+
+    // trapno not supported
+    movl $0, 0(%ecx)
+
+    MOVL(eax,   12)
+    MOVL(ebx,   16);
+    MOVL(ecx,   20);
+    MOVL(edx,   24);
+    MOVL(edi,   28);
+    MOVL(esi,   32);
+    MOVL(ebp,   36);
+    MOVL(esp,   40);
+
+    // eflags
+    pushf
+    pop %eax
+    movl %eax, 48(%ecx)
+
+    /* Use the return address for our RIP value */
+    movl (%esp), %eax
+    movl %eax, 52(%ecx)
+
+    MOVL(cs, 56);
+    MOVL(ds, 60);
+    MOVL(es, 64);
+    MOVL(fs, 68);
+    MOVL(gs, 72);
+#undef MOVL
+
     xorl %eax, %eax
     ret
 
