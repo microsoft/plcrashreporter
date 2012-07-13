@@ -51,6 +51,9 @@
     
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+    
+    STAssertEquals([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+    STAssertEquals([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
 }
 
 @end

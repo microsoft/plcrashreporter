@@ -389,14 +389,27 @@ static void uncaught_exception_handler (NSException *exception) {
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
     /* Fetch our thread context */
-    // TODO - getcontext implementation?
-    plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(pthread_self()));
-
-    /* Create a siginfo_t */
-    siginfo_t info;
+    _STRUCT_MCONTEXT mctx;
+    memset(&mctx, 0, sizeof(mctx));
+    plframe_getmcontext(&mctx);
     
-    // TODO: provide real siginfo_t data
+    // XXX - this potentially invalidates the context generated above.
+    
+    _STRUCT_UCONTEXT uctx;
+    uctx.uc_onstack = 0;
+    uctx.uc_link = NULL;
+    uctx.uc_mcontext = &mctx;
+    uctx.uc_mcsize = sizeof(mctx);
+    sigprocmask(0, NULL, &uctx.uc_sigmask);
+
+    plframe_cursor_init(&cursor, &uctx);
+
+    /* Mock up a SIGTRAP-based siginfo_t */
+    siginfo_t info;
     memset(&info, 0, sizeof(info));
+    info.si_signo = SIGTRAP;
+    info.si_code = TRAP_TRACE;
+    info.si_addr = __builtin_return_address(0);
 
     /* Write the crash log using the already-initialized writer */
     plcrash_log_writer_write(&writer, &shared_image_list, &file, &info, cursor.uap);
