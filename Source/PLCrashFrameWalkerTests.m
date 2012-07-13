@@ -159,10 +159,14 @@
     /* Validate IP. Rather than handcode the call to plframe_getmcontext, we just sanity check the result. */
     STAssertTrue(expectedIP - (uintptr_t)ctx.__ss.__pc <= 20, @"Incorrect IP: %p", (void *) ctx.__ss.__pc);
     
-    /* Verify that ESP is sane. */
+    /* Validate LR */
+    void *retaddr = __builtin_return_address(0);
+    STAssertEquals(retaddr, (void *)ctx.__ss.__r[14], @"Incorrect return address: %p", (void *) ctx.__ss.__r[14]);
+
+    /* Verify that SP is sane. */
     uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
     size_t stacksize = pthread_get_stacksize_np(pthread_self());
-    STAssertTrue((uint8_t *)ctx.__ss.__r[7] < stackaddr && (uint8_t *)ctx.__ss.__r[7] >= stackaddr-stacksize, @"ESP outside of stack range");
+    STAssertTrue((uint8_t *)ctx.__ss.__r[7] < stackaddr && (uint8_t *)ctx.__ss.__r[7] >= stackaddr-stacksize, @"SP outside of stack range");
     
 #endif
 
