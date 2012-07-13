@@ -111,10 +111,24 @@ VOFF(es, trapno, 0);
 #undef OFF
 #undef VOFF
 
-
+/* Verify the expected size */
 #elif defined(__arm__)
 
-// TODO
+VALIDATE(MCONTEXT_SIZE, sizeof(_STRUCT_MCONTEXT) == 340);
+
+/* Verify the expected offsets */
+#define OFF(struct, reg, offset) (offsetof(_STRUCT_MCONTEXT, __##struct.__##reg) == offset)
+#define VOFF(struct, reg, offset) VALIDATE(MCONTEXT_SS_OFFSET_##reg##_, OFF(struct, reg, offset))
+
+
+VOFF(ss, r, 12);
+VOFF(ss, sp, 64);
+VOFF(ss, lr, 68);
+VOFF(ss, pc, 72);
+VOFF(ss, cpsr, 76);
+
+#undef OFF
+#undef VOFF
 
 #else
 

@@ -31,15 +31,7 @@
 /* Enable thumb on ARMv7 */
 #if __arm__
 .align 2
-
-#  include <arm/arch.h>
-#  ifdef _ARM_ARCH_7
-.thumb
-.thumb_func _plframe_getmcontext
-.code 16
-#  else
 .arm
-#  endif
 #endif
 
 .text
@@ -131,8 +123,21 @@ _plframe_getmcontext:
 #error Unimplemented on PPC
 
 #elif defined(__arm__)
+    // These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
 
-    // TODO
+    /* Calculate offset to r4. */ 
+    add r1, r0, #24
+
+    /* Write out our GP registers. We don't need to save r0-r3 */
+    stmia r1, {r4-r13}
+
+    /* Fetch the link register from our caller's frame pointer */
+    ldr r1, [r7, #4]
+    str r1, [r0, #68]
+
+    /* Use the return address for our PC value */
+    str lr, [r0, #72]
+
     mov r0, #PLFRAME_MCONTEXT_ESUCCESS
     bx lr
  
