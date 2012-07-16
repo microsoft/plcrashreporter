@@ -287,6 +287,20 @@
 		05EB2ADE15ADFA670066EB4D /* plframe_mcontext.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AD915ADFA670066EB4D /* plframe_mcontext.m */; };
 		05EB2ADF15ADFA670066EB4D /* plframe_mcontext.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AD915ADFA670066EB4D /* plframe_mcontext.m */; };
 		05EB2AE015ADFA670066EB4D /* plframe_mcontext.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AD915ADFA670066EB4D /* plframe_mcontext.m */; };
+		05EB2AF715B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2AF815B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2AF915B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2AFA15B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2AFD15B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
+		05EB2AFE15B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
+		05EB2AFF15B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
+		05EB2B0015B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
+		05EB2B0315B45DD00066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2B0415B45DD90066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2B0515B45DE00066EB4D /* PLCrashLogWriter_trampoline.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */; };
+		05EB2B0A15B498880066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
+		05EB2B0B15B4988B0066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
+		05EB2B0C15B4988E0066EB4D /* PLCrashLogWriter_trampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */; };
 		05EC51D7105316E900DB9D39 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05EC51D8105316E900DB9D39 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
 		05EC51D9105316E900DB9D39 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -709,6 +723,9 @@
 		05EB2A9A15ACC1EB0066EB4D /* plframe_mcontext.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = plframe_mcontext.S; sourceTree = "<group>"; };
 		05EB2AD815ADF84E0066EB4D /* plframe_mcontext_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = plframe_mcontext_private.h; sourceTree = "<group>"; };
 		05EB2AD915ADFA670066EB4D /* plframe_mcontext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = plframe_mcontext.m; sourceTree = "<group>"; };
+		05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = PLCrashLogWriter_trampoline.S; sourceTree = "<group>"; };
+		05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogWriter_trampoline.m; sourceTree = "<group>"; };
+		05EB2B0115B459770066EB4D /* PLCrashLogWriter_trampoline_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashLogWriter_trampoline_private.h; sourceTree = "<group>"; };
 		05F40ACA0EF7379F008050CF /* PLCrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporter.m; sourceTree = "<group>"; };
 		05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporterTests.m; sourceTree = "<group>"; };
 		05F40CE70EF7AB80008050CF /* DemoCrash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoCrash.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -913,6 +930,7 @@
 				0596702D0EEF6B51008A0601 /* PLCrashLogWriterTests.m */,
 				05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */,
 				05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */,
+				05EB2B0215B4597B0066EB4D /* Current Thread Trampoline */,
 			);
 			name = "Crash Log Writer";
 			sourceTree = "<group>";
@@ -1107,6 +1125,16 @@
 				05E7321C0EFA1BE1005EDFB7 /* main.m */,
 			);
 			path = plcrashutil;
+			sourceTree = "<group>";
+		};
+		05EB2B0215B4597B0066EB4D /* Current Thread Trampoline */ = {
+			isa = PBXGroup;
+			children = (
+				05EB2AF615B454DD0066EB4D /* PLCrashLogWriter_trampoline.S */,
+				05EB2AFC15B456750066EB4D /* PLCrashLogWriter_trampoline.m */,
+				05EB2B0115B459770066EB4D /* PLCrashLogWriter_trampoline_private.h */,
+			);
+			name = "Current Thread Trampoline";
 			sourceTree = "<group>";
 		};
 		05F40CF00EF7ABD6008050CF /* Crash Demo */ = {
@@ -1862,6 +1890,8 @@
 				05BB84891364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2A9D15ACC1EB0066EB4D /* plframe_mcontext.S in Sources */,
 				05EB2ADC15ADFA670066EB4D /* plframe_mcontext.m in Sources */,
+				05EB2AF915B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2AFF15B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1898,6 +1928,8 @@
 				05BB848B1364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2A9E15ACC1EB0066EB4D /* plframe_mcontext.S in Sources */,
 				05EB2ADD15ADFA670066EB4D /* plframe_mcontext.m in Sources */,
+				05EB2AFA15B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2B0015B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1910,6 +1942,8 @@
 				059666E30EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702E0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
 				059674880EF0BB4A008A0601 /* PLCrashLogWriter.m in Sources */,
+				05EB2B0315B45DD00066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2B0C15B4988E0066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 				0596748E0EF0BB63008A0601 /* PLCrashFrameWalker.c in Sources */,
 				05EB2AA015ADB98C0066EB4D /* plframe_mcontext.S in Sources */,
 				0596748F0EF0BB63008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
@@ -1944,6 +1978,8 @@
 				059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702F0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
 				059674890EF0BB4D008A0601 /* PLCrashLogWriter.m in Sources */,
+				05EB2B0415B45DD90066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2B0B15B4988B0066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 				0596748B0EF0BB5C008A0601 /* PLCrashFrameWalker.c in Sources */,
 				05EB2AA115ADB9920066EB4D /* plframe_mcontext.S in Sources */,
 				0596748C0EF0BB5C008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
@@ -1977,6 +2013,8 @@
 				059666E40EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				059670300EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
 				059674970EF0BBB4008A0601 /* PLCrashLogWriter.m in Sources */,
+				05EB2B0515B45DE00066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2B0A15B498880066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 				059674980EF0BBB4008A0601 /* PLCrashFrameWalker.c in Sources */,
 				05EB2AA215ADB9970066EB4D /* plframe_mcontext.S in Sources */,
 				059674990EF0BBB4008A0601 /* PLCrashFrameWalker_i386.c in Sources */,
@@ -2040,6 +2078,8 @@
 				05BB848D1364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2A9B15ACC1EB0066EB4D /* plframe_mcontext.S in Sources */,
 				05EB2ADA15ADFA670066EB4D /* plframe_mcontext.m in Sources */,
+				05EB2AF715B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2AFD15B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2084,6 +2124,8 @@
 				05BB84871364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2A9C15ACC1EB0066EB4D /* plframe_mcontext.S in Sources */,
 				05EB2ADB15ADFA670066EB4D /* plframe_mcontext.m in Sources */,
+				05EB2AF815B454DD0066EB4D /* PLCrashLogWriter_trampoline.S in Sources */,
+				05EB2AFE15B456750066EB4D /* PLCrashLogWriter_trampoline.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
