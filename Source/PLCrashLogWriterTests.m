@@ -39,6 +39,7 @@
 #import <dlfcn.h>
 
 #import <mach-o/loader.h>
+#import <mach-o/dyld.h>
 
 #import "crash_report.pb-c.h"
 
@@ -279,5 +280,62 @@
 
     plcrash_async_file_close(&file);
 }
+
+/**
+ * Test writing a 'live' report for the current thread.
+ */
+- (void) testWriteCurrentThreadReport {
+    siginfo_t info;
+    plcrash_log_writer_t writer;
+    plcrash_async_file_t file;
+    plcrash_async_image_list_t image_list;
+    
+    /* Initialze faux crash data */
+    {
+        info.si_addr = (void *) 0x42;
+        info.si_errno = 0;
+        info.si_pid = getpid();
+        info.si_uid = getuid();
+        info.si_code = SEGV_MAPERR;
+        info.si_signo = SIGSEGV;
+        info.si_status = 0;
+    }
+    
+    /* Open the output file */
+    int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
+    plcrash_async_file_init(&file, fd, 0);
+    
+    /* Initialize a writer */
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
+    
+    /* Provide binary image info */
+    plcrash_async_image_list_init(&image_list);
+    uint32_t image_count = _dyld_image_count();
+    for (uint32_t i = 0; i < image_count; i++) {
+        plcrash_async_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
+    }
+
+    
+    /* Write the crash report */
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write_curthread(&writer, &image_list, &file, &info), @"Crash log failed");
+    
+    /* Close it */
+    plcrash_log_writer_close(&writer);
+    plcrash_log_writer_free(&writer);
+    plcrash_async_image_list_free(&image_list);
+    
+    /* Flush the output */
+    plcrash_async_file_flush(&file);
+    plcrash_async_file_close(&file);
+    
+    
+    /* Try to read the crash report */
+    NSError *error;
+    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
+    STAssertNotNil(report, @"Failed to read crash report: %@", error);
+    
+    // TODO - Validate the data fetched from the current thread.
+}
+
 
 @end
