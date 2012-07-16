@@ -79,7 +79,7 @@ MOVQ    (r14,   128);
 MOVQ    (r15,   136);
 
 /* Use the return address for our RIP value */
-movq    (%rsp), %rcx
+movq    0x8(%rbp), %rcx
 movq    %rcx, 144(%rsp)
 
 pushfq
