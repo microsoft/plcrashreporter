@@ -41,25 +41,23 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *w
                                                          plcrash_async_image_list_t *image_list,
                                                          plcrash_async_file_t *file, 
                                                          siginfo_t *siginfo,
-                                                         mcontext_t mctx,
-                                                         void *sp)
+                                                         mcontext_t mctx)
 {
     _STRUCT_UCONTEXT ctx;
 
     ctx.uc_onstack = 0;
-    ctx.uc_stack.ss_sp = sp;
+    ctx.uc_stack.ss_sp = pthread_get_stackaddr_np(pthread_self());
     ctx.uc_stack.ss_flags = 0;
     ctx.uc_stack.ss_size = pthread_get_stacksize_np(pthread_self());
-
-    if (ctx.uc_stack.ss_size == 0) {
-        NSLog(@"Got zero stack size?");
-        // TODO
-    }
 
     sigprocmask(0, NULL, &ctx.uc_sigmask);
 
     ctx.uc_mcsize = PL_MCONTEXT_SIZE;
     ctx.uc_mcontext = mctx;
+    
+    /* Zero unsupported thread states */
+    memset(&mctx->__es, 0, sizeof(mctx->__es));
+    memset(&mctx->__fs, 0, sizeof(mctx->__fs));
 
     return plcrash_log_writer_write(writer, image_list, file, siginfo, &ctx);
 }
@@ -121,6 +119,9 @@ VOFF(gs, 176);
 #undef VOFF
 
 #elif __i386__
+
+/* There's a hard-coded dependency on this size in the trampoline assembly, so we explicitly validate it here. */
+VALIDATE(MCONTEXT_SIZE, sizeof(_STRUCT_MCONTEXT) == 600);
 
 /* Verify the expected offsets */
 #define OFF(struct, reg, offset) (offsetof(_STRUCT_MCONTEXT, __##struct.__##reg) == offset)

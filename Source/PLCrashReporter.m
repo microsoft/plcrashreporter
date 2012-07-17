@@ -371,7 +371,6 @@ static void uncaught_exception_handler (NSException *exception) {
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
-    plframe_cursor_t cursor;
     
     /* Open the output file */
     const char *path = "/tmp/reportsdf"; // TODO, use temporary path
@@ -388,22 +387,6 @@ static void uncaught_exception_handler (NSException *exception) {
     plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
-    /* Fetch our thread context */
-    _STRUCT_MCONTEXT mctx;
-    memset(&mctx, 0, sizeof(mctx));
-    plframe_getmcontext(&mctx);
-    
-    // XXX - this potentially invalidates the context generated above.
-    
-    _STRUCT_UCONTEXT uctx;
-    uctx.uc_onstack = 0;
-    uctx.uc_link = NULL;
-    uctx.uc_mcontext = &mctx;
-    uctx.uc_mcsize = sizeof(mctx);
-    sigprocmask(0, NULL, &uctx.uc_sigmask);
-
-    plframe_cursor_init(&cursor, &uctx);
-
     /* Mock up a SIGTRAP-based siginfo_t */
     siginfo_t info;
     memset(&info, 0, sizeof(info));
@@ -412,7 +395,7 @@ static void uncaught_exception_handler (NSException *exception) {
     info.si_addr = __builtin_return_address(0);
 
     /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write(&writer, &shared_image_list, &file, &info, cursor.uap);
+    plcrash_log_writer_write_curthread(&writer, &shared_image_list, &file, &info);
     plcrash_log_writer_close(&writer);
 
     /* Finished -- clean up. */

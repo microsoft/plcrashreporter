@@ -96,9 +96,6 @@ movq    32(%rsp), %rcx
 /* Move mctx to 5th argument of plcrash_log_writer_write_curthread_stub */
 movq    %rsp, %r8
 
-/* Move stack pointer to 6th argument of plcrash_log_writer_write_curthread_stub */
-movq    %rbp, %r9
-
 xorb	%al, %al
 callq    _plcrash_log_writer_write_curthread_stub
 
@@ -108,7 +105,65 @@ ret
 
 #elif __i386__
 
-xorl    %eax, %eax
+pushl   %ebp
+movl    %esp, %ebp
+subl    $632, %esp // Size of 600 for context + 12 bytes for required alignment + 20 bytes for call arguments
+
+#define OFF 32
+#define MOVL(reg, offset) movl %##reg, OFF+offset(%esp)
+
+// These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
+
+/* es */
+movl    $0, 0+OFF(%esp) // trapno
+
+/* ss */
+MOVL    (eax,   12)
+MOVL    (ebx,   16);
+MOVL    (ecx,   20);
+MOVL    (edx,   24);
+MOVL    (edi,   28);
+MOVL    (esi,   32);
+MOVL    (ebp,   36);
+MOVL    (esp,   40);
+
+/* ss.eflags */
+pushf
+pop     %eax
+movl    %eax, 48+OFF(%esp)
+
+/* Use the return address for our RIP value */
+movl    0x4(%ebp), %eax
+movl    %eax, 52+OFF(%esp)
+
+MOVL    (cs, 56);
+MOVL    (ds, 60);
+MOVL    (es, 64);
+MOVL    (fs, 68);
+MOVL    (gs, 72);
+#undef MOVL
+
+/* Set up our argument stack: writer (arg0), image_list, file, siginfo, mctx */
+movl    8(%ebp), %eax   // arg0 - writer
+movl    %eax,  (%esp)
+
+movl    12(%ebp), %eax   // arg1 - image_list
+movl    %eax, 4(%esp)
+
+movl    16(%ebp), %eax  // arg2 - file
+movl    %eax, 8(%esp)
+
+movl    20(%ebp), %eax  // arg3 - siginfo
+movl    %eax, 12(%esp)
+
+movl    %esp, %eax      // arg4 - mctx
+addl    $OFF, %eax
+movl    %eax, 16(%esp)
+
+call    _plcrash_log_writer_write_curthread_stub
+
+addl    $632, %esp
+popl    %ebp
 ret
 
 #elif defined(__arm__)
