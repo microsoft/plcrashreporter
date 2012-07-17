@@ -28,10 +28,10 @@
 
 #import "GTMSenTestCase.h"
 
-#import "PLCrashReport.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
 #import "PLCrashAsyncImage.h"
+#import "PLCrashReport.h"
 
 #import <sys/stat.h>
 #import <sys/mman.h>
@@ -184,6 +184,29 @@
     }
 }
 
+- (Plcrash__CrashReport *) loadReport {
+    /* Reading the report */
+    NSData *data = [NSData dataWithContentsOfMappedFile: _logPath];
+    STAssertNotNil(data, @"Could not map pages");
+
+    
+    /* Check the file magic. The file must be large enough for the value + version + data */
+    const struct PLCrashReportFileHeader *header = [data bytes];
+    STAssertTrue([data length] > sizeof(struct PLCrashReportFileHeader), @"File is too small for magic + version + data");
+    // verifies correct byte ordering of the file magic
+    STAssertTrue(memcmp(header->magic, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC)) == 0, @"File header is not 'plcrash', is: '%s'", (const char *) &header->magic);
+    STAssertEquals(header->version, (uint8_t) PLCRASH_REPORT_FILE_VERSION, @"File version is not equal to 0");
+    
+    /* Try to read the crash report */
+    Plcrash__CrashReport *crashReport;
+    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
+    
+    /* If reading the report didn't fail, test the contents */
+    STAssertNotNULL(crashReport, @"Could not decode crash report");
+
+    return crashReport;
+}
+
 
 - (void) testWriteReport {
     siginfo_t info;
@@ -236,49 +259,27 @@
 
     /* Flush the output */
     plcrash_async_file_flush(&file);
-
-    /* Try reading it back in */
-    void *buf;
-    struct stat statbuf;
-    {
-        STAssertEquals(0, stat([_logPath UTF8String], &statbuf), @"fstat failed");
-        
-        buf = mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-        STAssertNotNULL(buf, @"Could not map pages");
-    }
-
-    /* Check the file magic. The file must be large enough for the value + version + data */
-    struct PLCrashReportFileHeader *header = buf;
-    STAssertTrue(statbuf.st_size > sizeof(struct PLCrashReportFileHeader), @"File is too small for magic + version + data");
-    // verifies correct byte ordering of the file magic
-    STAssertTrue(memcmp(header->magic, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC)) == 0, @"File header is not 'plcrash', is: '%s'", (const char *) &header->magic);
-    STAssertEquals(header->version, (uint8_t) PLCRASH_REPORT_FILE_VERSION, @"File version is not equal to 0");
-
-    /* Try to read the crash report */
-    Plcrash__CrashReport *crashReport;
-    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, statbuf.st_size - sizeof(struct PLCrashReportFileHeader), header->data);
-    
-    /* If reading the report didn't fail, test the contents */
-    STAssertNotNULL(crashReport, @"Could not decode crash report");
-    if (crashReport != NULL) {
-        /* Test the report */
-        [self checkSystemInfo: crashReport];
-        [self checkThreads: crashReport];
-        [self checkException: crashReport];
-
-        /* Check the signal info */
-        STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
-        STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
-        STAssertEquals((uint64_t) 0x42, crashReport->signal->address, @"Signal address incorrect");
-    
-        /* Free it */
-        protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
-    }
-
-
-    STAssertEquals(0, munmap(buf, statbuf.st_size), @"Could not unmap pages: %s", strerror(errno));
-
     plcrash_async_file_close(&file);
+
+    /* Load and validate the written report */
+    Plcrash__CrashReport *crashReport = [self loadReport];
+
+    /* Test the report */
+    [self checkSystemInfo: crashReport];
+    [self checkThreads: crashReport];
+    [self checkException: crashReport];
+    
+    /* Check the signal info */
+    STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
+    STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
+    STAssertEquals((uint64_t) 0x42, crashReport->signal->address, @"Signal address incorrect");
+    
+    /* Free it */
+    protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+}
+
+static uintptr_t getPC () {
+    return (uintptr_t) __builtin_return_address(0);
 }
 
 /**
@@ -317,7 +318,10 @@
 
     
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write_curthread(&writer, &image_list, &file, &info), @"Crash log failed");
+    plcrash_error_t ret = plcrash_log_writer_write_curthread(&writer, &image_list, &file, &info);
+    uintptr_t expectedPC = getPC();
+
+    STAssertEquals(PLCRASH_ESUCCESS, ret, @"Crash log failed");
     
     /* Close it */
     plcrash_log_writer_close(&writer);
@@ -334,7 +338,75 @@
     PLCrashReport *report = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
     STAssertNotNil(report, @"Failed to read crash report: %@", error);
     
-    // TODO - Validate the data fetched from the current thread.
+    /* Load and validate the written report */
+    Plcrash__CrashReport *crashReport = [self loadReport];
+    
+    /* Test the report */
+    [self checkSystemInfo: crashReport];
+    [self checkThreads: crashReport];
+
+    /* Check the signal info */
+    STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
+    STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
+    STAssertEquals((uint64_t) 0x42, crashReport->signal->address, @"Signal address incorrect");
+    
+    /* Validate register state. We use the more convenient ObjC API for this. */
+    BOOL foundCrashed = NO;
+    for (int i = 0; i < crashReport->n_threads; i++) {
+        Plcrash__CrashReport__Thread *thread = crashReport->threads[i];        
+        if (!thread->crashed)
+            continue;
+        
+        foundCrashed = YES;
+
+        /* Load the first frame */
+        STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
+        Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[0];
+
+        /* Validate PC. This check is inexact, as otherwise we would need to carefully instrument the 
+         * call to plcrash_log_writer_write_curthread() in order to determine the exact PC value. */
+        STAssertTrue(expectedPC - f->pc <= 20, @"PC value not within reasonable range");
+
+        /* Extract the registers */
+        NSMutableDictionary *regs = [NSMutableDictionary new];
+        for (int j = 0; j < thread->n_registers; j++) {
+            Plcrash__CrashReport__Thread__RegisterValue *rv = thread->registers[j];
+            [regs setObject: [NSNumber numberWithUnsignedLongLong: rv->value] forKey: [NSString stringWithUTF8String: rv->name]];
+        }
+
+        /* Architecture specific validations */
+        uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
+        size_t stacksize = pthread_get_stacksize_np(pthread_self());
+
+#if __x86_64__
+        /* Verify that RSP is sane. */
+        uintptr_t rsp = [[regs objectForKey: @"rsp"] unsignedLongLongValue];
+        STAssertTrue((uint8_t *)rsp < stackaddr && (uint8_t *) rsp >= stackaddr-stacksize, @"RSP outside of stack range");
+
+#elif __i386__
+        /* Verify that ESP is sane. */
+        uintptr_t esp = [[regs objectForKey: @"esp"] unsignedLongLongValue];
+        STAssertTrue((uint8_t *)esp < stackaddr && (uint8_t *)esp >= stackaddr-stacksize, @"ESP outside of stack range");
+        
+#elif __arm__
+        // TODO 
+#if 0
+        /* Validate LR */
+        void *retaddr = __builtin_return_address(0);
+        STAssertEquals(retaddr, (void *)ctx.__ss.__r[14], @"Incorrect return address: %p", (void *) ctx.__ss.__r[14]);
+        
+        /* Verify that SP is sane. */
+        uinptr_t r7 = [[regs objectForKey: @"r7"] unsignedLongLongValue];
+        STAssertTrue((uint8_t *)ctx.__ss.__r[7] < stackaddr && (uint8_t *)ctx.__ss.__r[7] >= stackaddr-stacksize, @"SP outside of stack range");
+#endif
+
+#endif
+    }
+    
+    STAssertTrue(foundCrashed, @"No thread marked as crashed");
+    
+    /* Free it */
+    protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
 }
 
 

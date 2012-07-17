@@ -35,7 +35,8 @@
 
 
 /*
- *
+ * Implements the interior function called by plcrash_log_writer_write_curthread()
+ * after it has populated the mctx thread state.
  */
 plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *writer,
                                                          plcrash_async_image_list_t *image_list,
