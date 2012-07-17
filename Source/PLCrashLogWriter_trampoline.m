@@ -42,7 +42,7 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *w
                                                          plcrash_async_image_list_t *image_list,
                                                          plcrash_async_file_t *file, 
                                                          siginfo_t *siginfo,
-                                                         mcontext_t mctx)
+                                                         _STRUCT_MCONTEXT *mctx)
 {
     _STRUCT_UCONTEXT ctx;
 
@@ -150,8 +150,10 @@ VOFF(es, trapno, 0);
 #undef OFF
 #undef VOFF
 
-/* Verify the expected size */
 #elif defined(__arm__)
+
+/* There's a hard-coded dependency on this size in the trampoline assembly, so we explicitly validate it here. */
+VALIDATE(MCONTEXT_SIZE, sizeof(_STRUCT_MCONTEXT) == 340);
 
 /* Verify the expected offsets */
 #define OFF(struct, reg, offset) (offsetof(_STRUCT_MCONTEXT, __##struct.__##reg) == offset)

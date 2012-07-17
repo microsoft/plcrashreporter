@@ -38,7 +38,7 @@
  */
 
 #if __arm__
-.align 2
+.align 4
 .arm
 #endif
 
@@ -168,7 +168,54 @@ ret
 
 #elif defined(__arm__)
 
-// TODO
+
+push    {r7, lr}
+mov     r7, sp
+sub     sp, sp, #344 // Size of 340 for context + 4 bytes for call argument
+
+// These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
+
+/* Save r0 before we stomp it. The destination address is our SP + 4 (call argument) + 12 (offset to r[] array) */
+str     r0, [sp, #16]
+
+/* Calculate the mcontext_t pointer and store it on the stack, in preparation for our call below */
+add     r0, sp, #4
+str     r0, [sp]
+
+/* Write out GP registers. The offset is r[1]. */
+add     r0, r0, #16
+stmia   r0, {r1-r12}
+
+/* Fetch our caller's frame pointer */
+ldr     r2, [r7]
+
+/* Overwrite r[7] with the caller's fp value */
+str     r2, [r0, #24]
+
+/* User the caller's SP value */
+add     r1, r7, #8    // account for the 2 byte push in prologue
+str     r1, [r0, #48] // 64 - 16 byte offset to r[1]
+
+/* Fetch the link register from our caller's frame */
+ldr     r1, [r2, #4]
+str     r1, [r0, #52] // 68 - 16 byte offset to r[1]
+
+/* Use the return address for our PC value */
+ldr     r1, [r7, #4]
+str     r1, [r0, #56] // 72 - 16 byte offset to r[1]
+
+/* Fetch CPSR */
+mrs     r1, cpsr
+str     r1, [r0, #60] // 76 - 16 byte offset to r[1]
+
+/* Restore the r0-r2 argument values. The source address is our SP + 4 (call argument) + 12 (offset to r[] array). */
+ldr     r0, [sp, #16];
+ldr     r1, [sp, #20];
+ldr     r2, [sp, #24];
+
+bl      _plcrash_log_writer_write_curthread_stub
+mov     sp, r7
+pop     {r7, pc}
 
 #else
 
