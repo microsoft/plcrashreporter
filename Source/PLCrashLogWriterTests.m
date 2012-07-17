@@ -373,6 +373,12 @@ static uintptr_t getPC () {
             Plcrash__CrashReport__Thread__RegisterValue *rv = thread->registers[j];
             [regs setObject: [NSNumber numberWithUnsignedLongLong: rv->value] forKey: [NSString stringWithUTF8String: rv->name]];
         }
+        
+        uintptr_t (^GetReg)(NSString *name) = ^(NSString *name) {
+            NSNumber *num = [regs objectForKey: name];
+            STAssertNotNil(num, @"Missing requested register %@", name);
+            return (uintptr_t) [num unsignedLongLongValue];
+        };
 
         /* Architecture specific validations */
         uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
@@ -380,26 +386,26 @@ static uintptr_t getPC () {
 
 #if __x86_64__
         /* Verify that RSP is sane. */
-        uintptr_t rsp = [[regs objectForKey: @"rsp"] unsignedLongLongValue];
+        uintptr_t rsp = GetReg(@"rsp")
         STAssertTrue((uint8_t *)rsp < stackaddr && (uint8_t *) rsp >= stackaddr-stacksize, @"RSP outside of stack range");
 
 #elif __i386__
         /* Verify that ESP is sane. */
-        uintptr_t esp = [[regs objectForKey: @"esp"] unsignedLongLongValue];
+        uintptr_t esp = GetReg(@"esp");
         STAssertTrue((uint8_t *)esp < stackaddr && (uint8_t *)esp >= stackaddr-stacksize, @"ESP outside of stack range");
         
 #elif __arm__
         // TODO 
-#if 0
         /* Validate LR */
         void *retaddr = __builtin_return_address(0);
-        STAssertEquals(retaddr, (void *)ctx.__ss.__r[14], @"Incorrect return address: %p", (void *) ctx.__ss.__r[14]);
-        
-        /* Verify that SP is sane. */
-        uinptr_t r7 = [[regs objectForKey: @"r7"] unsignedLongLongValue];
-        STAssertTrue((uint8_t *)ctx.__ss.__r[7] < stackaddr && (uint8_t *)ctx.__ss.__r[7] >= stackaddr-stacksize, @"SP outside of stack range");
-#endif
+        uintptr_t lr = GetReg(@"lr");
+        STAssertEquals(retaddr, (void *)lr, @"Incorrect lr: %p", (void *) lr);
 
+        /* Verify that SP is sane. */
+        uintptr_t r7 = GetReg(@"r7");
+        STAssertTrue((uint8_t *)r7 < stackaddr && (uint8_t *)r7 >= stackaddr-stacksize, @"SP outside of stack range");
+#else
+#error Unsupported Platform
 #endif
     }
     
