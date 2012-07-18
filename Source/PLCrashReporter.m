@@ -34,6 +34,8 @@
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
 
+#import "PLCrashReporterNSError.h"
+
 #import <fcntl.h>
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
@@ -378,10 +380,7 @@ static void uncaught_exception_handler (NSException *exception) {
 
     int fd = mkstemp(path);
     if (fd < 0) {
-        if (outError != NULL) {
-            // TODO - populate error
-            PLCF_DEBUG("Could not open the crashlog output file: %s", strerror(errno));
-        }
+        plcrash_populate_posix_error(outError, errno, NSLocalizedString(@"Failed to create temporary path", @"Error opening temporary output path"));
         return nil;
     }
     
@@ -408,11 +407,14 @@ static void uncaught_exception_handler (NSException *exception) {
 
     NSData *data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
     if (data == nil) {
-        // TODO - populate error
+        /* This should only happen if our data is deleted out from under us */
+        plcrash_populate_error(outError, PLCrashReporterErrorUnknown, NSLocalizedString(@"Unable to open live crash report for reading", nil), nil);
+        return nil;
     }
 
     if (unlink(path) != 0) {
-        // TODO - populate error
+        /* This shouldn't fail, but if it does, there's no use in returning nil */
+        NSLog(@"Failure occured deleting live crash report: %s", strerror(errno));
     }
 
     return data;
