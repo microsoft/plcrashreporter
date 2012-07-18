@@ -30,6 +30,7 @@
 #import "PLCrashAsync.h"
 #import "PLCrashSignalHandler.h"
 #import "PLCrashFrameWalker.h"
+#import "PLCrashReporterNSError.h"
 
 #import <signal.h>
 #import <unistd.h>
@@ -108,20 +109,6 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
 }
 
 
-@interface PLCrashSignalHandler (PrivateMethods)
-
-- (void) populateError: (NSError **) error
-              errnoVal: (int) errnoVal
-           description: (NSString *) description;
-
-- (void) populateError: (NSError **) error 
-             errorCode: (PLCrashReporterError) code
-           description: (NSString *) description
-                 cause: (NSError *) cause;
-
-@end
-
-
 /***
  * @internal
  * Implements Crash Reporter signal handling. Singleton.
@@ -186,9 +173,7 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     /* Set new sigaction */
     if (sigaction(signal, &sa, NULL) != 0) {
         int err = errno;
-        if (outError)
-            *outError = [NSError errorWithDomain: NSPOSIXErrorDomain code: errno userInfo: nil];
-        
+        plcrash_populate_posix_error(outError, err, @"Failed to register signal handler");        
         NSLog(@"Signal registration for %s failed: %s", strsignal(signal), strerror(err));
         return NO;
     }
@@ -223,7 +208,7 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
 
     /* Register our signal stack */
     if (sigaltstack(&_sigstk, 0) < 0) {
-        [self populateError: outError errnoVal: errno description: @"Could not initialize alternative signal stack"];
+        plcrash_populate_posix_error(outError, errno, @"Could not initialize alternative signal stack");
         return NO;
     }
 
@@ -235,61 +220,5 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
 
     return YES;
 }
-
-@end
-
-
-
-/**
- * @internal
- * Private Methods
- */
-@implementation PLCrashSignalHandler (PrivateMethods)
-
-/**
- * Populate an PLCrashReporterErrorOperatingSystem NSError instance, using the provided
- * errno error value to create the underlying error cause.
- */
-- (void) populateError: (NSError **) error
-              errnoVal: (int) errnoVal
-           description: (NSString *) description
-{
-    NSError *cause = [NSError errorWithDomain: NSPOSIXErrorDomain code: errnoVal userInfo: nil];
-    [self populateError: error errorCode: PLCrashReporterErrorOperatingSystem description: description cause: cause];
-}
-
-
-/**
- * Populate an NSError instance with the provided information.
- *
- * @param error Error instance to populate. If NULL, this method returns
- * and nothing is modified.
- * @param code The error code corresponding to this error.
- * @param description A localized error description.
- * @param cause The underlying cause, if any. May be nil.
- */
-- (void) populateError: (NSError **) error 
-             errorCode: (PLCrashReporterError) code
-           description: (NSString *) description
-                 cause: (NSError *) cause
-{
-    NSMutableDictionary *userInfo;
-    
-    if (error == NULL)
-        return;
-
-    /* Create the userInfo dictionary */
-    userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                description, NSLocalizedDescriptionKey,
-                nil
-                ];
-
-    /* Add the cause, if available */
-    if (cause != nil)
-        [userInfo setObject: cause forKey: NSUnderlyingErrorKey];
-    
-    *error = [NSError errorWithDomain: PLCrashReporterErrorDomain code: code userInfo: userInfo];
-}
-
 
 @end
