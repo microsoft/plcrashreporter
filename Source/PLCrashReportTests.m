@@ -98,7 +98,7 @@
     plcrash_async_file_init(&file, fd, 0);
     
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", false), @"Initialization failed");
     
     /* Set an exception with a valid return address call stack. */
     NSException *exception;

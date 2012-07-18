@@ -212,6 +212,13 @@ enum {
 
     /** CrashReport.machine_info.logical_processor_count */
     PLCRASH_PROTO_MACHINE_INFO_LOGICAL_PROCESSOR_COUNT_ID = 4,
+
+
+    /** CrashReport.report_info */
+    PLCRASH_PROTO_REPORT_INFO_ID = 9,
+    
+    /** CrashReport.report_info.crashed */
+    PLCRASH_PROTO_REPORT_INFO_USER_REQUESTED_ID = 1,
 };
 
 /**
@@ -221,16 +228,25 @@ enum {
  * @param writer Writer instance to be initialized.
  * @param app_identifier Unique per-application identifier. On Mac OS X, this is likely the CFBundleIdentifier.
  * @param app_version Application version string.
+ * @param user_requested If true, the written report will be marked as a 'generated' non-crash report, rather than as
+ * a true crash report created upon an actual crash.
  *
  * @note If this function fails, plcrash_log_writer_free() should be called
  * to free any partially allocated data.
  *
  * @warning This function is not guaranteed to be async-safe, and must be called prior to enabling the crash handler.
  */
-plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString *app_identifier, NSString *app_version) {
+plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
+                                         NSString *app_identifier,
+                                         NSString *app_version,
+                                         BOOL user_requested)
+{
     /* Default to 0 */
     memset(writer, 0, sizeof(*writer));
-    
+
+    /* Default to false */
+    writer->report_info.user_requested = user_requested;
+
     /* Fetch the application information */
     {
         writer->application_info.app_identifier = strdup([app_identifier UTF8String]);
@@ -1001,6 +1017,23 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t
 }
 
 /**
+ * @internal
+ *
+ * Write the report info message
+ *
+ * @param file Output file
+ * @param writer Writer containing report data
+ */
+static size_t plcrash_writer_write_report_info (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
+    size_t rv = 0;
+
+    /* Note crashed status */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_REPORT_INFO_USER_REQUESTED_ID, PLPROTOBUF_C_TYPE_BOOL, &writer->report_info.user_requested);
+    
+    return rv;
+}
+
+/**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
  * @param writer The writer context
@@ -1024,6 +1057,19 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         /* Write the magic string (with no trailing NULL) and the version number */
         plcrash_async_file_write(file, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC));
         plcrash_async_file_write(file, &version, sizeof(version));
+    }
+    
+    
+    /* Report Info */
+    {
+        uint32_t size;
+        
+        /* Determine size */
+        size = plcrash_writer_write_report_info(NULL, writer);
+        
+        /* Write message */
+        plcrash_writer_pack(file, PLCRASH_PROTO_REPORT_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_report_info(file, writer);
     }
 
     /* System Info */

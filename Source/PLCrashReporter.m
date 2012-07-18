@@ -332,7 +332,7 @@ static void uncaught_exception_handler (NSException *exception) {
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
-    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion);
+    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, false);
 
     /* Enable the signal handler */
     if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])
@@ -385,7 +385,7 @@ static void uncaught_exception_handler (NSException *exception) {
     }
     
     /* Initialize the output context */
-    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion);
+    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, true);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
     /* Mock up a SIGTRAP-based siginfo_t */

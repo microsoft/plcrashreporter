@@ -234,7 +234,7 @@
     plcrash_async_file_init(&file, fd, 0);
 
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", false), @"Initialization failed");
     
     /* Initialize the image list */
     plcrash_async_image_list_init(&image_list);
@@ -263,6 +263,7 @@
 
     /* Load and validate the written report */
     Plcrash__CrashReport *crashReport = [self loadReport];
+    STAssertFalse(crashReport->report_info->user_requested, @"Report not correctly marked as non-user-requested");
 
     /* Test the report */
     [self checkSystemInfo: crashReport];
@@ -307,7 +308,7 @@ static uintptr_t getPC () {
     plcrash_async_file_init(&file, fd, 0);
     
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0"), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", true), @"Initialization failed");
     
     /* Provide binary image info */
     plcrash_async_image_list_init(&image_list);
@@ -342,6 +343,7 @@ static uintptr_t getPC () {
     Plcrash__CrashReport *crashReport = [self loadReport];
     
     /* Test the report */
+    STAssertTrue(crashReport->report_info->user_requested, @"Report not correctly marked as user-requested");
     [self checkSystemInfo: crashReport];
     [self checkThreads: crashReport];
 
