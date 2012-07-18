@@ -371,10 +371,12 @@ static void uncaught_exception_handler (NSException *exception) {
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
-    
+
     /* Open the output file */
-    const char *path = "/tmp/reportsdf"; // TODO, use temporary path
-    int fd = open(path, O_RDWR|O_CREAT|O_TRUNC, 0644);
+    NSString *templateStr = [NSTemporaryDirectory() stringByAppendingPathComponent: @"live_crash_report.XXXXXX"];
+    char *path = strdup([templateStr fileSystemRepresentation]);
+
+    int fd = mkstemp(path);
     if (fd < 0) {
         if (outError != NULL) {
             // TODO - populate error
@@ -405,8 +407,14 @@ static void uncaught_exception_handler (NSException *exception) {
     plcrash_log_writer_free(&writer);
 
     NSData *data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
-    // TODO - delete temporary file
-    // TODO - detect error reading the temporary path
+    if (data == nil) {
+        // TODO - populate error
+    }
+
+    if (unlink(path) != 0) {
+        // TODO - populate error
+    }
+
     return data;
 }
 
