@@ -275,4 +275,15 @@ message CrashReport {
     /* Host architecture information. Required for all v1.1+ crash reports. If unavailable, the information
      * should be derived from the deprecated SystemInfo.architecture field. */
      optional MachineInfo machine_info = 8;
+     
+     /*
+      * Report format information
+      */
+    message ReportInfo {
+        /** If true, this report was generated on request, and no crash occured. */
+        required bool user_requested = 1;
+    }
+
+    /* Report format information. Required for all v1.1+ crash reports. */
+    optional ReportInfo report_info = 9;
 }

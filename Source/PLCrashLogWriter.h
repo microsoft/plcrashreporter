@@ -49,6 +49,13 @@
  * Crash log writer context.
  */
 typedef struct plcrash_log_writer {
+    /** Report data */
+    struct {
+        /** If true, the report should be marked as a 'generated' user-requested report, rather than as a true crash
+         * report */
+        bool user_requested;
+    } report_info;
+
     /** System data */
     struct {
         /** The host OS version. */
@@ -126,7 +133,10 @@ typedef struct plcrash_log_writer {
 } plcrash_log_writer_t;
 
 
-plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer, NSString *app_identifier, NSString *app_version);
+plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
+                                         NSString *app_identifier,
+                                         NSString *app_version,
+                                         BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
 plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_t *writer,
