@@ -386,7 +386,7 @@ static uintptr_t getPC () {
 
 #if __x86_64__
         /* Verify that RSP is sane. */
-        uintptr_t rsp = GetReg(@"rsp")
+        uintptr_t rsp = GetReg(@"rsp");
         STAssertTrue((uint8_t *)rsp < stackaddr && (uint8_t *) rsp >= stackaddr-stacksize, @"RSP outside of stack range");
 
 #elif __i386__
