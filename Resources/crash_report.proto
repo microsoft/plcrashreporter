@@ -27,7 +27,8 @@
  */
 
 package plcrash;
-option java_package = "com.plausiblelabs.crashreporter";
+option java_package = "coop.plausible.crashreporter";
+option java_outer_classname = "CrashReport_pb";
 
 /* Legacy processor architecture type codes. These codes have been deprecated. */
 enum Architecture {
