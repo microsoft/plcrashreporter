@@ -33,6 +33,16 @@
 
 #import "PLCrashReportTextFormatter.h"
 
+/*
+ * XXX: The ARM_V7S Mach-O CPU subtype is not defined in the Mac OS X 10.8
+ * headers.
+ */
+#ifndef CPU_SUBTYPE_ARM_V7S
+# define CPU_SUBTYPE_ARM_V7S 11
+#elif !TARGET_OS_IPHONE
+# error CPU_SUBTYPE_ARM_V7S is now defined by the SDK. Please remove this define.
+#endif
+
 
 @interface PLCrashReportTextFormatter (PrivateAPI)
 NSInteger binaryImageSort(id binary1, id binary2, void *context);
@@ -264,7 +274,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         NSInteger threadNum = maxThreadNum + 1;
 
         /* Create the pseudo-thread header. We use the named thread format to mark this thread */
-        [text appendFormat: @"Thread %ld name:  Exception Backtrace\n", threadNum];
+        [text appendFormat: @"Thread %ld name:  Exception Backtrace\n", (long) threadNum];
         [text appendFormat: @"Thread %ld:\n", (long) threadNum];
 
         /* Write out the frames */
@@ -340,6 +350,9 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
                             archName = @"armv7";
                             break;
                             
+                        case CPU_SUBTYPE_ARM_V7S:
+                            archName = @"armv7s";
+
                         default:
                             archName = @"arm-unknown";
                             break;
