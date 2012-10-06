@@ -901,6 +901,15 @@
 			name = Formatters;
 			sourceTree = "<group>";
 		};
+		05737F5B13A4409C007D2A90 /* Processor Info */ = {
+			isa = PBXGroup;
+			children = (
+				05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */,
+				05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */,
+			);
+			name = "Processor Info";
+			sourceTree = "<group>";
+		};
 		0596674D0EEDEBB1008A0601 /* Frame Walking */ = {
 			isa = PBXGroup;
 			children = (
@@ -1055,8 +1064,6 @@
 			children = (
 				05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */,
 				05BB83F01364AD3E00D53B84 /* PLCrashReportMachineInfo.m */,
-				05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */,
-				05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */,
 			);
 			name = "Machine Info";
 			sourceTree = "<group>";
@@ -1171,6 +1178,7 @@
 				05F411AC0EF8DE68008050CF /* PLCrashReportTests.m */,
 				05BB83F91364AD4700D53B84 /* System Info */,
 				05BB84301364B70100D53B84 /* Machine Info */,
+				05737F5B13A4409C007D2A90 /* Processor Info */,
 				05BB83FA1364AD5900D53B84 /* Application Info */,
 				05BB84001364AD8300D53B84 /* Process Info */,
 				05BB84011364AD9600D53B84 /* Thread Info */,
@@ -2325,10 +2333,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					"$(ARCHS_STANDARD_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2356,10 +2361,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					"$(ARCHS_STANDARD_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -2510,10 +2512,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					"$(ARCHS_STANDARD_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2534,10 +2533,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					"$(ARCHS_STANDARD_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
@@ -2743,10 +2739,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					"$(ARCHS_STANDARD_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2777,10 +2770,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					"$(ARCHS_STANDARD_32_BIT)",
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3008,7 +2998,7 @@
 				);
 				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
 				SDKROOT = macosx;
-				VALID_ARCHS = "i386 ppc armv7 armv6 x86_64";
+				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
@@ -3034,7 +3024,7 @@
 				);
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
 				SDKROOT = macosx;
-				VALID_ARCHS = "i386 ppc armv7 armv6 x86_64";
+				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
