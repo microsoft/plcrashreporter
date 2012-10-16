@@ -120,7 +120,7 @@
         size_t nread;
         
         nread = [input read: buf maxLength: len-bytesRead];
-        STAssertTrue(memcmp(buf, data + bytesRead, nread) == 0, @"Data does not compare at %d (just read %d)", bytesRead, nread);
+        STAssertTrue(memcmp(buf, data + bytesRead, nread) == 0, @"Data does not compare at %zu (just read %zu)", bytesRead, nread);
         bytesRead += nread;
     }
 
@@ -158,7 +158,7 @@
     for (int i = 0; i < write_iterations; i++)
         nread += [self checkTestData: data bytes: sizeof(data) inputStream: input];
 
-    STAssertEquals(nread, sizeof(data) * write_iterations, @"Fewer than expected bytes were written (%d < %d)", nread, sizeof(data) * write_iterations);
+    STAssertEquals(nread, sizeof(data) * write_iterations, @"Fewer than expected bytes were written (%zu < %zu)", nread, sizeof(data) * write_iterations);
     
     [input close];
 }
