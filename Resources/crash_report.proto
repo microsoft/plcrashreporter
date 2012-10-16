@@ -126,6 +126,7 @@ message CrashReport {
     /* Host system data */
     required SystemInfo system_info = 1;
 
+    /* Application info */
     message ApplicationInfo {
         /* Unique application identifier */
         required string identifier = 1;
@@ -144,6 +145,23 @@ message CrashReport {
         message StackFrame {
             /* Instruction pointer */
             required uint64 pc = 3;
+            
+            /* Field numbers 4-5 were used in Bitstadium's fork of PLCrashReporter to represent
+             * symbol name and start address. They were marked as optional values, and
+             * are not supported in the official binary format.
+             *
+             * We reserve those fields to avoid unnecessary incompatibilities with the forked format. */
+
+            /*
+             * Index into the symbol table (symbol_table) for this frame's PC.
+             * 
+             * Symbol information may not be available, in which case this field will be excluded from the rpeort.
+             *
+             * Since the crash report's symbol table is a partial one, it is not possible to accurately perform a
+             * lookup in the symbol_table by searching for a symbol whose start address includes this frame's PC, thus
+             * requiring the use of an explicit index here.
+             */
+            optional uint64 symbol_index = 6;
         }
 
         /* Backtrace stack frames */
@@ -287,4 +305,23 @@ message CrashReport {
 
     /* Report format information. Required for all v1.1+ crash reports. */
     optional ReportInfo report_info = 9;
+    
+    
+    /* A symbol table entry. */
+    message Symbol {
+        /* The symbol name */
+        required string name = 1;
+
+        /* The symbol start address */
+        required uint64 start_address = 2;
+
+        /* The symbol end address, if explicitly defined. This will only be included if the end address is
+         * explicitly defined (eg, by DWARF debugging information), will not be derived by best-guess
+         * heuristics. */
+        optional uint64 end_address = 3;
+    }
+    
+    /* Symbol table for symbols referenced (and available) from the crash report's stack traces. Any given symbol will
+     * only be listed once. Not all symbols may be available at the time the crash report is generated. */
+    repeated Symbol symbols = 10;
 }
