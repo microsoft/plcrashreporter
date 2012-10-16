@@ -992,7 +992,7 @@
 			children = (
 				05BB84AE1364F5BC00D53B84 /* Signal Handler */,
 				05BB84AF1364F5C600D53B84 /* Async-Safe APIs */,
-				05BB84B01364F5DB00D53B84 /* Host Stastics */,
+				05BB84B01364F5DB00D53B84 /* Host Statistics */,
 				059670210EEF5459008A0601 /* Crash Log Writer */,
 				0596674D0EEDEBB1008A0601 /* Frame Walking */,
 				05EB2B1F15B6FE400066EB4D /* Error Reporting */,
@@ -1098,14 +1098,14 @@
 			name = "Async-Safe APIs";
 			sourceTree = "<group>";
 		};
-		05BB84B01364F5DB00D53B84 /* Host Stastics */ = {
+		05BB84B01364F5DB00D53B84 /* Host Statistics */ = {
 			isa = PBXGroup;
 			children = (
 				05BB84841364EDF200D53B84 /* PLCrashSysctl.h */,
 				05BB84851364EDF200D53B84 /* PLCrashSysctl.c */,
 				05BB848E1364EE1500D53B84 /* PLCrashSysctlTests.m */,
 			);
-			name = "Host Stastics";
+			name = "Host Statistics";
 			sourceTree = "<group>";
 		};
 		05CD32750EE93E5A000FDE88 /* Tools */ = {
