@@ -84,16 +84,18 @@ void plcrash_async_image_list_free (plcrash_async_image_list_t *list) {
  *
  * @param list The list to which the image record should be appended.
  * @param header The image's header address.
+ * @param vmaddr_slide The image's vmaddr slide, as reported by dyld.
  * @param name The image's name.
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_t header, const char *name) {
+void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_t header, intptr_t vmaddr_slide, const char *name) {
     /* Initialize the new entry. */
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
     new->header = header;
+    new->vmaddr_slide = vmaddr_slide;
     new->name = strdup(name);
-    
+
     /* Update the image record and issue a memory barrier to ensure a consistent view. */
     OSMemoryBarrier();
     

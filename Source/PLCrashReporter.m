@@ -157,7 +157,7 @@ static void image_add_callback (const struct mach_header *mh, intptr_t vmaddr_sl
     }
 
     /* Register the image */
-    plcrash_async_image_list_append(&shared_image_list, (uintptr_t) mh, info.dli_fname);    
+    plcrash_async_image_list_append(&shared_image_list, (uintptr_t) mh, vmaddr_slide, info.dli_fname);
 }
 
 /**

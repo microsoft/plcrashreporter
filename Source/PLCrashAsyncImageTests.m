@@ -47,15 +47,15 @@
 }
 
 - (void) testAppendImage {
-    plcrash_async_image_list_append(&_list, 0x0, "image_name");
+    plcrash_async_image_list_append(&_list, 0x0, 0x10, "image_name");
 
     STAssertNotNULL(_list.head, @"List HEAD should be set to our new image entry");
     STAssertEquals(_list.head, _list.tail, @"The list head and tail should be equal for the first entry");
     
-    plcrash_async_image_list_append(&_list, 0x1, "image_name");
-    plcrash_async_image_list_append(&_list, 0x2, "image_name");
-    plcrash_async_image_list_append(&_list, 0x3, "image_name");
-    plcrash_async_image_list_append(&_list, 0x4, "image_name");
+    plcrash_async_image_list_append(&_list, 0x1, 0x11, "image_name");
+    plcrash_async_image_list_append(&_list, 0x2, 0x12, "image_name");
+    plcrash_async_image_list_append(&_list, 0x3, 0x13, "image_name");
+    plcrash_async_image_list_append(&_list, 0x4, 0x14, "image_name");
     
     /* Verify the appended elements */
     plcrash_async_image_t *item = NULL;
@@ -71,6 +71,7 @@
 
         /* Validate its value */
         STAssertEquals(i, item->header, @"Incorrect header value");
+        STAssertEquals((intptr_t)i+0x10, item->vmaddr_slide, @"Incorrect slide value");
         STAssertEqualCStrings("image_name", item->name, @"Incorrect name value");
     }
 }
@@ -78,7 +79,7 @@
 
 /* Test removing the last image in the list. */
 - (void) testRemoveLastImage {
-    plcrash_async_image_list_append(&_list, 0x0, "image_name");
+    plcrash_async_image_list_append(&_list, 0x0, 0x10, "image_name");
     plcrash_async_image_list_remove(&_list, 0x0);
 
     STAssertNULL(_list.head, @"List HEAD should now be NULL");
@@ -86,11 +87,11 @@
 }
 
 - (void) testRemoveImage {
-    plcrash_async_image_list_append(&_list, 0x0, "image_name");
-    plcrash_async_image_list_append(&_list, 0x1, "image_name");
-    plcrash_async_image_list_append(&_list, 0x2, "image_name");
-    plcrash_async_image_list_append(&_list, 0x3, "image_name");
-    plcrash_async_image_list_append(&_list, 0x4, "image_name");
+    plcrash_async_image_list_append(&_list, 0x0, 0x10, "image_name");
+    plcrash_async_image_list_append(&_list, 0x1, 0x11, "image_name");
+    plcrash_async_image_list_append(&_list, 0x2, 0x12, "image_name");
+    plcrash_async_image_list_append(&_list, 0x3, 0x13, "image_name");
+    plcrash_async_image_list_append(&_list, 0x4, 0x14, "image_name");
 
     /* Try a non-existent item */
     plcrash_async_image_list_remove(&_list, 0x42);
@@ -114,6 +115,7 @@
         
         /* Validate its value */
         STAssertEquals(val, item->header, @"Incorrect header value");
+        STAssertEquals((intptr_t)val+0x10, item->vmaddr_slide, @"Incorrect slide value");
         STAssertEqualCStrings("image_name", item->name, @"Incorrect name value");
         val += 0x2;
     }
