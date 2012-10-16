@@ -26,8 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <SenTestingKit/SenTestingKit.h>
-
+#import "GTMSenTestCase.h"
 #import "PLCrashReporterNSError.h"
 
 @interface PLCrashReporterNSErrorTests : SenTestCase @end

@@ -1,0 +1,312 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		55C015D212B7BC2500354E5C /* GTMXcodeCorrectWhitespace.m in Sources */ = {isa = PBXBuildFile; fileRef = 55C015D112B7BC2500354E5C /* GTMXcodeCorrectWhitespace.m */; };
+		8B515B23146B2D7E00CEB6B7 /* GTMXcodeAboutItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B515B20146B2D7E00CEB6B7 /* GTMXcodeAboutItem.m */; };
+		8B515B24146B2D7E00CEB6B7 /* GTMXcodePluginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B515B22146B2D7E00CEB6B7 /* GTMXcodePluginManager.m */; };
+		8B515B38146B341C00CEB6B7 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 8B515B36146B341C00CEB6B7 /* Credits.rtf */; };
+		8B515B39146B341C00CEB6B7 /* GTM.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8B515B37146B341C00CEB6B7 /* GTM.icns */; };
+		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
+		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		55C015D112B7BC2500354E5C /* GTMXcodeCorrectWhitespace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMXcodeCorrectWhitespace.m; sourceTree = "<group>"; };
+		8B515B20146B2D7E00CEB6B7 /* GTMXcodeAboutItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMXcodeAboutItem.m; sourceTree = "<group>"; };
+		8B515B21146B2D7E00CEB6B7 /* GTMXcodePluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMXcodePluginManager.h; sourceTree = "<group>"; };
+		8B515B22146B2D7E00CEB6B7 /* GTMXcodePluginManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMXcodePluginManager.m; sourceTree = "<group>"; };
+		8B515B36146B341C00CEB6B7 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
+		8B515B37146B341C00CEB6B7 /* GTM.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = GTM.icns; sourceTree = "<group>"; };
+		8BD93711146C305800FDE849 /* DebugSnowLeopardOrLater.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = DebugSnowLeopardOrLater.xcconfig; sourceTree = "<group>"; };
+		8BD93715146C305800FDE849 /* ReleaseSnowLeopardOrLater.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = ReleaseSnowLeopardOrLater.xcconfig; sourceTree = "<group>"; };
+		8BD93776146C337E00FDE849 /* LoadableBundleGCSupported.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = LoadableBundleGCSupported.xcconfig; sourceTree = "<group>"; };
+		8D5B49B6048680CD000E48DA /* GTMXcode4Plugin.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GTMXcode4Plugin.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D5B49B3048680CD000E48DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* XCFixin_DisableAnimations */ = {
+			isa = PBXGroup;
+			children = (
+				8BD9370D146C305800FDE849 /* XcodeConfig */,
+				08FB77AFFE84173DC02AAC07 /* Classes */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				19C28FB8FE9D52D311CA2CBB /* Products */,
+			);
+			name = XCFixin_DisableAnimations;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8B515B36146B341C00CEB6B7 /* Credits.rtf */,
+				8B515B37146B341C00CEB6B7 /* GTM.icns */,
+				8D5B49B7048680CD000E48DA /* Info.plist */,
+				089C167DFE841241C02AAC07 /* InfoPlist.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AFFE84173DC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				8B515B20146B2D7E00CEB6B7 /* GTMXcodeAboutItem.m */,
+				8B515B21146B2D7E00CEB6B7 /* GTMXcodePluginManager.h */,
+				8B515B22146B2D7E00CEB6B7 /* GTMXcodePluginManager.m */,
+				55C015D112B7BC2500354E5C /* GTMXcodeCorrectWhitespace.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FB8FE9D52D311CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B6048680CD000E48DA /* GTMXcode4Plugin.xcplugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8BD9370D146C305800FDE849 /* XcodeConfig */ = {
+			isa = PBXGroup;
+			children = (
+				8BD9370E146C305800FDE849 /* Project */,
+				8BD93773146C337E00FDE849 /* Target */,
+			);
+			name = XcodeConfig;
+			path = ../XcodeConfig;
+			sourceTree = SOURCE_ROOT;
+		};
+		8BD9370E146C305800FDE849 /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				8BD93711146C305800FDE849 /* DebugSnowLeopardOrLater.xcconfig */,
+				8BD93715146C305800FDE849 /* ReleaseSnowLeopardOrLater.xcconfig */,
+			);
+			path = Project;
+			sourceTree = "<group>";
+		};
+		8BD93773146C337E00FDE849 /* Target */ = {
+			isa = PBXGroup;
+			children = (
+				8BD93776146C337E00FDE849 /* LoadableBundleGCSupported.xcconfig */,
+			);
+			path = Target;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D5B49AC048680CD000E48DA /* GTMXcode4Plugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "GTMXcode4Plugin" */;
+			buildPhases = (
+				8D5B49AF048680CD000E48DA /* Resources */,
+				8D5B49B1048680CD000E48DA /* Sources */,
+				8D5B49B3048680CD000E48DA /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GTMXcode4Plugin;
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = XCFixin_DisableAnimations;
+			productReference = 8D5B49B6048680CD000E48DA /* GTMXcode4Plugin.xcplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "GTMXcode4Plugin" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* XCFixin_DisableAnimations */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D5B49AC048680CD000E48DA /* GTMXcode4Plugin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D5B49AF048680CD000E48DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */,
+				8B515B38146B341C00CEB6B7 /* Credits.rtf in Resources */,
+				8B515B39146B341C00CEB6B7 /* GTM.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D5B49B1048680CD000E48DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55C015D212B7BC2500354E5C /* GTMXcodeCorrectWhitespace.m in Sources */,
+				8B515B23146B2D7E00CEB6B7 /* GTMXcodeAboutItem.m in Sources */,
+				8B515B24146B2D7E00CEB6B7 /* GTMXcodePluginManager.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C167DFE841241C02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C167EFE841241C02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB913B08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8BD93776146C337E00FDE849 /* LoadableBundleGCSupported.xcconfig */;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_ENABLE_OBJC_GC = supported;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				PRODUCT_NAME = GTMXcode4Plugin;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Debug;
+		};
+		1DEB913C08733D840010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8BD93776146C337E00FDE849 /* LoadableBundleGCSupported.xcconfig */;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_ENABLE_OBJC_GC = supported;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				PRODUCT_NAME = GTMXcode4Plugin;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Release;
+		};
+		1DEB913F08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8BD93711146C305800FDE849 /* DebugSnowLeopardOrLater.xcconfig */;
+			buildSettings = {
+				GTM_PRODUCT_NAME = "$(PROJECT_NAME)";
+				GTM_VERSIONINFO_ABOUT = "© $(GTM_VERSION_COPYRIGHT) Google Inc.";
+				GTM_VERSIONINFO_FINDER = "$(GTM_PRODUCT_NAME) $(GTM_VERSIONINFO_LONG)$(GTM_VERSION_EXTRAINFO)$(GTM_VERSION_DEBUG_FLAG), © $(GTM_VERSION_COPYRIGHT) Google Inc.";
+				GTM_VERSIONINFO_HUMAN = "$(GTM_VERSIONINFO_SHORT)$(GTM_VERSION_EXTRAINFO)";
+				GTM_VERSIONINFO_LONG = "$(GTM_VERSIONINFO_SHORT).$(GTM_VERSION_BUILDNUMBER)";
+				GTM_VERSIONINFO_SHORT = "$(GTM_VERSION_MAJOR).$(GTM_VERSION_MINOR).$(GTM_VERSION_FIXLEVEL)";
+				GTM_VERSION_BUILDNUMBER = 0;
+				GTM_VERSION_COPYRIGHT = 2011;
+				GTM_VERSION_FIXLEVEL = 0;
+				GTM_VERSION_MAJOR = 4;
+				GTM_VERSION_MINOR = 2;
+			};
+			name = Debug;
+		};
+		1DEB914008733D840010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8BD93715146C305800FDE849 /* ReleaseSnowLeopardOrLater.xcconfig */;
+			buildSettings = {
+				GTM_PRODUCT_NAME = "$(PROJECT_NAME)";
+				GTM_VERSIONINFO_ABOUT = "© $(GTM_VERSION_COPYRIGHT) Google Inc.";
+				GTM_VERSIONINFO_FINDER = "$(GTM_PRODUCT_NAME) $(GTM_VERSIONINFO_LONG)$(GTM_VERSION_EXTRAINFO)$(GTM_VERSION_DEBUG_FLAG), © $(GTM_VERSION_COPYRIGHT) Google Inc.";
+				GTM_VERSIONINFO_HUMAN = "$(GTM_VERSIONINFO_SHORT)$(GTM_VERSION_EXTRAINFO)";
+				GTM_VERSIONINFO_LONG = "$(GTM_VERSIONINFO_SHORT).$(GTM_VERSION_BUILDNUMBER)";
+				GTM_VERSIONINFO_SHORT = "$(GTM_VERSION_MAJOR).$(GTM_VERSION_MINOR).$(GTM_VERSION_FIXLEVEL)";
+				GTM_VERSION_BUILDNUMBER = 0;
+				GTM_VERSION_COPYRIGHT = 2011;
+				GTM_VERSION_FIXLEVEL = 0;
+				GTM_VERSION_MAJOR = 4;
+				GTM_VERSION_MINOR = 2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "GTMXcode4Plugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913B08733D840010E9CD /* Debug */,
+				1DEB913C08733D840010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "GTMXcode4Plugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913F08733D840010E9CD /* Debug */,
+				1DEB914008733D840010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}
