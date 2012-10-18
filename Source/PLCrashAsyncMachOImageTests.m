@@ -58,7 +58,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
     
-    plcrash_async_macho_image_init(&_image, info.dli_fname, (uintptr_t) info.dli_fbase, vmaddr_slide);
+    plcrash_async_macho_image_init(&_image, mach_task_self(), info.dli_fname, (uintptr_t) info.dli_fbase, vmaddr_slide);
     
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");

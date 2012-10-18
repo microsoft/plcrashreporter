@@ -51,7 +51,10 @@
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, const char *name, uintptr_t header, intptr_t vmaddr_slide) {
+void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, uintptr_t header, intptr_t vmaddr_slide) {
+    mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
+    image->task = task;
+
     image->header = header;
     image->vmaddr_slide = vmaddr_slide;
     image->name = strdup(name);
@@ -64,6 +67,7 @@ void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, const c
  */
 void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image) {
     free(image->name);
+    mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
 
