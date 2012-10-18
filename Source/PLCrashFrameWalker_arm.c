@@ -114,10 +114,10 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     } else {
         if (cursor->fp[0] == NULL) {
             /* No frame data has been loaded, fetch it from register state */
-            kr = plframe_read_addr((void *) cursor->uap->uc_mcontext->__ss.__r[7], cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(mach_task_self(), cursor->uap->uc_mcontext->__ss.__r[7], cursor->fp, sizeof(cursor->fp));
         } else {
             /* Frame data loaded, walk the stack */
-            kr = plframe_read_addr(cursor->fp[0], cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
         }
     }
     

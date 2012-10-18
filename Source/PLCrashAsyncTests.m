@@ -70,11 +70,11 @@
     char dest[sizeof(bytes)];
     
     // Verify that a good read succeeds
-    plcrash_async_read_addr(mach_task_self(), bytes, dest, sizeof(dest));
+    plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) bytes, dest, sizeof(dest));
     STAssertTrue(strcmp(bytes, dest) == 0, @"Read was not performed");
     
     // Verify that reading off the page at 0x0 fails
-    STAssertNotEquals(KERN_SUCCESS, plcrash_async_read_addr(mach_task_self(), NULL, dest, sizeof(bytes)), @"Bad read was performed");
+    STAssertNotEquals(KERN_SUCCESS, plcrash_async_read_addr(mach_task_self(), 0, dest, sizeof(bytes)), @"Bad read was performed");
 }
 
 - (void) testMemcpy {

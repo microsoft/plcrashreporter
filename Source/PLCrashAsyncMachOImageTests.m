@@ -47,7 +47,7 @@
     STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
 
     /* Look up the vmaddr slide for our image */
-    intptr_t vmaddr_slide = 0;
+    int64_t vmaddr_slide = 0;
     bool found_image = false;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
         if (_dyld_get_image_header(i) == info.dli_fbase) {
@@ -57,9 +57,9 @@
         }
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
-    
-    plcrash_async_macho_image_init(&_image, mach_task_self(), info.dli_fname, (uintptr_t) info.dli_fbase, vmaddr_slide);
-    
+
+    plcrash_async_macho_image_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
     STAssertEquals(_image.header, (uintptr_t) info.dli_fbase, @"Incorrect header address");
@@ -69,6 +69,5 @@
 - (void) tearDown {
     plcrash_async_macho_image_free(&_image);
 }
-
 
 @end

@@ -29,12 +29,14 @@
 #include <stdint.h>
 #include <mach/mach.h>
 
+#include "PLCrashAsync.h"
+
 typedef struct plcrash_async_macho_image {    
     /** The Mach task in which the Mach-O image can be found */
     mach_port_t task;
 
     /** The binary image's header address. */
-    uintptr_t header;
+    pl_vm_address_t header;
     
     /** The binary's dyld-reported reported vmaddr slide. */
     intptr_t vmaddr_slide;
@@ -43,5 +45,5 @@ typedef struct plcrash_async_macho_image {
     char *name;
 } plcrash_async_macho_image_t;
 
-void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, uintptr_t header, intptr_t vmaddr_slide);
+void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
 void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image);

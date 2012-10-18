@@ -51,7 +51,7 @@
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, uintptr_t header, intptr_t vmaddr_slide) {
+void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
     mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
     image->task = task;
 

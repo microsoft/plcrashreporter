@@ -27,10 +27,46 @@
  */
 
 
-#import <stdio.h> // for snprintf
-#import <unistd.h>
-#import <stdbool.h>
-#import <mach/mach.h>
+#include <stdio.h> // for snprintf
+#include <unistd.h>
+#include <stdbool.h>
+
+#include <TargetConditionals.h>
+#include <mach/mach.h>
+
+#if TARGET_OS_IPHONE
+
+/*
+ * iOS does not provide the mach_vm_* APIs, and as such, we can't support both
+ * 32-bit/64-bit tasks via the same APIs.
+ *
+ * In practice, this currently does not matter for iOS, as no 64-bit ARM CPU
+ * exists.
+ */
+
+/** VM address type. 
+ * @ingroup plcrash_async */
+typedef intptr_t pl_vm_address_t;
+
+/** VM size type.
+ * @ingroup plcrash_async */
+typedef size_t pl_vm_size_t;
+
+#else
+
+#include <mach/mach_vm.h>
+#define PL_HAVE_MACH_VM 1
+
+/** Architecture-independent VM address type.
+ * @ingroup plcrash_async */
+typedef mach_vm_address_t pl_vm_address_t;
+
+/** Architecture-independent VM size type. 
+ * @ingroup plcrash_async */
+typedef mach_vm_size_t pl_vm_size_t;
+
+#endif /* TARGET_OS_IPHONE */
+
 
 // Debug output support. Lines are capped at 128 (stack space is scarce). This implemention
 // is not async-safe and should not be enabled in release builds
@@ -78,7 +114,7 @@ typedef enum  {
 
 const char *plcrash_strerror (plcrash_error_t error);
 
-kern_return_t plcrash_async_read_addr (mach_port_t task, const void *source, void *dest, size_t len);
+kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
 
 /**

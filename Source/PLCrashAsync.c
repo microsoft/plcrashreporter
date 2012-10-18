@@ -78,9 +78,14 @@ const char *plcrash_strerror (plcrash_error_t error) {
  * @return On success, returns KERN_SUCCESS. If the pages containing @a source + len are unmapped, KERN_INVALID_ADDRESS
  * will be returned. If the pages can not be read due to access restrictions, KERN_PROTECTION_FAILURE will be returned.
  */
-kern_return_t plcrash_async_read_addr (mach_port_t task, const void *source, void *dest, size_t len) {
+kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len) {
+#ifdef PL_HAVE_MACH_VM
+    pl_vm_size_t read_size = len;
+    return mach_vm_read_overwrite(task, source, len, (pointer_t) dest, &read_size);
+#else
     vm_size_t read_size = len;
-    return vm_read_overwrite(task, (vm_address_t) source, len, (pointer_t) dest, &read_size);
+    return vm_read_overwrite(task, source, len, (pointer_t) dest, &read_size);
+#endif
 }
 
 /**
