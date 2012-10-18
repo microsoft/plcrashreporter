@@ -44,9 +44,12 @@
  * exists.
  */
 
+/** The largest address value that can be represented via the pl_vm_address_t type. */
+#define PL_VM_ADDRESS_MAX UINTPTR_MAX
+
 /** VM address type. 
  * @ingroup plcrash_async */
-typedef intptr_t pl_vm_address_t;
+typedef uintptr_t pl_vm_address_t;
 
 /** VM size type.
  * @ingroup plcrash_async */
@@ -56,6 +59,9 @@ typedef size_t pl_vm_size_t;
 
 #include <mach/mach_vm.h>
 #define PL_HAVE_MACH_VM 1
+
+/** The largest address value that can be represented via the pl_vm_address_t type. */
+#define PL_VM_ADDRESS_MAX UINT64_MAX
 
 /** Architecture-independent VM address type.
  * @ingroup plcrash_async */

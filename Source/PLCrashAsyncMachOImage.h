@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 #include <mach/mach.h>
+#include <mach-o/loader.h>
 
 #include "PLCrashAsync.h"
 
@@ -36,14 +37,28 @@ typedef struct plcrash_async_macho_image {
     mach_port_t task;
 
     /** The binary image's header address. */
-    pl_vm_address_t header;
+    pl_vm_address_t header_addr;
     
     /** The binary's dyld-reported reported vmaddr slide. */
-    intptr_t vmaddr_slide;
-    
+    int64_t vmaddr_slide;
+
     /** The binary image's name/path. */
     char *name;
+
+    /** The Mach-O header. For our purposes, the 32-bit and 64-bit headers are identical. Note that the header
+     * values may require byte-swapping for the local process' use. */
+    struct mach_header header;
+    
+    /** Total size, in bytes, of the in-memory Mach-O header. */
+    pl_vm_size_t header_size;
+
+    /** If true, the image is 64-bit Mach-O. If false, it is a 32-bit Mach-O image. */
+    bool m64;
+    
+    /** The byte-swap function to use for 32-bit values. */
+    uint32_t (*swap32)(uint32_t);
 } plcrash_async_macho_image_t;
 
-void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
+plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
+pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_image_t *image, pl_vm_address_t previous);
 void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image);

@@ -62,12 +62,41 @@
 
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
-    STAssertEquals(_image.header, (uintptr_t) info.dli_fbase, @"Incorrect header address");
-    STAssertEquals(_image.vmaddr_slide, vmaddr_slide, @"Incorrect vmaddr_slide value");
+    STAssertEquals(_image.header_addr, (pl_vm_address_t) info.dli_fbase, @"Incorrect header address");
+    STAssertEquals(_image.vmaddr_slide, (int64_t) vmaddr_slide, @"Incorrect vmaddr_slide value");
 }
 
 - (void) tearDown {
     plcrash_async_macho_image_free(&_image);
+}
+
+/**
+ * Test iteration of Mach-O load commands.
+ */
+- (void) testIterateCommand {
+    pl_vm_address_t cmd_addr = 0;
+
+    bool found_uuid = false;
+    while ((cmd_addr = plcrash_async_macho_image_next_command(&_image, cmd_addr)) != 0) {
+        /* Read the load command */
+        struct uuid_command cmd;
+
+        /* First, read just the standard load_command data. */
+        STAssertEquals(plcrash_async_read_addr(_image.task, cmd_addr, &cmd, sizeof(struct load_command)), KERN_SUCCESS, @"Read failed");
+        
+        /* If this is not LC_UUID command, nothing to do */
+        if (_image.swap32(cmd.cmd) != LC_UUID)
+            continue;
+        
+        /* Read in the full UUID command */
+        STAssertEquals(plcrash_async_read_addr(_image.task, cmd_addr, &cmd, sizeof(cmd)), KERN_SUCCESS, @"Read failed");
+        
+        // TODO - Validate the UUID value?
+        STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
+        found_uuid = true;
+    }
+
+    STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
 }
 
 @end

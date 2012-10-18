@@ -30,6 +30,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <mach-o/fat.h>
 
 /**
  * @internal
@@ -41,6 +43,15 @@
  * @{
  */
 
+/* Simple byteswap wrappers */
+static uint32_t macho_swap32 (uint32_t input) {
+    return OSSwapInt32(input);
+}
+
+static uint32_t macho_nswap32(uint32_t input) {
+    return input;
+}
+
 /**
  * Initialize a new Mach-O binary image parser.
  *
@@ -49,15 +60,109 @@
  * @param header The task-local address of the image's Mach-O header.
  * @param vmaddr_slide The dyld-reported task-local vmaddr slide of this image.
  *
+ * @return PLCRASH_ESUCCESS on success. PLCRASH_EINVAL will be returned in the Mach-O file can not be parsed,
+ * or PLCRASH_EINTERNAL if an error occurs reading from the target task.
+ *
  * @warning This method is not async safe.
+ * @note On error, plcrash_async_macho_image_free() must be called to free any resources still held by the @a image.
  */
-void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
+plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
+    /* This must be done first, as our free() function will always decrement the port's reference count. */
     mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
     image->task = task;
 
-    image->header = header;
+    image->header_addr = header;
     image->vmaddr_slide = vmaddr_slide;
     image->name = strdup(name);
+
+    /* Read in the Mach-O header */
+    if (plcrash_async_read_addr(image->task, image->header_addr, &image->header, sizeof(image->header)) != KERN_SUCCESS) {
+        return PLCRASH_EINTERNAL;
+    }
+    
+    /* Set the default swap implementations */
+    image->swap32 = macho_nswap32;
+
+    /* Parse the Mach-O magic identifier. */
+    switch (image->header.magic) {
+        case MH_CIGAM:
+            // Enable byte swapping
+            image->swap32 = macho_swap32;
+
+            // Fall-through
+
+        case MH_MAGIC:
+            image->m64 = false;
+            break;            
+            
+        case MH_CIGAM_64:
+            // Enable byte swapping
+            image->swap32 = macho_swap32;
+            // Fall-through
+            
+        case MH_MAGIC_64:
+            image->m64 = true;
+            break;
+
+        case FAT_CIGAM:
+        case FAT_MAGIC:
+            PLCF_DEBUG("%s called with an unsupported universal Mach-O archive in: %s", __func__, image->name);
+            return PLCRASH_EINVAL;
+            break;
+
+        default:
+            PLCF_DEBUG("Unknown Mach-O magic: 0x%" PRIx32 " in: %s", image->header.magic, image->name);
+            return PLCRASH_EINVAL;
+    }
+
+    /* Save the header size */
+    if (image->m64) {
+        image->header_size = sizeof(struct mach_header_64);
+    } else {
+        image->header_size = sizeof(struct mach_header);
+    }
+
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Iterate over the available Mach-O LC_CMD entries.
+ *
+ * @param image The image to iterate
+ * @param previous The previously returned LC_CMD address value, or 0 to iterate from the first LC_CMD.
+ *
+ */
+pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_image_t *image, pl_vm_address_t previous) {
+    struct load_command cmd;
+
+    /* On the first iteration, determine the LC_CMD offset from the Mach-O header. */
+    if (previous == 0) {
+        previous = image->header_addr + image->header_size;
+    }
+
+    /* Read the previous command value to get its size. */
+    if (plcrash_async_read_addr(image->task, previous, &cmd, sizeof(cmd)) != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " in: %s", (uint64_t) previous, image->name);
+        return 0;
+    }
+    
+    /* Fetch the size */
+    uint32_t cmdsize = image->swap32(cmd.cmdsize);
+    
+    /* Verify that incrementing our command position won't overflow our address value */
+    if (PL_VM_ADDRESS_MAX - cmdsize < previous) {
+        PLCF_DEBUG("Received an unexpectedly large cmdsize value: %" PRIu32 " in: %s", cmdsize, image->name);
+        return 0;
+    }
+
+    /* Advance to the next command */
+    pl_vm_address_t next = previous + cmdsize;
+    if (next >= image->header_addr + image->swap32(image->header.sizeofcmds)) {
+        PLCF_DEBUG("Reached the LC_CMD end in: %s", image->name);
+        return 0;
+    }
+
+    return next;
 }
 
 /**
@@ -66,7 +171,9 @@ void plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_po
  * @warning This method is not async safe.
  */
 void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image) {
-    free(image->name);
+    if (image->name != NULL)
+        free(image->name);
+
     mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
