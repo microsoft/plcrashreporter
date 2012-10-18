@@ -57,16 +57,6 @@ const char *plframe_strerror (plframe_error_t error) {
     return "Unhandled error code";
 }
 
-
-/**
- * (Safely) read len bytes from addr, storing in dest. Uses mach vm_read_overwrite to
- * avoid dereferencing a bad pointer.
- */
-kern_return_t plframe_read_addr (const void *source, void *dest, size_t len) {
-    vm_size_t read_size = len;
-    return vm_read_overwrite(mach_task_self(), (vm_address_t) source, len, (pointer_t) dest, &read_size);
-}
-
 /* A thread that exists just to give us a stack to iterate */
 static void *test_stack_thr (void *arg) {
     plframe_test_thead_t *args = arg;

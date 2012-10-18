@@ -30,6 +30,7 @@
 #import <stdio.h> // for snprintf
 #import <unistd.h>
 #import <stdbool.h>
+#import <mach/mach.h>
 
 // Debug output support. Lines are capped at 128 (stack space is scarce). This implemention
 // is not async-safe and should not be enabled in release builds
@@ -77,6 +78,7 @@ typedef enum  {
 
 const char *plcrash_strerror (plcrash_error_t error);
 
+kern_return_t plcrash_async_read_addr (mach_port_t task, const void *source, void *dest, size_t len);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
 
 /**

@@ -68,6 +68,22 @@ const char *plcrash_strerror (plcrash_error_t error) {
 }
 
 /**
+ * (Safely) read len bytes from @a source, storing in @a dest.
+ *
+ * @param task The task from which data from address @a source will be read.
+ * @param source The address within @a task from which the data will be read.
+ * @param dest The destination address to which copied data will be written.
+ * @param len The number of bytes to be read.
+ *
+ * @return On success, returns KERN_SUCCESS. If the pages containing @a source + len are unmapped, KERN_INVALID_ADDRESS
+ * will be returned. If the pages can not be read due to access restrictions, KERN_PROTECTION_FAILURE will be returned.
+ */
+kern_return_t plcrash_async_read_addr (mach_port_t task, const void *source, void *dest, size_t len) {
+    vm_size_t read_size = len;
+    return vm_read_overwrite(task, (vm_address_t) source, len, (pointer_t) dest, &read_size);
+}
+
+/**
  * An intentionally naive async-safe implementation of memcpy(). memcpy() itself is not declared to be async-safe.
  *
  * @param dest Destination.
