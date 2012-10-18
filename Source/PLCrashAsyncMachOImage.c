@@ -130,7 +130,7 @@ plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *ima
  *
  * @param image The image to iterate
  * @param previous The previously returned LC_CMD address value, or 0 to iterate from the first LC_CMD.
- *
+ * @return Returns the address of the next load_command on success, or 0 on failure.
  */
 pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_image_t *image, pl_vm_address_t previous) {
     struct load_command cmd;
@@ -163,6 +163,41 @@ pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_imag
     }
 
     return next;
+}
+
+/**
+ * Iterate over the available Mach-O LC_CMD entries.
+ *
+ * @param image The image to iterate
+ * @param previous The previously returned LC_CMD address value, or 0 to iterate from the first LC_CMD.
+ * @param expectedCommand The LC_* command type to be returned. Only commands matching this type will be returned by the iterator.
+ * @return Returns the address of the next load_command on success, or 0 on failure. If @a size is non-NULL, the size of
+ * the next load command will be written to @a size.
+ */
+pl_vm_address_t plcrash_async_macho_image_next_command_type (plcrash_async_macho_image_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size) {
+    pl_vm_address_t cmd_addr = previous;
+
+    /* Iterate commands until we either find a match, or reach the end */
+    while ((cmd_addr = plcrash_async_macho_image_next_command(image, cmd_addr)) != 0) {
+        /* Read the load command type */
+        struct load_command cmd;
+        
+        kern_return_t kt;
+        if ((kt = plcrash_async_read_addr(image->task, cmd_addr, &cmd, sizeof(cmd))) != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " with error %d in: %s", (uint64_t) cmd_addr, kt, image->name);
+            return 0;
+        }
+
+        /* Return a match */
+        if (image->swap32(cmd.cmd) == expectedCommand) {
+            if (size != NULL)
+                *size = image->swap32(cmd.cmdsize);
+            return cmd_addr;
+        }
+    }
+
+    /* No match found */
+    return 0;
 }
 
 /**

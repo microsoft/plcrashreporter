@@ -60,5 +60,8 @@ typedef struct plcrash_async_macho_image {
 } plcrash_async_macho_image_t;
 
 plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
+
 pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_image_t *image, pl_vm_address_t previous);
+pl_vm_address_t plcrash_async_macho_image_next_command_type (plcrash_async_macho_image_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size);
+
 void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image);

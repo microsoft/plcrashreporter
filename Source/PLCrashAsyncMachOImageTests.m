@@ -99,4 +99,47 @@
     STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
 }
 
+/**
+ * Test type-specific iteration of Mach-O load commands.
+ */
+- (void) testIterateSpecificCommand {
+    pl_vm_address_t cmd_addr = 0;
+    
+    bool found_uuid = false;
+    uint32_t cmdsize = 0;
+
+    while ((cmd_addr = plcrash_async_macho_image_next_command_type(&_image, cmd_addr, LC_UUID, &cmdsize)) != 0) {
+        /* Read the load command */
+        struct uuid_command cmd;
+                
+        /* Read in the full UUID command */
+        STAssertEquals(plcrash_async_read_addr(_image.task, cmd_addr, &cmd, sizeof(cmd)), KERN_SUCCESS, @"Read failed");
+        
+        /* Validate the command type and size */
+        STAssertEquals(_image.swap32(cmd.cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
+        STAssertEquals(_image.swap32(cmd.cmdsize), cmdsize, @"Incorrect load command size returned by iterator");
+
+        STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
+        found_uuid = true;
+    }
+
+    STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
+}
+
+/**
+ * Test type-specific iteration of Mach-O load commands when a NULL size argument is provided.
+ */
+- (void) testIterateSpecificCommandNULLSize {
+    pl_vm_address_t cmd_addr = 0;
+    
+    /* If the following doesn't crash dereferencing the NULL cmdsize argument, success! */
+    bool found_uuid = false;
+    while ((cmd_addr = plcrash_async_macho_image_next_command_type(&_image, cmd_addr, LC_UUID, NULL)) != 0) {
+        STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
+        found_uuid = true;
+    }
+    
+    STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
+}
+
 @end
