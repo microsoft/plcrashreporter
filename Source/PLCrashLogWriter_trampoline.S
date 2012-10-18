@@ -54,7 +54,7 @@ subq    $720, %rsp // Size of 712 + 8 bytes for required alignment
 
 #define MOVQ(reg, offset) movq %##reg, offset(%rsp)
 
-// These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
+// These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
 MOVQ    (rax,   16)
 MOVQ    (rbx,   24);
 MOVQ    (rcx,   32);
@@ -112,7 +112,7 @@ subl    $632, %esp // Size of 600 for context + 12 bytes for required alignment 
 #define OFF 32
 #define MOVL(reg, offset) movl %##reg, OFF+offset(%esp)
 
-// These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
+// These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
 
 /* es */
 movl    $0, 0+OFF(%esp) // trapno
@@ -173,7 +173,7 @@ push    {r7, lr}
 mov     r7, sp
 sub     sp, sp, #344 // Size of 340 for context + 4 bytes for call argument
 
-// These assumed offsets are compile-time validated in plframe_context.m, and are ABI-stable.
+// These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
 
 /* Save r0 before we stomp it. The destination address is our SP + 4 (call argument) + 12 (offset to r[] array) */
 str     r0, [sp, #16]
