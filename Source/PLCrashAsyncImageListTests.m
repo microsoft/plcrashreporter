@@ -28,7 +28,7 @@
 
 #import "GTMSenTestCase.h"
 
-#import "PLCrashAsyncImage.h"
+#import "PLCrashAsyncImageList.h"
 
 @interface PLCrashAsyncImageTests : SenTestCase {
     plcrash_async_image_list_t _list;

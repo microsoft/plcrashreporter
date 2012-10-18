@@ -30,7 +30,7 @@
 #import <Foundation/Foundation.h>
 
 #import "PLCrashAsync.h"
-#import "PLCrashAsyncImage.h"
+#import "PLCrashAsyncImageList.h"
 
 /**
  * @internal

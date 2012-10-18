@@ -27,7 +27,7 @@
  */
 
 #include "PLCrashAsync.h"
-#include "PLCrashAsyncImage.h"
+#include "PLCrashAsyncImageList.h"
 
 #include <stdlib.h>
 #include <string.h>

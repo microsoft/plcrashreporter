@@ -30,7 +30,7 @@
 
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
-#import "PLCrashAsyncImage.h"
+#import "PLCrashAsyncImageList.h"
 #import "PLCrashReport.h"
 
 #import <sys/stat.h>
