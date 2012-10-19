@@ -63,6 +63,6 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
 
 pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_address_t previous);
 pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size);
-
+pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t cmd, void *result, pl_vm_size_t size);
 
 void pl_async_macho_free (pl_async_macho_t *image);

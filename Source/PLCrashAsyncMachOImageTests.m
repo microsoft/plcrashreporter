@@ -124,6 +124,10 @@
     }
 
     STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
+    
+    /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
+    cmd_addr = pl_async_macho_next_command_type(&_image, 0, LC_SUB_UMBRELLA, NULL);
+    STAssertEquals((pl_vm_address_t)0, cmd_addr, @"Should not have found the requested load command");
 }
 
 /**
@@ -140,6 +144,21 @@
     }
     
     STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
+}
+
+/**
+ * Test simple short-cut for finding a single load_command.
+ */
+- (void) testFindCommand {
+    struct uuid_command cmd;
+    pl_vm_address_t cmd_addr = pl_async_macho_find_command(&_image, LC_UUID, &cmd, sizeof(cmd));
+    STAssertNotEquals((pl_vm_address_t)0, cmd_addr, @"Failed to find command");
+    STAssertEquals(_image.swap32(cmd.cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
+    STAssertEquals(_image.swap32(cmd.cmdsize), (uint32_t)sizeof(cmd), @"Incorrect load command size returned");
+    
+    /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
+    cmd_addr = pl_async_macho_find_command(&_image, LC_SUB_UMBRELLA, NULL, 0);
+    STAssertEquals((pl_vm_address_t)0, cmd_addr, @"Should not have found the requested load command");
 }
 
 @end

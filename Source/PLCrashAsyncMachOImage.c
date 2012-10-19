@@ -201,6 +201,46 @@ pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm
 }
 
 /**
+ * Find the first LC_CMD matching the given @a cmd type, and optionally copy @a size bytes of the command to @a result.
+ *
+ * @param image The image to search.
+ * @param cmd The LC_CMD type to find.
+ * @param result A destination buffer to which @a size bytes of the command will be written, or NULL.
+ * @param size The number of bytes to be read from the command and written to @a size.
+ *
+ * @return Returns the address of the matching load_command on success, or 0 on failure.
+ */
+pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t cmd, void *result, pl_vm_size_t size) {
+    pl_vm_address_t cmd_addr = 0;
+
+    /* Even if no result was requested by the user, we still need to read the command ourselves. Configure a
+     * buffer to hold the read command. */
+    struct load_command cmdbuf;
+    if (result == NULL) {
+        result = &cmdbuf;
+        size = sizeof(cmdbuf);
+    }
+    
+    /* Iterate commands until we either find a match, or reach the end */
+    while ((cmd_addr = pl_async_macho_next_command(image, cmd_addr)) != 0) {        
+        kern_return_t kt;
+        if ((kt = plcrash_async_read_addr(image->task, cmd_addr, result, size)) != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " with error %d in: %s", (uint64_t) cmd_addr, kt, image->name);
+            return 0;
+        }
+
+        /* Return a match */
+        struct load_command *r = result;
+        if (image->swap32(r->cmd) == cmd) {
+            return cmd_addr;
+        }
+    }
+    
+    /* No match found */
+    return 0;
+}
+
+/**
  * Free all Mach-O binary image resources.
  *
  * @warning This method is not async safe.
