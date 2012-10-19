@@ -34,7 +34,7 @@
 #import <mach-o/dyld.h>
 
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
-    plcrash_async_macho_image_t _image;
+    pl_async_macho_t _image;
 }
 @end
 
@@ -58,7 +58,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
 
-    plcrash_async_macho_image_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+    pl_async_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
 
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -67,7 +67,7 @@
 }
 
 - (void) tearDown {
-    plcrash_async_macho_image_free(&_image);
+    pl_async_macho_free(&_image);
 }
 
 /**
@@ -77,7 +77,7 @@
     pl_vm_address_t cmd_addr = 0;
 
     bool found_uuid = false;
-    while ((cmd_addr = plcrash_async_macho_image_next_command(&_image, cmd_addr)) != 0) {
+    while ((cmd_addr = pl_async_macho_next_command(&_image, cmd_addr)) != 0) {
         /* Read the load command */
         struct uuid_command cmd;
 
@@ -108,7 +108,7 @@
     bool found_uuid = false;
     uint32_t cmdsize = 0;
 
-    while ((cmd_addr = plcrash_async_macho_image_next_command_type(&_image, cmd_addr, LC_UUID, &cmdsize)) != 0) {
+    while ((cmd_addr = pl_async_macho_next_command_type(&_image, cmd_addr, LC_UUID, &cmdsize)) != 0) {
         /* Read the load command */
         struct uuid_command cmd;
                 
@@ -134,7 +134,7 @@
     
     /* If the following doesn't crash dereferencing the NULL cmdsize argument, success! */
     bool found_uuid = false;
-    while ((cmd_addr = plcrash_async_macho_image_next_command_type(&_image, cmd_addr, LC_UUID, NULL)) != 0) {
+    while ((cmd_addr = pl_async_macho_next_command_type(&_image, cmd_addr, LC_UUID, NULL)) != 0) {
         STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
         found_uuid = true;
     }

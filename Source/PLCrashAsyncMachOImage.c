@@ -64,9 +64,9 @@ static uint32_t macho_nswap32(uint32_t input) {
  * or PLCRASH_EINTERNAL if an error occurs reading from the target task.
  *
  * @warning This method is not async safe.
- * @note On error, plcrash_async_macho_image_free() must be called to free any resources still held by the @a image.
+ * @note On error, pl_async_macho_free() must be called to free any resources still held by the @a image.
  */
-plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
+plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
     /* This must be done first, as our free() function will always decrement the port's reference count. */
     mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
     image->task = task;
@@ -132,7 +132,7 @@ plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *ima
  * @param previous The previously returned LC_CMD address value, or 0 to iterate from the first LC_CMD.
  * @return Returns the address of the next load_command on success, or 0 on failure.
  */
-pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_image_t *image, pl_vm_address_t previous) {
+pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_address_t previous) {
     struct load_command cmd;
 
     /* On the first iteration, determine the LC_CMD offset from the Mach-O header. */
@@ -174,11 +174,11 @@ pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_imag
  * @return Returns the address of the next load_command on success, or 0 on failure. If @a size is non-NULL, the size of
  * the next load command will be written to @a size.
  */
-pl_vm_address_t plcrash_async_macho_image_next_command_type (plcrash_async_macho_image_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size) {
+pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size) {
     pl_vm_address_t cmd_addr = previous;
 
     /* Iterate commands until we either find a match, or reach the end */
-    while ((cmd_addr = plcrash_async_macho_image_next_command(image, cmd_addr)) != 0) {
+    while ((cmd_addr = pl_async_macho_next_command(image, cmd_addr)) != 0) {
         /* Read the load command type */
         struct load_command cmd;
         
@@ -205,7 +205,7 @@ pl_vm_address_t plcrash_async_macho_image_next_command_type (plcrash_async_macho
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image) {
+void pl_async_macho_free (pl_async_macho_t *image) {
     if (image->name != NULL)
         free(image->name);
 
@@ -214,5 +214,5 @@ void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image) {
 
 
 /**
- * @} plcrash_async_macho
+ * @} pl_async_macho
  */

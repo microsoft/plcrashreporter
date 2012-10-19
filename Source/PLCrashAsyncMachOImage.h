@@ -32,7 +32,7 @@
 
 #include "PLCrashAsync.h"
 
-typedef struct plcrash_async_macho_image {    
+typedef struct pl_async_macho_t {    
     /** The Mach task in which the Mach-O image can be found */
     mach_port_t task;
 
@@ -57,11 +57,12 @@ typedef struct plcrash_async_macho_image {
     
     /** The byte-swap function to use for 32-bit values. */
     uint32_t (*swap32)(uint32_t);
-} plcrash_async_macho_image_t;
+} pl_async_macho_t;
 
-plcrash_error_t plcrash_async_macho_image_init (plcrash_async_macho_image_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
+plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
 
-pl_vm_address_t plcrash_async_macho_image_next_command (plcrash_async_macho_image_t *image, pl_vm_address_t previous);
-pl_vm_address_t plcrash_async_macho_image_next_command_type (plcrash_async_macho_image_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size);
+pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_address_t previous);
+pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size);
 
-void plcrash_async_macho_image_free (plcrash_async_macho_image_t *image);
+
+void pl_async_macho_free (pl_async_macho_t *image);
