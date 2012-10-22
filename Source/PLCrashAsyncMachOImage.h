@@ -32,7 +32,16 @@
 
 #include "PLCrashAsync.h"
 
-typedef struct pl_async_macho_t {    
+/**
+ * @internal
+ * @ingroup plcrash_async_image
+ * @{
+ */
+
+/**
+ * A Mach-O image instance.
+ */
+typedef struct pl_async_macho {    
     /** The Mach task in which the Mach-O image can be found */
     mach_port_t task;
 
@@ -54,9 +63,12 @@ typedef struct pl_async_macho_t {
 
     /** If true, the image is 64-bit Mach-O. If false, it is a 32-bit Mach-O image. */
     bool m64;
-    
+
     /** The byte-swap function to use for 32-bit values. */
     uint32_t (*swap32)(uint32_t);
+    
+    /** The byte-swap function to use for 64-bit values. */
+    uint64_t (*swap64)(uint64_t);
 } pl_async_macho_t;
 
 plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
@@ -65,4 +77,12 @@ pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_addr
 pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size);
 pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t cmd, void *result, pl_vm_size_t size);
 
+plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj);
+
+void pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc);
+
 void pl_async_macho_free (pl_async_macho_t *image);
+
+/**
+ * @}
+ */

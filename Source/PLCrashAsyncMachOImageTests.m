@@ -32,6 +32,7 @@
 
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
+#import <mach-o/getsect.h>
 
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
     pl_async_macho_t _image;
@@ -159,6 +160,47 @@
     /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
     cmd_addr = pl_async_macho_find_command(&_image, LC_SUB_UMBRELLA, NULL, 0);
     STAssertEquals((pl_vm_address_t)0, cmd_addr, @"Should not have found the requested load command");
+}
+
+/**
+ * Test memory mapping of a Mach-O segment
+ */
+- (void) testMapSegment {
+    plcrash_async_mobject_t mobj;
+
+    /* Try to map the segment */
+    STAssertEquals(PLCRASH_ESUCCESS, pl_async_macho_map_segment(&_image, "__LINKEDIT", &mobj), @"Failed to map segment");
+    
+    /* Fetch the segment directly for comparison */
+    unsigned long segsize = 0;
+    uint8_t *data = getsegmentdata((void *)_image.header_addr, "__LINKEDIT", &segsize);
+    STAssertNotNULL(data, @"Could not fetch segment data");
+
+    /* Compare the address and length. We have to apply the slide to determine the original source address. */    
+    STAssertEquals((pl_vm_address_t)data, (pl_vm_address_t)mobj.address + mobj.vm_slide, @"Addresses do not match");
+    STAssertEquals((pl_vm_size_t)segsize, mobj.length, @"Sizes do not match");
+
+    /* Compare the contents */
+    uint8_t *mapped_data = plcrash_async_mobject_pointer(&mobj, mobj.address, segsize);
+    STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
+
+    STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");
+    STAssertTrue(memcmp(data, mapped_data, segsize) == 0, @"The mapped data is not equal");
+
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test handling of a missing segment */
+    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
+}
+
+
+/**
+ * Test memory mapping of a missing Mach-O segment
+ */
+- (void) testMapMissingSegment {
+    plcrash_async_mobject_t mobj;
+    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
 }
 
 @end

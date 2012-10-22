@@ -31,7 +31,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+
 #include <mach-o/fat.h>
+#include <mach-o/nlist.h>
 
 /**
  * @internal
@@ -51,6 +53,15 @@ static uint32_t macho_swap32 (uint32_t input) {
 static uint32_t macho_nswap32(uint32_t input) {
     return input;
 }
+
+static uint64_t macho_swap64 (uint64_t input) {
+    return OSSwapInt32(input);
+}
+
+static uint64_t macho_nswap64(uint64_t input) {
+    return input;
+}
+
 
 /**
  * Initialize a new Mach-O binary image parser.
@@ -84,13 +95,14 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
     
     /* Set the default swap implementations */
     image->swap32 = macho_nswap32;
+    image->swap64 = macho_nswap64;
 
     /* Parse the Mach-O magic identifier. */
     switch (image->header.magic) {
         case MH_CIGAM:
             // Enable byte swapping
             image->swap32 = macho_swap32;
-
+            image->swap64 = macho_swap64;
             // Fall-through
 
         case MH_MAGIC:
@@ -100,6 +112,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
         case MH_CIGAM_64:
             // Enable byte swapping
             image->swap32 = macho_swap32;
+            image->swap64 = macho_swap64;
             // Fall-through
             
         case MH_MAGIC_64:
@@ -240,6 +253,115 @@ pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t c
     
     /* No match found */
     return 0;
+}
+
+/**
+ * Find and map a named segment, initializing @a mobj. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization
+ *
+ * @param image The image to search for @a segname.
+ * @param segname The name of the segment to be mapped.
+ * @param mobj The mobject to be initialized with a mapping of the segment's data. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure. 
+ */
+plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj) {
+    pl_vm_address_t cmd_addr = 0;
+
+    // bool found_segment = false;
+    uint32_t cmdsize = 0;
+
+    while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, &cmdsize)) != 0) {
+        /* Read the load command */
+        struct segment_command cmd_32;
+        struct segment_command_64 cmd_64;
+
+        /* Read in the full segment command */
+        plcrash_error_t err;
+        if (image->m64)
+            err = plcrash_async_read_addr(image->task, cmd_addr, &cmd_64, sizeof(cmd_64));
+        else
+            err = plcrash_async_read_addr(image->task, cmd_addr, &cmd_32, sizeof(cmd_32));
+        
+        if (err != PLCRASH_ESUCCESS)
+            return err;
+        
+        /* Check for match */
+        if (plcrash_async_strcmp(segname, image->m64 ? cmd_64.segname : cmd_32.segname) != 0)
+            continue;
+
+        /* Calculate the in-memory address and size */
+        pl_vm_address_t segaddr;
+        pl_vm_size_t segsize;
+        if (image->m64) {
+            segaddr = image->swap64(cmd_64.vmaddr) + image->vmaddr_slide;
+            segsize = image->swap64(cmd_64.vmsize);
+        } else {
+            segaddr = image->swap32(cmd_32.vmaddr) + image->vmaddr_slide;
+            segsize = image->swap32(cmd_32.vmsize);
+        }
+
+        /* Perform and return the mapping */
+        return plcrash_async_mobject_init(mobj, image->task, segaddr, segsize);
+    }
+
+    /* If the loop terminates, the segment was not found */
+    return PLCRASH_ENOTFOUND;
+}
+
+void pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc) {
+    struct symtab_command symtab_cmd;
+    struct dysymtab_command dysymtab_cmd;
+    kern_return_t kt;
+
+    /* Fetch the symtab commands, if available. */
+    pl_vm_address_t symtab_cmd_addr = pl_async_macho_find_command(image, LC_SYMTAB, &symtab_cmd, sizeof(symtab_cmd));
+    pl_vm_address_t dysymtab_cmd_addr = pl_async_macho_find_command(image, LC_DYSYMTAB, &dysymtab_cmd, sizeof(dysymtab_cmd));
+
+    /* The symtab command is required */
+    if (symtab_cmd_addr == 0) {
+        PLCF_DEBUG("could not find LC_SYMTAB load command");
+        // TODO ERROR
+        return;
+    }
+
+    /* Read in the symtab command */
+    if ((kt = plcrash_async_read_addr(image->task, symtab_cmd_addr, &symtab_cmd, sizeof(symtab_cmd))) != KERN_SUCCESS) {
+        PLCF_DEBUG("plcrash_async_read_addr() failure: %d", kt);
+
+        // TODO ERROR
+        return;
+    }
+    
+    /* If available, read in the dsymtab_cmd */
+    if (dysymtab_cmd_addr != 0) {
+        if ((kt = plcrash_async_read_addr(image->task, dysymtab_cmd_addr, &dysymtab_cmd, sizeof(dysymtab_cmd))) != KERN_SUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr() failure: %d", kt);
+
+            // TODO ERROR
+            return;
+        }
+    }
+
+    /* Map in the symbol and string tables. */
+    plcrash_async_mobject_t syms_mobj;
+    // plcrash_async_mobject_t strings_mobj;
+    size_t nlist_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
+
+    plcrash_error_t err = plcrash_async_mobject_init(&syms_mobj, image->task, symtab_cmd.symoff, symtab_cmd.nsyms * nlist_size);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
+        // TODO ERROR
+        return;
+    }
+
+    err = plcrash_async_mobject_init(&syms_mobj, image->task, symtab_cmd.stroff, symtab_cmd.strsize);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
+        // TODO ERROR
+        return;
+    }
 }
 
 /**
