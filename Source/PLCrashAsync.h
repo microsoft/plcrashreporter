@@ -119,6 +119,9 @@ typedef enum  {
 
     /** Access to the specified resource is denied. */
     PLCRASH_EACCESS,
+
+    /** The requested resource could not be found. */
+    PLCRASH_ENOTFOUND,
 } plcrash_error_t;
 
 const char *plcrash_strerror (plcrash_error_t error);

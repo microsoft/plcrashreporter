@@ -63,6 +63,8 @@ const char *plcrash_strerror (plcrash_error_t error) {
             return "Internal error";
         case PLCRASH_EACCESS:
             return "Access denied";
+        case PLCRASH_ENOTFOUND:
+            return "Not found";
     }
     
     /* Should be unreachable */
