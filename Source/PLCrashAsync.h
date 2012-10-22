@@ -154,6 +154,8 @@ void *plcrash_async_mobject_pointer (plcrash_async_mobject_t *mobj, uintptr_t ad
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj);
 
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
+
+int plcrash_async_strcmp(const char *s1, const char *s2);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
 
 /**

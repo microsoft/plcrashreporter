@@ -185,6 +185,9 @@ void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
  *
  * @return On success, returns KERN_SUCCESS. If the pages containing @a source + len are unmapped, KERN_INVALID_ADDRESS
  * will be returned. If the pages can not be read due to access restrictions, KERN_PROTECTION_FAILURE will be returned.
+ *
+ * @warning Unlike all other plcrash_* functions, plcrash_async_read_addr returns a kern_return_t value.
+ * @todo Modify plcrash_async_read_addr and all API clients to use plcrash_error_t values.
  */
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len) {
 #ifdef PL_HAVE_MACH_VM
@@ -194,6 +197,24 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
     vm_size_t read_size = len;
     return vm_read_overwrite(task, source, len, (pointer_t) dest, &read_size);
 #endif
+}
+
+/**
+ * An intentionally naive async-safe implementation of strcmp(). strcmp() itself is not declared to be async-safe,
+ * though in reality, it is.
+ *
+ * @param s1 First string.
+ * @param s2 Second string.
+ * @return Return an integer greater than, equal to, or less than 0, according as the string @a s1 is greater than,
+ * equal to, or less than the string @a s2.
+ */
+int plcrash_async_strcmp(const char *s1, const char *s2) {
+    while (*s1 == *s2++) {
+        if (*s1++ == 0)
+            return (0);
+    }
+
+    return (*(const unsigned char *)s1 - *(const unsigned char *)(s2 - 1));
 }
 
 /**
