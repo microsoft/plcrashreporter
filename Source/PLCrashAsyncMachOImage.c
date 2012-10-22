@@ -310,7 +310,7 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
     return PLCRASH_ENOTFOUND;
 }
 
-void pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc) {
+plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc) {
     struct symtab_command symtab_cmd;
     struct dysymtab_command dysymtab_cmd;
     kern_return_t kt;
@@ -322,46 +322,79 @@ void pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc) {
     /* The symtab command is required */
     if (symtab_cmd_addr == 0) {
         PLCF_DEBUG("could not find LC_SYMTAB load command");
-        // TODO ERROR
-        return;
+        return PLCRASH_ENOTFOUND;
     }
 
     /* Read in the symtab command */
     if ((kt = plcrash_async_read_addr(image->task, symtab_cmd_addr, &symtab_cmd, sizeof(symtab_cmd))) != KERN_SUCCESS) {
         PLCF_DEBUG("plcrash_async_read_addr() failure: %d", kt);
-
-        // TODO ERROR
-        return;
+        return PLCRASH_EINVAL;
     }
     
     /* If available, read in the dsymtab_cmd */
     if (dysymtab_cmd_addr != 0) {
         if ((kt = plcrash_async_read_addr(image->task, dysymtab_cmd_addr, &dysymtab_cmd, sizeof(dysymtab_cmd))) != KERN_SUCCESS) {
             PLCF_DEBUG("plcrash_async_read_addr() failure: %d", kt);
-
-            // TODO ERROR
-            return;
+            return PLCRASH_EINVAL;
         }
     }
 
-    /* Map in the symbol and string tables. */
-    plcrash_async_mobject_t syms_mobj;
-    // plcrash_async_mobject_t strings_mobj;
-    size_t nlist_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
-
-    plcrash_error_t err = plcrash_async_mobject_init(&syms_mobj, image->task, symtab_cmd.symoff, symtab_cmd.nsyms * nlist_size);
+    /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
+    // TODO - This will leak!
+    plcrash_async_mobject_t linkedit_mobj;
+    plcrash_error_t err = pl_async_macho_map_segment(image, "__LINKEDIT", &linkedit_mobj);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
-        // TODO ERROR
-        return;
+        return PLCRASH_EINTERNAL;
     }
 
-    err = plcrash_async_mobject_init(&syms_mobj, image->task, symtab_cmd.stroff, symtab_cmd.strsize);
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
-        // TODO ERROR
-        return;
+    /* Determine the string and symbol table sizes. */
+    size_t nsyms = image->swap32(symtab_cmd.nsyms);
+    size_t nlist_size = nsyms * (image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist));
+
+    size_t string_size = image->swap32(symtab_cmd.strsize);
+
+    /* Fetch pointers to the symbol and string tables, and verify their size values */
+    void *nlist_table;
+    char *string_table;
+
+    uintptr_t remapped_addr = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.symoff));
+    nlist_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, nlist_size);    
+    if (nlist_table == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_size);
+        return PLCRASH_EINTERNAL;
     }
+
+    remapped_addr = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.stroff));
+    string_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, string_size);
+    if (string_table == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.stroff), (uint64_t) string_size);
+        return PLCRASH_EINTERNAL;
+    }
+
+    if (image->m64) {
+        struct nlist_64 *symbols = nlist_table;
+        PLCF_DEBUG("Total count=%d", (int)nsyms);
+        
+        // TODO: We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
+        // plcrash_async_mobject_pointer() above.
+        //
+        // What we don't know is whether n_strx index is valid. The safest way to handle that is probably
+        // to use a combination of plcrash_async_mobject_pointer and a strncpy() implementation to prevent
+        // walking past the end of the valid range.
+        //
+        // Additionally, we're going to need somewhere semi-persistent to store the symbol information,
+        // as the __LINKEDIT mapping must be discarded when this function exits.
+        for (uint32_t i = 0; i < nsyms; i++) {
+            if ((symbols[i].n_type & N_TYPE) != N_SECT || ((symbols[i].n_type & N_STAB) != 0))
+                continue;
+
+            PLCF_DEBUG("FOUND SYM %s", string_table + symbols[i].n_un.n_strx);
+        }
+    }
+
+    // TODO
+    return PLCRASH_ESUCCESS;
 }
 
 /**

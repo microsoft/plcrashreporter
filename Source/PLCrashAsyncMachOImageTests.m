@@ -34,7 +34,10 @@
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
 
+#import <execinfo.h>
+
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
+    /** The image containing our class. */
     pl_async_macho_t _image;
 }
 @end
@@ -201,6 +204,19 @@
 - (void) testMapMissingSegment {
     plcrash_async_mobject_t mobj;
     STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
+}
+
+/**
+ * Test symbol lookup.
+ */
+- (void) testFindSymbol {
+    /* Fetch our PC */
+    void *callstack[1];
+    int frames = backtrace(callstack, 1);
+    STAssertEquals(1, frames, @"Could not fetch our PC");
+
+    /* Look up our symbol */
+    STAssertEquals(pl_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0]), PLCRASH_ESUCCESS, @"Failed to locate symbol");
 }
 
 @end

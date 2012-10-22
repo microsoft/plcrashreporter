@@ -31,6 +31,7 @@
 #import <stdint.h>
 #import <errno.h>
 #import <string.h>
+#import <inttypes.h>
 
 /**
  * @internal
@@ -105,7 +106,7 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
 #endif
 
     if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("vm_remap() failure: %d at %s:%d\n", kt, __FILE__, __LINE__);
+        PLCF_DEBUG("vm_remap() failure: %d", kt);
         // Should we use more descriptive errors?
         return PLCRASH_ENOMEM;
     }
@@ -151,16 +152,20 @@ uintptr_t plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl
  */
 void *plcrash_async_mobject_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length) {
     /* Verify that the address starts within range */
-    if (address < mobj->address)
+    if (address < mobj->address) {
+        PLCF_DEBUG("Address %" PRIx64 " < base address %" PRIx64 "", (uint64_t) address, (uint64_t) mobj->address);
         return NULL;
+    }
 
     /* Verify that the address value won't overrun */
     if (UINTPTR_MAX - length < address)
         return NULL;
 
     /* Check that the block ends within range */
-    if (mobj->address + mobj->length < address + length)
+    if (mobj->address + mobj->length < address + length) {
+        PLCF_DEBUG("Address %" PRIx64 " out of range %" PRIx64 " + %" PRIx64, (uint64_t) address, (uint64_t) mobj->address, (uint64_t) mobj->length);
         return NULL;
+    }
 
     return (void *) address;
 }
@@ -174,7 +179,7 @@ void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
 
     kern_return_t kt;
     if ((kt = vm_deallocate(mach_task_self(), mobj->address, mobj->length)) != KERN_SUCCESS)
-        PLCF_DEBUG("vm_deallocate() failure: %d at %s:%d\n", kt, __FILE__, __LINE__);
+        PLCF_DEBUG("vm_deallocate() failure: %d", kt);
 }
 
 /**

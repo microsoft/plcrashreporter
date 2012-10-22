@@ -79,7 +79,7 @@ pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t c
 
 plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj);
 
-void pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc);
+plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc);
 
 void pl_async_macho_free (pl_async_macho_t *image);
 
