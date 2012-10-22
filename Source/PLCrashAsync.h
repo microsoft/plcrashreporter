@@ -116,9 +116,42 @@ typedef enum  {
     
     /** Internal error */
     PLCRASH_EINTERNAL,
+
+    /** Access to the specified resource is denied. */
+    PLCRASH_EACCESS,
 } plcrash_error_t;
 
 const char *plcrash_strerror (plcrash_error_t error);
+
+/**
+ * @internal
+ *
+ * An async-accessible memory mapped object.
+ */
+typedef struct plcrash_async_mobject {
+    /** The in-memory address at which the target address has been mapped. This address is offset
+     * from the actual starting address, to account for the rounding of mappings to whole pages. */
+    uintptr_t address;
+
+    /** The total requested length of the mapping. This value is the literal requested length, and is not rounded up to
+     * the actual page size. */
+    pl_vm_size_t length;
+
+    /** The slide difference between the target's mapping and our in-memory mapping. This can be used to compute
+     * the in-memory address of target pointers. */
+    int64_t vm_slide;
+
+    /** The actual mapping start address. This may differ from the address pointer, as it must be
+     * page-aligned. */
+    pl_vm_address_t vm_address;
+} plcrash_async_mobject_t;
+
+plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length);
+
+uintptr_t plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address);
+void *plcrash_async_mobject_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length);
+
+void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj);
 
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
