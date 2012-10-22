@@ -146,6 +146,16 @@
     STAssertNotEquals(KERN_SUCCESS, plcrash_async_read_addr(mach_task_self(), 0, dest, sizeof(bytes)), @"Bad read was performed");
 }
 
+- (void) testStrcmp {
+    STAssertEquals(0, plcrash_async_strcmp("s1", "s1"), @"Strings should be equal");
+    STAssertTrue(plcrash_async_strcmp("s1", "s2") < 0, @"Strings compared incorrectly");
+    STAssertTrue(plcrash_async_strcmp("s2", "s1") > 0, @"Strings compared incorrectly");
+    
+    /* If these don't crash, success. Of course, it these probably won't crash even if they do over-read */
+    STAssertTrue(plcrash_async_strcmp("longer", "s") != 0, @"");
+    STAssertTrue(plcrash_async_strcmp("s", "longer") != 0, @"");
+}
+
 - (void) testMemcpy {
     size_t size = 1024;
     uint8_t template[size];
