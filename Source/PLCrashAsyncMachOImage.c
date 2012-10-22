@@ -77,6 +77,8 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
 
     /* Read in the Mach-O header */
     if (plcrash_async_read_addr(image->task, image->header_addr, &image->header, sizeof(image->header)) != KERN_SUCCESS) {
+        /* NOTE: The image struct must be fully initialized before returning here, as otherwise our _free() function
+         * will crash */
         return PLCRASH_EINTERNAL;
     }
     
