@@ -30,7 +30,7 @@
 #include <mach/mach.h>
 #include <mach-o/loader.h>
 
-#include "PLCrashAsync.h"
+#include "PLCrashAsyncMObject.h"
 
 /**
  * @internal
