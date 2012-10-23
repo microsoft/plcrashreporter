@@ -101,7 +101,7 @@ void plcrash_async_image_list_append (plcrash_async_image_list_t *list, pl_vm_ad
     /* Initialize the new entry. */
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
     if ((ret = pl_async_macho_init(&new->macho_image, list->task, name, header, vmaddr_slide)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Unexpected failure initializing Mach-o structure for %s: %d", name, ret);
+        PLCF_DEBUG("Unexpected failure initializing Mach-O structure for %s: %d", name, ret);
         
         pl_async_macho_free(&new->macho_image);
         free(new);
@@ -221,6 +221,25 @@ void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, boo
         /* Increment and issue a barrier. Once issued, items may again be deallocated. */
         OSAtomicDecrement32Barrier(&list->refcount);
     }
+}
+
+/**
+ * Return the image containing the given @a address within its TEXT segment. This method is async-safe.
+ * If image is found, NULL will be returned.
+ *
+ * @param list The list to be iterated.
+ * @param address The address to be searched for.
+ */
+plcrash_async_image_t *plcrash_async_image_containing_address (plcrash_async_image_list_t *list, pl_vm_address_t address) {
+    plcrash_async_image_t *image = NULL;
+    while ((image = plcrash_async_image_list_next(list, image)) != NULL) {
+        if (address >= image->macho_image.header_addr && address < image->macho_image.header_addr + image->macho_image.text_size) {
+            return image;
+        }
+    }
+
+    /* Not found */
+    return NULL;
 }
 
 /**

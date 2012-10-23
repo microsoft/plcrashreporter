@@ -29,7 +29,13 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashAsyncImageList.h"
+
 #import <mach-o/dyld.h>
+
+#import <dlfcn.h>
+#import <execinfo.h>
+
+#import <objc/runtime.h>
 
 @interface PLCrashAsyncImageTests : SenTestCase {
     plcrash_async_image_list_t _list;
@@ -132,6 +138,44 @@
         STAssertEqualCStrings(_dyld_get_image_name(val), item->macho_image.name, @"Incorrect name value for %d", val);
         val += 0x2;
     }
+}
+
+- (void) testFindImageForAddress {    
+    /* Fetch the our IMP address and symbolicate it using dladdr(). */
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
+    Dl_info dli;
+    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
+    
+    /* Look up the vmaddr slide for our image */
+    int64_t vmaddr_slide = 0;
+    bool found_image = false;
+    for (uint32_t i = 0; i < _dyld_image_count(); i++) {
+        if (_dyld_get_image_header(i) == dli.dli_fbase) {
+            vmaddr_slide = _dyld_get_image_vmaddr_slide(i);
+            found_image = true;
+            break;
+        }
+    }
+    STAssertTrue(found_image, @"Could not find dyld image record");
+
+    /* Initialize our image list using our discovered image */
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) dli.dli_fbase, vmaddr_slide, dli.dli_fname);
+
+    /* Verify that image_base-1 returns NULL */
+    STAssertNULL(plcrash_async_image_containing_address(&_list, (pl_vm_address_t) dli.dli_fbase-1), @"Should not return an image for invalid address");
+
+    /* Verify that image_base returns a valid value */
+    plcrash_async_image_t *image;
+    image = plcrash_async_image_containing_address(&_list, (pl_vm_address_t) dli.dli_fbase);
+    STAssertNotNULL(image, @"Failed to return valid image");
+    STAssertEquals(image->macho_image.header_addr, (pl_vm_address_t)dli.dli_fbase, @"Incorrect Mach-O header address");
+    
+    /* Verify that image_base+image_length-1 returns a valid value */
+    STAssertNotNULL(plcrash_async_image_containing_address(&_list, (pl_vm_address_t) dli.dli_fbase+image->macho_image.text_size-1), @"Should not return an image for invalid address");
+
+    /* Verify that image_base+image_length returns NULL */
+    STAssertNULL(plcrash_async_image_containing_address(&_list, (pl_vm_address_t) dli.dli_fbase+image->macho_image.text_size), @"Should not return an image for invalid address");
+
 }
 
 @end

@@ -83,4 +83,6 @@ void plcrash_async_image_list_append (plcrash_async_image_list_t *list, pl_vm_ad
 void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header);
 
 void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, bool enable);
+
+plcrash_async_image_t *plcrash_async_image_containing_address (plcrash_async_image_list_t *list, pl_vm_address_t address);
 plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t *list, plcrash_async_image_t *current);
