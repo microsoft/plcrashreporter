@@ -71,6 +71,16 @@ typedef struct pl_async_macho {
     uint64_t (*swap64)(uint64_t);
 } pl_async_macho_t;
 
+/**
+ * Prototype of a callback function used to execute user code with async-safely fetched symbol.
+ *
+ * @param address The symbol address.
+ * @param name The symbol name. The callback is responsible for copying this value, as its backing storage is not gauranteed to exist
+ * after the callback returns.
+ * @param context The API client's supplied context value.
+ */
+typedef void (*pl_async_macho_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
+
 plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
 
 pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_address_t previous);
@@ -79,7 +89,7 @@ pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t c
 
 plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj);
 
-plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc);
+plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
 
 void pl_async_macho_free (pl_async_macho_t *image);
 

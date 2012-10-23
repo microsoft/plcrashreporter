@@ -311,7 +311,18 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
     return PLCRASH_ENOTFOUND;
 }
 
-plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc) {
+/**
+ * Attempt to locate a symbol address and name for @a pc within @a image. This is performed using best-guess heuristics, and may
+ * be incorrect.
+ *
+ * @param image The Mach-O image to search for @a pc
+ * @param pc The PC value within the target process for which symbol information should be found.
+ * @param symbol_cb A callback to be called if the symbol is found.
+ * @param context Context to be passed to @a found_symbol.
+ *
+ * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, @a found_symbol will not be called.
+ */
+plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
     struct symtab_command symtab_cmd;
     struct dysymtab_command dysymtab_cmd;
     kern_return_t kt;
@@ -426,16 +437,34 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
         }
     }
 
-    if (found_symbol != NULL)
-        PLCF_DEBUG("FINAL SYM %s", string_table + found_symbol->n32.n_un.n_strx);
+    /* If no symbol was found (unlikely!), return ENOTFOUND */
+    if (found_symbol == NULL) {
+        retval = PLCRASH_ENOTFOUND;
+        goto cleanup;
+    }
 
-    //
-    // TODO: we don't know whether n_strx index is valid. The safest way to handle that is probably
-    // to use a combination of plcrash_async_mobject_pointer and a strncpy() implementation to prevent
-    // walking past the end of the valid range.
 
-    return PLCRASH_ESUCCESS;
-    
+    /* It's possible, though unlikely, that the n_strx index value is invalid. To handle this,
+     * we walk the string until \0 is hit, verifying that it can be found in its entirety within
+     *
+     * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_pointer().
+     */
+    const char *sym_name = string_table + found_symbol->n32.n_un.n_strx;
+    const char *p = sym_name;
+    do {
+        if (plcrash_async_mobject_pointer(&linkedit_mobj, (uintptr_t) p, 1) == NULL) {
+            retval = PLCRASH_EINVAL;
+            goto cleanup;
+        }
+        p++;
+    } while (*p != '\0');
+
+    /* Inform our caller */
+    symbol_cb(pl_sym_value(found_symbol) + image->vmaddr_slide, sym_name, context);
+
+    // fall through to cleanup
+    retval = PLCRASH_ESUCCESS;
+
 cleanup:
     plcrash_async_mobject_free(&linkedit_mobj);
     return retval;

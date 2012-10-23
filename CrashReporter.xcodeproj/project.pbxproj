@@ -1018,7 +1018,6 @@
 		059672EF0EF0853A008A0601 /* Private API */ = {
 			isa = PBXGroup;
 			children = (
-				05F76DD1162F210500A668C7 /* Mach-O */,
 				05BB84AE1364F5BC00D53B84 /* Signal Handler */,
 				05BB84AF1364F5C600D53B84 /* Async-Safe APIs */,
 				05BB84B01364F5DB00D53B84 /* Host Statistics */,
@@ -1229,13 +1228,6 @@
 				054627D711D99E9D007891C7 /* Formatters */,
 			);
 			name = "Crash Report";
-			sourceTree = "<group>";
-		};
-		05F76DD1162F210500A668C7 /* Mach-O */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "Mach-O";
 			sourceTree = "<group>";
 		};
 		0867D691FE84028FC02AAC07 /* CrashReporter */ = {

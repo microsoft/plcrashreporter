@@ -206,19 +206,41 @@
     STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
 }
 
+/* testFindSymbol callback handling */
+
+struct testFindSymbol_cb_ctx {
+    pl_vm_address_t addr;
+    char *name;
+};
+
+static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *ctx) {
+    struct testFindSymbol_cb_ctx *cb_ctx = ctx;
+    cb_ctx->addr = address;
+    cb_ctx->name = strdup(name);
+}
+
 /**
  * Test symbol lookup.
  */
 - (void) testFindSymbol {
-    /* Fetch our PC */
+    /* Fetch our current PC, to be used for symbol lookup */
     void *callstack[1];
     int frames = backtrace(callstack, 1);
     STAssertEquals(1, frames, @"Could not fetch our PC");
-    
-    backtrace_symbols_fd(callstack, frames, STDERR_FILENO);
 
-    /* Look up our symbol */
-    STAssertEquals(pl_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0]), PLCRASH_ESUCCESS, @"Failed to locate symbol");
+    /* Perform our symbol lookup */
+    struct testFindSymbol_cb_ctx ctx;
+    plcrash_error_t res = pl_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0], testFindSymbol_cb, &ctx);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol");
+    
+    /* Fetch the provided symbol address and symbolicate it using dladdr(). */
+    Dl_info dli;
+    STAssertTrue(dladdr((void *)ctx.addr, &dli) != 0, @"Failed to look up symbol");
+
+    /* Compare the results */
+    STAssertEqualCStrings(dli.dli_sname, ctx.name, @"Returned incorrect symbol name");
+    STAssertEquals(dli.dli_saddr, (void *) ctx.addr, @"Returned incorrect symbol address");
+
 }
 
 @end
