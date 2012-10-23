@@ -214,6 +214,8 @@
     void *callstack[1];
     int frames = backtrace(callstack, 1);
     STAssertEquals(1, frames, @"Could not fetch our PC");
+    
+    backtrace_symbols_fd(callstack, frames, STDERR_FILENO);
 
     /* Look up our symbol */
     STAssertEquals(pl_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0]), PLCRASH_ESUCCESS, @"Failed to locate symbol");

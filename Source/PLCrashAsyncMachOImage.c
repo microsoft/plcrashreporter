@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <assert.h>
 
 #include <mach-o/fat.h>
 #include <mach-o/nlist.h>
@@ -314,6 +315,10 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     struct symtab_command symtab_cmd;
     struct dysymtab_command dysymtab_cmd;
     kern_return_t kt;
+    plcrash_error_t retval;
+    
+    /* Compute the actual in-core PC. */
+    pl_vm_address_t slide_pc = pc - image->vmaddr_slide;
 
     /* Fetch the symtab commands, if available. */
     pl_vm_address_t symtab_cmd_addr = pl_async_macho_find_command(image, LC_SYMTAB, &symtab_cmd, sizeof(symtab_cmd));
@@ -340,7 +345,6 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     }
 
     /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
-    // TODO - This will leak!
     plcrash_async_mobject_t linkedit_mobj;
     plcrash_error_t err = pl_async_macho_map_segment(image, "__LINKEDIT", &linkedit_mobj);
     if (err != PLCRASH_ESUCCESS) {
@@ -362,39 +366,79 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     nlist_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, nlist_size);    
     if (nlist_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_size);
-        return PLCRASH_EINTERNAL;
+        retval = PLCRASH_EINTERNAL;
+        goto cleanup;
     }
 
     remapped_addr = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.stroff));
     string_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, string_size);
     if (string_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.stroff), (uint64_t) string_size);
-        return PLCRASH_EINTERNAL;
+        retval = PLCRASH_EINTERNAL;
+        goto cleanup;
     }
 
-    if (image->m64) {
-        struct nlist_64 *symbols = nlist_table;
-        PLCF_DEBUG("Total count=%d", (int)nsyms);
-        
-        // TODO: We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
-        // plcrash_async_mobject_pointer() above.
-        //
-        // What we don't know is whether n_strx index is valid. The safest way to handle that is probably
-        // to use a combination of plcrash_async_mobject_pointer and a strncpy() implementation to prevent
-        // walking past the end of the valid range.
-        //
-        // Additionally, we're going to need somewhere semi-persistent to store the symbol information,
-        // as the __LINKEDIT mapping must be discarded when this function exits.
-        for (uint32_t i = 0; i < nsyms; i++) {
-            if ((symbols[i].n_type & N_TYPE) != N_SECT || ((symbols[i].n_type & N_STAB) != 0))
-                continue;
+    /* nlist_64 and nlist are identical other than the trailing address field, so we use
+     * a union to share a common implementation of symbol lookup. The following asserts
+     * provide a sanity-check of that assumption, in the case where this code is moved
+     * to a new platform ABI. */
+    {
+        #define pl_m_sizeof(type, field) sizeof(((type *)NULL)->field)
 
-            PLCF_DEBUG("FOUND SYM %s", string_table + symbols[i].n_un.n_strx);
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_type) == __offsetof(struct nlist, n_type));
+        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_type) == pl_m_sizeof(struct nlist, n_type));
+
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_un.n_strx) == __offsetof(struct nlist, n_un.n_strx));
+        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_un.n_strx) == pl_m_sizeof(struct nlist, n_un.n_strx));
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_value) == __offsetof(struct nlist, n_value));
+
+        #undef pl_m_sizeof
+    }
+
+    /* Common 32/64 nlist type */
+#define pl_sym_value(nlist_common) (image->m64 ? nlist_common->n64.n_value : nlist_common->n32.n_value)
+    typedef union {
+        struct nlist_64 n64;
+        struct nlist n32;
+    } pl_nlist_common;
+    pl_nlist_common *symbols = nlist_table;
+            
+    /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
+     * plcrash_async_mobject_pointer() above. */
+    pl_nlist_common *found_symbol = NULL;
+    for (uint32_t i = 0; i < nsyms; i++) {
+        /* Perform 32-bit/64-bit dependent aliased pointer math. */
+        pl_nlist_common *symbol;
+        if (image->m64) {
+            symbol = (pl_nlist_common *) &(((struct nlist_64 *) symbols)[i]);
+        } else {
+            symbol = (pl_nlist_common *) &(((struct nlist *) symbols)[i]);
+        }
+
+        /* Symbol must be within a section, and must not be a debugging entry. */
+        if ((symbol->n32.n_type & N_TYPE) != N_SECT || ((symbol->n32.n_type & N_STAB) != 0))
+            continue;
+        
+        /* Search for the best match. We're looking for the closest symbol occuring before PC. */
+        if (pl_sym_value(symbol) <= slide_pc && (found_symbol == NULL || pl_sym_value(found_symbol) < pl_sym_value(symbol))) {
+            found_symbol = symbol;
         }
     }
 
-    // TODO
+    if (found_symbol != NULL)
+        PLCF_DEBUG("FINAL SYM %s", string_table + found_symbol->n32.n_un.n_strx);
+
+    //
+    // TODO: we don't know whether n_strx index is valid. The safest way to handle that is probably
+    // to use a combination of plcrash_async_mobject_pointer and a strncpy() implementation to prevent
+    // walking past the end of the valid range.
+
     return PLCRASH_ESUCCESS;
+    
+cleanup:
+    plcrash_async_mobject_free(&linkedit_mobj);
+    return retval;
 }
 
 /**

@@ -30,6 +30,7 @@
 #include <stdio.h> // for snprintf
 #include <unistd.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include <TargetConditionals.h>
 #include <mach/mach.h>
@@ -76,6 +77,19 @@ typedef mach_vm_address_t pl_vm_address_t;
 typedef mach_vm_size_t pl_vm_size_t;
 
 #endif /* TARGET_OS_IPHONE */
+
+
+// assert() support. We prefer to leave assertions on in release builds, but need
+// to disable them in async-safe code paths.
+#ifdef PLCF_RELEASE_BUILD
+
+#define PLCF_ASSERT(expr)
+
+#else
+
+#define PLCF_ASSERT(expr) assert(expr)
+
+#endif /* PLCF_RELEASE_BUILD */
 
 
 // Debug output support. Lines are capped at 128 (stack space is scarce). This implemention
