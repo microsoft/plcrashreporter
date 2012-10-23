@@ -68,6 +68,10 @@
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
     STAssertEquals(_image.header_addr, (pl_vm_address_t) info.dli_fbase, @"Incorrect header address");
     STAssertEquals(_image.vmaddr_slide, (int64_t) vmaddr_slide, @"Incorrect vmaddr_slide value");
+    
+    unsigned long text_size;
+    STAssertNotNULL(getsegmentdata(info.dli_fbase, SEG_TEXT, &text_size), @"Failed to find segment");
+    STAssertEquals(_image.text_size, (pl_vm_size_t) text_size, @"Incorrect text segment size computed");
 }
 
 - (void) tearDown {

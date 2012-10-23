@@ -151,6 +151,49 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
         image->header_size = sizeof(struct mach_header);
     }
 
+    /* Now that the image has been sufficiently initialized, determine the __TEXT segment size */
+    pl_vm_address_t cmd_addr = 0;
+    image->text_size = 0x0;
+    bool found_text_seg = false;
+    while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, NULL)) != 0) {
+        if (image->m64) {
+            struct segment_command_64 segment;
+            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
+                PLCF_DEBUG("Failed to read LC_SEGMENT command");
+                return PLCRASH_EINVAL;
+            }
+            
+            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0) {
+                PLCF_DEBUG("SKIP %s", segment.segname);
+                continue;
+            }
+            
+            image->text_size = image->swap64(segment.vmsize);
+            found_text_seg = true;
+            break;
+        } else {
+            struct segment_command segment;
+            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
+                PLCF_DEBUG("Failed to read LC_SEGMENT command");
+                return PLCRASH_EINVAL;
+            }
+            
+            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0) {
+                PLCF_DEBUG("SKIP %s", segment.segname);
+                continue;
+            }
+            
+            image->text_size = image->swap32(segment.vmsize);
+            found_text_seg = true;
+            break;
+        }
+    }
+
+    if (!found_text_seg) {
+        PLCF_DEBUG("Could not find __TEXT segment!");
+        return PLCRASH_EINVAL;
+    }
+
     return PLCRASH_ESUCCESS;
 }
 
@@ -166,7 +209,13 @@ pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_addr
 
     /* On the first iteration, determine the LC_CMD offset from the Mach-O header. */
     if (previous == 0) {
-        previous = image->header_addr + image->header_size;
+        /* Sanity check */
+        if (image->swap32(image->header.sizeofcmds) < sizeof(struct load_command)) {
+            PLCF_DEBUG("Mach-O sizeofcmds is less than sizeof(struct load_command) in %s", image->name);
+            return 0;
+        }
+
+        return image->header_addr + image->header_size;
     }
 
     /* Read the previous command value to get its size. */
@@ -174,7 +223,7 @@ pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_addr
         PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " in: %s", (uint64_t) previous, image->name);
         return 0;
     }
-    
+
     /* Fetch the size */
     uint32_t cmdsize = image->swap32(cmd.cmdsize);
     

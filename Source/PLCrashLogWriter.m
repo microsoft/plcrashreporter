@@ -847,49 +847,14 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
  */
 static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, pl_async_macho_t *image) {
     size_t rv = 0;
-    uint64_t mach_size = 0;
 
     /* Fetch the CPU types. Note that the wire format represents these as 64-bit unsigned integers.
      * We explicitly cast to an equivalently sized unsigned type to prevent improper sign extension. */
     uint64_t cpu_type = (uint32_t) image->swap32(image->header.cputype);
     uint64_t cpu_subtype = (uint32_t) image->swap32(image->header.cpusubtype);
 
-
-    /* Find the UUID command, if available. Returns 0x0 if not found. */
-    struct uuid_command uuid;
-    pl_vm_address_t uuid_addr = pl_async_macho_find_command(image, LC_UUID, &uuid, sizeof(uuid));
-
-
-    /* Determine the __TEXT segment size */
-    pl_vm_address_t cmd_addr = 0;
-    while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, NULL)) != 0) {
-        if (image->m64) {
-            struct segment_command segment;
-            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
-                PLCF_DEBUG("Failed to read LC_SEGMENT command");
-                break;
-            }
-
-            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0)
-                continue;
-
-            mach_size = image->swap32(segment.vmsize);
-            break;
-        } else {
-            struct segment_command_64 segment;
-            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
-                PLCF_DEBUG("Failed to read LC_SEGMENT command");
-                break;
-            }
-            
-            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0)
-                continue;
-            
-            mach_size = image->swap64(segment.vmsize);
-            break;
-        }
-    }
-
+    /* Text segment size */
+    uint64_t mach_size = image->text_size;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID, PLPROTOBUF_C_TYPE_UINT64, &mach_size);
     
     /* Base address */
@@ -906,6 +871,8 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, pl_
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PLPROTOBUF_C_TYPE_STRING, image->name);
 
     /* UUID */
+    struct uuid_command uuid;
+    pl_vm_address_t uuid_addr = pl_async_macho_find_command(image, LC_UUID, &uuid, sizeof(uuid));
     if (uuid_addr != 0x0) {
         PLProtobufCBinaryData binary;
     

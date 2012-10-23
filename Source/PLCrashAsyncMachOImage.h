@@ -62,6 +62,9 @@ typedef struct pl_async_macho {
      * as the above field does not include the full mach_header_64 extensions to the mach_header. */
     pl_vm_size_t header_size;
 
+    /** Total size, in bytes, of the Mach-O image's __TEXT segment. */
+    pl_vm_size_t text_size;
+
     /** If true, the image is 64-bit Mach-O. If false, it is a 32-bit Mach-O image. */
     bool m64;
 
