@@ -180,7 +180,7 @@
     STAssertNotNULL(data, @"Could not fetch segment data");
 
     /* Compare the address and length. We have to apply the slide to determine the original source address. */    
-    STAssertEquals((pl_vm_address_t)data, (pl_vm_address_t)mobj.address + mobj.vm_slide, @"Addresses do not match");
+    STAssertEquals((pl_vm_address_t)data, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Addresses do not match");
     STAssertEquals((pl_vm_size_t)segsize, mobj.length, @"Sizes do not match");
 
     /* Compare the contents */

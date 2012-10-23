@@ -45,15 +45,19 @@
  */
 
 /** The largest address value that can be represented via the pl_vm_address_t type. */
-#define PL_VM_ADDRESS_MAX UINTPTR_MAX
+#ifdef __LP64__
+#define PL_VM_ADDRESS_MAX UINT64_MAX
+#else
+#define PL_VM_ADDRESS_MAX UINT32_MAX
+#endif
 
 /** VM address type. 
  * @ingroup plcrash_async */
-typedef uintptr_t pl_vm_address_t;
+typedef vm_address_t pl_vm_address_t;
 
 /** VM size type.
  * @ingroup plcrash_async */
-typedef size_t pl_vm_size_t;
+typedef vm_size_t pl_vm_size_t;
 
 #else
 
