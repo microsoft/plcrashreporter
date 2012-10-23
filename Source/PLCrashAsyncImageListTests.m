@@ -29,17 +29,22 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashAsyncImageList.h"
+#import <mach-o/dyld.h>
 
 @interface PLCrashAsyncImageTests : SenTestCase {
     plcrash_async_image_list_t _list;
 }
 @end
 
-
+// XXX TODO: Decouple the async image list from the Mach-O parsing, such that
+// we can properly test it independently of Mach-O.
+//
+// Some work on this has been done in the bitstadium-upstream branch, but
+// no tests were written for the changes.
 @implementation PLCrashAsyncImageTests
 
 - (void) setUp {
-    plcrash_async_image_list_init(&_list);
+    plcrash_async_image_list_init(&_list, mach_task_self());
 }
 
 - (void) tearDown {
@@ -47,15 +52,19 @@
 }
 
 - (void) testAppendImage {
-    plcrash_async_image_list_append(&_list, 0x0, 0x10, "image_name");
+    // XXX - This is required due to the tight coupling with the Mach-O parser
+    uint32_t count = _dyld_image_count();
+    STAssertTrue(count >= 5, @"We need at least five Mach-O images for this test. This should not be a problem on a modern system.");
+    
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(0), 0x10, "image_name");
 
     STAssertNotNULL(_list.head, @"List HEAD should be set to our new image entry");
     STAssertEquals(_list.head, _list.tail, @"The list head and tail should be equal for the first entry");
     
-    plcrash_async_image_list_append(&_list, 0x1, 0x11, "image_name");
-    plcrash_async_image_list_append(&_list, 0x2, 0x12, "image_name");
-    plcrash_async_image_list_append(&_list, 0x3, 0x13, "image_name");
-    plcrash_async_image_list_append(&_list, 0x4, 0x14, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(1), 0x11, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(2), 0x12, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(3), 0x13, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(4), 0x14, "image_name");
     
     /* Verify the appended elements */
     plcrash_async_image_t *item = NULL;
@@ -70,9 +79,9 @@
         }
 
         /* Validate its value */
-        STAssertEquals(i, item->header, @"Incorrect header value");
-        STAssertEquals((intptr_t)i+0x10, item->vmaddr_slide, @"Incorrect slide value");
-        STAssertEqualCStrings("image_name", item->name, @"Incorrect name value");
+        STAssertEquals((pl_vm_address_t) _dyld_get_image_header(i), item->macho_image.header_addr, @"Incorrect header value");
+        STAssertEquals((int64_t)i+0x10, item->macho_image.vmaddr_slide, @"Incorrect slide value");
+        STAssertEqualCStrings("image_name", item->macho_image.name, @"Incorrect name value");
     }
 }
 
@@ -87,22 +96,26 @@
 }
 
 - (void) testRemoveImage {
-    plcrash_async_image_list_append(&_list, 0x0, 0x10, "image_name");
-    plcrash_async_image_list_append(&_list, 0x1, 0x11, "image_name");
-    plcrash_async_image_list_append(&_list, 0x2, 0x12, "image_name");
-    plcrash_async_image_list_append(&_list, 0x3, 0x13, "image_name");
-    plcrash_async_image_list_append(&_list, 0x4, 0x14, "image_name");
+    // XXX - This is required due to the tight coupling with the Mach-O parser
+    uint32_t count = _dyld_image_count();
+    STAssertTrue(count >= 5, @"We need at least five Mach-O images for this test. This should not be a problem on a modern system.");
+
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(0), 0x10, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(1), 0x11, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(2), 0x12, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(3), 0x13, "image_name");
+    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(4), 0x14, "image_name");
 
     /* Try a non-existent item */
     plcrash_async_image_list_remove(&_list, 0x42);
 
     /* Remove real items */
-    plcrash_async_image_list_remove(&_list, 0x1);
-    plcrash_async_image_list_remove(&_list, 0x3);
+    plcrash_async_image_list_remove(&_list, (pl_vm_address_t) _dyld_get_image_header(1));
+    plcrash_async_image_list_remove(&_list, (pl_vm_address_t) _dyld_get_image_header(3));
 
     /* Verify the contents of the list */
     plcrash_async_image_t *item = NULL;
-    uintptr_t val = 0x0; 
+    int val = 0x0;
     for (int i = 0; i <= 3; i++) {
         /* Fetch the next item */
         item = plcrash_async_image_list_next(&_list, item);
@@ -114,9 +127,9 @@
         }
         
         /* Validate its value */
-        STAssertEquals(val, item->header, @"Incorrect header value");
-        STAssertEquals((intptr_t)val+0x10, item->vmaddr_slide, @"Incorrect slide value");
-        STAssertEqualCStrings("image_name", item->name, @"Incorrect name value");
+        STAssertEquals((pl_vm_address_t) _dyld_get_image_header(val), item->macho_image.header_addr, @"Incorrect header value for %d", val);
+        STAssertEquals((int64_t)val+0x10, item->macho_image.vmaddr_slide, @"Incorrect slide value for %d", val);
+        STAssertEqualCStrings("image_name", item->macho_image.name, @"Incorrect name value for %d", val);
         val += 0x2;
     }
 }

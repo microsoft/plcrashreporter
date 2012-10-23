@@ -47,19 +47,27 @@
  */
 
 /* Simple byteswap wrappers */
+static uint16_t macho_swap16 (uint16_t input) {
+    return OSSwapInt16(input);
+}
+
+static uint16_t macho_nswap16 (uint16_t input) {
+    return input;
+}
+
 static uint32_t macho_swap32 (uint32_t input) {
     return OSSwapInt32(input);
 }
 
-static uint32_t macho_nswap32(uint32_t input) {
+static uint32_t macho_nswap32 (uint32_t input) {
     return input;
 }
 
 static uint64_t macho_swap64 (uint64_t input) {
-    return OSSwapInt32(input);
+    return OSSwapInt64(input);
 }
 
-static uint64_t macho_nswap64(uint64_t input) {
+static uint64_t macho_nswap64 (uint64_t input) {
     return input;
 }
 
@@ -88,13 +96,16 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
     image->name = strdup(name);
 
     /* Read in the Mach-O header */
-    if (plcrash_async_read_addr(image->task, image->header_addr, &image->header, sizeof(image->header)) != KERN_SUCCESS) {
+    kern_return_t kt;
+    if ((kt = plcrash_async_read_addr(image->task, image->header_addr, &image->header, sizeof(image->header))) != KERN_SUCCESS) {
         /* NOTE: The image struct must be fully initialized before returning here, as otherwise our _free() function
          * will crash */
+        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, kern_error=%d", (uint64_t) image->header_addr, name, kt);
         return PLCRASH_EINTERNAL;
     }
     
     /* Set the default swap implementations */
+    image->swap16 = macho_nswap16;
     image->swap32 = macho_nswap32;
     image->swap64 = macho_nswap64;
 
@@ -102,6 +113,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
     switch (image->header.magic) {
         case MH_CIGAM:
             // Enable byte swapping
+            image->swap16 = macho_swap16;
             image->swap32 = macho_swap32;
             image->swap64 = macho_swap64;
             // Fall-through
@@ -112,6 +124,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
             
         case MH_CIGAM_64:
             // Enable byte swapping
+            image->swap16 = macho_swap16;
             image->swap32 = macho_swap32;
             image->swap64 = macho_swap64;
             // Fall-through
@@ -174,7 +187,6 @@ pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_addr
     /* Advance to the next command */
     pl_vm_address_t next = previous + cmdsize;
     if (next >= image->header_addr + image->swap32(image->header.sizeofcmds)) {
-        PLCF_DEBUG("Reached the LC_CMD end in: %s", image->name);
         return 0;
     }
 
@@ -360,7 +372,7 @@ static bool pl_async_macho_find_symtab_symbol (pl_async_macho_t *image, pl_vm_ad
 #undef pl_m_sizeof
     }
     
-#define pl_sym_value(nl) (image->m64 ? (nl)->n64.n_value : (nl)->n32.n_value)
+#define pl_sym_value(nl) (image->m64 ? image->swap64((nl)->n64.n_value) : image->swap32((nl)->n32.n_value))
     
     /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
      * plcrash_async_mobject_pointer() above. */
@@ -522,7 +534,7 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
      *
      * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_pointer().
      */
-    const char *sym_name = string_table + found_symbol->n32.n_un.n_strx;
+    const char *sym_name = string_table + image->swap32(found_symbol->n32.n_un.n_strx);
     const char *p = sym_name;
     do {
         if (plcrash_async_mobject_pointer(&linkedit_mobj, (uintptr_t) p, 1) == NULL) {
@@ -532,8 +544,15 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
         p++;
     } while (*p != '\0');
 
+    /* Determine the correct symbol address. We have to set the low-order bit ourselves for ARM THUMB functions. */
+    vm_address_t sym_addr = 0x0;
+    if (image->swap16(found_symbol->n32.n_desc) & N_ARM_THUMB_DEF)
+        sym_addr = (pl_sym_value(found_symbol)|1) + image->vmaddr_slide;
+    else
+        sym_addr = pl_sym_value(found_symbol) + image->vmaddr_slide;
+
     /* Inform our caller */
-    symbol_cb(pl_sym_value(found_symbol) + image->vmaddr_slide, sym_name, context);
+    symbol_cb(sym_addr, sym_name, context);
 
     // fall through to cleanup
     retval = PLCRASH_ESUCCESS;

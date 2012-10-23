@@ -58,11 +58,15 @@ typedef struct pl_async_macho {
      * values may require byte-swapping for the local process' use. */
     struct mach_header header;
     
-    /** Total size, in bytes, of the in-memory Mach-O header. */
+    /** Total size, in bytes, of the in-memory Mach-O header. This may differ from the header field above,
+     * as the above field does not include the full mach_header_64 extensions to the mach_header. */
     pl_vm_size_t header_size;
 
     /** If true, the image is 64-bit Mach-O. If false, it is a 32-bit Mach-O image. */
     bool m64;
+
+    /** The byte-swap function to use for 16-bit values. */
+    uint16_t (*swap16)(uint16_t);
 
     /** The byte-swap function to use for 32-bit values. */
     uint32_t (*swap32)(uint32_t);

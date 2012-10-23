@@ -157,7 +157,7 @@ static void image_add_callback (const struct mach_header *mh, intptr_t vmaddr_sl
     }
 
     /* Register the image */
-    plcrash_async_image_list_append(&shared_image_list, (uintptr_t) mh, vmaddr_slide, info.dli_fname);
+    plcrash_async_image_list_append(&shared_image_list, (pl_vm_address_t) mh, vmaddr_slide, info.dli_fname);
 }
 
 /**
@@ -211,7 +211,7 @@ static void uncaught_exception_handler (NSException *exception) {
         return;
 
     /* Enable dyld image monitoring */
-    plcrash_async_image_list_init(&shared_image_list);
+    plcrash_async_image_list_init(&shared_image_list, mach_task_self());
     _dyld_register_func_for_add_image(image_add_callback);
     _dyld_register_func_for_remove_image(image_remove_callback);
 }

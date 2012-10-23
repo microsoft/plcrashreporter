@@ -30,6 +30,8 @@
 #include <libkern/OSAtomic.h>
 #include <stdbool.h>
 
+#include "PLCrashAsyncMachOImage.h"
+
 /**
  * @internal
  * @ingroup plcrash_async_image
@@ -37,14 +39,8 @@
  * Async-safe binary image list element.
  */
 typedef struct plcrash_async_image {
-    /** The binary image's header address. */
-    uintptr_t header;
-
-    /** The binary's dyld-reported reported vmaddr slide. */
-    intptr_t vmaddr_slide;
-
-    /** The binary image's name/path. */
-    char *name;
+    /** The binary image. */
+    pl_async_macho_t macho_image;
 
     /** The previous image in the list, or NULL */
     struct plcrash_async_image *prev;
@@ -63,6 +59,9 @@ typedef struct plcrash_async_image {
 typedef struct plcrash_async_image_list {
     /** The lock used by writers. No lock is required for readers. */
     OSSpinLock write_lock;
+    
+    /** The Mach task in which all Mach-O images can be found */
+    mach_port_t task;
 
     /** The head of the list, or NULL if the list is empty. Must only be used to iterate or delete entries. */
     plcrash_async_image_t *head;
@@ -78,10 +77,10 @@ typedef struct plcrash_async_image_list {
     plcrash_async_image_t *free;
 } plcrash_async_image_list_t;
 
-void plcrash_async_image_list_init (plcrash_async_image_list_t *list);
+void plcrash_async_image_list_init (plcrash_async_image_list_t *list, mach_port_t task);
 void plcrash_async_image_list_free (plcrash_async_image_list_t *list);
-void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_t header, intptr_t vmaddr_slide, const char *name);
-void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, uintptr_t header);
+void plcrash_async_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, int64_t vmaddr_slide, const char *name);
+void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header);
 
 void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, bool enable);
 plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t *list, plcrash_async_image_t *current);

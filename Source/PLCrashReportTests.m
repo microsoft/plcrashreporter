@@ -111,7 +111,7 @@
     plcrash_log_writer_set_exception(&writer, exception);
 
     /* Provide binary image info */
-    plcrash_async_image_list_init(&image_list);
+    plcrash_async_image_list_init(&image_list, mach_task_self());
     uint32_t image_count = _dyld_image_count();
     for (uint32_t i = 0; i < image_count; i++) {
         plcrash_async_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i), _dyld_get_image_name(i));
@@ -219,12 +219,15 @@
          * Find the in-memory mach header for the image record. We'll compare this against the serialized data.
          *
          * The 32-bit and 64-bit mach_header structures are equivalent for our purposes.
-         */ 
+         *
+         * The (uint64_t)(uint32_t) casting is prevent improper sign extension when casting the signed cpusubtype integer_t
+         * to a larger, unsigned uint64_t value.
+         */
         Dl_info info;
         STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
         struct mach_header *hdr = info.dli_fbase;
-        STAssertEquals(imageInfo.codeType.type, (uint64_t)hdr->cputype, @"Incorrect CPU type");
-        STAssertEquals(imageInfo.codeType.subtype, (uint64_t)hdr->cpusubtype, @"Incorrect CPU subtype");
+        STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
+        STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
     }
 }
 

@@ -51,11 +51,15 @@
  * Initialize a new binary image list and issue a memory barrier
  *
  * @param list The list structure to be initialized.
+ * @param task The mach task from which all images will be mapped.
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_image_list_init (plcrash_async_image_list_t *list) {
+void plcrash_async_image_list_init (plcrash_async_image_list_t *list, mach_port_t task) {
     memset(list, 0, sizeof(*list));
+
+    list->task = task;
+    mach_port_mod_refs(mach_task_self(), list->task, MACH_PORT_RIGHT_SEND, 1);
 
     list->write_lock = OS_SPINLOCK_INIT;
 }
@@ -66,6 +70,7 @@ void plcrash_async_image_list_init (plcrash_async_image_list_t *list) {
  * @warning This method is not async safe.
  */
 void plcrash_async_image_list_free (plcrash_async_image_list_t *list) {
+    /* Free all nodes */
     plcrash_async_image_t *next = list->head;
     while (next != NULL) {
         /* Save the current pointer and fetch the next pointer. */
@@ -73,10 +78,11 @@ void plcrash_async_image_list_free (plcrash_async_image_list_t *list) {
         next = cur->next;
         
         /* Deallocate the current item. */
-        if (cur->name != NULL)
-            free(cur->name);
+        pl_async_macho_free(&cur->macho_image);
         free(cur);
     }
+
+    mach_port_mod_refs(mach_task_self(), list->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
 /**
@@ -89,12 +95,19 @@ void plcrash_async_image_list_free (plcrash_async_image_list_t *list) {
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_t header, intptr_t vmaddr_slide, const char *name) {
+void plcrash_async_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, int64_t vmaddr_slide, const char *name) {
+    plcrash_error_t ret;
+
     /* Initialize the new entry. */
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
-    new->header = header;
-    new->vmaddr_slide = vmaddr_slide;
-    new->name = strdup(name);
+    if ((ret = pl_async_macho_init(&new->macho_image, list->task, name, header, vmaddr_slide)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Unexpected failure initializing Mach-o structure for %s: %d", name, ret);
+        
+        pl_async_macho_free(&new->macho_image);
+        free(new);
+
+        return;
+    }
 
     /* Update the image record and issue a memory barrier to ensure a consistent view. */
     OSMemoryBarrier();
@@ -133,17 +146,18 @@ void plcrash_async_image_list_append (plcrash_async_image_list_t *list, uintptr_
 /**
  * Remove a binary image record from @a list.
  *
- * @param header The header address of the record to be removed. The first record matching this address will be removed.
+ * @param header The header address of the record to be removed. The first record matching this address will be removed. If no matching
+ * header is found, the request will be ignored.
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, uintptr_t header) {
+void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header) {
     /* Lock the list from other writers. */
     OSSpinLockLock(&list->write_lock); {
         /* Find the record. */
         plcrash_async_image_t *item = list->head;
         while (item != NULL) {
-            if (item->header == header)
+            if (item->macho_image.header_addr == header)
                 break;
 
             item = item->next;
@@ -151,6 +165,7 @@ void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, uintptr_
         
         /* If not found, nothing to do */
         if (item == NULL) {
+            PLCF_DEBUG("Can't find header addr=%llu in Mach-O image list.", (uint64_t)header);
             OSSpinLockUnlock(&list->write_lock);
             return;
         }
@@ -185,8 +200,7 @@ void plcrash_async_image_list_remove (plcrash_async_image_list_t *list, uintptr_
         while (list->refcount > 0) {
         }
 
-        if (item->name != NULL)
-            free(item->name);
+        pl_async_macho_free(&item->macho_image);
         free(item);
     } OSSpinLockUnlock(&list->write_lock);
 }

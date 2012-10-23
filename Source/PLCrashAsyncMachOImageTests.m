@@ -33,7 +33,7 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
-#import <objc/objc-class.h>
+#import <objc/runtime.h>
 #import <execinfo.h>
 
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
@@ -244,8 +244,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     /* Compare the results */
     STAssertEqualCStrings(dli.dli_sname, ctx.name, @"Returned incorrect symbol name");
-    STAssertEquals(dli.dli_saddr, (void *) ctx.addr, @"Returned incorrect symbol address");
-
+    STAssertEquals(dli.dli_saddr, (void *) ctx.addr, @"Returned incorrect symbol address with slide %" PRId64, _image.vmaddr_slide);
 }
 
 @end

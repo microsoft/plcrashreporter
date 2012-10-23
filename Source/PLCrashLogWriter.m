@@ -845,67 +845,49 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
  * @param name binary image path (or name).
  * @param image_base Mach-O image base.
  */
-static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, const char *name, const void *header) {
+static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, pl_async_macho_t *image) {
     size_t rv = 0;
     uint64_t mach_size = 0;
-    uint32_t ncmds;
-    const struct mach_header *header32 = (const struct mach_header *) header;
-    const struct mach_header_64 *header64 = (const struct mach_header_64 *) header;
 
-    struct load_command *cmd;
-    cpu_type_t cpu_type;
-    cpu_subtype_t cpu_subtype;
+    /* Fetch the CPU types. Note that the wire format represents these as 64-bit unsigned integers.
+     * We explicitly cast to an equivalently sized unsigned type to prevent improper sign extension. */
+    uint64_t cpu_type = (uint32_t) image->swap32(image->header.cputype);
+    uint64_t cpu_subtype = (uint32_t) image->swap32(image->header.cpusubtype);
 
-    /* Check for 32-bit/64-bit header and extract required values */
-    switch (header32->magic) {
-        /* 32-bit */
-        case MH_MAGIC:
-        case MH_CIGAM:
-            ncmds = header32->ncmds;
-            cpu_type = header32->cputype;
-            cpu_subtype = header32->cpusubtype;
-            cmd = (struct load_command *) (header32 + 1);
-            break;
 
-        /* 64-bit */
-        case MH_MAGIC_64:
-        case MH_CIGAM_64:
-            ncmds = header64->ncmds;
-            cpu_type = header64->cputype;
-            cpu_subtype = header64->cpusubtype;
-            cmd = (struct load_command *) (header64 + 1);
-            break;
+    /* Find the UUID command, if available. Returns 0x0 if not found. */
+    struct uuid_command uuid;
+    pl_vm_address_t uuid_addr = pl_async_macho_find_command(image, LC_UUID, &uuid, sizeof(uuid));
 
-        default:
-            PLCF_DEBUG("Invalid Mach-O header magic value: %x", header32->magic);
-            return 0;
-    }
 
-    /* Compute the image size and search for a UUID */
-    struct uuid_command *uuid = NULL;
-
-    for (uint32_t i = 0; cmd != NULL && i < ncmds; i++) {
-        /* 32-bit text segment */
-        if (cmd->cmd == LC_SEGMENT) {
-            struct segment_command *segment = (struct segment_command *) cmd;
-            if (strcmp(segment->segname, SEG_TEXT) == 0) {
-                mach_size = segment->vmsize;
+    /* Determine the __TEXT segment size */
+    pl_vm_address_t cmd_addr = 0;
+    while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, NULL)) != 0) {
+        if (image->m64) {
+            struct segment_command segment;
+            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
+                PLCF_DEBUG("Failed to read LC_SEGMENT command");
+                break;
             }
-        }
-        /* 64-bit text segment */
-        else if (cmd->cmd == LC_SEGMENT_64) {
-            struct segment_command_64 *segment = (struct segment_command_64 *) cmd;
 
-            if (strcmp(segment->segname, SEG_TEXT) == 0) {
-                mach_size = segment->vmsize;
+            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0)
+                continue;
+
+            mach_size = image->swap32(segment.vmsize);
+            break;
+        } else {
+            struct segment_command_64 segment;
+            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
+                PLCF_DEBUG("Failed to read LC_SEGMENT command");
+                break;
             }
+            
+            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0)
+                continue;
+            
+            mach_size = image->swap64(segment.vmsize);
+            break;
         }
-        /* DWARF dSYM UUID */
-        else if (cmd->cmd == LC_UUID && cmd->cmdsize == sizeof(struct uuid_command)) {
-            uuid = (struct uuid_command *) cmd;
-        }
-
-        cmd = (struct load_command *) ((uint8_t *) cmd + cmd->cmdsize);
     }
 
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_SIZE_ID, PLPROTOBUF_C_TYPE_UINT64, &mach_size);
@@ -915,21 +897,21 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, con
         uintptr_t base_addr;
         uint64_t u64;
 
-        base_addr = (uintptr_t) header;
+        base_addr = (uintptr_t) image->header_addr;
         u64 = base_addr;
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ADDR_ID, PLPROTOBUF_C_TYPE_UINT64, &u64);
     }
 
     /* Name */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PLPROTOBUF_C_TYPE_STRING, image->name);
 
     /* UUID */
-    if (uuid != NULL) {
+    if (uuid_addr != 0x0) {
         PLProtobufCBinaryData binary;
     
         /* Write the 128-bit UUID */
-        binary.len = sizeof(uuid->uuid);
-        binary.data = uuid->uuid;
+        binary.len = sizeof(uuid.uuid);
+        binary.data = uuid.uuid;
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_UUID_ID, PLPROTOBUF_C_TYPE_BYTES, &binary);
     }
     
@@ -1185,10 +1167,9 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         uint32_t size;
 
         /* Calculate the message size */
-        // TODO - switch to plframe_read_addr()
-        size = plcrash_writer_write_binary_image(NULL, image->name, (const void *) image->header);
+        size = plcrash_writer_write_binary_image(NULL, &image->macho_image);
         plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_binary_image(file, image->name, (const void *) image->header);
+        plcrash_writer_write_binary_image(file, &image->macho_image);
     }
 
     plcrash_async_image_list_set_reading(image_list, false);
