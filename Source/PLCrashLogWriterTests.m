@@ -337,7 +337,7 @@ static uintptr_t getPC () {
     /* Try to read the crash report */
     NSError *error;
     PLCrashReport *report = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
-    STAssertNotNil(report, @"Failed to read crash report: %@", error);
+    STAssertNotNil(report, @"Failed to read crash report '%@': %@", _logPath, error);
     
     /* Load and validate the written report */
     Plcrash__CrashReport *crashReport = [self loadReport];

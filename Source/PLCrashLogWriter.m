@@ -93,6 +93,16 @@ enum {
     PLCRASH_PROTO_APP_INFO_APP_VERSION_ID = 2,
 
 
+    /** CrashReport.symbol.name */
+    PLCRASH_PROTO_SYMBOL_NAME = 1,
+
+    /** CrashReport.symbol.start_address */
+    PLCRASH_PROTO_SYMBOL_START_ADDRESS = 2,
+    
+    /** CrashReport.symbol.end_address */
+    PLCRASH_PROTO_SYMBOL_END_ADDRESS = 3,
+
+
     /** CrashReport.threads */
     PLCRASH_PROTO_THREADS_ID = 3,
     
@@ -109,6 +119,9 @@ enum {
 
     /** CrashReport.thread.frame.pc */
     PLCRASH_PROTO_THREAD_FRAME_PC_ID = 3,
+    
+    /** CrashReport.thread.frame.symbol */
+    PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ID = 6,
 
 
     /** CrashReport.thread.registers */
@@ -736,15 +749,89 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
 /**
  * @internal
  *
+ * Write a symbol
+ *
+ * @param file Output file
+ * @param name The symbol name
+ * @param start_address The symbol start address
+ */
+static size_t plcrash_writer_write_symbol (plcrash_async_file_t *file, const char *name, uint64_t start_address) {
+    size_t rv = 0;
+    
+    /* name */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYMBOL_NAME, PLPROTOBUF_C_TYPE_STRING, name);
+    
+    /* start_address */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYMBOL_START_ADDRESS, PLPROTOBUF_C_TYPE_UINT64, &start_address);
+    
+    return rv;
+}
+
+/**
+ * @internal
+ * Symbol lookup callback context
+ */
+struct pl_symbol_cb_ctx {
+    /** File to use for writing out a symbol entry. May be NULL. */
+    plcrash_async_file_t *file;
+
+    /** Size of the symbol entry, to be written by the callback function upon writing an entry. */
+    uint32_t msgsize;
+};
+
+/**
+ * @internal
+ *
+ * pl_async_macho_found_symbol_cb callback implementation. Writes the result to the file available via @a ctx,
+ * which must be a valid pl_symbol_cb_ctx structure.
+ */
+static void plcrash_writer_write_thread_frame_symbol_cb (pl_vm_address_t address, const char *name, void *ctx) {
+    struct pl_symbol_cb_ctx *cb_ctx = ctx;
+    cb_ctx->msgsize = plcrash_writer_write_symbol(cb_ctx->file, name, address);
+}
+
+/**
+ * @internal
+ *
  * Write a thread backtrace frame
  *
  * @param file Output file
  * @param pcval The frame PC value.
  */
-static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uint64_t pcval) {
+static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uint64_t pcval, plcrash_async_image_list_t *image_list) {
     size_t rv = 0;
 
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &pcval);
+    
+    plcrash_async_image_list_set_reading(image_list, true);
+    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pcval);
+    
+    if (image != NULL) {
+        struct pl_symbol_cb_ctx ctx;
+        plcrash_error_t ret;
+        
+        /* Get the symbol message size. If the symbol can not be found, our callback will not be called. If the symbol is found,
+         * our callback is called and PLCRASH_ESUCCESS is returned. */
+        ctx.file = NULL;
+        ctx.msgsize = 0x0;
+        ret = pl_async_macho_find_symbol(&image->macho_image, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+        if (ret == PLCRASH_ESUCCESS) {
+            /* Write the header and message */
+            rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &ctx.msgsize);
+
+            ctx.file = file;
+            ret = pl_async_macho_find_symbol(&image->macho_image, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+            if (ret == PLCRASH_ESUCCESS) {
+                rv += ctx.msgsize;
+            } else {
+                /* This should not happen, but it would be very confusing if it did and nothing was logged. */
+                PLCF_DEBUG("Fetching the Mach-O symbol unexpectedly failed during the second call");
+            }
+        }
+    }
+
+    plcrash_async_image_list_set_reading(image_list, false);
+
 
     return rv;
 }
@@ -759,7 +846,8 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
  * @param crashctx Context to use for currently running thread (rather than fetching the thread
  * context, which we've invalidated by running at all)
  */
-static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx) {
+static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx, plcrash_async_image_list_t *image_list)
+{
     size_t rv = 0;
     plframe_cursor_t cursor;
     plframe_error_t ferr;
@@ -812,10 +900,10 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
             }
 
             /* Determine the size */
-            frame_size = plcrash_writer_write_thread_frame(NULL, pc);
+            frame_size = plcrash_writer_write_thread_frame(NULL, pc, image_list);
             
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
-            rv += plcrash_writer_write_thread_frame(file, pc);
+            rv += plcrash_writer_write_thread_frame(file, pc, image_list);
             frame_count++;
         }
 
@@ -901,7 +989,7 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, pl_
  * @param file Output file
  * @param writer Writer containing exception data
  */
-static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer) {
+static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer, plcrash_async_image_list_t *image_list) {
     size_t rv = 0;
 
     /* Write the name and reason */
@@ -915,10 +1003,10 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
         uint64_t pc = (uint64_t)(uintptr_t) writer->uncaught_exception.callstack[i];
         
         /* Determine the size */
-        uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, pc);
+        uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, pc, image_list);
         
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
-        rv += plcrash_writer_write_thread_frame(file, pc);
+        rv += plcrash_writer_write_thread_frame(file, pc, image_list);
         frame_count++;
     }
 
@@ -1109,11 +1197,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
             }
             
             /* Determine the size */
-            size = plcrash_writer_write_thread(NULL, thread, i, crashctx);
+            size = plcrash_writer_write_thread(NULL, thread, i, crashctx, image_list);
             
             /* Write message */
             plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-            plcrash_writer_write_thread(file, thread, i, crashctx);
+            plcrash_writer_write_thread(file, thread, i, crashctx, image_list);
 
             /* Resume the thread */
             if (suspend_thread)
@@ -1146,9 +1234,9 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         uint32_t size;
 
         /* Calculate the message size */
-        size = plcrash_writer_write_exception(NULL, writer);
+        size = plcrash_writer_write_exception(NULL, writer, image_list);
         plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_exception(file, writer);
+        plcrash_writer_write_exception(file, writer, image_list);
     }
     
     /* Signal */

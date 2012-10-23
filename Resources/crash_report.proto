@@ -135,6 +135,20 @@ message CrashReport {
         required string version = 2;
     }
     required ApplicationInfo application_info = 2;
+    
+    /* A symbol table entry. */
+    message Symbol {
+        /* The symbol name */
+        required string name = 1;
+
+        /* The symbol start address */
+        required uint64 start_address = 2;
+
+        /* The symbol end address, if explicitly defined. This will only be included if the end address is
+         * explicitly defined (eg, by DWARF debugging information), will not be derived by best-guess
+         * heuristics. */
+        optional uint64 end_address = 3;
+    }
 
     /* Thread state */
     message Thread {
@@ -153,15 +167,18 @@ message CrashReport {
              * We reserve those fields to avoid unnecessary incompatibilities with the forked format. */
 
             /*
-             * Index into the symbol table (symbol_table) for this frame's PC.
+             * Optional symbol information for this frame's PC. If computed client-side, this value is a best guess, and may
+             * be inaccurate.
              * 
-             * Symbol information may not be available, in which case this field will be excluded from the rpeort.
+             * Symbol information may not be available, in which case this field will be excluded from the report.
              *
-             * Since the crash report's symbol table is a partial one, it is not possible to accurately perform a
-             * lookup in the symbol_table by searching for a symbol whose start address includes this frame's PC, thus
-             * requiring the use of an explicit index here.
+             * This method of encoding symbol records is unfortunately ineffecient, as it is possible that the same
+             * symbol will be included multiple times in a single crash report. Unfortunately, insofar as the crash reporter
+             * must remain async-safe, there is no reasonable way to perform symbol uniquing at the time the report
+             * is written. A future version of this format may resolve this issue, and migrate to the use of an index
+             * into a shared symbol table.
              */
-            optional uint64 symbol_index = 6;
+            optional Symbol symbol = 6;
         }
 
         /* Backtrace stack frames */
@@ -305,23 +322,4 @@ message CrashReport {
 
     /* Report format information. Required for all v1.1+ crash reports. */
     optional ReportInfo report_info = 9;
-    
-    
-    /* A symbol table entry. */
-    message Symbol {
-        /* The symbol name */
-        required string name = 1;
-
-        /* The symbol start address */
-        required uint64 start_address = 2;
-
-        /* The symbol end address, if explicitly defined. This will only be included if the end address is
-         * explicitly defined (eg, by DWARF debugging information), will not be derived by best-guess
-         * heuristics. */
-        optional uint64 end_address = 3;
-    }
-    
-    /* Symbol table for symbols referenced (and available) from the crash report's stack traces. Any given symbol will
-     * only be listed once. Not all symbols may be available at the time the crash report is generated. */
-    repeated Symbol symbols = 10;
 }
