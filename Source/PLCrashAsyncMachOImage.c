@@ -312,6 +312,86 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
 }
 
 /**
+ * @internal
+ * Common wrapper of nlist/nlist_64. We verify that this union is valid for our purposes in pl_async_macho_find_symtab_symbol().
+ */
+typedef union {
+    struct nlist_64 n64;
+    struct nlist n32;
+} pl_nlist_common;
+
+
+/*
+ * Locate a symtab entry for @a slide_pc within @a symbtab. This is performed using best-guess heuristics, and may
+ * be incorrect.
+ *
+ * @param image The Mach-O image to search for @a pc
+ * @param slide_pc The PC value within the target process for which symbol information should be found. The VM slide
+ * address should have already been applied to this value.
+ * @param symtab The symtab to search.
+ * @param nsyms The number of nlist entries available via @a symtab.
+ * @param found_symbol A reference to the previous best match symbol. The referenced value should be initialized
+ * to NULL before calling this function for the first time. Future invocations will reference this value to determine
+ * whether a closer match has been found.
+ *
+ * @return Returns true if a symbol was found, false otherwise.
+ *
+ * @warning This function implements no validation of the symbol table pointer. It is the caller's responsibility
+ * to verify that the referenced symtab is valid and mapped PROT_READ.
+ */
+static bool pl_async_macho_find_symtab_symbol (pl_async_macho_t *image, pl_vm_address_t slide_pc, pl_nlist_common *symtab,
+                                               uint32_t nsyms, pl_nlist_common **found_symbol)
+{
+    /* nlist_64 and nlist are identical other than the trailing address field, so we use
+     * a union to share a common implementation of symbol lookup. The following asserts
+     * provide a sanity-check of that assumption, in the case where this code is moved
+     * to a new platform ABI. */
+    {
+#define pl_m_sizeof(type, field) sizeof(((type *)NULL)->field)
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_type) == __offsetof(struct nlist, n_type));
+        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_type) == pl_m_sizeof(struct nlist, n_type));
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_un.n_strx) == __offsetof(struct nlist, n_un.n_strx));
+        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_un.n_strx) == pl_m_sizeof(struct nlist, n_un.n_strx));
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_value) == __offsetof(struct nlist, n_value));
+        
+#undef pl_m_sizeof
+    }
+    
+#define pl_sym_value(nl) (image->m64 ? (nl)->n64.n_value : (nl)->n32.n_value)
+    
+    /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
+     * plcrash_async_mobject_pointer() above. */
+    for (uint32_t i = 0; i < nsyms; i++) {
+        /* Perform 32-bit/64-bit dependent aliased pointer math. */
+        pl_nlist_common *symbol;
+        if (image->m64) {
+            symbol = (pl_nlist_common *) &(((struct nlist_64 *) symtab)[i]);
+        } else {
+            symbol = (pl_nlist_common *) &(((struct nlist *) symtab)[i]);
+        }
+        
+        /* Symbol must be within a section, and must not be a debugging entry. */
+        if ((symbol->n32.n_type & N_TYPE) != N_SECT || ((symbol->n32.n_type & N_STAB) != 0))
+            continue;
+        
+        /* Search for the best match. We're looking for the closest symbol occuring before PC. */
+        if (pl_sym_value(symbol) <= slide_pc && (*found_symbol == NULL || pl_sym_value(*found_symbol) < pl_sym_value(symbol))) {
+            *found_symbol = symbol;
+        }
+    }
+    
+    /* If no symbol was found (unlikely!), return not found */
+    if (*found_symbol == NULL) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Attempt to locate a symbol address and name for @a pc within @a image. This is performed using best-guess heuristics, and may
  * be incorrect.
  *
@@ -364,8 +444,9 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     }
 
     /* Determine the string and symbol table sizes. */
-    size_t nsyms = image->swap32(symtab_cmd.nsyms);
-    size_t nlist_size = nsyms * (image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist));
+    uint32_t nsyms = image->swap32(symtab_cmd.nsyms);
+    size_t nlist_struct_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
+    size_t nlist_table_size = nsyms * nlist_struct_size;
 
     size_t string_size = image->swap32(symtab_cmd.strsize);
 
@@ -374,9 +455,9 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     char *string_table;
 
     uintptr_t remapped_addr = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.symoff));
-    nlist_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, nlist_size);    
+    nlist_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, nlist_table_size);
     if (nlist_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_size);
+        PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_table_size);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
@@ -388,63 +469,55 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
-
-    /* nlist_64 and nlist are identical other than the trailing address field, so we use
-     * a union to share a common implementation of symbol lookup. The following asserts
-     * provide a sanity-check of that assumption, in the case where this code is moved
-     * to a new platform ABI. */
-    {
-        #define pl_m_sizeof(type, field) sizeof(((type *)NULL)->field)
-
-        PLCF_ASSERT(__offsetof(struct nlist_64, n_type) == __offsetof(struct nlist, n_type));
-        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_type) == pl_m_sizeof(struct nlist, n_type));
-
-        PLCF_ASSERT(__offsetof(struct nlist_64, n_un.n_strx) == __offsetof(struct nlist, n_un.n_strx));
-        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_un.n_strx) == pl_m_sizeof(struct nlist, n_un.n_strx));
-        
-        PLCF_ASSERT(__offsetof(struct nlist_64, n_value) == __offsetof(struct nlist, n_value));
-
-        #undef pl_m_sizeof
-    }
-
-    /* Common 32/64 nlist type */
-#define pl_sym_value(nlist_common) (image->m64 ? nlist_common->n64.n_value : nlist_common->n32.n_value)
-    typedef union {
-        struct nlist_64 n64;
-        struct nlist n32;
-    } pl_nlist_common;
-    pl_nlist_common *symbols = nlist_table;
             
-    /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
-     * plcrash_async_mobject_pointer() above. */
+    /* Walk the symbol table. We know that the full range of symbols[nsyms-1] is valid, since we fetched a pointer+len
+     * based on the value using plcrash_async_mobject_pointer() above. */
     pl_nlist_common *found_symbol = NULL;
-    for (uint32_t i = 0; i < nsyms; i++) {
-        /* Perform 32-bit/64-bit dependent aliased pointer math. */
-        pl_nlist_common *symbol;
-        if (image->m64) {
-            symbol = (pl_nlist_common *) &(((struct nlist_64 *) symbols)[i]);
-        } else {
-            symbol = (pl_nlist_common *) &(((struct nlist *) symbols)[i]);
+
+    if (dysymtab_cmd_addr != 0x0) {
+        /* dysymtab is available; use it to constrain our symbol search to the global and local sections of the symbol table. */
+
+        uint32_t idx_syms_global = image->swap32(dysymtab_cmd.iextdefsym);
+        uint32_t idx_syms_local = image->swap32(dysymtab_cmd.ilocalsym);
+        
+        uint32_t nsyms_global = image->swap32(dysymtab_cmd.nextdefsym);
+        uint32_t nsyms_local = image->swap32(dysymtab_cmd.nlocalsym);
+
+        /* Sanity check the symbol offsets to ensure they're within our known-valid ranges */
+        if (idx_syms_global + nsyms_global > nsyms || idx_syms_local + nsyms_local > nsyms) {
+            PLCF_DEBUG("iextdefsym=%" PRIx32 ", ilocalsym=%" PRIx32 " out of range nsym=%" PRIx32, idx_syms_global+nsyms_global, idx_syms_local+nsyms_local, nsyms);
+            retval = PLCRASH_EINVAL;
+            goto cleanup;
         }
 
-        /* Symbol must be within a section, and must not be a debugging entry. */
-        if ((symbol->n32.n_type & N_TYPE) != N_SECT || ((symbol->n32.n_type & N_STAB) != 0))
-            continue;
-        
-        /* Search for the best match. We're looking for the closest symbol occuring before PC. */
-        if (pl_sym_value(symbol) <= slide_pc && (found_symbol == NULL || pl_sym_value(found_symbol) < pl_sym_value(symbol))) {
-            found_symbol = symbol;
+        pl_nlist_common *global_nlist;
+        pl_nlist_common *local_nlist;
+        if (image->m64) {
+            struct nlist_64 *n64 = nlist_table;
+            global_nlist = (pl_nlist_common *) (n64 + idx_syms_global);
+            local_nlist = (pl_nlist_common *) (n64 + idx_syms_local);
+        } else {
+            struct nlist *n32 = nlist_table;
+            global_nlist = (pl_nlist_common *) (n32 + idx_syms_global);
+            local_nlist = (pl_nlist_common *) (n32 + idx_syms_local);
         }
+
+        pl_async_macho_find_symtab_symbol(image, slide_pc, global_nlist, nsyms_global, &found_symbol);
+        pl_async_macho_find_symtab_symbol(image, slide_pc, local_nlist, nsyms_local, &found_symbol);
+    } else {
+        /* If dysymtab is not available, search all symbols */
+        pl_async_macho_find_symtab_symbol(image, slide_pc, nlist_table, nsyms, &found_symbol);
     }
 
-    /* If no symbol was found (unlikely!), return ENOTFOUND */
+    /* No symbol found. */
     if (found_symbol == NULL) {
         retval = PLCRASH_ENOTFOUND;
         goto cleanup;
     }
 
-
-    /* It's possible, though unlikely, that the n_strx index value is invalid. To handle this,
+    /* Symbol found!
+     *
+     * It's possible, though unlikely, that the n_strx index value is invalid. To handle this,
      * we walk the string until \0 is hit, verifying that it can be found in its entirety within
      *
      * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_pointer().

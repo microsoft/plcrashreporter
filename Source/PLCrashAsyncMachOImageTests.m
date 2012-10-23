@@ -33,7 +33,7 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
-
+#import <objc/objc-class.h>
 #import <execinfo.h>
 
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
@@ -233,9 +233,14 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     plcrash_error_t res = pl_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0], testFindSymbol_cb, &ctx);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol");
     
-    /* Fetch the provided symbol address and symbolicate it using dladdr(). */
+    /* The following tests will crash if the above did not succeed */
+    if (res != PLCRASH_ESUCCESS)
+        return;
+    
+    /* Fetch the our IMP address and symbolicate it using dladdr(). */
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
-    STAssertTrue(dladdr((void *)ctx.addr, &dli) != 0, @"Failed to look up symbol");
+    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
 
     /* Compare the results */
     STAssertEqualCStrings(dli.dli_sname, ctx.name, @"Returned incorrect symbol name");
