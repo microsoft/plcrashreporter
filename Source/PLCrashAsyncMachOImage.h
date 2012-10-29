@@ -94,7 +94,10 @@ pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_addr
 pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size);
 pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t cmd, void *result, pl_vm_size_t size);
 
+plcrash_error_t pl_async_macho_find_segment (pl_async_macho_t *image, const char *segname, pl_vm_address_t *outAddress, struct segment_command *outCmd_32, struct segment_command_64 *outCmd_64);
 plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj);
+
+plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj);
 
 plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
 

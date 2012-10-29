@@ -201,6 +201,38 @@
     STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
 }
 
+/**
+ * Test memory mapping of a Mach-O section
+ */
+- (void) testMapSection {
+    plcrash_async_mobject_t mobj;
+    
+    /* Try to map the section */
+    STAssertEquals(PLCRASH_ESUCCESS, pl_async_macho_map_section(&_image, "__DATA", "__const", &mobj), @"Failed to map section");
+    
+    /* Fetch the section directly for comparison */
+    unsigned long sectsize = 0;
+    uint8_t *data = getsectiondata((void *)_image.header_addr, "__DATA", "__const", &sectsize);
+    STAssertNotNULL(data, @"Could not fetch section data");
+
+    /* Compare the address and length. We have to apply the slide to determine the original source address. */
+    STAssertEquals((pl_vm_address_t)data, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Addresses do not match");
+    STAssertEquals((pl_vm_size_t)sectsize, mobj.length, @"Sizes do not match");
+    
+    /* Compare the contents */
+    uint8_t *mapped_data = plcrash_async_mobject_pointer(&mobj, mobj.address, sectsize);
+    STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
+    
+    STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");
+    STAssertTrue(memcmp(data, mapped_data, sectsize) == 0, @"The mapped data is not equal");
+
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test handling of a missing section */
+    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_section(&_image, "__DATA", "__NO_SUCH_SECT", &mobj), @"Should have failed to map the section");
+}
+
 
 /**
  * Test memory mapping of a missing Mach-O segment

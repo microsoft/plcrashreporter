@@ -314,27 +314,27 @@ pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t c
 }
 
 /**
- * Find and map a named segment, initializing @a mobj. It is the caller's responsibility to dealloc @a mobj after
- * a successful initialization
+ * Find a named segment.
  *
  * @param image The image to search for @a segname.
- * @param segname The name of the segment to be mapped.
- * @param mobj The mobject to be initialized with a mapping of the segment's data. It is the caller's responsibility to dealloc @a mobj after
- * a successful initialization.
+ * @param segname The name of the segment to search for.
+ * @param outAddress On successful return, contains the address of the found segment.
+ * @param outCmd_32 On successful return with a 32-bit image, contains the segment header.
+ * @param outCmd_64 On successful return with a 64-bit image, contains the segment header.
  *
- * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure. 
+ * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj) {
+plcrash_error_t pl_async_macho_find_segment (pl_async_macho_t *image, const char *segname, pl_vm_address_t *outAddress, struct segment_command *outCmd_32, struct segment_command_64 *outCmd_64) {
     pl_vm_address_t cmd_addr = 0;
-
+    
     // bool found_segment = false;
     uint32_t cmdsize = 0;
-
+    
     while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, &cmdsize)) != 0) {
         /* Read the load command */
         struct segment_command cmd_32;
         struct segment_command_64 cmd_64;
-
+        
         /* Read in the full segment command */
         plcrash_error_t err;
         if (image->m64)
@@ -346,25 +346,121 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
             return err;
         
         /* Check for match */
-        if (plcrash_async_strcmp(segname, image->m64 ? cmd_64.segname : cmd_32.segname) != 0)
-            continue;
-
-        /* Calculate the in-memory address and size */
-        pl_vm_address_t segaddr;
-        pl_vm_size_t segsize;
-        if (image->m64) {
-            segaddr = image->swap64(cmd_64.vmaddr) + image->vmaddr_slide;
-            segsize = image->swap64(cmd_64.vmsize);
-        } else {
-            segaddr = image->swap32(cmd_32.vmaddr) + image->vmaddr_slide;
-            segsize = image->swap32(cmd_32.vmsize);
+        if (plcrash_async_strcmp(segname, image->m64 ? cmd_64.segname : cmd_32.segname) == 0) {
+            *outAddress = cmd_addr;
+            if (outCmd_32 != NULL)
+                *outCmd_32 = cmd_32;
+            if (outCmd_64 != NULL)
+                *outCmd_64 = cmd_64;
+            return PLCRASH_ESUCCESS;
         }
-
-        /* Perform and return the mapping */
-        return plcrash_async_mobject_init(mobj, image->task, segaddr, segsize);
     }
+    
+    return PLCRASH_ENOTFOUND;
+}
 
-    /* If the loop terminates, the segment was not found */
+/**
+ * Find and map a named segment, initializing @a mobj. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization
+ *
+ * @param image The image to search for @a segname.
+ * @param segname The name of the segment to be mapped.
+ * @param mobj The mobject to be initialized with a mapping of the segment's data. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
+ */
+plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj) {
+    pl_vm_address_t cmd_addr = 0;
+    struct segment_command cmd_32;
+    struct segment_command_64 cmd_64;
+    
+    plcrash_error_t err = pl_async_macho_find_segment(image, segname, &cmd_addr, &cmd_32, &cmd_64);
+    if (err != PLCRASH_ESUCCESS)
+        return err;
+    
+    /* Calculate the in-memory address and size */
+    pl_vm_address_t segaddr;
+    pl_vm_size_t segsize;
+    if (image->m64) {
+        segaddr = image->swap64(cmd_64.vmaddr) + image->vmaddr_slide;
+        segsize = image->swap64(cmd_64.vmsize);
+    } else {
+        segaddr = image->swap32(cmd_32.vmaddr) + image->vmaddr_slide;
+        segsize = image->swap32(cmd_32.vmsize);
+    }
+    
+    /* Perform and return the mapping */
+    return plcrash_async_mobject_init(mobj, image->task, segaddr, segsize);
+}
+
+/**
+ * Find and map a named section within a named segment, initializing @a mobj.
+ * It is the caller's responsibility to dealloc @a mobj after a successful
+ * initialization
+ *
+ * @param image The image to search for @a segname.
+ * @param segname The name of the segment to search.
+ * @param sectname The name of the section to map.
+ * @param mobj The mobject to be initialized with a mapping of the section's data. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
+ */
+plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
+    pl_vm_address_t cmd_addr = 0;
+    struct segment_command cmd_32;
+    struct segment_command_64 cmd_64;
+    
+    plcrash_error_t err = pl_async_macho_find_segment(image, segname, &cmd_addr, &cmd_32, &cmd_64);
+    if (err != PLCRASH_ESUCCESS)
+        return err;
+    
+    uint32_t nsects;
+    pl_vm_address_t cursor = cmd_addr;
+    
+    if (image->m64) {
+        nsects = cmd_64.nsects;
+        cursor += sizeof(cmd_64);
+    } else {
+        nsects = cmd_32.nsects;
+        cursor += sizeof(cmd_32);
+    }
+    
+    for (uint32_t i = 0; i < nsects; i++) {
+        struct section sect_32;
+        struct section_64 sect_64;
+        
+        if (image->m64) {
+            err = plcrash_async_read_addr(image->task, cursor, &sect_64, sizeof(sect_64));
+            cursor += sizeof(sect_64);
+        } else {
+            err = plcrash_async_read_addr(image->task, cursor, &sect_32, sizeof(sect_32));
+            cursor += sizeof(sect_32);
+        }
+        
+        if (err != PLCRASH_ESUCCESS)
+            return err;
+        
+        const char *image_sectname = image->m64 ? sect_64.sectname : sect_32.sectname;
+        if (plcrash_async_strcmp(sectname, image_sectname) == 0) {
+            /* Calculate the in-memory address and size */
+            pl_vm_address_t sectaddr;
+            pl_vm_size_t sectsize;
+            if (image->m64) {
+                sectaddr = image->swap64(sect_64.addr) + image->vmaddr_slide;
+                sectsize = image->swap32(sect_64.size);
+            } else {
+                sectaddr = image->swap32(sect_32.addr) + image->vmaddr_slide;
+                sectsize = image->swap32(sect_32.size);
+            }
+            
+            
+            /* Perform and return the mapping */
+            return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize);
+        }
+    }
+    
     return PLCRASH_ENOTFOUND;
 }
 
