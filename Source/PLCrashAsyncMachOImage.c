@@ -163,7 +163,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
                 return PLCRASH_EINVAL;
             }
             
-            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0)
+            if (plcrash_async_strncmp(segment.segname, SEG_TEXT, sizeof(segment.segname)) != 0)
                 continue;
             
             image->text_size = image->swap64(segment.vmsize);
@@ -176,7 +176,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
                 return PLCRASH_EINVAL;
             }
             
-            if (plcrash_async_strcmp(segment.segname, SEG_TEXT) != 0)
+            if (plcrash_async_strncmp(segment.segname, SEG_TEXT, sizeof(segment.segname)) != 0)
                 continue;
             
             image->text_size = image->swap32(segment.vmsize);
@@ -346,7 +346,7 @@ plcrash_error_t pl_async_macho_find_segment (pl_async_macho_t *image, const char
             return err;
         
         /* Check for match */
-        if (plcrash_async_strcmp(segname, image->m64 ? cmd_64.segname : cmd_32.segname) == 0) {
+        if (plcrash_async_strncmp(segname, image->m64 ? cmd_64.segname : cmd_32.segname, sizeof(cmd_64.segname)) == 0) {
             *outAddress = cmd_addr;
             if (outCmd_32 != NULL)
                 *outCmd_32 = cmd_32;
@@ -443,7 +443,8 @@ plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char 
             return err;
         
         const char *image_sectname = image->m64 ? sect_64.sectname : sect_32.sectname;
-        if (plcrash_async_strcmp(sectname, image_sectname) == 0) {
+        fprintf(stderr, "Found section %.16s searching for %s\n", image_sectname, sectname);
+        if (plcrash_async_strncmp(sectname, image_sectname, sizeof(sect_64.sectname)) == 0) {
             /* Calculate the in-memory address and size */
             pl_vm_address_t sectaddr;
             pl_vm_size_t sectsize;

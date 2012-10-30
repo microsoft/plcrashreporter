@@ -408,6 +408,16 @@
 		2D0E104D1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */; };
 		2D0E104E1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D0E10441141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D0E104F1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */; };
+		C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DDA1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DDB1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DDC1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DDD1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DDE1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DDF1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
+		C2198DE416402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */; };
+		C2198DE516402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */; };
+		C2198DE616402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -785,6 +795,9 @@
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncObjCSection.c; sourceTree = "<group>"; };
+		C2198DE1164018B2006EB46A /* PLCrashAsyncObjCSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncObjCSection.h; sourceTree = "<group>"; };
+		C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncObjCSectionTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1128,6 +1141,9 @@
 				05F76DD7162F215800A668C7 /* PLCrashAsyncMachOImage.h */,
 				05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */,
 				05F76DD9162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m */,
+				C2198DE1164018B2006EB46A /* PLCrashAsyncObjCSection.h */,
+				C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */,
+				C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */,
 			);
 			name = "Async-Safe APIs";
 			sourceTree = "<group>";
@@ -1957,6 +1973,7 @@
 				05EB2B1515B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05F76DD5162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6411636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
+				C2198DDB1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1996,6 +2013,7 @@
 				05EB2B1615B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05F76DD6162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6421636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
+				C2198DDC1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2034,6 +2052,8 @@
 				05F76DDA162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m in Sources */,
 				05DEE6431636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				05DEE64B1636E721007E99DC /* PLCrashAsyncMObjectTests.m in Sources */,
+				C2198DDD1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
+				C2198DE416402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2073,6 +2093,8 @@
 				05F76DDB162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m in Sources */,
 				05DEE6441636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				05DEE64C1636E721007E99DC /* PLCrashAsyncMObjectTests.m in Sources */,
+				C2198DDE1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
+				C2198DE516402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2112,6 +2134,8 @@
 				05F76DDC162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m in Sources */,
 				05DEE6451636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				05DEE64D1636E721007E99DC /* PLCrashAsyncMObjectTests.m in Sources */,
+				C2198DDF1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
+				C2198DE616402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2159,6 +2183,7 @@
 				05EB2B1315B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05F76DD3162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE63F1636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
+				C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2206,6 +2231,7 @@
 				05EB2B1415B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05F76DD4162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6401636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
+				C2198DDA1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
