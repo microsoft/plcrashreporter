@@ -33,7 +33,7 @@ static char * const kObjCSegmentName = "__OBJC";
 static char * const kDataSegmentName = "__DATA";
 
 static char * const kObjCModuleInfoSectionName = "__module_info";
-static char * const kClasslistSectionName = "__objc_classlist";
+static char * const kClassListSectionName = "__objc_classlist";
 
 struct pl_objc_module {
     uint32_t version;
@@ -47,13 +47,19 @@ struct pl_objc2_class {
     uint64_t superclass;
     uint64_t cache;
     uint64_t vtable;
-    uint64_t data;
+    uint64_t data_rw;
     uint64_t reserved1;
     uint64_t reserved2;
     uint64_t reserved3;
 };
 
-struct pl_objc2_class_data_t {
+struct pl_objc2_class_data_rw_t {
+    uint32_t flags;
+    uint32_t version;
+    uint64_t data_ro;
+};
+
+struct pl_objc2_class_data_ro_t {
     uint32_t flags;
     uint32_t instanceStart;
     uint32_t instanceSize;
@@ -71,16 +77,18 @@ struct pl_objc2_class_data_t {
 static plcrash_error_t read_string (pl_async_macho_t *image, pl_vm_address_t address, plcrash_async_mobject_t *outMobj) {
     pl_vm_address_t cursor = address;
     
+    fprintf(stderr, "reading string from %llx\n", (long long)address);
     char c;
     do {
         plcrash_error_t err = plcrash_async_read_addr(image->task, cursor, &c, 1);
+        fprintf(stderr, "Got error %d and char %x at position %llu\n", err, c, (long long)(cursor - address));
         if (err != PLCRASH_ESUCCESS)
             return err;
         cursor++;
     } while(c != 0);
     
     pl_vm_size_t length = cursor - address - 1;
-    return plcrash_async_mobject_init(outMobj, image->task, address + image->vmaddr_slide, length);
+    return plcrash_async_mobject_init(outMobj, image->task, address, length);
 }
 
 plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image) {
@@ -116,7 +124,7 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image) 
     
     bool classMobjInitialized = false;
     plcrash_async_mobject_t classMobj;
-    err = pl_async_macho_map_section(image, kDataSegmentName, kClasslistSectionName, &classMobj);
+    err = pl_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &classMobj);
     if (err != PLCRASH_ESUCCESS)
         goto cleanup;
     
@@ -135,17 +143,25 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image) 
         if (err)
             goto cleanup;
         
+        pl_vm_address_t dataPtr = image->swap64(class.data_rw) & ~3LL;
         fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-        fprintf(stderr, "reading class data from %llx\n", image->swap64(class.data));
-        struct pl_objc2_class_data_t classData;
-        err = plcrash_async_read_addr(image->task, image->swap64(class.data), &classData, sizeof(classData));
+        fprintf(stderr, "reading RW class data from %llx\n", (long long)dataPtr);
+        struct pl_objc2_class_data_rw_t classDataRW;
+        err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW, sizeof(classDataRW));
         if (err)
             goto cleanup;
         
         fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-        fprintf(stderr, "Reading name from %llx\n", image->swap64(classData.name));
+        fprintf(stderr, "reading RO class data from %llx\n", image->swap64(classDataRW.data_ro));
+        struct pl_objc2_class_data_ro_t classDataRO;
+        err = plcrash_async_read_addr(image->task, image->swap64(classDataRW.data_ro), &classDataRO, sizeof(classDataRO));
+        if (err)
+            goto cleanup;
+        
+        fprintf(stderr, "%s:%d\n", __func__, __LINE__);
+        fprintf(stderr, "Reading name from %llx\n", image->swap64(classDataRO.name));
         plcrash_async_mobject_t nameMobj;
-        err = read_string(image, image->swap64(classData.name), &nameMobj);
+        err = read_string(image, image->swap64(classDataRO.name), &nameMobj);
         if (err)
             goto cleanup;
         
