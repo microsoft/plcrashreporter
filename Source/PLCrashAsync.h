@@ -104,7 +104,7 @@ typedef mach_vm_size_t pl_vm_size_t;
 
 #define PLCF_DEBUG(msg, args...) {\
     char output[128];\
-    snprintf(output, sizeof(output), "[PLCrashReport] " msg "\n", ## args); \
+    snprintf(output, sizeof(output), "[PLCrashReport] %s:%d: " msg "\n", __func__, __LINE__, ## args); \
     /* Ensure that the output is \n\0 terminated */ \
     output[sizeof(output)-2] = '\n'; \
     write(STDERR_FILENO, output, strlen(output));\
