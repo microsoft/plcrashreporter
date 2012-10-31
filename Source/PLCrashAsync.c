@@ -147,7 +147,7 @@ void *plcrash_async_memcpy (void *dest, const void *source, size_t n) {
  * or an error occurs. For the local file system, only one call to write()
  * should be necessary
  */
-static ssize_t writen (int fd, const void *data, size_t len) {
+ssize_t plcrash_async_writen (int fd, const void *data, size_t len) {
     const void *p;
     size_t left;
     ssize_t written = 0;
@@ -161,7 +161,6 @@ static ssize_t writen (int fd, const void *data, size_t len) {
                 // Try again
                 written = 0;
             } else {
-                PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
                 return -1;
             }
         }
@@ -206,7 +205,8 @@ bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, siz
     /* Check if the buffer will fill */
     if (file->buflen + len > sizeof(file->buffer)) {
         /* Flush the buffer */
-        if (writen(file->fd, file->buffer, file->buflen) < 0) {
+        if (plcrash_async_writen(file->fd, file->buffer, file->buflen) < 0) {
+            PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
             return false;
         }
         
@@ -222,7 +222,8 @@ bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, siz
         
     } else {
         /* Won't fit in the buffer, just write it */
-        if (writen(file->fd, data, len) < 0) {
+        if (plcrash_async_writen(file->fd, data, len) < 0) {
+            PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
             return false;
         }
         
@@ -240,8 +241,10 @@ bool plcrash_async_file_flush (plcrash_async_file_t *file) {
         return true;
     
     /* Write remaining */
-    if (writen(file->fd, file->buffer, file->buflen) < 0)
+    if (plcrash_async_writen(file->fd, file->buffer, file->buflen) < 0) {
+        PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
         return false;
+    }
     
     file->buflen = 0;
     
