@@ -230,3 +230,51 @@ plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_foun
     return err;
 }
 
+struct pl_async_objc_find_method_search_context {
+    pl_vm_address_t searchIMP;
+    pl_vm_address_t bestIMP;
+};
+
+struct pl_async_objc_find_method_call_context {
+    pl_vm_address_t searchIMP;
+    pl_async_objc_found_method_cb outerCallback;
+    void *outerCallbackCtx;
+};
+
+static void pl_async_objc_find_method_search_callback (const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+    struct pl_async_objc_find_method_search_context *ctxStruct = ctx;
+    
+    if (imp >= ctxStruct->bestIMP && imp <= ctxStruct->searchIMP) {
+        ctxStruct->bestIMP = imp;
+    }
+}
+
+static void pl_async_objc_find_method_call_callback (const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+    struct pl_async_objc_find_method_call_context *ctxStruct = ctx;
+    
+    if (imp == ctxStruct->searchIMP) {
+        ctxStruct->outerCallback(className, classNameLength, methodName, methodNameLength, imp, ctxStruct->outerCallbackCtx);
+    }
+}
+
+plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx) {
+    struct pl_async_objc_find_method_search_context searchCtx = {
+        .searchIMP = imp
+    };
+    
+    plcrash_error_t err = pl_async_objc_parse(image, pl_async_objc_find_method_search_callback, &searchCtx);
+    if (err != PLCRASH_ESUCCESS)
+        return err;
+    
+    if (searchCtx.bestIMP == 0)
+        return PLCRASH_ENOTFOUND;
+    
+    struct pl_async_objc_find_method_call_context callCtx = {
+        .searchIMP = searchCtx.bestIMP,
+        .outerCallback = callback,
+        .outerCallbackCtx = ctx
+    };
+    
+    return pl_async_objc_parse(image, pl_async_objc_find_method_call_callback, &callCtx);
+}
+

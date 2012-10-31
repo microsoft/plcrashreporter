@@ -36,5 +36,6 @@ typedef void (*pl_async_objc_found_method_cb)(const char *className, pl_vm_size_
 
 plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx);
 
+plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
 
 #endif // PLCrashAsyncObjCSection_h
