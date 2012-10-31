@@ -85,8 +85,10 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
 - (void) testParse {
     plcrash_error_t err;
     
+    __block BOOL didCall = NO;
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
     err = pl_async_objc_find_method(&_image, pc, ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+        didCall = YES;
         NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
         NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
         
@@ -94,6 +96,7 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
         STAssertEqualObjects(methodNameNS, NSStringFromSelector(_cmd), @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[self methodForSelector: _cmd], @"Method IMPs don't match");
     });
+    STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
 }
 
