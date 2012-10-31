@@ -91,8 +91,10 @@ static plcrash_error_t read_string (pl_async_macho_t *image, pl_vm_address_t add
     char c;
     do {
         plcrash_error_t err = plcrash_async_read_addr(image->task, cursor, &c, 1);
-        if (err != PLCRASH_ESUCCESS)
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("in read_string(%p, 0x%llx, %p), plcrash_async_read_addr at 0x%llx failure %d ", image, (long long)address, outMobj, (long long)cursor, err);
             return err;
+        }
         cursor++;
     } while(c != 0);
     
@@ -106,13 +108,16 @@ plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image, p
     bool moduleMobjInitialized = false;
     plcrash_async_mobject_t moduleMobj;
     err = pl_async_macho_map_section(image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj);
-    if (err != PLCRASH_ESUCCESS)
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj, err);
         goto cleanup;
+    }
     
     moduleMobjInitialized = true;
     
     struct pl_objc_module *moduleData = plcrash_async_mobject_pointer(&moduleMobj, moduleMobj.address, sizeof(*moduleData));
     if (moduleData == NULL) {
+        PLCF_DEBUG("Failed to obtain pointer from %s memory object", kObjCModuleInfoSectionName);
         err = PLCRASH_ENOTFOUND;
         goto cleanup;
     }
@@ -132,8 +137,10 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
     bool classMobjInitialized = false;
     plcrash_async_mobject_t classMobj;
     err = pl_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &classMobj);
-    if (err != PLCRASH_ESUCCESS)
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kClassListSectionName, &classMobj, err);
         goto cleanup;
+    }
     
     classMobjInitialized = true;
     
@@ -146,29 +153,40 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
         
         struct pl_objc2_class class;
         err = plcrash_async_read_addr(image->task, ptr, &class, sizeof(class));
-        if (err != PLCRASH_ESUCCESS)
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)ptr, err);
             goto cleanup;
+        }
         
         pl_vm_address_t dataPtr = image->swap64(class.data_rw) & ~3LL;
         struct pl_objc2_class_data_rw_t classDataRW;
         err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW, sizeof(classDataRW));
-        if (err != PLCRASH_ESUCCESS)
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
             goto cleanup;
+        }
         
+        pl_vm_address_t dataROPtr = image->swap64(classDataRW.data_ro);
         struct pl_objc2_class_data_ro_t classDataRO;
-        err = plcrash_async_read_addr(image->task, image->swap64(classDataRW.data_ro), &classDataRO, sizeof(classDataRO));
-        if (err != PLCRASH_ESUCCESS)
+        err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO, sizeof(classDataRO));
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataROPtr, err);
             goto cleanup;
+        }
         
         if (classNameMobjInitialized)
             plcrash_async_mobject_free(&classNameMobj);
-        err = read_string(image, image->swap64(classDataRO.name), &classNameMobj);
-        if (err != PLCRASH_ESUCCESS)
+        pl_vm_address_t classNamePtr = image->swap64(classDataRO.name);
+        err = read_string(image, classNamePtr, &classNameMobj);
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("read_string at 0x%llx error %d", (long long)classNamePtr, err);
             goto cleanup;
+        }
         classNameMobjInitialized = true;
         
         const char *className = plcrash_async_mobject_pointer(&classNameMobj, classNameMobj.address, classNameMobj.length);
         if (className == NULL) {
+            PLCF_DEBUG("Failed to obtain pointer from class name memory object with address 0x%llx length %llu", (long long)classNameMobj.address, (unsigned long long)classNameMobj.length);
             err = PLCRASH_EACCESS;
             goto cleanup;
         }
@@ -176,8 +194,10 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
         pl_vm_address_t methodsPtr = image->swap64(classDataRO.baseMethods);
         struct pl_objc2_list_header header;
         err = plcrash_async_read_addr(image->task, methodsPtr, &header, sizeof(header));
-        if (err != PLCRASH_ESUCCESS)
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodsPtr, err);
             goto cleanup;
+        }
         
         uint32_t entsize = image->swap32(header.entsize);
         uint32_t count = image->swap32(header.count);
@@ -187,16 +207,22 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
         for (uint32_t i = 0; i < count; i++) {
             struct pl_objc2_method method;
             err = plcrash_async_read_addr(image->task, cursor, &method, sizeof(method));
-            if (err != PLCRASH_ESUCCESS)
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
                 goto cleanup;
+            }
             
+            pl_vm_address_t methodNamePtr = image->swap64(method.name);
             plcrash_async_mobject_t methodNameMobj;
-            err = read_string(image, image->swap64(method.name), &methodNameMobj);
-            if (err != PLCRASH_ESUCCESS)
+            err = read_string(image, methodNamePtr, &methodNameMobj);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
                 goto cleanup;
+            }
             
             const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
             if (methodName == NULL) {
+                PLCF_DEBUG("Failed to obtain pointer from method name memory object with address 0x%llx length %llu", (long long)methodNameMobj.address, (unsigned long long)methodNameMobj.length);
                 plcrash_async_mobject_free(&methodNameMobj);
                 err = PLCRASH_EACCESS;
                 goto cleanup;
@@ -263,8 +289,10 @@ plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_addres
     };
     
     plcrash_error_t err = pl_async_objc_parse(image, pl_async_objc_find_method_search_callback, &searchCtx);
-    if (err != PLCRASH_ESUCCESS)
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("pl_async_objc_parse(%p, 0x%llx, %p, %p) failure %d", image, (long long)imp, callback, ctx, err);
         return err;
+    }
     
     if (searchCtx.bestIMP == 0)
         return PLCRASH_ENOTFOUND;
