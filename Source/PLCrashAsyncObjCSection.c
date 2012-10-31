@@ -35,11 +35,42 @@ static char * const kDataSegmentName = "__DATA";
 static char * const kObjCModuleInfoSectionName = "__module_info";
 static char * const kClassListSectionName = "__objc_classlist";
 
-struct pl_objc_module {
+struct pl_objc1_module {
     uint32_t version;
     uint32_t size;
     uint32_t name;
     uint32_t symtab;
+};
+
+struct pl_objc1_symtab {
+    uint32_t sel_ref_cnt;
+    uint32_t refs;
+    uint16_t cls_def_count;
+    uint16_t cat_def_count;
+};
+
+struct pl_objc1_class {
+    uint32_t isa;
+    uint32_t super;
+    uint32_t name;
+    uint32_t version;
+    uint32_t info;
+    uint32_t instance_size;
+    uint32_t ivars;
+    uint32_t methods;
+    uint32_t cache;
+    uint32_t protocols;
+};
+
+struct pl_objc1_method_list {
+    uint32_t obsolete;
+    uint32_t count;
+};
+
+struct pl_objc1_method {
+    uint32_t name;
+    uint32_t types;
+    uint32_t imp;
 };
 
 struct pl_objc2_class {
@@ -115,18 +146,111 @@ plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image, p
     
     moduleMobjInitialized = true;
     
-    struct pl_objc_module *moduleData = plcrash_async_mobject_pointer(&moduleMobj, moduleMobj.address, sizeof(*moduleData));
+    struct pl_objc1_module *moduleData = plcrash_async_mobject_pointer(&moduleMobj, moduleMobj.address, sizeof(*moduleData));
     if (moduleData == NULL) {
         PLCF_DEBUG("Failed to obtain pointer from %s memory object", kObjCModuleInfoSectionName);
         err = PLCRASH_ENOTFOUND;
         goto cleanup;
     }
     
-    fprintf(stderr, "version=%d size=%d name=%x symtab=%x\n", image->swap32(moduleData->version), image->swap32(moduleData->size), image->swap32(moduleData->name), image->swap32(moduleData->symtab));
+    bool classNameMobjInitialized = false;
+    plcrash_async_mobject_t classNameMobj;
+    
+    for (unsigned moduleIndex = 0; moduleIndex < moduleMobj.length / sizeof(*moduleData); moduleIndex++) {
+        pl_vm_address_t symtabPtr = image->swap32(moduleData[moduleIndex].symtab);
+        if (symtabPtr == 0)
+            continue;
+        
+        struct pl_objc1_symtab symtab;
+        err = plcrash_async_read_addr(image->task, symtabPtr, &symtab, sizeof(symtab));
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)symtabPtr, err);
+            goto cleanup;
+        }
+        
+        uint16_t classCount = image->swap16(symtab.cls_def_count);
+        for (unsigned i = 0; i < classCount; i++) {
+            uint32_t classPtr;
+            pl_vm_address_t cursor = symtabPtr + sizeof(symtab) + i * sizeof(classPtr);
+            err = plcrash_async_read_addr(image->task, cursor, &classPtr, sizeof(classPtr));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
+                goto cleanup;
+            }
+            classPtr = image->swap32(classPtr);
+            
+            struct pl_objc1_class class;
+            err = plcrash_async_read_addr(image->task, classPtr, &class, sizeof(class));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)classPtr, err);
+                goto cleanup;
+            }
+            
+            if (classNameMobjInitialized) {
+                plcrash_async_mobject_free(&classNameMobj);
+                classNameMobjInitialized = false;
+            }
+            pl_vm_address_t namePtr = image->swap32(class.name);
+            err = read_string(image, namePtr, &classNameMobj);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("read_string at 0x%llx error %d", (long long)namePtr, err);
+                goto cleanup;
+            }
+            classNameMobjInitialized = true;
+            
+            const char *className = plcrash_async_mobject_pointer(&classNameMobj, classNameMobj.address, classNameMobj.length);
+            if (className == NULL) {
+                PLCF_DEBUG("Failed to get pointer to class name data");
+                goto cleanup;
+            }
+            
+            pl_vm_address_t methodListPtr = image->swap32(class.methods);
+            struct pl_objc1_method_list methodList;
+            err = plcrash_async_read_addr(image->task, methodListPtr, &methodList, sizeof(methodList));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListPtr, err);
+                goto cleanup;
+            }
+            
+            uint32_t count = image->swap32(methodList.count);
+            for (uint32_t i = 0; i < count; i++) {
+                struct pl_objc1_method method;
+                pl_vm_address_t methodPtr = methodListPtr + sizeof(methodList) + i * sizeof(method);
+                err = plcrash_async_read_addr(image->task, methodPtr, &method, sizeof(method));
+                if (err != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodPtr, err);
+                    goto cleanup;
+                }
+                
+                pl_vm_address_t methodNamePtr = image->swap32(method.name);
+                plcrash_async_mobject_t methodNameMobj;
+                err = read_string(image, methodNamePtr, &methodNameMobj);
+                if (err != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
+                    goto cleanup;
+                }
+                
+                const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
+                if (methodName == NULL) {
+                    PLCF_DEBUG("Failed to get method name pointer");
+                    plcrash_async_mobject_free(&methodNameMobj);
+                    goto cleanup;
+                }
+                
+                pl_vm_address_t imp = image->swap32(method.imp);
+                
+                callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
+                
+                plcrash_async_mobject_free(&methodNameMobj);
+            }
+        }
+    }
     
 cleanup:
     if (moduleMobjInitialized)
         plcrash_async_mobject_free(&moduleMobj);
+    if (classNameMobjInitialized)
+        plcrash_async_mobject_free(&classNameMobj);
     
     return err;
 }
