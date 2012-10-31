@@ -443,7 +443,6 @@ plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char 
             return err;
         
         const char *image_sectname = image->m64 ? sect_64.sectname : sect_32.sectname;
-        fprintf(stderr, "Found section %.16s searching for %s\n", image_sectname, sectname);
         if (plcrash_async_strncmp(sectname, image_sectname, sizeof(sect_64.sectname)) == 0) {
             /* Calculate the in-memory address and size */
             pl_vm_address_t sectaddr;
