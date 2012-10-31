@@ -32,7 +32,9 @@
 #include "PLCrashAsyncMachOImage.h"
 
 
-plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image);
+typedef void (*pl_async_objc_found_method_cb)(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx);
+
+plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx);
 
 
 #endif // PLCrashAsyncObjCSection_h

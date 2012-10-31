@@ -77,10 +77,17 @@
     pl_async_macho_free(&_image);
 }
 
+static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+    void (^block)(const char *, pl_vm_size_t, const char *, pl_vm_size_t, pl_vm_address_t) = ctx;
+    block(className, classNameLength, methodName, methodNameLength, imp);
+}
+
 - (void) testParse {
     plcrash_error_t err;
     
-    err = pl_async_objc_parse(&_image);
+    err = pl_async_objc_parse(&_image, ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+        NSLog(@"%.*s %.*s %p", (int)classNameLength, className, (int)methodNameLength, methodName, (void *)imp);
+    });
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
 }
 
