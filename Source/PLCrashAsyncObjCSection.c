@@ -722,8 +722,9 @@ static void pl_async_objc_find_method_search_callback (bool isClassMethod, const
 static void pl_async_objc_find_method_call_callback (bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
     struct pl_async_objc_find_method_call_context *ctxStruct = ctx;
     
-    if (imp == ctxStruct->searchIMP) {
+    if (imp == ctxStruct->searchIMP && ctxStruct->outerCallback != NULL) {
         ctxStruct->outerCallback(isClassMethod, className, classNameLength, methodName, methodNameLength, imp, ctxStruct->outerCallbackCtx);
+        ctxStruct->outerCallback = NULL;
     }
 }
 
