@@ -28,7 +28,82 @@
 
 #include "PLCrashAsyncLocalSymbolication.h"
 
+#include "PLCrashAsyncObjCSection.h"
+
+
+static void saveMachOAddressCB(pl_vm_address_t address, const char *name, void *ctx) {
+    *(pl_vm_address_t *)ctx = address;
+}
+
+static void saveObjCAddressCB(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+    *(pl_vm_address_t *)ctx = imp;
+}
+
+struct objc_callback_ctx {
+    pl_async_found_symbol_cb outerCallback;
+    void *outerCallbackCtx;
+};
+
+static bool append_char(char *str, char c, int *cursorPtr, int limit) {
+    if (*cursorPtr >= limit)
+        return false;
+    
+    str[(*cursorPtr)++] = c;
+    return true;
+}
+
+static void callbackObjCAddressCB(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+    struct objc_callback_ctx *ctxStruct = ctx;
+    
+    /* Make a local buffer. */
+    char symString[128] = {};
+    int maxLen = sizeof(symString) - 1;
+    
+    int cursor = 0;
+    append_char(symString, isClassMethod ? '+' : '-', &cursor, maxLen);
+    append_char(symString, '[', &cursor, maxLen);
+    
+    for (pl_vm_size_t i = 0; i < classNameLength; i++) {
+        bool success = append_char(symString, className[i], &cursor, maxLen);
+        if (!success)
+            break;
+    }
+    
+    append_char(symString, ' ', &cursor, maxLen);
+    
+    for (pl_vm_size_t i = 0; i < methodNameLength; i++) {
+        bool success = append_char(symString, methodName[i], &cursor, maxLen);
+        if (!success)
+            break;
+    }
+    
+    append_char(symString, ']', &cursor, maxLen);
+    
+    ctxStruct->outerCallback(imp, symString, ctxStruct->outerCallbackCtx);
+}
 
 plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
-    return pl_async_macho_find_symbol(image, pc, callback, ctx);
+    pl_vm_address_t machoAddress = 0;
+    plcrash_error_t machoErr = pl_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
+    
+    pl_vm_address_t objcAddress = 0;
+    plcrash_error_t objcErr = pl_async_objc_find_method(image, pc, saveObjCAddressCB, &objcAddress);
+    
+    if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Could not find symbol for PC %p image %p", (void *)pc, image);
+        PLCF_DEBUG("pl_async_macho_find_symbol error %d, pl_async_objc_find_method error %d", machoErr, objcErr);
+        return machoErr;
+    }
+    
+    /* Choose whichever one has the higher address (closer match), or whichever one
+     * didn't error. */
+    if (objcErr != PLCRASH_ESUCCESS || machoAddress > objcAddress) {
+        return pl_async_macho_find_symbol(image, pc, callback, ctx);
+    } else {
+        struct objc_callback_ctx innerCtx = {
+            .outerCallback = callback,
+            .outerCallbackCtx = ctx
+        };
+        return pl_async_objc_find_method(image, pc, callbackObjCAddressCB, &innerCtx);
+    }
 }

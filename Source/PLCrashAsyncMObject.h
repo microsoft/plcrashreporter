@@ -26,6 +26,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCrashAsyncMObject_h
+#define PLCrashAsyncMObject_h
+
 #include <stdint.h>
 #include "PLCrashAsync.h"
 
@@ -59,3 +62,5 @@ uintptr_t plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl
 void *plcrash_async_mobject_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length);
 
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj);
+
+#endif // PLCrashAsyncMObject_h

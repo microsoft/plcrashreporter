@@ -26,6 +26,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCrashAsyncMachOImage_h
+#define PLCrashAsyncMachOImage_h
+
 #include <stdint.h>
 #include <mach/mach.h>
 #include <mach-o/loader.h>
@@ -106,3 +109,5 @@ void pl_async_macho_free (pl_async_macho_t *image);
 /**
  * @}
  */
+
+#endif // PLCrashAsyncMachOImage_h
