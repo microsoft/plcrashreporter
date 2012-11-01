@@ -73,7 +73,15 @@ struct pl_objc1_method {
     uint32_t imp;
 };
 
-struct pl_objc2_class {
+struct pl_objc2_class_32 {
+    uint32_t isa;
+    uint32_t superclass;
+    uint32_t cache;
+    uint32_t vtable;
+    uint32_t data_rw;
+};
+
+struct pl_objc2_class_64 {
     uint64_t isa;
     uint64_t superclass;
     uint64_t cache;
@@ -81,13 +89,32 @@ struct pl_objc2_class {
     uint64_t data_rw;
 };
 
-struct pl_objc2_class_data_rw_t {
+struct pl_objc2_class_data_rw_32 {
+    uint32_t flags;
+    uint32_t version;
+    uint32_t data_ro;
+};
+
+struct pl_objc2_class_data_rw_64 {
     uint32_t flags;
     uint32_t version;
     uint64_t data_ro;
 };
 
-struct pl_objc2_class_data_ro_t {
+struct pl_objc2_class_data_ro_32 {
+    uint32_t flags;
+    uint32_t instanceStart;
+    uint32_t instanceSize;
+    uint32_t ivarLayout;
+    uint32_t name;
+    uint32_t baseMethods;
+    uint32_t baseProtocols;
+    uint32_t ivars;
+    uint32_t weakIvarLayout;
+    uint32_t baseProperties;
+};
+
+struct pl_objc2_class_data_ro_64 {
     uint32_t flags;
     uint32_t instanceStart;
     uint32_t instanceSize;
@@ -101,7 +128,13 @@ struct pl_objc2_class_data_ro_t {
     uint64_t baseProperties;
 };
 
-struct pl_objc2_method {
+struct pl_objc2_method_32 {
+    uint32_t name;
+    uint32_t types;
+    uint32_t imp;
+};
+
+struct pl_objc2_method_64 {
     uint64_t name;
     uint64_t types;
     uint64_t imp;
@@ -268,36 +301,68 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
     plcrash_async_mobject_t classNameMobj;
     bool classNameMobjInitialized = false;
     
-    uint64_t *classPtrs = plcrash_async_mobject_pointer(&classMobj, classMobj.address, classMobj.length);
-    for(unsigned i = 0; i < classMobj.length / sizeof(*classPtrs); i++) {
-        pl_vm_address_t ptr = image->swap64(classPtrs[i]);
+    void *classPtrs = plcrash_async_mobject_pointer(&classMobj, classMobj.address, classMobj.length);
+    uint32_t *classPtrs_32 = classPtrs;
+    uint64_t *classPtrs_64 = classPtrs;
+    unsigned classCount = classMobj.length / (image->m64 ? sizeof(*classPtrs_64) : sizeof(*classPtrs_32));
+    for(unsigned i = 0; i < classCount; i++) {
+        pl_vm_address_t ptr = (image->m64
+                               ? image->swap64(classPtrs_64[i])
+                               : image->swap32(classPtrs_32[i]));
         
-        struct pl_objc2_class class;
-        err = plcrash_async_read_addr(image->task, ptr, &class, sizeof(class));
+        struct pl_objc2_class_32 class_32;
+        struct pl_objc2_class_64 class_64;
+        if (image->m64)
+            err = plcrash_async_read_addr(image->task, ptr, &class_64, sizeof(class_64));
+        else
+            err = plcrash_async_read_addr(image->task, ptr, &class_32, sizeof(class_32));
+        
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)ptr, err);
             goto cleanup;
         }
         
-        pl_vm_address_t dataPtr = image->swap64(class.data_rw) & ~3LL;
-        struct pl_objc2_class_data_rw_t classDataRW;
-        err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW, sizeof(classDataRW));
+        pl_vm_address_t dataPtr = (image->m64
+                                   ? image->swap64(class_64.data_rw)
+                                   : image->swap32(class_32.data_rw));
+        dataPtr &= ~3LL;
+        
+        struct pl_objc2_class_data_rw_32 classDataRW_32;
+        struct pl_objc2_class_data_rw_64 classDataRW_64;
+        if (image->m64)
+            err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_64, sizeof(classDataRW_64));
+        else
+            err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_32, sizeof(classDataRW_32));
+        
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
             goto cleanup;
         }
         
-        pl_vm_address_t dataROPtr = image->swap64(classDataRW.data_ro);
-        struct pl_objc2_class_data_ro_t classDataRO;
-        err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO, sizeof(classDataRO));
+        pl_vm_address_t dataROPtr = (image->m64
+                                     ? image->swap64(classDataRW_64.data_ro)
+                                     : image->swap32(classDataRW_32.data_ro));
+        
+        struct pl_objc2_class_data_ro_32 classDataRO_32;
+        struct pl_objc2_class_data_ro_64 classDataRO_64;
+        if (image->m64)
+            err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO_64, sizeof(classDataRO_64));
+        else
+            err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO_32, sizeof(classDataRO_32));
+        
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataROPtr, err);
             goto cleanup;
         }
         
-        if (classNameMobjInitialized)
+        if (classNameMobjInitialized) {
             plcrash_async_mobject_free(&classNameMobj);
-        pl_vm_address_t classNamePtr = image->swap64(classDataRO.name);
+            classNameMobjInitialized = false;
+        }
+        
+        pl_vm_address_t classNamePtr = (image->m64
+                                        ? image->swap64(classDataRO_64.name)
+                                        : image->swap32(classDataRO_32.name));
         err = read_string(image, classNamePtr, &classNameMobj);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("read_string at 0x%llx error %d", (long long)classNamePtr, err);
@@ -312,7 +377,10 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
             goto cleanup;
         }
         
-        pl_vm_address_t methodsPtr = image->swap64(classDataRO.baseMethods);
+        pl_vm_address_t methodsPtr = (image->m64
+                                      ? image->swap64(classDataRO_64.baseMethods)
+                                      : image->swap32(classDataRO_32.baseMethods));
+        
         struct pl_objc2_list_header header;
         err = plcrash_async_read_addr(image->task, methodsPtr, &header, sizeof(header));
         if (err != PLCRASH_ESUCCESS) {
@@ -326,14 +394,21 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
         pl_vm_address_t cursor = methodsPtr + sizeof(header);
         
         for (uint32_t i = 0; i < count; i++) {
-            struct pl_objc2_method method;
-            err = plcrash_async_read_addr(image->task, cursor, &method, sizeof(method));
+            struct pl_objc2_method_32 method_32;
+            struct pl_objc2_method_64 method_64;
+            if (image->m64)
+                err = plcrash_async_read_addr(image->task, cursor, &method_64, sizeof(method_64));
+            else
+                err = plcrash_async_read_addr(image->task, cursor, &method_32, sizeof(method_32));
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
                 goto cleanup;
             }
             
-            pl_vm_address_t methodNamePtr = image->swap64(method.name);
+            pl_vm_address_t methodNamePtr = (image->m64
+                                             ? image->swap64(method_64.name)
+                                             : image->swap32(method_32.name));
+            
             plcrash_async_mobject_t methodNameMobj;
             err = read_string(image, methodNamePtr, &methodNameMobj);
             if (err != PLCRASH_ESUCCESS) {
@@ -348,7 +423,10 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
                 err = PLCRASH_EACCESS;
                 goto cleanup;
             }
-            pl_vm_address_t imp = image->swap64(method.imp);
+            
+            pl_vm_address_t imp = (image->m64
+                                   ? image->swap64(method_64.imp)
+                                   : image->swap32(method_32.imp));
             
             callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
             
