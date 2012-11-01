@@ -325,7 +325,7 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
         pl_vm_address_t dataPtr = (image->m64
                                    ? image->swap64(class_64.data_rw)
                                    : image->swap32(class_32.data_rw));
-        dataPtr &= ~3LL;
+        dataPtr &= ~(pl_vm_address_t)3;
         
         struct pl_objc2_class_data_rw_32 classDataRW_32;
         struct pl_objc2_class_data_rw_64 classDataRW_64;
@@ -388,7 +388,7 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
             goto cleanup;
         }
         
-        uint32_t entsize = image->swap32(header.entsize);
+        uint32_t entsize = image->swap32(header.entsize) & ~(uint32_t)3;
         uint32_t count = image->swap32(header.count);
         
         pl_vm_address_t cursor = methodsPtr + sizeof(header);
