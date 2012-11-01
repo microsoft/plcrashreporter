@@ -42,6 +42,30 @@
 
 @end
 
+@interface PLCrashAsyncObjCSectionTests (Category)
+
+- (pl_vm_address_t) addressInCategory;
+
+@end
+
+/**
+ * Simple class with one method, to make sure symbol lookups work for
+ * a case with no categories or anything.
+ */
+@interface PLCrashAsyncObjCSectionTestsSimpleClass : NSObject
+
+- (pl_vm_address_t) addressInSimpleClass;
+
+@end
+
+@implementation PLCrashAsyncObjCSectionTestsSimpleClass : NSObject
+
+- (pl_vm_address_t) addressInSimpleClass {
+    return [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
+}
+
+@end
+
 @implementation PLCrashAsyncObjCSectionTests
 
 - (void) setUp {
@@ -98,6 +122,41 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
     });
     STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
+    
+    didCall = NO;
+    err = pl_async_objc_find_method(&_image, [self addressInCategory], ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+        didCall = YES;
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        
+        STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
+        STAssertEqualObjects(methodNameNS, @"addressInCategory", @"Method names don't match");
+        STAssertEquals(imp, (pl_vm_address_t)[self methodForSelector: @selector(addressInCategory)], @"Method IMPs don't match");
+    });
+    STAssertTrue(didCall, @"Method find callback never got called");
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
+    
+    PLCrashAsyncObjCSectionTestsSimpleClass *obj = [[[PLCrashAsyncObjCSectionTestsSimpleClass alloc] init] autorelease];
+    didCall = NO;
+    err = pl_async_objc_find_method(&_image, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+        didCall = YES;
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        
+        STAssertEqualObjects(classNameNS, @"PLCrashAsyncObjCSectionTestsSimpleClass", @"Class names don't match");
+        STAssertEqualObjects(methodNameNS, @"addressInSimpleClass", @"Method names don't match");
+        STAssertEquals(imp, (pl_vm_address_t)[obj methodForSelector: @selector(addressInSimpleClass)], @"Method IMPs don't match");
+    });
+    STAssertTrue(didCall, @"Method find callback never got called");
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
+}
+
+@end
+
+@implementation PLCrashAsyncObjCSectionTests (Category)
+
+- (pl_vm_address_t) addressInCategory {
+    return [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
 }
 
 @end

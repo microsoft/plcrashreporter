@@ -35,6 +35,9 @@ static char * const kDataSegmentName = "__DATA";
 static char * const kObjCModuleInfoSectionName = "__module_info";
 static char * const kClassListSectionName = "__objc_classlist";
 
+static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
+static uint32_t END_OF_METHODS_LIST = -1;
+
 struct pl_objc1_module {
     uint32_t version;
     uint32_t size;
@@ -235,43 +238,70 @@ plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image, p
             }
             
             pl_vm_address_t methodListPtr = image->swap32(class.methods);
-            struct pl_objc1_method_list methodList;
-            err = plcrash_async_read_addr(image->task, methodListPtr, &methodList, sizeof(methodList));
-            if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListPtr, err);
-                goto cleanup;
-            }
             
-            uint32_t count = image->swap32(methodList.count);
-            for (uint32_t i = 0; i < count; i++) {
-                struct pl_objc1_method method;
-                pl_vm_address_t methodPtr = methodListPtr + sizeof(methodList) + i * sizeof(method);
-                err = plcrash_async_read_addr(image->task, methodPtr, &method, sizeof(method));
+            bool hasMultipleMethodLists = (image->swap32(class.info) & CLS_NO_METHOD_ARRAY) == 0;
+            pl_vm_address_t methodListCursor = methodListPtr;
+            
+            while (true) {
+                pl_vm_address_t thisListPtr;
+                if (hasMultipleMethodLists) {
+                    uint32_t ptr;
+                    err = plcrash_async_read_addr(image->task, methodListCursor, &ptr, sizeof(ptr));
+                    if (err != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListCursor, err);
+                        goto cleanup;
+                    }
+                    
+                    thisListPtr = image->swap32(ptr);
+                    if (thisListPtr == 0 || thisListPtr == END_OF_METHODS_LIST)
+                        break;
+                    
+                    methodListCursor += sizeof(ptr);
+                } else {
+                    thisListPtr = methodListCursor;
+                }
+                
+                struct pl_objc1_method_list methodList;
+                err = plcrash_async_read_addr(image->task, thisListPtr, &methodList, sizeof(methodList));
                 if (err != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodPtr, err);
+                    PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListPtr, err);
                     goto cleanup;
                 }
                 
-                pl_vm_address_t methodNamePtr = image->swap32(method.name);
-                plcrash_async_mobject_t methodNameMobj;
-                err = read_string(image, methodNamePtr, &methodNameMobj);
-                if (err != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
-                    goto cleanup;
-                }
-                
-                const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
-                if (methodName == NULL) {
-                    PLCF_DEBUG("Failed to get method name pointer");
+                uint32_t count = image->swap32(methodList.count);
+                for (uint32_t i = 0; i < count; i++) {
+                    struct pl_objc1_method method;
+                    pl_vm_address_t methodPtr = thisListPtr + sizeof(methodList) + i * sizeof(method);
+                    err = plcrash_async_read_addr(image->task, methodPtr, &method, sizeof(method));
+                    if (err != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodPtr, err);
+                        goto cleanup;
+                    }
+                    
+                    pl_vm_address_t methodNamePtr = image->swap32(method.name);
+                    plcrash_async_mobject_t methodNameMobj;
+                    err = read_string(image, methodNamePtr, &methodNameMobj);
+                    if (err != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
+                        goto cleanup;
+                    }
+                    
+                    const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
+                    if (methodName == NULL) {
+                        PLCF_DEBUG("Failed to get method name pointer");
+                        plcrash_async_mobject_free(&methodNameMobj);
+                        goto cleanup;
+                    }
+                    
+                    pl_vm_address_t imp = image->swap32(method.imp);
+                    
+                    callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
+                    
                     plcrash_async_mobject_free(&methodNameMobj);
-                    goto cleanup;
                 }
                 
-                pl_vm_address_t imp = image->swap32(method.imp);
-                
-                callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
-                
-                plcrash_async_mobject_free(&methodNameMobj);
+                if (!hasMultipleMethodLists)
+                    break;
             }
         }
     }
