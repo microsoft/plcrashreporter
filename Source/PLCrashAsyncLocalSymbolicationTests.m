@@ -99,8 +99,14 @@ void PLCrashAsyncLocalSymbolicationTestsDummyFunction(void) {}
     
     err = pl_async_local_find_symbol(&_image, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
-    STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"God bad address finding symbol");
+    STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Got bad address finding symbol");
     STAssertEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Got wrong symbol name");
+    
+    pl_vm_address_t localPC = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] longLongValue];
+    err = pl_async_local_find_symbol(&_image, localPC, testFindSymbol_cb, &ctx);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
+    STAssertEquals(ctx.addr, (pl_vm_address_t)[self methodForSelector: _cmd], @"Got bad address finding symbol");
+    STAssertEqualCStrings(ctx.name, "-[PLCrashAsyncLocalSymbolicationTests testFindSymbol]", @"Got wrong symbol name");
 }
 
 @end
