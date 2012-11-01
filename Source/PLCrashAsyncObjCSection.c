@@ -177,6 +177,136 @@ static plcrash_error_t read_string (pl_async_macho_t *image, pl_vm_address_t add
     return plcrash_async_mobject_init(outMobj, image->task, address, length);
 }
 
+static plcrash_error_t pl_async_parse_obj1_class(pl_async_macho_t *image, struct pl_objc1_class *class, pl_async_objc_found_method_cb callback, void *ctx) {
+    plcrash_error_t err;
+    
+    /* Set up a memory object for the class name, and allow it to be cleaned up
+     * at the end if necessary. */
+    bool classNameMobjInitialized = false;
+    plcrash_async_mobject_t classNameMobj;
+
+    /* Read the class's name. */
+    pl_vm_address_t namePtr = image->swap32(class->name);
+    err = read_string(image, namePtr, &classNameMobj);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("read_string at 0x%llx error %d", (long long)namePtr, err);
+        goto cleanup;
+    }
+    classNameMobjInitialized = true;
+    
+    /* Get a pointer out of the class name memory object. */
+    const char *className = plcrash_async_mobject_pointer(&classNameMobj, classNameMobj.address, classNameMobj.length);
+    if (className == NULL) {
+        PLCF_DEBUG("Failed to get pointer to class name data");
+        goto cleanup;
+    }
+    
+    /* Grab the method list pointer. This is either a pointer to
+     * a single method_list structure, OR a pointer to an array
+     * of pointers to method_list structures, depending on the
+     * flag in the .info field. Argh. */
+    pl_vm_address_t methodListPtr = image->swap32(class->methods);
+    
+    /* If CLS_NO_METHOD_ARRAY is set, then methodListPtr points to
+     * one method_list. If it's not set, then it points to an
+     * array of pointers to method lists. */
+    bool hasMultipleMethodLists = (image->swap32(class->info) & CLS_NO_METHOD_ARRAY) == 0;
+    pl_vm_address_t methodListCursor = methodListPtr;
+    
+    while (true) {
+        /* Grab a method list pointer. How to do that depends on whether
+         * CLS_NO_METHOD_ARRAY is set. Once done, thisListPtr contains
+         * a pointer to the method_list structure to read. */
+        pl_vm_address_t thisListPtr;
+        if (hasMultipleMethodLists) {
+            /* If there are multiple method lists, then read the list pointer
+             * from the current cursor, and advance the cursor. */
+            uint32_t ptr;
+            err = plcrash_async_read_addr(image->task, methodListCursor, &ptr, sizeof(ptr));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListCursor, err);
+                goto cleanup;
+            }
+            
+            thisListPtr = image->swap32(ptr);
+            /* The end of the list is indicated with NULL or
+             * END_OF_METHODS_LIST (the ObjC runtime source checks both). */
+            if (thisListPtr == 0 || thisListPtr == END_OF_METHODS_LIST)
+                break;
+            
+            methodListCursor += sizeof(ptr);
+        } else {
+            /* If CLS_NO_METHOD_ARRAY is set, then the single method_list
+             * is pointed to by the cursor. */
+            thisListPtr = methodListCursor;
+            
+            /* The pointer may be NULL, in which case there are no methods. */
+            if (thisListPtr == 0)
+                break;
+        }
+        
+        /* Read a method_list structure from the current list pointer. */
+        struct pl_objc1_method_list methodList;
+        err = plcrash_async_read_addr(image->task, thisListPtr, &methodList, sizeof(methodList));
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListPtr, err);
+            goto cleanup;
+        }
+        
+        /* Find out how many methods are in the list, and iterate. */
+        uint32_t count = image->swap32(methodList.count);
+        for (uint32_t i = 0; i < count; i++) {
+            /* Method structures are laid out directly following the
+             * method_list structure. */
+            struct pl_objc1_method method;
+            pl_vm_address_t methodPtr = thisListPtr + sizeof(methodList) + i * sizeof(method);
+            err = plcrash_async_read_addr(image->task, methodPtr, &method, sizeof(method));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodPtr, err);
+                goto cleanup;
+            }
+            
+            /* Load the method name from the .name field pointer. */
+            pl_vm_address_t methodNamePtr = image->swap32(method.name);
+            plcrash_async_mobject_t methodNameMobj;
+            err = read_string(image, methodNamePtr, &methodNameMobj);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
+                goto cleanup;
+            }
+            
+            /* Grab a pointer to the method name. */
+            const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
+            if (methodName == NULL) {
+                PLCF_DEBUG("Failed to get method name pointer");
+                plcrash_async_mobject_free(&methodNameMobj);
+                goto cleanup;
+            }
+            
+            /* Grab the method's IMP as well. */
+            pl_vm_address_t imp = image->swap32(method.imp);
+            
+            /* Callback! */
+            callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
+            
+            /* Clean up the method name object. */
+            plcrash_async_mobject_free(&methodNameMobj);
+        }
+        
+        /* Bail out of the loop after a single iteration if
+         * CLS_NO_METHOD_ARRAY is set, because there's no need
+         * to iterate in that case. */
+        if (!hasMultipleMethodLists)
+            break;
+    }
+    
+cleanup:
+    if (classNameMobjInitialized)
+        plcrash_async_mobject_free(&classNameMobj);
+    
+    return err;
+}
+
 /**
  * Parse Objective-C class data from an old-style __module_info section containing
  * ObjC1 metadata.
@@ -209,11 +339,6 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *i
         err = PLCRASH_ENOTFOUND;
         goto cleanup;
     }
-    
-    /* Set up a memory object for the class name, and allow it to be cleaned up
-     * at the end if necessary. */
-    bool classNameMobjInitialized = false;
-    plcrash_async_mobject_t classNameMobj;
     
     /* Read successive module structs from the section until we run out of data. */
     for (unsigned moduleIndex = 0; moduleIndex < moduleMobj.length / sizeof(*moduleData); moduleIndex++) {
@@ -252,122 +377,25 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *i
                 goto cleanup;
             }
             
-            /* If the class name memory object is already in use, destroy it so it
-             * can be reused. */
-            if (classNameMobjInitialized) {
-                plcrash_async_mobject_free(&classNameMobj);
-                classNameMobjInitialized = false;
-            }
-            
-            /* Read the class's name. */
-            pl_vm_address_t namePtr = image->swap32(class.name);
-            err = read_string(image, namePtr, &classNameMobj);
+            err = pl_async_parse_obj1_class(image, &class, callback, ctx);
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("read_string at 0x%llx error %d", (long long)namePtr, err);
-                goto cleanup;
-            }
-            classNameMobjInitialized = true;
-            
-            /* Get a pointer out of the class name memory object. */
-            const char *className = plcrash_async_mobject_pointer(&classNameMobj, classNameMobj.address, classNameMobj.length);
-            if (className == NULL) {
-                PLCF_DEBUG("Failed to get pointer to class name data");
+                PLCF_DEBUG("pl_async_parse_obj1_class error %d while parsing class", err);
                 goto cleanup;
             }
             
-            /* Grab the method list pointer. This is either a pointer to
-             * a single method_list structure, OR a pointer to an array
-             * of pointers to method_list structures, depending on the
-             * flag in the .info field. Argh. */
-            pl_vm_address_t methodListPtr = image->swap32(class.methods);
+            /* Read a class structure for the metaclass. */
+            pl_vm_address_t isa = image->swap32(class.isa);
+            struct pl_objc1_class metaclass;
+            err = plcrash_async_read_addr(image->task, isa, &metaclass, sizeof(metaclass));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)isa, err);
+                goto cleanup;
+            }
             
-            /* If CLS_NO_METHOD_ARRAY is set, then methodListPtr points to
-             * one method_list. If it's not set, then it points to an
-             * array of pointers to method lists. */
-            bool hasMultipleMethodLists = (image->swap32(class.info) & CLS_NO_METHOD_ARRAY) == 0;
-            pl_vm_address_t methodListCursor = methodListPtr;
-            
-            while (true) {
-                /* Grab a method list pointer. How to do that depends on whether
-                 * CLS_NO_METHOD_ARRAY is set. Once done, thisListPtr contains
-                 * a pointer to the method_list structure to read. */
-                pl_vm_address_t thisListPtr;
-                if (hasMultipleMethodLists) {
-                    /* If there are multiple method lists, then read the list pointer
-                     * from the current cursor, and advance the cursor. */
-                    uint32_t ptr;
-                    err = plcrash_async_read_addr(image->task, methodListCursor, &ptr, sizeof(ptr));
-                    if (err != PLCRASH_ESUCCESS) {
-                        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListCursor, err);
-                        goto cleanup;
-                    }
-                    
-                    thisListPtr = image->swap32(ptr);
-                    /* The end of the list is indicated with NULL or
-                     * END_OF_METHODS_LIST (the ObjC runtime source checks both). */
-                    if (thisListPtr == 0 || thisListPtr == END_OF_METHODS_LIST)
-                        break;
-                    
-                    methodListCursor += sizeof(ptr);
-                } else {
-                    /* If CLS_NO_METHOD_ARRAY is set, then the single method_list
-                     * is pointed to by the cursor. */
-                    thisListPtr = methodListCursor;
-                }
-                
-                /* Read a method_list structure from the current list pointer. */
-                struct pl_objc1_method_list methodList;
-                err = plcrash_async_read_addr(image->task, thisListPtr, &methodList, sizeof(methodList));
-                if (err != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListPtr, err);
-                    goto cleanup;
-                }
-                
-                /* Find out how many methods are in the list, and iterate. */
-                uint32_t count = image->swap32(methodList.count);
-                for (uint32_t i = 0; i < count; i++) {
-                    /* Method structures are laid out directly following the
-                     * method_list structure. */
-                    struct pl_objc1_method method;
-                    pl_vm_address_t methodPtr = thisListPtr + sizeof(methodList) + i * sizeof(method);
-                    err = plcrash_async_read_addr(image->task, methodPtr, &method, sizeof(method));
-                    if (err != PLCRASH_ESUCCESS) {
-                        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodPtr, err);
-                        goto cleanup;
-                    }
-                    
-                    /* Load the method name from the .name field pointer. */
-                    pl_vm_address_t methodNamePtr = image->swap32(method.name);
-                    plcrash_async_mobject_t methodNameMobj;
-                    err = read_string(image, methodNamePtr, &methodNameMobj);
-                    if (err != PLCRASH_ESUCCESS) {
-                        PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
-                        goto cleanup;
-                    }
-                    
-                    /* Grab a pointer to the method name. */
-                    const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
-                    if (methodName == NULL) {
-                        PLCF_DEBUG("Failed to get method name pointer");
-                        plcrash_async_mobject_free(&methodNameMobj);
-                        goto cleanup;
-                    }
-                    
-                    /* Grab the method's IMP as well. */
-                    pl_vm_address_t imp = image->swap32(method.imp);
-                    
-                    /* Callback! */
-                    callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
-                    
-                    /* Clean up the method name object. */
-                    plcrash_async_mobject_free(&methodNameMobj);
-                }
-                
-                /* Bail out of the loop after a single iteration if
-                 * CLS_NO_METHOD_ARRAY is set, because there's no need
-                 * to iterate in that case. */
-                if (!hasMultipleMethodLists)
-                    break;
+            err = pl_async_parse_obj1_class(image, &metaclass, callback, ctx);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("pl_async_parse_obj1_class error %d while parsing metaclass", err);
+                goto cleanup;
             }
         }
     }
@@ -376,8 +404,6 @@ cleanup:
     /* Clean up the memory objects before returning if they're initialized. */
     if (moduleMobjInitialized)
         plcrash_async_mobject_free(&moduleMobj);
-    if (classNameMobjInitialized)
-        plcrash_async_mobject_free(&classNameMobj);
     
     return err;
 }
@@ -600,8 +626,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         
         /* Parse the class. */
         err = pl_async_objc_parse_objc2_class(image, &class_32, &class_64, callback, ctx);
-        if (err != PLCRASH_ESUCCESS)
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             goto cleanup;
+        }
         
         /* Read an architecture-appropriate class structure for the metaclass. */
         pl_vm_address_t isa = (image->m64
@@ -621,8 +649,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         
         /* Parse the metaclass. */
         err = pl_async_objc_parse_objc2_class(image, &metaclass_32, &metaclass_64, callback, ctx);
-        if (err != PLCRASH_ESUCCESS)
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing metaclass", err);
             goto cleanup;
+        }
     }
     
 cleanup:
