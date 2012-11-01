@@ -32,6 +32,18 @@
 #include "PLCrashAsyncMachOImage.h"
 
 
+/**
+ * A callback to invoke when an Objective-C method is found.
+ *
+ * @param className A pointer to a string containing the class's name. Not NUL
+ * terminated.
+ * @param classNameLength The length of the class name string, in bytes.
+ * @param methodName A pointer to a string containing the method's name. Not
+ * NUL terminated.
+ * @param methodNameLength The length of the method name string, in bytes.
+ * @param imp The method's IMP (function pointer to the method's implementation).
+ * @param ctx The context pointer specified by the original caller.
+ */
 typedef void (*pl_async_objc_found_method_cb)(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx);
 
 plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx);
