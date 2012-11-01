@@ -79,9 +79,6 @@ struct pl_objc2_class {
     uint64_t cache;
     uint64_t vtable;
     uint64_t data_rw;
-    uint64_t reserved1;
-    uint64_t reserved2;
-    uint64_t reserved3;
 };
 
 struct pl_objc2_class_data_rw_t {
