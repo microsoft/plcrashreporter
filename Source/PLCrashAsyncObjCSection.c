@@ -177,7 +177,7 @@ static plcrash_error_t read_string (pl_async_macho_t *image, pl_vm_address_t add
     return plcrash_async_mobject_init(outMobj, image->task, address, length);
 }
 
-static plcrash_error_t pl_async_parse_obj1_class(pl_async_macho_t *image, struct pl_objc1_class *class, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_parse_obj1_class(pl_async_macho_t *image, struct pl_objc1_class *class, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Set up a memory object for the class name, and allow it to be cleaned up
@@ -287,7 +287,7 @@ static plcrash_error_t pl_async_parse_obj1_class(pl_async_macho_t *image, struct
             pl_vm_address_t imp = image->swap32(method.imp);
             
             /* Callback! */
-            callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
+            callback(isMetaClass, className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
             
             /* Clean up the method name object. */
             plcrash_async_mobject_free(&methodNameMobj);
@@ -377,7 +377,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *i
                 goto cleanup;
             }
             
-            err = pl_async_parse_obj1_class(image, &class, callback, ctx);
+            err = pl_async_parse_obj1_class(image, &class, false, callback, ctx);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("pl_async_parse_obj1_class error %d while parsing class", err);
                 goto cleanup;
@@ -392,7 +392,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *i
                 goto cleanup;
             }
             
-            err = pl_async_parse_obj1_class(image, &metaclass, callback, ctx);
+            err = pl_async_parse_obj1_class(image, &metaclass, true, callback, ctx);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("pl_async_parse_obj1_class error %d while parsing metaclass", err);
                 goto cleanup;
@@ -420,7 +420,7 @@ cleanup:
  * @param ctx A context pointer to pass to the callback.
  * @return An error code.
  */
-static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Declare a memory object to hold the class name, and a flag to determine whether
@@ -551,7 +551,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
                                : image->swap32(method_32.imp));
         
         /* Call the callback. */
-        callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
+        callback(isMetaClass, className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
         
         /* Clean up the method name memory object. */
         plcrash_async_mobject_free(&methodNameMobj);
@@ -625,7 +625,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         }
         
         /* Parse the class. */
-        err = pl_async_objc_parse_objc2_class(image, &class_32, &class_64, callback, ctx);
+        err = pl_async_objc_parse_objc2_class(image, &class_32, &class_64, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             goto cleanup;
@@ -648,7 +648,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         }
         
         /* Parse the metaclass. */
-        err = pl_async_objc_parse_objc2_class(image, &metaclass_32, &metaclass_64, callback, ctx);
+        err = pl_async_objc_parse_objc2_class(image, &metaclass_32, &metaclass_64, true, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing metaclass", err);
             goto cleanup;
@@ -704,7 +704,7 @@ struct pl_async_objc_find_method_call_context {
  * should be initialized to 0, and will be updated with the best-matching IMP
  * found.
  */
-static void pl_async_objc_find_method_search_callback (const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+static void pl_async_objc_find_method_search_callback (bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
     struct pl_async_objc_find_method_search_context *ctxStruct = ctx;
     
     if (imp >= ctxStruct->bestIMP && imp <= ctxStruct->searchIMP) {
@@ -719,11 +719,11 @@ static void pl_async_objc_find_method_search_callback (const char *className, pl
  * will be invoked, passing outerCalblackCtx and the method data for a precise
  * match, if any is found.
  */
-static void pl_async_objc_find_method_call_callback (const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+static void pl_async_objc_find_method_call_callback (bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
     struct pl_async_objc_find_method_call_context *ctxStruct = ctx;
     
     if (imp == ctxStruct->searchIMP) {
-        ctxStruct->outerCallback(className, classNameLength, methodName, methodNameLength, imp, ctxStruct->outerCallbackCtx);
+        ctxStruct->outerCallback(isClassMethod, className, classNameLength, methodName, methodNameLength, imp, ctxStruct->outerCallbackCtx);
     }
 }
 

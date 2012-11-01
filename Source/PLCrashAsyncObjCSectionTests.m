@@ -105,9 +105,9 @@
     pl_async_macho_free(&_image);
 }
 
-static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
-    void (^block)(const char *, pl_vm_size_t, const char *, pl_vm_size_t, pl_vm_address_t) = ctx;
-    block(className, classNameLength, methodName, methodNameLength, imp);
+static void ParseCallbackTrampoline(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+    void (^block)(bool, const char *, pl_vm_size_t, const char *, pl_vm_size_t, pl_vm_address_t) = ctx;
+    block(isClassMethod, className, classNameLength, methodName, methodNameLength, imp);
 }
 
 - (void) testParse {
@@ -115,11 +115,12 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
     
     __block BOOL didCall = NO;
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
-    err = pl_async_objc_find_method(&_image, pc, ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, pc, ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
         didCall = YES;
         NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
         NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
         
+        STAssertFalse(isClassMethod, @"Incorrectly indicated a class method");
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
         STAssertEqualObjects(methodNameNS, NSStringFromSelector(_cmd), @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[self methodForSelector: _cmd], @"Method IMPs don't match");
@@ -128,11 +129,12 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = pl_async_objc_find_method(&_image, [self addressInCategory], ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, [self addressInCategory], ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
         didCall = YES;
         NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
         NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
         
+        STAssertFalse(isClassMethod, @"Incorrectly indicated a class method");
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInCategory", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[self methodForSelector: @selector(addressInCategory)], @"Method IMPs don't match");
@@ -142,11 +144,12 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
     
     PLCrashAsyncObjCSectionTestsSimpleClass *obj = [[[PLCrashAsyncObjCSectionTestsSimpleClass alloc] init] autorelease];
     didCall = NO;
-    err = pl_async_objc_find_method(&_image, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
         didCall = YES;
         NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
         NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
         
+        STAssertFalse(isClassMethod, @"Incorrectly indicated a class method");
         STAssertEqualObjects(classNameNS, @"PLCrashAsyncObjCSectionTestsSimpleClass", @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInSimpleClass", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[obj methodForSelector: @selector(addressInSimpleClass)], @"Method IMPs don't match");
@@ -155,11 +158,12 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = pl_async_objc_find_method(&_image, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
         didCall = YES;
         NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
         NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
         
+        STAssertTrue(isClassMethod, @"Incorrectly indicated an instance method");
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInClassMethod", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[[self class] methodForSelector: @selector(addressInClassMethod)], @"Method IMPs don't match");
