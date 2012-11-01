@@ -68,6 +68,10 @@
 
 @implementation PLCrashAsyncObjCSectionTests
 
++ (pl_vm_address_t) addressInClassMethod {
+    return [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
+}
+
 - (void) setUp {
     /* Fetch our containing image's dyld info */
     Dl_info info;
@@ -146,6 +150,19 @@ static void ParseCallbackTrampoline(const char *className, pl_vm_size_t classNam
         STAssertEqualObjects(classNameNS, @"PLCrashAsyncObjCSectionTestsSimpleClass", @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInSimpleClass", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[obj methodForSelector: @selector(addressInSimpleClass)], @"Method IMPs don't match");
+    });
+    STAssertTrue(didCall, @"Method find callback never got called");
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
+    
+    didCall = NO;
+    err = pl_async_objc_find_method(&_image, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+        didCall = YES;
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        
+        STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
+        STAssertEqualObjects(methodNameNS, @"addressInClassMethod", @"Method names don't match");
+        STAssertEquals(imp, (pl_vm_address_t)[[self class] methodForSelector: @selector(addressInClassMethod)], @"Method IMPs don't match");
     });
     STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");

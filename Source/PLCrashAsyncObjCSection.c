@@ -187,7 +187,7 @@ static plcrash_error_t read_string (pl_async_macho_t *image, pl_vm_address_t add
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the image doesn't
  * contain ObjC1 metadata, or another error code if a different error occurred.
  */
-plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err = PLCRASH_EUNKNOWN;
     
     /* Map the __module_info section. */
@@ -383,6 +383,165 @@ cleanup:
 }
 
 /**
+ * Parse a single class from ObjC2 class data.
+ *
+ * @param image The image to read from.
+ * @param class_32 A pointer to a 32-bit class structure. Only needs to be
+ * filled out if the image is 32 bits.
+ * @param class_64 A pointer to a 64-bit class structure. Only needs to be
+ * filled out if the image is 64 bits.
+ * @param callback The callback to invoke for each method found.
+ * @param ctx A context pointer to pass to the callback.
+ * @return An error code.
+ */
+static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, pl_async_objc_found_method_cb callback, void *ctx) {
+    plcrash_error_t err;
+    
+    /* Declare a memory object to hold the class name, and a flag to determine whether
+     * it needs cleanup at the end. */
+    plcrash_async_mobject_t classNameMobj;
+    bool classNameMobjInitialized = false;
+    
+    /* Grab the class's data_rw pointer. This needs masking because it also
+     * can contain flags. */
+    pl_vm_address_t dataPtr = (image->m64
+                               ? image->swap64(class_64->data_rw)
+                               : image->swap32(class_32->data_rw));
+    dataPtr &= ~(pl_vm_address_t)3;
+    
+    /* Read an architecture-appropriate class_rw structure for the class. */
+    struct pl_objc2_class_data_rw_32 classDataRW_32;
+    struct pl_objc2_class_data_rw_64 classDataRW_64;
+    if (image->m64)
+        err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_64, sizeof(classDataRW_64));
+    else
+        err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_32, sizeof(classDataRW_32));
+    
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
+        goto cleanup;
+    }
+    
+    /* Grab the data_ro pointer. The RO data (read-only) contains the class name
+     * and method list. */
+    pl_vm_address_t dataROPtr = (image->m64
+                                 ? image->swap64(classDataRW_64.data_ro)
+                                 : image->swap32(classDataRW_32.data_ro));
+    
+    /* Read an architecture-appropriate class_ro structure. */
+    struct pl_objc2_class_data_ro_32 classDataRO_32;
+    struct pl_objc2_class_data_ro_64 classDataRO_64;
+    if (image->m64)
+        err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO_64, sizeof(classDataRO_64));
+    else
+        err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO_32, sizeof(classDataRO_32));
+    
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataROPtr, err);
+        goto cleanup;
+    }
+    
+    /* Fetch the pointer to the class name, and read the string. */
+    pl_vm_address_t classNamePtr = (image->m64
+                                    ? image->swap64(classDataRO_64.name)
+                                    : image->swap32(classDataRO_32.name));
+    err = read_string(image, classNamePtr, &classNameMobj);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("read_string at 0x%llx error %d", (long long)classNamePtr, err);
+        goto cleanup;
+    }
+    classNameMobjInitialized = true;
+    
+    /* Get a pointer to the class name string. */
+    const char *className = plcrash_async_mobject_pointer(&classNameMobj, classNameMobj.address, classNameMobj.length);
+    if (className == NULL) {
+        PLCF_DEBUG("Failed to obtain pointer from class name memory object with address 0x%llx length %llu", (long long)classNameMobj.address, (unsigned long long)classNameMobj.length);
+        err = PLCRASH_EACCESS;
+        goto cleanup;
+    }
+    
+    /* Fetch the pointer to the method list. */
+    pl_vm_address_t methodsPtr = (image->m64
+                                  ? image->swap64(classDataRO_64.baseMethods)
+                                  : image->swap32(classDataRO_32.baseMethods));
+    if (methodsPtr == 0)
+        goto cleanup;
+    
+    /* Read the method list header. */
+    struct pl_objc2_list_header header;
+    err = plcrash_async_read_addr(image->task, methodsPtr, &header, sizeof(header));
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodsPtr, err);
+        goto cleanup;
+    }
+    
+    /* Extract the entry size and count from the list header. */
+    uint32_t entsize = image->swap32(header.entsize) & ~(uint32_t)3;
+    uint32_t count = image->swap32(header.count);
+    
+    /* Start iterating right at the end of the header. */
+    pl_vm_address_t cursor = methodsPtr + sizeof(header);
+    
+    /* Extract methods from the list. */
+    for (uint32_t i = 0; i < count; i++) {
+        /* Read an architecture-appropriate method structure from the
+         * current cursor. */
+        struct pl_objc2_method_32 method_32;
+        struct pl_objc2_method_64 method_64;
+        if (image->m64)
+            err = plcrash_async_read_addr(image->task, cursor, &method_64, sizeof(method_64));
+        else
+            err = plcrash_async_read_addr(image->task, cursor, &method_32, sizeof(method_32));
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
+            goto cleanup;
+        }
+        
+        /* Extract the method name pointer. */
+        pl_vm_address_t methodNamePtr = (image->m64
+                                         ? image->swap64(method_64.name)
+                                         : image->swap32(method_32.name));
+        
+        /* Read the method name. */
+        plcrash_async_mobject_t methodNameMobj;
+        err = read_string(image, methodNamePtr, &methodNameMobj);
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
+            goto cleanup;
+        }
+        
+        /* Get a pointer to the method name string. */
+        const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
+        if (methodName == NULL) {
+            PLCF_DEBUG("Failed to obtain pointer from method name memory object with address 0x%llx length %llu", (long long)methodNameMobj.address, (unsigned long long)methodNameMobj.length);
+            plcrash_async_mobject_free(&methodNameMobj);
+            err = PLCRASH_EACCESS;
+            goto cleanup;
+        }
+        
+        /* Extract the method IMP. */
+        pl_vm_address_t imp = (image->m64
+                               ? image->swap64(method_64.imp)
+                               : image->swap32(method_32.imp));
+        
+        /* Call the callback. */
+        callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
+        
+        /* Clean up the method name memory object. */
+        plcrash_async_mobject_free(&methodNameMobj);
+        
+        /* Increment the cursor by the entry size for the next iteration of the loop. */
+        cursor += entsize;
+    }
+    
+cleanup:
+    if (classNameMobjInitialized)
+        plcrash_async_mobject_free(&classNameMobj);
+    
+    return err;
+}
+
+/**
  * Parse ObjC2 class data from a __objc_classlist section.
  *
  * @param image The Mach-O image to parse.
@@ -391,7 +550,7 @@ cleanup:
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if no ObjC2 data
  * exists in the image, and another error code if a different error occurred.
  */
-plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err = PLCRASH_EUNKNOWN;
     
     /* Map in the class list section. Set a flag so the cleanup code knows whether
@@ -406,11 +565,6 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
     
     /* The class list was successfully mapped, so flag it for cleanup. */
     classMobjInitialized = true;
-    
-    /* Declare a memory object to hold class names, and a flag to determine whether
-     * it needs cleanup at the end. */
-    plcrash_async_mobject_t classNameMobj;
-    bool classNameMobjInitialized = false;
     
     /* Get a pointer out of the mapped class list. */
     void *classPtrs = plcrash_async_mobject_pointer(&classMobj, classMobj.address, classMobj.length);
@@ -444,150 +598,37 @@ plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, 
             goto cleanup;
         }
         
-        /* Grab the class's data_rw pointer. This needs masking because it also
-         * can contain flags. */
-        pl_vm_address_t dataPtr = (image->m64
-                                   ? image->swap64(class_64.data_rw)
-                                   : image->swap32(class_32.data_rw));
-        dataPtr &= ~(pl_vm_address_t)3;
+        /* Parse the class. */
+        err = pl_async_objc_parse_objc2_class(image, &class_32, &class_64, callback, ctx);
+        if (err != PLCRASH_ESUCCESS)
+            goto cleanup;
         
-        /* Read an architecture-appropriate class_rw structure for the class. */
-        struct pl_objc2_class_data_rw_32 classDataRW_32;
-        struct pl_objc2_class_data_rw_64 classDataRW_64;
+        /* Read an architecture-appropriate class structure for the metaclass. */
+        pl_vm_address_t isa = (image->m64
+                               ? image->swap64(class_64.isa)
+                               : image->swap32(class_32.isa));
+        struct pl_objc2_class_32 metaclass_32;
+        struct pl_objc2_class_64 metaclass_64;
         if (image->m64)
-            err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_64, sizeof(classDataRW_64));
+            err = plcrash_async_read_addr(image->task, isa, &metaclass_64, sizeof(metaclass_64));
         else
-            err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_32, sizeof(classDataRW_32));
+            err = plcrash_async_read_addr(image->task, isa, &metaclass_32, sizeof(metaclass_32));
         
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)isa, err);
             goto cleanup;
         }
         
-        /* Grab the data_ro pointer. The RO data (read-only) contains the class name
-         * and method list. */
-        pl_vm_address_t dataROPtr = (image->m64
-                                     ? image->swap64(classDataRW_64.data_ro)
-                                     : image->swap32(classDataRW_32.data_ro));
-        
-        /* Read an architecture-appropriate class_ro structure. */
-        struct pl_objc2_class_data_ro_32 classDataRO_32;
-        struct pl_objc2_class_data_ro_64 classDataRO_64;
-        if (image->m64)
-            err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO_64, sizeof(classDataRO_64));
-        else
-            err = plcrash_async_read_addr(image->task, dataROPtr, &classDataRO_32, sizeof(classDataRO_32));
-        
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataROPtr, err);
+        /* Parse the metaclass. */
+        err = pl_async_objc_parse_objc2_class(image, &metaclass_32, &metaclass_64, callback, ctx);
+        if (err != PLCRASH_ESUCCESS)
             goto cleanup;
-        }
-        
-        /* If the class name memory object is already in use, destroy it so it
-         * can be reused. */
-        if (classNameMobjInitialized) {
-            plcrash_async_mobject_free(&classNameMobj);
-            classNameMobjInitialized = false;
-        }
-        
-        /* Fetch the pointer to the class name, and read the string. */
-        pl_vm_address_t classNamePtr = (image->m64
-                                        ? image->swap64(classDataRO_64.name)
-                                        : image->swap32(classDataRO_32.name));
-        err = read_string(image, classNamePtr, &classNameMobj);
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("read_string at 0x%llx error %d", (long long)classNamePtr, err);
-            goto cleanup;
-        }
-        classNameMobjInitialized = true;
-        
-        /* Get a pointer to the class name string. */
-        const char *className = plcrash_async_mobject_pointer(&classNameMobj, classNameMobj.address, classNameMobj.length);
-        if (className == NULL) {
-            PLCF_DEBUG("Failed to obtain pointer from class name memory object with address 0x%llx length %llu", (long long)classNameMobj.address, (unsigned long long)classNameMobj.length);
-            err = PLCRASH_EACCESS;
-            goto cleanup;
-        }
-        
-        /* Fetch the pointer to the method list. */
-        pl_vm_address_t methodsPtr = (image->m64
-                                      ? image->swap64(classDataRO_64.baseMethods)
-                                      : image->swap32(classDataRO_32.baseMethods));
-        
-        /* Read the method list header. */
-        struct pl_objc2_list_header header;
-        err = plcrash_async_read_addr(image->task, methodsPtr, &header, sizeof(header));
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodsPtr, err);
-            goto cleanup;
-        }
-        
-        /* Extract the entry size and count from the list header. */
-        uint32_t entsize = image->swap32(header.entsize) & ~(uint32_t)3;
-        uint32_t count = image->swap32(header.count);
-        
-        /* Start iterating right at the end of the header. */
-        pl_vm_address_t cursor = methodsPtr + sizeof(header);
-        
-        /* Extract methods from the list. */
-        for (uint32_t i = 0; i < count; i++) {
-            /* Read an architecture-appropriate method structure from the
-             * current cursor. */
-            struct pl_objc2_method_32 method_32;
-            struct pl_objc2_method_64 method_64;
-            if (image->m64)
-                err = plcrash_async_read_addr(image->task, cursor, &method_64, sizeof(method_64));
-            else
-                err = plcrash_async_read_addr(image->task, cursor, &method_32, sizeof(method_32));
-            if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
-                goto cleanup;
-            }
-            
-            /* Extract the method name pointer. */
-            pl_vm_address_t methodNamePtr = (image->m64
-                                             ? image->swap64(method_64.name)
-                                             : image->swap32(method_32.name));
-            
-            /* Read the method name. */
-            plcrash_async_mobject_t methodNameMobj;
-            err = read_string(image, methodNamePtr, &methodNameMobj);
-            if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("read_string at 0x%llx error %d", (long long)methodNamePtr, err);
-                goto cleanup;
-            }
-            
-            /* Get a pointer to the method name string. */
-            const char *methodName = plcrash_async_mobject_pointer(&methodNameMobj, methodNameMobj.address, methodNameMobj.length);
-            if (methodName == NULL) {
-                PLCF_DEBUG("Failed to obtain pointer from method name memory object with address 0x%llx length %llu", (long long)methodNameMobj.address, (unsigned long long)methodNameMobj.length);
-                plcrash_async_mobject_free(&methodNameMobj);
-                err = PLCRASH_EACCESS;
-                goto cleanup;
-            }
-            
-            /* Extract the method IMP. */
-            pl_vm_address_t imp = (image->m64
-                                   ? image->swap64(method_64.imp)
-                                   : image->swap32(method_32.imp));
-            
-            /* Call the callback. */
-            callback(className, classNameMobj.length, methodName, methodNameMobj.length, imp, ctx);
-            
-            /* Clean up the method name memory object. */
-            plcrash_async_mobject_free(&methodNameMobj);
-            
-            /* Increment the cursor by the entry size for the next iteration of the loop. */
-            cursor += entsize;
-        }
     }
     
 cleanup:
     /* Clean up the memory objects if they're currently initialized. */
     if (classMobjInitialized)
         plcrash_async_mobject_free(&classMobj);
-    if (classNameMobjInitialized)
-        plcrash_async_mobject_free(&classNameMobj);
     
     return err;
 }
