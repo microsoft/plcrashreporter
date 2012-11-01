@@ -115,12 +115,16 @@
     STAssertNotNULL(threads, @"No thread messages were written");
     STAssertTrue(crashReport->n_threads > 0, @"0 thread messages were written");
 
+    uint32_t lastThreadNumber;
     for (int i = 0; i < crashReport->n_threads; i++) {
         Plcrash__CrashReport__Thread *thread = threads[i];
 
         /* Check that the threads are provided in order */
-        STAssertEquals((uint32_t)i, thread->thread_number, @"Threads were encoded out of order (%d vs %d)", i, thread->thread_number);
-
+        if (i > 0) {
+            STAssertTrue(lastThreadNumber < thread->thread_number, @"Threads were encoded out of order (%d vs %d)", i, thread->thread_number);
+        }
+        lastThreadNumber = thread->thread_number;
+        
         /* Check that there is at least one frame */
         STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
         

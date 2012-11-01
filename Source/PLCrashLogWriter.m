@@ -45,6 +45,7 @@
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
 #import "PLCrashAsyncSignalInfo.h"
+#import "PLCrashAsyncLocalSymbolication.h"
 #import "PLCrashFrameWalker.h"
 
 #import "PLCrashSysctl.h"
@@ -814,18 +815,18 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
          * our callback is called and PLCRASH_ESUCCESS is returned. */
         ctx.file = NULL;
         ctx.msgsize = 0x0;
-        ret = pl_async_macho_find_symbol(&image->macho_image, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+        ret = pl_async_local_find_symbol(&image->macho_image, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
         if (ret == PLCRASH_ESUCCESS) {
             /* Write the header and message */
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &ctx.msgsize);
 
             ctx.file = file;
-            ret = pl_async_macho_find_symbol(&image->macho_image, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+            ret = pl_async_local_find_symbol(&image->macho_image, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
             if (ret == PLCRASH_ESUCCESS) {
                 rv += ctx.msgsize;
             } else {
                 /* This should not happen, but it would be very confusing if it did and nothing was logged. */
-                PLCF_DEBUG("Fetching the Mach-O symbol unexpectedly failed during the second call");
+                PLCF_DEBUG("Fetching the symbol unexpectedly failed during the second call");
             }
         }
     }
@@ -1191,9 +1192,12 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
             }
             
             /* Suspend the thread */
-            if (suspend_thread && thread_suspend(threads[i]) != KERN_SUCCESS) {
-                PLCF_DEBUG("Could not suspend thread %d", i);
-                continue;
+            if (suspend_thread) {
+                kern_return_t result = thread_suspend(threads[i]);
+                if (result != KERN_SUCCESS) {
+                    PLCF_DEBUG("Could not suspend thread %d, error %d", i, result);
+                    continue;
+                }
             }
             
             /* Determine the size */
