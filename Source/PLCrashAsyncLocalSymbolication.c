@@ -40,8 +40,10 @@ static void saveObjCAddressCB(bool isClassMethod, plcrash_async_macho_string_t *
 }
 
 struct objc_callback_ctx {
-    pl_async_found_symbol_cb outerCallback;
-    void *outerCallbackCtx;
+    char *symString;
+    int symStringMaxLen;
+    pl_vm_address_t imp;
+    bool didError;
 };
 
 static bool append_char(char *str, char c, int *cursorPtr, int limit) {
@@ -54,6 +56,9 @@ static bool append_char(char *str, char c, int *cursorPtr, int limit) {
 
 static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
     struct objc_callback_ctx *ctxStruct = ctx;
+    
+    /* Save the IMP. */
+    ctxStruct->imp = imp;
     
     /* Get the string data. */
     plcrash_error_t lengthErr;
@@ -71,6 +76,7 @@ static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string
             PLCF_DEBUG("plcrash_async_macho_string_get_pointer(className) error %d", ptrErr);
         classNameLength = 5;
         classNamePtr = "ERROR";
+        ctxStruct->didError = true;
     }
     
     pl_vm_size_t methodNameLength;
@@ -85,11 +91,11 @@ static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string
             PLCF_DEBUG("plcrash_async_macho_string_get_pointer(methodName) error %d", ptrErr);
         methodNameLength = 5;
         methodNamePtr = "ERROR";
+        ctxStruct->didError = true;
     }
     
-    /* Make a local buffer. */
-    char symString[128] = {};
-    int maxLen = sizeof(symString) - 1;
+    char *symString = ctxStruct->symString;
+    int maxLen = ctxStruct->symStringMaxLen;
     
     int cursor = 0;
     append_char(symString, isClassMethod ? '+' : '-', &cursor, maxLen);
@@ -110,8 +116,6 @@ static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string
     }
     
     append_char(symString, ']', &cursor, maxLen);
-    
-    ctxStruct->outerCallback(imp, symString, ctxStruct->outerCallbackCtx);
 }
 
 plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
@@ -132,10 +136,21 @@ plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_vm_addres
     if (objcErr != PLCRASH_ESUCCESS || machoAddress > objcAddress) {
         return pl_async_macho_find_symbol(image, pc, callback, ctx);
     } else {
+        char symString[128] = {};
+        int maxLen = sizeof(symString) - 1;
+
         struct objc_callback_ctx innerCtx = {
-            .outerCallback = callback,
-            .outerCallbackCtx = ctx
+            .symString = symString,
+            .symStringMaxLen = maxLen,
+            .imp = 0,
+            .didError = false
         };
-        return pl_async_objc_find_method(image, pc, callbackObjCAddressCB, &innerCtx);
+        plcrash_error_t err = pl_async_objc_find_method(image, pc, callbackObjCAddressCB, &innerCtx);
+        if (err == PLCRASH_ESUCCESS && innerCtx.imp != 0 && !innerCtx.didError) {
+            callback(innerCtx.imp, symString, ctx);
+            return PLCRASH_ESUCCESS;
+        } else {
+            return pl_async_macho_find_symbol(image, pc, callback, ctx);
+        }
     }
 }
