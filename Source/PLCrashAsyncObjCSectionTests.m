@@ -105,9 +105,9 @@
     pl_async_macho_free(&_image);
 }
 
-static void ParseCallbackTrampoline(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
-    void (^block)(bool, const char *, pl_vm_size_t, const char *, pl_vm_size_t, pl_vm_address_t) = ctx;
-    block(isClassMethod, className, classNameLength, methodName, methodNameLength, imp);
+static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    void (^block)(bool, plcrash_async_macho_string_t *, plcrash_async_macho_string_t *, pl_vm_address_t) = ctx;
+    block(isClassMethod, className, methodName, imp);
 }
 
 - (void) testParse {
@@ -115,10 +115,26 @@ static void ParseCallbackTrampoline(bool isClassMethod, const char *className, p
     
     __block BOOL didCall = NO;
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
-    err = pl_async_objc_find_method(&_image, pc, ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, pc, ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
-        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        plcrash_error_t err;
+        
+        pl_vm_size_t classNameLength;
+        const char *classNamePtr;
+        err = plcrash_async_macho_string_get_length(className, &classNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(className, &classNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        pl_vm_size_t methodNameLength;
+        const char *methodNamePtr;
+        err = plcrash_async_macho_string_get_length(methodName, &methodNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(methodName, &methodNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, classNamePtr];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodNamePtr];
         
         STAssertFalse(isClassMethod, @"Incorrectly indicated a class method");
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
@@ -129,10 +145,26 @@ static void ParseCallbackTrampoline(bool isClassMethod, const char *className, p
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = pl_async_objc_find_method(&_image, [self addressInCategory], ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, [self addressInCategory], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
-        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        plcrash_error_t err;
+        
+        pl_vm_size_t classNameLength;
+        const char *classNamePtr;
+        err = plcrash_async_macho_string_get_length(className, &classNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(className, &classNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        pl_vm_size_t methodNameLength;
+        const char *methodNamePtr;
+        err = plcrash_async_macho_string_get_length(methodName, &methodNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(methodName, &methodNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, classNamePtr];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodNamePtr];
         
         STAssertFalse(isClassMethod, @"Incorrectly indicated a class method");
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
@@ -144,10 +176,26 @@ static void ParseCallbackTrampoline(bool isClassMethod, const char *className, p
     
     PLCrashAsyncObjCSectionTestsSimpleClass *obj = [[[PLCrashAsyncObjCSectionTestsSimpleClass alloc] init] autorelease];
     didCall = NO;
-    err = pl_async_objc_find_method(&_image, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
-        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        plcrash_error_t err;
+        
+        pl_vm_size_t classNameLength;
+        const char *classNamePtr;
+        err = plcrash_async_macho_string_get_length(className, &classNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(className, &classNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        pl_vm_size_t methodNameLength;
+        const char *methodNamePtr;
+        err = plcrash_async_macho_string_get_length(methodName, &methodNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(methodName, &methodNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, classNamePtr];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodNamePtr];
         
         STAssertFalse(isClassMethod, @"Incorrectly indicated a class method");
         STAssertEqualObjects(classNameNS, @"PLCrashAsyncObjCSectionTestsSimpleClass", @"Class names don't match");
@@ -158,10 +206,26 @@ static void ParseCallbackTrampoline(bool isClassMethod, const char *className, p
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = pl_async_objc_find_method(&_image, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp) {
+    err = pl_async_objc_find_method(&_image, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, className];
-        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodName];
+        plcrash_error_t err;
+        
+        pl_vm_size_t classNameLength;
+        const char *classNamePtr;
+        err = plcrash_async_macho_string_get_length(className, &classNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(className, &classNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        pl_vm_size_t methodNameLength;
+        const char *methodNamePtr;
+        err = plcrash_async_macho_string_get_length(methodName, &methodNameLength);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get length");
+        err = plcrash_async_macho_string_get_pointer(methodName, &methodNamePtr);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to get pointer");
+        
+        NSString *classNameNS = [NSString stringWithFormat: @"%.*s", (int)classNameLength, classNamePtr];
+        NSString *methodNameNS = [NSString stringWithFormat: @"%.*s", (int)methodNameLength, methodNamePtr];
         
         STAssertTrue(isClassMethod, @"Incorrectly indicated an instance method");
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");

@@ -35,7 +35,7 @@ static void saveMachOAddressCB(pl_vm_address_t address, const char *name, void *
     *(pl_vm_address_t *)ctx = address;
 }
 
-static void saveObjCAddressCB(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+static void saveObjCAddressCB(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
     *(pl_vm_address_t *)ctx = imp;
 }
 
@@ -52,8 +52,40 @@ static bool append_char(char *str, char c, int *cursorPtr, int limit) {
     return true;
 }
 
-static void callbackObjCAddressCB(bool isClassMethod, const char *className, pl_vm_size_t classNameLength, const char *methodName, pl_vm_size_t methodNameLength, pl_vm_address_t imp, void *ctx) {
+static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
     struct objc_callback_ctx *ctxStruct = ctx;
+    
+    /* Get the string data. */
+    plcrash_error_t lengthErr;
+    plcrash_error_t ptrErr;
+    
+    pl_vm_size_t classNameLength;
+    const char *classNamePtr;
+    lengthErr = plcrash_async_macho_string_get_length(className, &classNameLength);
+    ptrErr = plcrash_async_macho_string_get_pointer(className, &classNamePtr);
+    
+    if (lengthErr != PLCRASH_ESUCCESS || ptrErr != PLCRASH_ESUCCESS) {
+        if (lengthErr != PLCRASH_ESUCCESS)
+            PLCF_DEBUG("plcrash_async_macho_string_get_length(className) error %d", lengthErr);
+        if (ptrErr != PLCRASH_ESUCCESS)
+            PLCF_DEBUG("plcrash_async_macho_string_get_pointer(className) error %d", ptrErr);
+        classNameLength = 5;
+        classNamePtr = "ERROR";
+    }
+    
+    pl_vm_size_t methodNameLength;
+    const char *methodNamePtr;
+    lengthErr = plcrash_async_macho_string_get_length(methodName, &methodNameLength);
+    ptrErr = plcrash_async_macho_string_get_pointer(methodName, &methodNamePtr);
+    
+    if (lengthErr != PLCRASH_ESUCCESS || ptrErr != PLCRASH_ESUCCESS) {
+        if (lengthErr != PLCRASH_ESUCCESS)
+            PLCF_DEBUG("plcrash_async_macho_string_get_length(methodName) error %d", lengthErr);
+        if (ptrErr != PLCRASH_ESUCCESS)
+            PLCF_DEBUG("plcrash_async_macho_string_get_pointer(methodName) error %d", ptrErr);
+        methodNameLength = 5;
+        methodNamePtr = "ERROR";
+    }
     
     /* Make a local buffer. */
     char symString[128] = {};
@@ -64,7 +96,7 @@ static void callbackObjCAddressCB(bool isClassMethod, const char *className, pl_
     append_char(symString, '[', &cursor, maxLen);
     
     for (pl_vm_size_t i = 0; i < classNameLength; i++) {
-        bool success = append_char(symString, className[i], &cursor, maxLen);
+        bool success = append_char(symString, classNamePtr[i], &cursor, maxLen);
         if (!success)
             break;
     }
@@ -72,7 +104,7 @@ static void callbackObjCAddressCB(bool isClassMethod, const char *className, pl_
     append_char(symString, ' ', &cursor, maxLen);
     
     for (pl_vm_size_t i = 0; i < methodNameLength; i++) {
-        bool success = append_char(symString, methodName[i], &cursor, maxLen);
+        bool success = append_char(symString, methodNamePtr[i], &cursor, maxLen);
         if (!success)
             break;
     }

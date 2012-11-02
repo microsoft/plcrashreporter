@@ -26,29 +26,37 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCrashAsyncObjCSection_h
-#define PLCrashAsyncObjCSection_h
+#ifndef PLCrashAsyncMachOString_h
+#define PLCrashAsyncMachOString_h
 
 #include "PLCrashAsyncMachOImage.h"
-#include "PLCrashAsyncMachOString.h"
+#include "PLCrashAsyncMObject.h"
 
 
-/**
- * A callback to invoke when an Objective-C method is found.
- *
- * @param className A pointer to a string containing the class's name. Not NUL
- * terminated.
- * @param classNameLength The length of the class name string, in bytes.
- * @param methodName A pointer to a string containing the method's name. Not
- * NUL terminated.
- * @param methodNameLength The length of the method name string, in bytes.
- * @param imp The method's IMP (function pointer to the method's implementation).
- * @param ctx The context pointer specified by the original caller.
- */
-typedef void (*pl_async_objc_found_method_cb)(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx);
+typedef struct plcrash_async_macho_string {
+    /** The Mach-O image the string is found in. */
+    pl_async_macho_t *image;
+    
+    /** The address of the start of the string. */
+    pl_vm_address_t address;
+    
+    /** The memory object for the string contents. */
+    plcrash_async_mobject_t mobj;
 
-plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx);
+    /** Whether the memory object is initialized. */
+    bool mobjIsInitialized;
 
-plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
+    /** The string's length, in bytes, not counting the terminating NUL. */
+    pl_vm_size_t length;
+} plcrash_async_macho_string_t;
 
-#endif // PLCrashAsyncObjCSection_h
+
+plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, pl_async_macho_t *image, pl_vm_address_t address);
+
+plcrash_error_t plcrash_async_macho_string_get_length (plcrash_async_macho_string_t *string, pl_vm_size_t *outLength);
+
+plcrash_error_t plcrash_async_macho_string_get_pointer (plcrash_async_macho_string_t *string, const char **outPointer);
+
+void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string);
+
+#endif // PLCrashAsyncMachOString_h
