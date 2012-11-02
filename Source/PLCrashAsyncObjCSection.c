@@ -451,28 +451,36 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
     uint32_t entsize = image->swap32(header.entsize) & ~(uint32_t)3;
     uint32_t count = image->swap32(header.count);
     
-    /* Start iterating right at the end of the header. */
-    pl_vm_address_t cursor = methodsPtr + sizeof(header);
+    /* Compute the method list start position and length. */
+    pl_vm_address_t methodListStart = methodsPtr + sizeof(header);
+    pl_vm_size_t methodListLength = (pl_vm_size_t)entsize * count;
+    
+    bool methodsMobjInitialized = false;
+    plcrash_async_mobject_t methodsMobj;
+    err = plcrash_async_mobject_init(&methodsMobj, image->task, methodListStart, methodListLength);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_mobject_init at 0x%llx error %d", (long long)methodListStart, err);
+        goto cleanup;
+    }
+    methodsMobjInitialized = true;
+    
+    const char *cursor = plcrash_async_mobject_pointer(&methodsMobj, methodsMobj.address, methodsMobj.length);
+    if (cursor == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_pointer at 0x%llx length %llu returned NULL", (long long)methodListStart, (unsigned long long)methodListLength);
+        goto cleanup;
+    }
     
     /* Extract methods from the list. */
     for (uint32_t i = 0; i < count; i++) {
         /* Read an architecture-appropriate method structure from the
          * current cursor. */
-        struct pl_objc2_method_32 method_32;
-        struct pl_objc2_method_64 method_64;
-        if (image->m64)
-            err = plcrash_async_read_addr(image->task, cursor, &method_64, sizeof(method_64));
-        else
-            err = plcrash_async_read_addr(image->task, cursor, &method_32, sizeof(method_32));
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
-            goto cleanup;
-        }
+        struct pl_objc2_method_32 *method_32 = (void *)cursor;
+        struct pl_objc2_method_64 *method_64 = (void *)cursor;
         
         /* Extract the method name pointer. */
         pl_vm_address_t methodNamePtr = (image->m64
-                                         ? image->swap64(method_64.name)
-                                         : image->swap32(method_32.name));
+                                         ? image->swap64(method_64->name)
+                                         : image->swap32(method_32->name));
         
         /* Read the method name. */
         plcrash_async_macho_string_t methodName;
@@ -484,8 +492,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
         
         /* Extract the method IMP. */
         pl_vm_address_t imp = (image->m64
-                               ? image->swap64(method_64.imp)
-                               : image->swap32(method_32.imp));
+                               ? image->swap64(method_64->imp)
+                               : image->swap32(method_32->imp));
         
         /* Call the callback. */
         callback(isMetaClass, &className, &methodName, imp, ctx);
@@ -500,6 +508,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
 cleanup:
     if (classNameInitialized)
         plcrash_async_macho_string_free(&className);
+    if (methodsMobjInitialized)
+        plcrash_async_mobject_free(&methodsMobj);
     
     return err;
 }
