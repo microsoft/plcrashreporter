@@ -183,11 +183,15 @@
     STAssertNotEquals((NSUInteger)0, [crashLog.threads count], @"No thread values returned");
 
     NSUInteger thrNumber = 0;
+    NSInteger lastThreadNumber;
     BOOL crashedFound = NO;
     for (PLCrashReportThreadInfo *threadInfo in crashLog.threads) {
         STAssertNotNil(threadInfo.stackFrames, @"Thread stackframe list is nil");
         STAssertNotNil(threadInfo.registers, @"Thread register list is nil");
-        STAssertEquals((NSInteger)thrNumber, threadInfo.threadNumber, @"Threads are listed out of order.");
+        if (thrNumber > 0) {
+            STAssertTrue(lastThreadNumber < threadInfo.threadNumber, @"Threads are listed out of order.");
+        }
+        lastThreadNumber = threadInfo.threadNumber;
 
         if (threadInfo.crashed) {
             STAssertNotEquals((NSUInteger)0, [threadInfo.registers count], @"No registers recorded for the crashed thread");

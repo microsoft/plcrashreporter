@@ -103,11 +103,19 @@ typedef mach_vm_size_t pl_vm_size_t;
 #else
 
 #define PLCF_DEBUG(msg, args...) {\
-    char output[128];\
-    snprintf(output, sizeof(output), "[PLCrashReport] " msg "\n", ## args); \
-    /* Ensure that the output is \n\0 terminated */ \
-    output[sizeof(output)-2] = '\n'; \
-    write(STDERR_FILENO, output, strlen(output));\
+    char __tmp_output[128];\
+    snprintf(__tmp_output, sizeof(__tmp_output), "[PLCrashReport] "); \
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, strlen(__tmp_output));\
+    \
+    snprintf(__tmp_output, sizeof(__tmp_output), ":%d: ", __LINE__); \
+    plcrash_async_writen(STDERR_FILENO, __func__, strlen(__func__));\
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, strlen(__tmp_output));\
+    \
+    snprintf(__tmp_output, sizeof(__tmp_output), msg, ## args); \
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, strlen(__tmp_output));\
+    \
+    __tmp_output[0] = '\n'; \
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, 1); \
 }
 
 #endif /* PLCF_RELEASE_BUILD */
@@ -150,8 +158,10 @@ const char *plcrash_strerror (plcrash_error_t error);
 
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
 
-int plcrash_async_strcmp(const char *s1, const char *s2);
+int plcrash_async_strncmp(const char *s1, const char *s2, size_t n);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
+
+ssize_t plcrash_async_writen (int fd, const void *data, size_t len);
 
 /**
  * @internal
