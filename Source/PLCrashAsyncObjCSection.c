@@ -39,6 +39,7 @@ static char * const kObjCConstSectionName = "__objc_const";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
+static uint32_t RW_REALIZED = (1<<31);
 
 struct pl_objc1_module {
     uint32_t version;
@@ -400,6 +401,18 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
     
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
+        goto cleanup;
+    }
+    
+    /* Check the flags. If it's not yet realized, then we need to skip the class. */
+    uint32_t flags;
+    if (image->m64)
+        flags = classDataRW_64.flags;
+    else
+        flags = classDataRW_32.flags;
+    
+    if ((flags & RW_REALIZED) == 0)  {
+        PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
         goto cleanup;
     }
     
