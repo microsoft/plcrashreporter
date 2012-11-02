@@ -408,6 +408,9 @@
 		2D0E104D1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */; };
 		2D0E104E1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D0E10441141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D0E104F1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */; };
+		C21688F916445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */; };
+		C21688FA16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */; };
+		C21688FB16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */; };
 		C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
 		C2198DDA1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
 		C2198DDB1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */; };
@@ -812,6 +815,7 @@
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
 		C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncObjCSection.c; sourceTree = "<group>"; };
 		C2198DE1164018B2006EB46A /* PLCrashAsyncObjCSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncObjCSection.h; sourceTree = "<group>"; };
 		C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncObjCSectionTests.m; sourceTree = "<group>"; };
@@ -1171,6 +1175,7 @@
 				C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */,
 				C2198E0E16441D72006EB46A /* PLCrashAsyncMachOString.h */,
 				C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */,
+				C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */,
 			);
 			name = "Async-Safe APIs";
 			sourceTree = "<group>";
@@ -2088,6 +2093,7 @@
 				C260228A1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
 				C26022901642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
 				C2198E0A16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
+				C21688F916445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2132,6 +2138,7 @@
 				C260228B1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
 				C26022911642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
 				C2198E0B16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
+				C21688FA16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2176,6 +2183,7 @@
 				C260228C1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
 				C26022921642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
 				C2198E0C16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
+				C21688FB16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
