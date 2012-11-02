@@ -103,19 +103,19 @@ typedef mach_vm_size_t pl_vm_size_t;
 #else
 
 #define PLCF_DEBUG(msg, args...) {\
-    char output[128];\
-    snprintf(output, sizeof(output), "[PLCrashReport] "); \
-    plcrash_async_writen(STDERR_FILENO, output, strlen(output));\
+    char __tmp_output[128];\
+    snprintf(__tmp_output, sizeof(__tmp_output), "[PLCrashReport] "); \
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, strlen(__tmp_output));\
     \
-    snprintf(output, sizeof(output), ":%d: ", __LINE__); \
+    snprintf(__tmp_output, sizeof(__tmp_output), ":%d: ", __LINE__); \
     plcrash_async_writen(STDERR_FILENO, __func__, strlen(__func__));\
-    plcrash_async_writen(STDERR_FILENO, output, strlen(output));\
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, strlen(__tmp_output));\
     \
-    snprintf(output, sizeof(output), msg, ## args); \
-    plcrash_async_writen(STDERR_FILENO, output, strlen(output));\
+    snprintf(__tmp_output, sizeof(__tmp_output), msg, ## args); \
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, strlen(__tmp_output));\
     \
-    output[0] = '\n'; \
-    plcrash_async_writen(STDERR_FILENO, output, 1); \
+    __tmp_output[0] = '\n'; \
+    plcrash_async_writen(STDERR_FILENO, __tmp_output, 1); \
 }
 
 #endif /* PLCF_RELEASE_BUILD */
