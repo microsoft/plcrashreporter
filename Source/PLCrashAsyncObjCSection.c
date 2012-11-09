@@ -456,31 +456,22 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
         goto cleanup;
     
     /* Read the method list header. */
-    struct pl_objc2_list_header header;
-    err = plcrash_async_read_addr(image->task, methodsPtr, &header, sizeof(header));
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodsPtr, err);
+    struct pl_objc2_list_header *header;
+    header = plcrash_async_mobject_pointer(objCConstMobj, plcrash_async_mobject_remap_address(objCConstMobj, methodsPtr), sizeof(header));
+    if (header == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_pointer in objCConstMobj failed to map methods pointer 0x%llx", (long long)methodsPtr);
         goto cleanup;
     }
     
     /* Extract the entry size and count from the list header. */
-    uint32_t entsize = image->swap32(header.entsize) & ~(uint32_t)3;
-    uint32_t count = image->swap32(header.count);
+    uint32_t entsize = image->swap32(header->entsize) & ~(uint32_t)3;
+    uint32_t count = image->swap32(header->count);
     
     /* Compute the method list start position and length. */
-    pl_vm_address_t methodListStart = methodsPtr + sizeof(header);
+    pl_vm_address_t methodListStart = methodsPtr + sizeof(*header);
     pl_vm_size_t methodListLength = (pl_vm_size_t)entsize * count;
     
-    bool methodsMobjInitialized = false;
-    plcrash_async_mobject_t methodsMobj;
-    err = plcrash_async_mobject_init(&methodsMobj, image->task, methodListStart, methodListLength);
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_mobject_init at 0x%llx error %d", (long long)methodListStart, err);
-        goto cleanup;
-    }
-    methodsMobjInitialized = true;
-    
-    const char *cursor = plcrash_async_mobject_pointer(&methodsMobj, methodsMobj.address, methodsMobj.length);
+    const char *cursor = plcrash_async_mobject_pointer(objCConstMobj, plcrash_async_mobject_remap_address(objCConstMobj, methodListStart), methodListLength);
     if (cursor == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_pointer at 0x%llx length %llu returned NULL", (long long)methodListStart, (unsigned long long)methodListLength);
         goto cleanup;
@@ -490,8 +481,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
     for (uint32_t i = 0; i < count; i++) {
         /* Read an architecture-appropriate method structure from the
          * current cursor. */
-        struct pl_objc2_method_32 *method_32 = (void *)cursor;
-        struct pl_objc2_method_64 *method_64 = (void *)cursor;
+        const struct pl_objc2_method_32 *method_32 = (void *)cursor;
+        const struct pl_objc2_method_64 *method_64 = (void *)cursor;
         
         /* Extract the method name pointer. */
         pl_vm_address_t methodNamePtr = (image->m64
@@ -524,8 +515,6 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
 cleanup:
     if (classNameInitialized)
         plcrash_async_macho_string_free(&className);
-    if (methodsMobjInitialized)
-        plcrash_async_mobject_free(&methodsMobj);
     
     return err;
 }
