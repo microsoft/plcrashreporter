@@ -36,6 +36,7 @@ static char * const kDataSegmentName = "__DATA";
 static char * const kObjCModuleInfoSectionName = "__module_info";
 static char * const kClassListSectionName = "__objc_classlist";
 static char * const kObjCConstSectionName = "__objc_const";
+static char * const kObjCDataSectionName = "__objc_data";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
@@ -546,6 +547,8 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
     plcrash_async_mobject_t objcConstMobj;
     bool classMobjInitialized = false;
     plcrash_async_mobject_t classMobj;
+    bool objcDataMobjInitialized = false;
+    plcrash_async_mobject_t objcDataMobj;
 
     /* Map in the __objc_const section, which is where all the read-only class data lives. */
     err = pl_async_macho_map_section(image, kDataSegmentName, kObjCConstSectionName, &objcConstMobj);
@@ -563,8 +566,20 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
     }
     classMobjInitialized = true;
     
+    /* Map in the __objc_data section, which is where the actual classes live. */
+    err = pl_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &objcDataMobj);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCDataSectionName, &objcDataMobj, err);
+        goto cleanup;
+    }
+    objcDataMobjInitialized = true;
+    
     /* Get a pointer out of the mapped class list. */
     void *classPtrs = plcrash_async_mobject_pointer(&classMobj, classMobj.address, classMobj.length);
+    if (classPtrs == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_pointer in objcConstMobj for pointer %llx returned NULL", (long long)classMobj.address);
+        goto cleanup;
+    }
     
     /* Class pointers are 32 or 64 bits depending on architectures. Set up one
      * pointer for each. */
@@ -583,20 +598,19 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
                                : image->swap32(classPtrs_32[i]));
         
         /* Read an architecture-appropriate class structure. */
-        struct pl_objc2_class_32 class_32;
-        struct pl_objc2_class_64 class_64;
-        if (image->m64)
-            err = plcrash_async_read_addr(image->task, ptr, &class_64, sizeof(class_64));
-        else
-            err = plcrash_async_read_addr(image->task, ptr, &class_32, sizeof(class_32));
-        
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)ptr, err);
+        struct pl_objc2_class_32 *class_32;
+        struct pl_objc2_class_64 *class_64;
+        void *classPtr = plcrash_async_mobject_pointer(&objcDataMobj, plcrash_async_mobject_remap_address(&objcDataMobj, ptr), image->m64 ? sizeof(*class_64) : sizeof(*class_32));
+        if (classPtr == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_pointer in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
             goto cleanup;
         }
         
+        class_32 = classPtr;
+        class_64 = classPtr;
+        
         /* Parse the class. */
-        err = pl_async_objc_parse_objc2_class(image, &objcConstMobj, &class_32, &class_64, false, callback, ctx);
+        err = pl_async_objc_parse_objc2_class(image, &objcConstMobj, class_32, class_64, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             goto cleanup;
@@ -604,22 +618,21 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         
         /* Read an architecture-appropriate class structure for the metaclass. */
         pl_vm_address_t isa = (image->m64
-                               ? image->swap64(class_64.isa)
-                               : image->swap32(class_32.isa));
-        struct pl_objc2_class_32 metaclass_32;
-        struct pl_objc2_class_64 metaclass_64;
-        if (image->m64)
-            err = plcrash_async_read_addr(image->task, isa, &metaclass_64, sizeof(metaclass_64));
-        else
-            err = plcrash_async_read_addr(image->task, isa, &metaclass_32, sizeof(metaclass_32));
-        
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)isa, err);
+                               ? image->swap64(class_64->isa)
+                               : image->swap32(class_32->isa));
+        struct pl_objc2_class_32 *metaclass_32;
+        struct pl_objc2_class_64 *metaclass_64;
+        void *metaclassPtr = plcrash_async_mobject_pointer(&objcDataMobj, plcrash_async_mobject_remap_address(&objcDataMobj, isa), image->m64 ? sizeof(*class_64) : sizeof(*class_32));
+        if (metaclassPtr == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_pointer in objcDataMobj for pointer %llx returned NULL", (long long)isa);
             goto cleanup;
         }
         
+        metaclass_32 = metaclassPtr;
+        metaclass_64 = metaclassPtr;
+        
         /* Parse the metaclass. */
-        err = pl_async_objc_parse_objc2_class(image, &objcConstMobj, &metaclass_32, &metaclass_64, true, callback, ctx);
+        err = pl_async_objc_parse_objc2_class(image, &objcConstMobj, metaclass_32, metaclass_64, true, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing metaclass", err);
             goto cleanup;
@@ -632,6 +645,8 @@ cleanup:
         plcrash_async_mobject_free(&objcConstMobj);
     if (classMobjInitialized)
         plcrash_async_mobject_free(&classMobj);
+    if (objcDataMobjInitialized)
+        plcrash_async_mobject_free(&objcDataMobj);
     
     return err;
 }
