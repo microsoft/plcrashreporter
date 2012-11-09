@@ -212,8 +212,10 @@ static void cache_set (pl_async_objc_context_t *context, pl_vm_address_t key, pl
         vm_address_t addr;
         kern_return_t err = vm_allocate(mach_task_self_, &addr, allocationSize, VM_FLAGS_ANYWHERE);
         /* If it fails, just bail out. We don't need the cache for correct operation. */
-        if (err != KERN_SUCCESS)
+        if (err != KERN_SUCCESS) {
+            context->classCacheSize = 0;
             return;
+        }
         
         context->classCacheKeys = (void *)addr;
         context->classCacheValues = (void *)(context->classCacheKeys + size);
@@ -271,7 +273,7 @@ static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_cont
     /* Map in the __objc_const section, which is where all the read-only class data lives. */
     err = pl_async_macho_map_section(image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCConstSectionName, &objcConstMobj, err);
+        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj, err);
         goto cleanup;
     }
     context->objcConstMobjInitialized = true;
@@ -279,7 +281,7 @@ static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_cont
     /* Map in the class list section.  */
     err = pl_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &context->classMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kClassListSectionName, &classMobj, err);
+        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kClassListSectionName, &context->classMobj, err);
         goto cleanup;
     }
     context->classMobjInitialized = true;
@@ -287,7 +289,7 @@ static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_cont
     /* Map in the __objc_data section, which is where the actual classes live. */
     err = pl_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCDataSectionName, &objcDataMobj, err);
+        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj, err);
         goto cleanup;
     }
     context->objcDataMobjInitialized = true;
@@ -518,6 +520,7 @@ cleanup:
  * Parse a single class from ObjC2 class data.
  *
  * @param image The image to read from.
+ * @param objcContext An ObjC context object.
  * @param class_32 A pointer to a 32-bit class structure. Only needs to be
  * filled out if the image is 32 bits.
  * @param class_64 A pointer to a 64-bit class structure. Only needs to be
@@ -679,6 +682,7 @@ cleanup:
  * Parse ObjC2 class data from a __objc_classlist section.
  *
  * @param image The Mach-O image to parse.
+ * @param objcContext An ObjC context object.
  * @param callback The callback to invoke for each method found.
  * @param ctx A context pointer to pass to the callback.
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if no ObjC2 data
@@ -697,7 +701,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
     /* Get a pointer out of the mapped class list. */
     void *classPtrs = plcrash_async_mobject_pointer(&objcContext->classMobj, objcContext->classMobj.address, objcContext->classMobj.length);
     if (classPtrs == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer in objcConstMobj for pointer %llx returned NULL", (long long)classMobj.address);
+        PLCF_DEBUG("plcrash_async_mobject_pointer in objcConstMobj for pointer %llx returned NULL", (long long)objcContext->classMobj.address);
         goto cleanup;
     }
     
@@ -798,6 +802,7 @@ void pl_async_objc_context_free (pl_async_objc_context_t *context) {
  * class data and new-style ObjC2 data.
  *
  * @param image The image to read class data from.
+ * @param objcContext An ObjC context object.
  * @param callback The callback to invoke for each method.
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
