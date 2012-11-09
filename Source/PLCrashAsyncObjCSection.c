@@ -153,6 +153,82 @@ struct pl_objc2_list_header {
 };
 
 
+/**
+ * Get the index into the context's cache for the given key. Must only be called
+ * if the cache size has been set.
+ *
+ * @param context The context.
+ * @param The key.
+ * @return The index.
+ */
+static size_t cache_index (pl_async_objc_context_t *context, pl_vm_address_t key) {
+    return (key >> 2) % context->classCacheSize;
+}
+
+/**
+ * Get the context's cache's total memory allocation size, including both keys and values.
+ *
+ * @param context The context.
+ * @return The total number of bytes allocated for the cache.
+ */
+static size_t cache_allocation_size (pl_async_objc_context_t *context) {
+    size_t size = context->classCacheSize;
+    return size * sizeof(*context->classCacheKeys) + size * sizeof(*context->classCacheValues);
+}
+
+/**
+ * Look up a key within the cache.
+ *
+ * @param context The context.
+ * @param key The key to look up.
+ * @return The value stored in the cache for that key, or 0 if none was found.
+ */
+static pl_vm_address_t cache_lookup (pl_async_objc_context_t *context, pl_vm_address_t key) {
+    if (context->classCacheSize > 0) {
+        size_t index = cache_index(context, key);
+        if (context->classCacheKeys[index] == key) {
+            return context->classCacheValues[index];
+        }
+    }
+    return 0;
+}
+
+/**
+ * Store a key/value pair in the cache. The cache is not guaranteed storage so storing may
+ * silently fail, and the association can be evicted at any time. It's a CACHE.
+ *
+ * @param context The context.
+ * @param key The key to store.
+ * @param value The value to store.
+ */
+static void cache_set (pl_async_objc_context_t *context, pl_vm_address_t key, pl_vm_address_t value) {
+    /* If nothing has used the cache yet, allocate the memory. */
+    if (context->classCacheKeys == NULL) {
+        size_t size = 1024;
+        context->classCacheSize = size;
+        
+        size_t allocationSize = cache_allocation_size(context);
+        
+        vm_address_t addr;
+        kern_return_t err = vm_allocate(mach_task_self_, &addr, allocationSize, VM_FLAGS_ANYWHERE);
+        /* If it fails, just bail out. We don't need the cache for correct operation. */
+        if (err != KERN_SUCCESS)
+            return;
+        
+        context->classCacheKeys = (void *)addr;
+        context->classCacheValues = (void *)(context->classCacheKeys + size);
+    }
+    
+    /* Treat the cache as a simple hash table with no chaining whatsoever. If the bucket is already
+     * occupied, then don't do anything. The existing entry wins. */
+    size_t index = cache_index(context, key);
+    if (context->classCacheKeys[index] == 0) {
+        context->classCacheKeys[index] = key;
+        context->classCacheValues[index] = value;
+    }
+}
+
+
 static plcrash_error_t pl_async_parse_obj1_class(pl_async_macho_t *image, struct pl_objc1_class *class, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
@@ -378,7 +454,7 @@ cleanup:
  * @param ctx A context pointer to pass to the callback.
  * @return An error code.
  */
-static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, plcrash_async_mobject_t *objCConstMobj, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, pl_async_objc_context_t *objcContext, plcrash_async_mobject_t *objCConstMobj, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Set up the class name string and a flag to determine whether it needs cleanup. */
@@ -392,36 +468,44 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
                                : image->swap32(class_32->data_rw));
     dataPtr &= ~(pl_vm_address_t)3;
     
-    /* Read an architecture-appropriate class_rw structure for the class. */
-    struct pl_objc2_class_data_rw_32 classDataRW_32;
-    struct pl_objc2_class_data_rw_64 classDataRW_64;
-    if (image->m64)
-        err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_64, sizeof(classDataRW_64));
-    else
-        err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_32, sizeof(classDataRW_32));
+    /* Grab the data RO pointer from the cache. */
+    pl_vm_address_t dataROPtr = cache_lookup(objcContext, dataPtr);
     
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
-        goto cleanup;
+    if (dataROPtr == 0) {
+        /* Read an architecture-appropriate class_rw structure for the class. */
+        struct pl_objc2_class_data_rw_32 classDataRW_32;
+        struct pl_objc2_class_data_rw_64 classDataRW_64;
+        if (image->m64)
+            err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_64, sizeof(classDataRW_64));
+        else
+            err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_32, sizeof(classDataRW_32));
+        
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
+            goto cleanup;
+        }
+        
+        /* Check the flags. If it's not yet realized, then we need to skip the class. */
+        uint32_t flags;
+        if (image->m64)
+            flags = classDataRW_64.flags;
+        else
+            flags = classDataRW_32.flags;
+        
+        if ((flags & RW_REALIZED) == 0)  {
+            PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
+            goto cleanup;
+        }
+        
+        /* Grab the data_ro pointer. The RO data (read-only) contains the class name
+         * and method list. */
+        dataROPtr = (image->m64
+                     ? image->swap64(classDataRW_64.data_ro)
+                     : image->swap32(classDataRW_32.data_ro));
+        
+        /* Add a new cache entry. */
+        cache_set(objcContext, dataPtr, dataROPtr);
     }
-    
-    /* Check the flags. If it's not yet realized, then we need to skip the class. */
-    uint32_t flags;
-    if (image->m64)
-        flags = classDataRW_64.flags;
-    else
-        flags = classDataRW_32.flags;
-    
-    if ((flags & RW_REALIZED) == 0)  {
-        PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
-        goto cleanup;
-    }
-    
-    /* Grab the data_ro pointer. The RO data (read-only) contains the class name
-     * and method list. */
-    pl_vm_address_t dataROPtr = (image->m64
-                                 ? image->swap64(classDataRW_64.data_ro)
-                                 : image->swap32(classDataRW_32.data_ro));
     
     /* Grab the pointer to the class_ro structure. */
     struct pl_objc2_class_data_ro_32 *classDataRO_32;
@@ -528,7 +612,7 @@ cleanup:
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if no ObjC2 data
  * exists in the image, and another error code if a different error occurred.
  */
-static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err = PLCRASH_EUNKNOWN;
     
     /* Set up memory objects, and flags so the cleanup code knows what to free. */
@@ -599,7 +683,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         class_64 = classPtr;
         
         /* Parse the class. */
-        err = pl_async_objc_parse_objc2_class(image, &objcConstMobj, class_32, class_64, false, callback, ctx);
+        err = pl_async_objc_parse_objc2_class(image, objcContext, &objcConstMobj, class_32, class_64, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             goto cleanup;
@@ -621,7 +705,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         metaclass_64 = metaclassPtr;
         
         /* Parse the metaclass. */
-        err = pl_async_objc_parse_objc2_class(image, &objcConstMobj, metaclass_32, metaclass_64, true, callback, ctx);
+        err = pl_async_objc_parse_objc2_class(image, objcContext, &objcConstMobj, metaclass_32, metaclass_64, true, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing metaclass", err);
             goto cleanup;
@@ -648,6 +732,9 @@ cleanup:
  */
 plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context) {
     context->gotObjC2Info = false;
+    context->classCacheSize = 0;
+    context->classCacheKeys = NULL;
+    context->classCacheValues = NULL;
     return PLCRASH_ESUCCESS;
 }
 
@@ -657,6 +744,9 @@ plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context) {
  * @param context A pointer to the context object to free.
  */
 void pl_async_objc_context_free (pl_async_objc_context_t *context) {
+    if (context->classCacheKeys != NULL) {
+        vm_deallocate(mach_task_self(), (vm_address_t)context->classCacheKeys, cache_allocation_size(context));
+    }
 }
 
 /**
@@ -685,7 +775,7 @@ plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_cont
     
     /* If there wasn't any, try ObjC2 data. */
     if (err == PLCRASH_ENOTFOUND) {
-        err = pl_async_objc_parse_from_data_section(image, callback, ctx);
+        err = pl_async_objc_parse_from_data_section(image, objcContext, callback, ctx);
         if (err == PLCRASH_ESUCCESS) {
             /* ObjC2 info successfully obtained, note that so we can stop trying ObjC1 next time around. */
             objcContext->gotObjC2Info = true;

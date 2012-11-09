@@ -39,6 +39,10 @@
  */
 typedef struct pl_async_objc_context {
     bool gotObjC2Info;
+    
+    size_t classCacheSize;
+    pl_vm_address_t *classCacheKeys;
+    pl_vm_address_t *classCacheValues;
 } pl_async_objc_context_t;
 
 plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context);
