@@ -34,6 +34,17 @@
 
 
 /**
+ * A context object that helps ObjC parsing go faster by caching information
+ * across multiple calls.
+ */
+typedef struct pl_async_objc_context {
+    bool gotObjC2Info;
+} pl_async_objc_context_t;
+
+plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context);
+void pl_async_objc_context_free (pl_async_objc_context_t *context);
+
+/**
  * A callback to invoke when an Objective-C method is found.
  *
  * @param className A pointer to a string containing the class's name. Not NUL
@@ -47,8 +58,8 @@
  */
 typedef void (*pl_async_objc_found_method_cb)(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx);
 
-plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx);
+plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx);
 
-plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
+plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
 
 #endif // PLCrashAsyncObjCSection_h

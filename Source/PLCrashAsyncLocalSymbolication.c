@@ -118,12 +118,31 @@ static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string
     append_char(symString, ']', &cursor, maxLen);
 }
 
-plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
+/**
+ * Initialize a symbol-finding context object.
+ *
+ * @param context A pointer to the context object to initialize.
+ * @return An error code.
+ */
+plcrash_error_t pl_async_local_find_symbol_context_init (pl_async_local_find_symbol_context_t *context) {
+    return pl_async_objc_context_init(&context->objcContext);
+}
+
+/**
+ * Free a symbol-finding context object.
+ *
+ * @param context A pointer to the context object to free.
+ */
+void pl_async_local_find_symbol_context_free (pl_async_local_find_symbol_context_t *context) {
+    pl_async_objc_context_free(&context->objcContext);
+}
+
+plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_async_local_find_symbol_context_t *findContext, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
     pl_vm_address_t machoAddress = 0;
     plcrash_error_t machoErr = pl_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
     
     pl_vm_address_t objcAddress = 0;
-    plcrash_error_t objcErr = pl_async_objc_find_method(image, pc, saveObjCAddressCB, &objcAddress);
+    plcrash_error_t objcErr = pl_async_objc_find_method(image, &findContext->objcContext, pc, saveObjCAddressCB, &objcAddress);
     
     if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Could not find symbol for PC %p image %p", (void *)pc, image);
@@ -145,7 +164,7 @@ plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_vm_addres
             .imp = 0,
             .didError = false
         };
-        plcrash_error_t err = pl_async_objc_find_method(image, pc, callbackObjCAddressCB, &innerCtx);
+        plcrash_error_t err = pl_async_objc_find_method(image, &findContext->objcContext, pc, callbackObjCAddressCB, &innerCtx);
         if (err == PLCRASH_ESUCCESS && innerCtx.imp != 0 && !innerCtx.didError) {
             callback(innerCtx.imp, symString, ctx);
             return PLCRASH_ESUCCESS;

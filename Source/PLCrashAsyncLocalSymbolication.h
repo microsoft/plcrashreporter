@@ -30,6 +30,18 @@
 #define CrashReporter_PLCrashAsyncLocalSymbolication_h
 
 #include "PLCrashAsyncMachOImage.h"
+#include "PLCrashAsyncObjCSection.h"
+
+
+/**
+ * Context object that helps repeated symbol lookups go faster.
+ */
+typedef struct pl_async_local_find_symbol_context {
+    pl_async_objc_context_t objcContext;
+} pl_async_local_find_symbol_context_t;
+
+plcrash_error_t pl_async_local_find_symbol_context_init (pl_async_local_find_symbol_context_t *context);
+void pl_async_local_find_symbol_context_free (pl_async_local_find_symbol_context_t *context);
 
 
 /**
@@ -42,6 +54,6 @@
  */
 typedef void (*pl_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
-plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx);
+plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_async_local_find_symbol_context_t *findContext, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx);
 
 #endif

@@ -641,6 +641,25 @@ cleanup:
 }
 
 /**
+ * Initialize an ObjC context object.
+ *
+ * @param context A pointer to the context object to initialize.
+ * @return An error code.
+ */
+plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context) {
+    context->gotObjC2Info = false;
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Free an ObjC context object.
+ *
+ * @param context A pointer to the context object to free.
+ */
+void pl_async_objc_context_free (pl_async_objc_context_t *context) {
+}
+
+/**
  * Parse Objective-C class data from a Mach-O image, invoking a callback
  * for each method found in the data. This tries both old-style ObjC1
  * class data and new-style ObjC2 data.
@@ -650,15 +669,28 @@ cleanup:
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
+plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
+    
+    if (objcContext == NULL)
+        return PLCRASH_EACCESS;
    
-    /* Try ObjC1 data. */
-    err = pl_async_objc_parse_from_module_info(image, callback, ctx);
+    if (!objcContext->gotObjC2Info) {
+        /* Try ObjC1 data. */
+        err = pl_async_objc_parse_from_module_info(image, callback, ctx);
+    } else {
+        /* If it couldn't be found before, don't even bother to try again. */
+        err = PLCRASH_ENOTFOUND;
+    }
     
     /* If there wasn't any, try ObjC2 data. */
-    if (err == PLCRASH_ENOTFOUND)
+    if (err == PLCRASH_ENOTFOUND) {
         err = pl_async_objc_parse_from_data_section(image, callback, ctx);
+        if (err == PLCRASH_ESUCCESS) {
+            /* ObjC2 info successfully obtained, note that so we can stop trying ObjC1 next time around. */
+            objcContext->gotObjC2Info = true;
+        }
+    }
     
     return err;
 }
@@ -709,17 +741,18 @@ static void pl_async_objc_find_method_call_callback (bool isClassMethod, plcrash
  * Search for the method that best matches the given code address.
  *
  * @param image The image to search.
+ * @param objcContext A pointer to an ObjC context object. Must not be NULL, and must (obviously) be initialized.
  * @param imp The address to search for.
  * @param callback The callback to invoke when the best match is found.
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx) {
+plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx) {
     struct pl_async_objc_find_method_search_context searchCtx = {
         .searchIMP = imp
     };
     
-    plcrash_error_t err = pl_async_objc_parse(image, pl_async_objc_find_method_search_callback, &searchCtx);
+    plcrash_error_t err = pl_async_objc_parse(image, objcContext, pl_async_objc_find_method_search_callback, &searchCtx);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("pl_async_objc_parse(%p, 0x%llx, %p, %p) failure %d", image, (long long)imp, callback, ctx, err);
         return err;
@@ -734,6 +767,6 @@ plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_vm_addres
         .outerCallbackCtx = ctx
     };
     
-    return pl_async_objc_parse(image, pl_async_objc_find_method_call_callback, &callCtx);
+    return pl_async_objc_parse(image, objcContext, pl_async_objc_find_method_call_callback, &callCtx);
 }
 
