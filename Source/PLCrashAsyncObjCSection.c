@@ -213,7 +213,7 @@ static void cache_set (pl_async_objc_context_t *context, pl_vm_address_t key, pl
         kern_return_t err = vm_allocate(mach_task_self_, &addr, allocationSize, VM_FLAGS_ANYWHERE);
         /* If it fails, just bail out. We don't need the cache for correct operation. */
         if (err != KERN_SUCCESS) {
-            PLCF_DEBUG("vm_allocate failed with error %x, the class cache could not be initialized and ObjC parsing will be substantially slower\n", err);
+            PLCF_DEBUG("vm_allocate failed with error %x, the class cache could not be initialized and ObjC parsing will be substantially slower", err);
             context->classCacheSize = 0;
             return;
         }
