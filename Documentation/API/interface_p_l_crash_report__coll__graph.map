@@ -1,0 +1,9 @@
+<map id="PLCrashReport" name="PLCrashReport">
+<area shape="rect" id="node2" href="$interface_p_l_crash_report_application_info.html" title="Crash log application data." alt="" coords="353,5,567,35"/>
+<area shape="rect" id="node4" href="$interface_p_l_crash_report_system_info.html" title="Crash log host data." alt="" coords="367,59,553,90"/>
+<area shape="rect" id="node6" href="$interface_p_l_crash_report_exception_info.html" title="If a crash is triggered by an uncaught Objective&#45;C exception, the exception name and reason will be m..." alt="" coords="358,114,562,145"/>
+<area shape="rect" id="node8" href="$interface_p_l_crash_report_signal_info.html" title="Provides access to the signal name and signal code." alt="" coords="370,169,550,199"/>
+<area shape="rect" id="node10" href="$interface_p_l_crash_report_process_info.html" title="Crash log process data." alt="" coords="365,223,555,254"/>
+<area shape="rect" id="node12" href="$interface_p_l_crash_report_machine_info.html" title="Crash log host architecture information." alt="" coords="363,278,557,309"/>
+<area shape="rect" id="node14" href="$interface_p_l_crash_report_processor_info.html" title="Crash log processor record." alt="" coords="6,278,210,309"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$protocol_p_l_crash_report_formatter-p.html" title="A crash report formatter accepts a PLCrashReport instance, formats it according to implementation&#45;spe..." alt="" coords="5,5,206,35"/>
+<area shape="rect" id="node3" href="$interface_p_l_crash_report_text_formatter.html" title="Formats PLCrashReport data as human&#45;readable text." alt="" coords="253,5,461,35"/>
+</map>
