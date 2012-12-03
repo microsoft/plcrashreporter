@@ -1067,6 +1067,49 @@
 			name = "Private API";
 			sourceTree = "<group>";
 		};
+		05BB4C9D166D3BE10075171B /* Mach-O ABI */ = {
+			isa = PBXGroup;
+			children = (
+				05F76DD7162F215800A668C7 /* PLCrashAsyncMachOImage.h */,
+				05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */,
+				05F76DD9162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m */,
+				C2198E0E16441D72006EB46A /* PLCrashAsyncMachOString.h */,
+				C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */,
+				C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */,
+			);
+			name = "Mach-O ABI";
+			sourceTree = "<group>";
+		};
+		05BB4C9E166D409B0075171B /* Obj-C ABI */ = {
+			isa = PBXGroup;
+			children = (
+				C2198DE1164018B2006EB46A /* PLCrashAsyncObjCSection.h */,
+				C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */,
+				C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */,
+			);
+			name = "Obj-C ABI";
+			sourceTree = "<group>";
+		};
+		05BB4C9F166D40AD0075171B /* Symbolication */ = {
+			isa = PBXGroup;
+			children = (
+				C260228D1642FCAF007FC29F /* PLCrashAsyncLocalSymbolication.h */,
+				C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */,
+				C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */,
+			);
+			name = Symbolication;
+			sourceTree = "<group>";
+		};
+		05BB4CA0166D40B90075171B /* Memory Objects */ = {
+			isa = PBXGroup;
+			children = (
+				05DEE6471636E642007E99DC /* PLCrashAsyncMObject.h */,
+				05DEE63E1636E62B007E99DC /* PLCrashAsyncMObject.c */,
+				05DEE64A1636E721007E99DC /* PLCrashAsyncMObjectTests.m */,
+			);
+			name = "Memory Objects";
+			sourceTree = "<group>";
+		};
 		05BB83F91364AD4700D53B84 /* System Info */ = {
 			isa = PBXGroup;
 			children = (
@@ -1155,27 +1198,16 @@
 				059672F00EF08564008A0601 /* PLCrashAsync.h */,
 				05CD36410EF24758000FDE88 /* PLCrashAsync.c */,
 				05CD36480EF247A9000FDE88 /* PLCrashAsyncTests.m */,
-				05DEE6471636E642007E99DC /* PLCrashAsyncMObject.h */,
-				05DEE63E1636E62B007E99DC /* PLCrashAsyncMObject.c */,
-				05DEE64A1636E721007E99DC /* PLCrashAsyncMObjectTests.m */,
 				05E734300EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h */,
 				05E734310EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c */,
 				05E734830EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m */,
 				052A46BC1363650100987004 /* PLCrashAsyncImageList.h */,
 				052A46BD1363650100987004 /* PLCrashAsyncImageList.c */,
 				052A46F713637DE000987004 /* PLCrashAsyncImageListTests.m */,
-				05F76DD7162F215800A668C7 /* PLCrashAsyncMachOImage.h */,
-				05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */,
-				05F76DD9162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m */,
-				C2198DE1164018B2006EB46A /* PLCrashAsyncObjCSection.h */,
-				C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.c */,
-				C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */,
-				C260228D1642FCAF007FC29F /* PLCrashAsyncLocalSymbolication.h */,
-				C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */,
-				C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */,
-				C2198E0E16441D72006EB46A /* PLCrashAsyncMachOString.h */,
-				C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */,
-				C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */,
+				05BB4CA0166D40B90075171B /* Memory Objects */,
+				05BB4C9F166D40AD0075171B /* Symbolication */,
+				05BB4C9D166D3BE10075171B /* Mach-O ABI */,
+				05BB4C9E166D409B0075171B /* Obj-C ABI */,
 			);
 			name = "Async-Safe APIs";
 			sourceTree = "<group>";
