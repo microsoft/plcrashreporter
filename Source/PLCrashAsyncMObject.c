@@ -91,51 +91,58 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
      * aligned addresses, or two non-page aligned addresses. Mixing task_addr and vm_address would return an incorrect offset. */
     mobj->vm_slide = task_addr - mobj->address;
     
+    /* Save the task-relative address */
+    mobj->task_address = task_addr;
+
     return PLCRASH_ESUCCESS;
 }
 
-/**
- * Apply @a mobj's computed slide to @a address, mapping a pointer from the target task into the local address space.
- *
- * The validity of the pointer is not verified. The plcrash_async_mobject_pointer() function must be used to validate
- * the returned address and convert it to a pointer value.
- *
- * @param mobj An initialized memory object.
- * @param address An address within the memory mapped from the target task's address space via @a mobj.
- */
-uintptr_t plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address) {
-    return address - mobj->vm_slide;
-}
 
 /**
- * Validate an address pointer's availability via @a mobj, verifying that @a length bytes can be read from @a mobj at
- * @a address, and return the pointer from which a @a length read may be performed.
+ * Verify that @a length bytes starting at local @a address is within @a mobj's mapped range.
  *
  * @param mobj An initialized memory object.
- * @param address The address to be read. This address should be relative to the current task, rather than relative
- * to the task from which @a mobj was mapped.
- * @param length The total number of bytes that should be readable at @a address.
- *
- * @return Returns the validated pointer, or NULL if the requested bytes are not within @a mobj's range.
+ * @param address An address within the current task's memory space.
+ * @param length The number of bytes that should be readable at @a address.
  */
-void *plcrash_async_mobject_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length) {
+bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length) {
     /* Verify that the address starts within range */
     if (address < mobj->address) {
         PLCF_DEBUG("Address %" PRIx64 " < base address %" PRIx64 "", (uint64_t) address, (uint64_t) mobj->address);
-        return NULL;
+        return false;
     }
     
     /* Verify that the address value won't overrun */
     if (UINTPTR_MAX - length < address)
-        return NULL;
+        return false;
     
     /* Check that the block ends within range */
     if (mobj->address + mobj->length < address + length) {
         PLCF_DEBUG("Address %" PRIx64 " out of range %" PRIx64 " + %" PRIx64, (uint64_t) address, (uint64_t) mobj->address, (uint64_t) mobj->length);
-        return NULL;
+        return false;
     }
+
+    return true;
+}
+
+/**
+ * Validate a target process' address pointer's availability via @a mobj, verifying that @a length bytes can be read
+ * from @a mobj at @a address, and return the pointer from which a @a length read may be performed.
+ *
+ * @param mobj An initialized memory object.
+ * @param address The address to be read. This address should be relative to the target task's address space.
+ * @param length The total number of bytes that should be readable at @a address.
+ *
+ * @return Returns the validated pointer, or NULL if the requested bytes are not within @a mobj's range.
+ */
+void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, size_t length) {
+    /* Map into our memory space */
+    pl_vm_address_t remapped = address - mobj->vm_slide;
     
-    return (void *) address;
+    if (!plcrash_async_mobject_verify_local_pointer(mobj, (uintptr_t) remapped, length))
+        return NULL;
+
+    return (void *) remapped;
 }
 
 /**

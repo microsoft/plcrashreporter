@@ -516,7 +516,7 @@ static bool pl_async_macho_find_symtab_symbol (pl_async_macho_t *image, pl_vm_ad
 #define pl_sym_value(nl) (image->m64 ? image->swap64((nl)->n64.n_value) : image->swap32((nl)->n32.n_value))
     
     /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
-     * plcrash_async_mobject_pointer() above. */
+     * plcrash_async_mobject_remap_address() above. */
     for (uint32_t i = 0; i < nsyms; i++) {
         /* Perform 32-bit/64-bit dependent aliased pointer math. */
         pl_nlist_common *symbol;
@@ -609,24 +609,22 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     void *nlist_table;
     char *string_table;
 
-    uintptr_t remapped_addr = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.symoff));
-    nlist_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, nlist_table_size);
+    nlist_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.symoff), nlist_table_size);
     if (nlist_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_table_size);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_table_size);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
 
-    remapped_addr = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.stroff));
-    string_table = plcrash_async_mobject_pointer(&linkedit_mobj, remapped_addr, string_size);
+    string_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.stroff), string_size);
     if (string_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.stroff), (uint64_t) string_size);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.stroff), (uint64_t) string_size);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
             
     /* Walk the symbol table. We know that the full range of symbols[nsyms-1] is valid, since we fetched a pointer+len
-     * based on the value using plcrash_async_mobject_pointer() above. */
+     * based on the value using plcrash_async_mobject_remap_address() above. */
     pl_nlist_common *found_symbol = NULL;
 
     if (dysymtab_cmd_addr != 0x0) {
@@ -675,12 +673,13 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
      * It's possible, though unlikely, that the n_strx index value is invalid. To handle this,
      * we walk the string until \0 is hit, verifying that it can be found in its entirety within
      *
-     * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_pointer().
+     * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_verify_local_pointer(). We should
+     * probably validate whole pages at a time instead.
      */
     const char *sym_name = string_table + image->swap32(found_symbol->n32.n_un.n_strx);
     const char *p = sym_name;
     do {
-        if (plcrash_async_mobject_pointer(&linkedit_mobj, (uintptr_t) p, 1) == NULL) {
+        if (!plcrash_async_mobject_verify_local_pointer(&linkedit_mobj, (uintptr_t) p, 1)) {
             retval = PLCRASH_EINVAL;
             goto cleanup;
         }

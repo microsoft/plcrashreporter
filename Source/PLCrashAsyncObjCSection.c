@@ -442,7 +442,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *i
     moduleMobjInitialized = true;
     
     /* Get a pointer to the module info data. */
-    struct pl_objc1_module *moduleData = plcrash_async_mobject_pointer(&moduleMobj, moduleMobj.address, sizeof(*moduleData));
+    struct pl_objc1_module *moduleData = plcrash_async_mobject_remap_address(&moduleMobj, moduleMobj.task_address, sizeof(*moduleData));
     if (moduleData == NULL) {
         PLCF_DEBUG("Failed to obtain pointer from %s memory object", kObjCModuleInfoSectionName);
         err = PLCRASH_ENOTFOUND;
@@ -587,10 +587,10 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
     struct pl_objc2_class_data_ro_32 *classDataRO_32;
     struct pl_objc2_class_data_ro_64 *classDataRO_64;
     pl_vm_size_t length = (image->m64 ? sizeof(*classDataRO_64) : sizeof(*classDataRO_32));
-    void *classDataROPtr = plcrash_async_mobject_pointer(&objcContext->objcConstMobj, plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, dataROPtr), length);
+    void *classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, dataROPtr, length);
     
     if (classDataROPtr == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer at 0x%llx returned NULL", (long long)dataROPtr);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx returned NULL", (long long)dataROPtr);
         goto cleanup;
     }
     
@@ -617,9 +617,9 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
     
     /* Read the method list header. */
     struct pl_objc2_list_header *header;
-    header = plcrash_async_mobject_pointer(&objcContext->objcConstMobj, plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, methodsPtr), sizeof(header));
+    header = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, methodsPtr, sizeof(*header));
     if (header == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer in objCConstMobj failed to map methods pointer 0x%llx", (long long)methodsPtr);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in objCConstMobj failed to map methods pointer 0x%llx", (long long)methodsPtr);
         goto cleanup;
     }
     
@@ -630,10 +630,10 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
     /* Compute the method list start position and length. */
     pl_vm_address_t methodListStart = methodsPtr + sizeof(*header);
     pl_vm_size_t methodListLength = (pl_vm_size_t)entsize * count;
-    
-    const char *cursor = plcrash_async_mobject_pointer(&objcContext->objcConstMobj, plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, methodListStart), methodListLength);
+
+    const char *cursor = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, methodListStart, methodListLength);
     if (cursor == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer at 0x%llx length %llu returned NULL", (long long)methodListStart, (unsigned long long)methodListLength);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx length %llu returned NULL", (long long)methodListStart, (unsigned long long)methodListLength);
         goto cleanup;
     }
     
@@ -700,9 +700,9 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
     }
     
     /* Get a pointer out of the mapped class list. */
-    void *classPtrs = plcrash_async_mobject_pointer(&objcContext->classMobj, objcContext->classMobj.address, objcContext->classMobj.length);
+    void *classPtrs = plcrash_async_mobject_remap_address(&objcContext->classMobj, objcContext->classMobj.task_address, objcContext->classMobj.length);
     if (classPtrs == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_pointer in objcConstMobj for pointer %llx returned NULL", (long long)objcContext->classMobj.address);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in objcConstMobj for pointer %llx returned NULL", (long long)objcContext->classMobj.address);
         goto cleanup;
     }
     
@@ -725,9 +725,9 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
         /* Read an architecture-appropriate class structure. */
         struct pl_objc2_class_32 *class_32;
         struct pl_objc2_class_64 *class_64;
-        void *classPtr = plcrash_async_mobject_pointer(&objcContext->objcDataMobj, plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr), image->m64 ? sizeof(*class_64) : sizeof(*class_32));
+        void *classPtr = plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr, image->m64 ? sizeof(*class_64) : sizeof(*class_32));
         if (classPtr == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_pointer in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
             goto cleanup;
         }
         
@@ -747,9 +747,9 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
                                : image->swap32(class_32->isa));
         struct pl_objc2_class_32 *metaclass_32;
         struct pl_objc2_class_64 *metaclass_64;
-        void *metaclassPtr = plcrash_async_mobject_pointer(&objcContext->objcDataMobj, plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa), image->m64 ? sizeof(*class_64) : sizeof(*class_32));
+        void *metaclassPtr = plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, image->m64 ? sizeof(*class_64) : sizeof(*class_32));
         if (metaclassPtr == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_pointer in objcDataMobj for pointer %llx returned NULL", (long long)isa);
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)isa);
             goto cleanup;
         }
         

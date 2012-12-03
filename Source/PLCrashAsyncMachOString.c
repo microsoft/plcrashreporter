@@ -99,7 +99,7 @@ plcrash_error_t plcrash_async_macho_string_get_length (plcrash_async_macho_strin
 plcrash_error_t plcrash_async_macho_string_get_pointer (plcrash_async_macho_string_t *string, const char **outPointer) {
     plcrash_error_t err = plcrash_async_macho_string_read(string);
     if (err == PLCRASH_ESUCCESS) {
-        *outPointer = plcrash_async_mobject_pointer(&string->mobj, string->mobj.address, string->mobj.length);
+        *outPointer = plcrash_async_mobject_remap_address(&string->mobj, string->mobj.task_address, string->mobj.length);
         if (*outPointer == NULL)
             err = PLCRASH_EACCESS;
     }
