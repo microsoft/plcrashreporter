@@ -167,8 +167,8 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         if (report.hasMachineInfo && report.machineInfo.modelName != nil)
             hardwareModel = report.machineInfo.modelName;
 
-        [text appendFormat: @"Incident Identifier: [TODO]\n"];
-        [text appendFormat: @"CrashReporter Key:   [TODO]\n"];
+        [text appendFormat: @"Incident Identifier: TODO\n"];
+        [text appendFormat: @"CrashReporter Key:   TODO\n"];
         [text appendFormat: @"Hardware Model:      %@\n", hardwareModel];
     }
     
