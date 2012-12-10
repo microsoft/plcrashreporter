@@ -33,6 +33,8 @@
 #import "PLCrashReportProcessInfo.h"
 #import "PLCrashReportSignalInfo.h"
 #import "PLCrashReportThreadInfo.h"
+#import "PLCrashReportStackFrameInfo.h"
+#import "PLCrashReportRegisterInfo.h"
 #import "PLCrashReportBinaryImageInfo.h"
 #import "PLCrashReportExceptionInfo.h"
 
