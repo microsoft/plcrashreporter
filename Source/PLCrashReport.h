@@ -27,17 +27,19 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "PLCrashReportSystemInfo.h"
-#import "PLCrashReportMachineInfo.h"
+
 #import "PLCrashReportApplicationInfo.h"
-#import "PLCrashReportProcessInfo.h"
-#import "PLCrashReportSignalInfo.h"
-#import "PLCrashReportThreadInfo.h"
-#import "PLCrashReportStackFrameInfo.h"
-#import "PLCrashReportRegisterInfo.h"
 #import "PLCrashReportBinaryImageInfo.h"
-#import "PLCrashReportSymbolInfo.h"
 #import "PLCrashReportExceptionInfo.h"
+#import "PLCrashReportMachineInfo.h"
+#import "PLCrashReportProcessInfo.h"
+#import "PLCrashReportProcessorInfo.h"
+#import "PLCrashReportRegisterInfo.h"
+#import "PLCrashReportSignalInfo.h"
+#import "PLCrashReportStackFrameInfo.h"
+#import "PLCrashReportSymbolInfo.h"
+#import "PLCrashReportSystemInfo.h"
+#import "PLCrashReportThreadInfo.h"
 
 /** 
  * @ingroup constants
