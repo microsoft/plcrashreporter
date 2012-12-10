@@ -36,6 +36,7 @@
 #import "PLCrashReportStackFrameInfo.h"
 #import "PLCrashReportRegisterInfo.h"
 #import "PLCrashReportBinaryImageInfo.h"
+#import "PLCrashReportSymbolInfo.h"
 #import "PLCrashReportExceptionInfo.h"
 
 /** 
