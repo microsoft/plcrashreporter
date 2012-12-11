@@ -3005,7 +3005,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				CURRENT_PROJECT_VERSION = "1.1-rc1";
+				CURRENT_PROJECT_VERSION = "1.1-rc2";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashReporterNamespace.h";
@@ -3030,7 +3030,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				CURRENT_PROJECT_VERSION = "1.1-rc1";
+				CURRENT_PROJECT_VERSION = "1.1-rc2";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashReporterNamespace.h";
