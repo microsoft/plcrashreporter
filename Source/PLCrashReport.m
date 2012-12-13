@@ -440,6 +440,24 @@ error:
 }
 
 /**
+ * Extract symbol information from the crash log. Returns nil on error, or a PLCrashReportSymbolInfo
+ * instance on success.
+ */
+- (PLCrashReportSymbolInfo *) extractSymbolInfo: (Plcrash__CrashReport__Symbol *) symbol error: (NSError **) outError {
+    if (symbol == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
+                         NSLocalizedString(@"Crash report is missing symbol information",
+                                           @"Missing symbol info in crash report"));
+        return nil;
+    }
+    
+    NSString *name = [NSString stringWithUTF8String: symbol->name];
+    return [[[PLCrashReportSymbolInfo alloc] initWithSymbolName: name
+                                                   startAddress: symbol->start_address
+                                                     endAddress: symbol->has_end_address ? symbol->end_address : 0] autorelease];
+}
+
+/**
  * Extract stack frame information from the crash log. Returns nil on error, or a PLCrashReportStackFrameInfo
  * instance on success.
  */
@@ -452,7 +470,14 @@ error:
         return nil;
     }
     
-    return [[[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: stackFrame->pc] autorelease];
+    PLCrashReportSymbolInfo *symbolInfo = nil;
+    if (stackFrame->symbol != NULL) {
+        if ((symbolInfo = [self extractSymbolInfo: stackFrame->symbol error: outError]) == NULL)
+            return NULL;
+    }
+
+    return [[[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: stackFrame->pc
+                                                                 symbolInfo: symbolInfo] autorelease];
 }
 
 /**

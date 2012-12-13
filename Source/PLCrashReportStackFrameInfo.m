@@ -33,18 +33,29 @@
  */
 @implementation PLCrashReportStackFrameInfo
 
+@synthesize instructionPointer = _instructionPointer;
+@synthesize symbolInfo = _symbolInfo;
+
 /**
- * Initialize with the provided instruction pointer value.
+ * Initialize with the provided frame info.
+ *
+ * @param instructionPointer The instruction pointer value for this frame.
+ * @param symbol Symbol information for this frame, if available. May be nil.
  */
-- (id) initWithInstructionPointer: (uint64_t) instructionPointer {
+- (id) initWithInstructionPointer: (uint64_t) instructionPointer symbolInfo: (PLCrashReportSymbolInfo *) symbolInfo {
     if ((self = [super init]) == nil)
         return nil;
     
     _instructionPointer = instructionPointer;
+    _symbolInfo = [symbolInfo retain];
     
     return self;
 }
 
-@synthesize instructionPointer = _instructionPointer;
+- (void) dealloc {
+    [_symbolInfo release];
+
+    [super dealloc];
+}
 
 @end
