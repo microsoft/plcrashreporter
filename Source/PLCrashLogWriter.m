@@ -960,14 +960,14 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, pl_
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_NAME_ID, PLPROTOBUF_C_TYPE_STRING, image->name);
 
     /* UUID */
-    struct uuid_command uuid;
-    pl_vm_address_t uuid_addr = pl_async_macho_find_command(image, LC_UUID, &uuid, sizeof(uuid));
-    if (uuid_addr != 0x0) {
+    struct uuid_command *uuid;
+    uuid = pl_async_macho_find_command(image, LC_UUID);
+    if (uuid != NULL) {
         PLProtobufCBinaryData binary;
     
         /* Write the 128-bit UUID */
-        binary.len = sizeof(uuid.uuid);
-        binary.data = uuid.uuid;
+        binary.len = sizeof(uuid->uuid);
+        binary.data = uuid->uuid;
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_UUID_ID, PLPROTOBUF_C_TYPE_BYTES, &binary);
     }
     

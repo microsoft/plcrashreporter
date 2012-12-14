@@ -82,22 +82,13 @@
  * Test iteration of Mach-O load commands.
  */
 - (void) testIterateCommand {
-    pl_vm_address_t cmd_addr = 0;
+    struct load_command *cmd = NULL;
 
     bool found_uuid = false;
-    while ((cmd_addr = pl_async_macho_next_command(&_image, cmd_addr)) != 0) {
-        /* Read the load command */
-        struct uuid_command cmd;
-
-        /* First, read just the standard load_command data. */
-        STAssertEquals(plcrash_async_read_addr(_image.task, cmd_addr, &cmd, sizeof(struct load_command)), KERN_SUCCESS, @"Read failed");
-        
+    while ((cmd = pl_async_macho_next_command(&_image, cmd)) != 0) {
         /* If this is not LC_UUID command, nothing to do */
-        if (_image.swap32(cmd.cmd) != LC_UUID)
+        if (_image.swap32(cmd->cmd) != LC_UUID)
             continue;
-        
-        /* Read in the full UUID command */
-        STAssertEquals(plcrash_async_read_addr(_image.task, cmd_addr, &cmd, sizeof(cmd)), KERN_SUCCESS, @"Read failed");
         
         // TODO - Validate the UUID value?
         STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
@@ -111,21 +102,14 @@
  * Test type-specific iteration of Mach-O load commands.
  */
 - (void) testIterateSpecificCommand {
-    pl_vm_address_t cmd_addr = 0;
+    struct load_command *cmd = 0;
     
     bool found_uuid = false;
-    uint32_t cmdsize = 0;
 
-    while ((cmd_addr = pl_async_macho_next_command_type(&_image, cmd_addr, LC_UUID, &cmdsize)) != 0) {
-        /* Read the load command */
-        struct uuid_command cmd;
-                
-        /* Read in the full UUID command */
-        STAssertEquals(plcrash_async_read_addr(_image.task, cmd_addr, &cmd, sizeof(cmd)), KERN_SUCCESS, @"Read failed");
-        
+    while ((cmd = pl_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
         /* Validate the command type and size */
-        STAssertEquals(_image.swap32(cmd.cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
-        STAssertEquals(_image.swap32(cmd.cmdsize), cmdsize, @"Incorrect load command size returned by iterator");
+        STAssertEquals(_image.swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
+        STAssertEquals((size_t)_image.swap32(cmd->cmdsize), sizeof(struct uuid_command), @"Incorrect load command size returned by iterator");
 
         STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
         found_uuid = true;
@@ -134,19 +118,19 @@
     STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
     
     /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
-    cmd_addr = pl_async_macho_next_command_type(&_image, 0, LC_SUB_UMBRELLA, NULL);
-    STAssertEquals((pl_vm_address_t)0, cmd_addr, @"Should not have found the requested load command");
+    cmd = pl_async_macho_next_command_type(&_image, NULL, LC_SUB_UMBRELLA);
+    STAssertNULL(cmd, @"Should not have found the requested load command");
 }
 
 /**
  * Test type-specific iteration of Mach-O load commands when a NULL size argument is provided.
  */
 - (void) testIterateSpecificCommandNULLSize {
-    pl_vm_address_t cmd_addr = 0;
+    struct load_command *cmd = NULL;
     
     /* If the following doesn't crash dereferencing the NULL cmdsize argument, success! */
     bool found_uuid = false;
-    while ((cmd_addr = pl_async_macho_next_command_type(&_image, cmd_addr, LC_UUID, NULL)) != 0) {
+    while ((cmd = pl_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
         STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
         found_uuid = true;
     }
@@ -158,15 +142,14 @@
  * Test simple short-cut for finding a single load_command.
  */
 - (void) testFindCommand {
-    struct uuid_command cmd;
-    pl_vm_address_t cmd_addr = pl_async_macho_find_command(&_image, LC_UUID, &cmd, sizeof(cmd));
-    STAssertNotEquals((pl_vm_address_t)0, cmd_addr, @"Failed to find command");
-    STAssertEquals(_image.swap32(cmd.cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
-    STAssertEquals(_image.swap32(cmd.cmdsize), (uint32_t)sizeof(cmd), @"Incorrect load command size returned");
+    struct load_command *cmd = pl_async_macho_find_command(&_image, LC_UUID);
+    STAssertNotNULL(cmd, @"Failed to find command");
+    STAssertEquals(_image.swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
+    STAssertEquals(_image.swap32(cmd->cmdsize), (uint32_t)sizeof(struct uuid_command), @"Incorrect load command size returned");
     
     /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
-    cmd_addr = pl_async_macho_find_command(&_image, LC_SUB_UMBRELLA, NULL, 0);
-    STAssertEquals((pl_vm_address_t)0, cmd_addr, @"Should not have found the requested load command");
+    cmd = pl_async_macho_find_command(&_image, LC_SUB_UMBRELLA);
+    STAssertNULL(cmd, @"Should not have found the requested load command");
 }
 
 /**

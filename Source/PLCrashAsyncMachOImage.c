@@ -150,36 +150,46 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
     } else {
         image->header_size = sizeof(struct mach_header);
     }
+    
+    /* Map in load commands */
+    /* Map in header + load commands */
+    pl_vm_size_t cmd_len = image->swap32(image->header.sizeofcmds);
+    pl_vm_size_t cmd_offset = image->header_addr + image->header_size;
+    plcrash_error_t ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len);
+    if (ret != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to map Mach-O load commands in image %s", image->name);
+        return ret;
+    }
 
     /* Now that the image has been sufficiently initialized, determine the __TEXT segment size */
-    pl_vm_address_t cmd_addr = 0;
+    void *cmdptr = NULL;
     image->text_size = 0x0;
     bool found_text_seg = false;
-    while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, NULL)) != 0) {
+    while ((cmdptr = pl_async_macho_next_command_type(image, cmdptr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
         if (image->m64) {
-            struct segment_command_64 segment;
-            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
-                PLCF_DEBUG("Failed to read LC_SEGMENT command");
+            struct segment_command_64 *segment = cmdptr;
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
+                PLCF_DEBUG("LC_SEGMENT command was too short");
                 return PLCRASH_EINVAL;
             }
             
-            if (plcrash_async_strncmp(segment.segname, SEG_TEXT, sizeof(segment.segname)) != 0)
+            if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
                 continue;
             
-            image->text_size = image->swap64(segment.vmsize);
+            image->text_size = image->swap64(segment->vmsize);
             found_text_seg = true;
             break;
         } else {
-            struct segment_command segment;
-            if (plcrash_async_read_addr(image->task, cmd_addr, &segment, sizeof(segment)) != KERN_SUCCESS) {
-                PLCF_DEBUG("Failed to read LC_SEGMENT command");
+            struct segment_command *segment = cmdptr;
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
+                PLCF_DEBUG("LC_SEGMENT command was too short");
                 return PLCRASH_EINVAL;
             }
             
-            if (plcrash_async_strncmp(segment.segname, SEG_TEXT, sizeof(segment.segname)) != 0)
+            if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
                 continue;
             
-            image->text_size = image->swap32(segment.vmsize);
+            image->text_size = image->swap32(segment->vmsize);
             found_text_seg = true;
             break;
         }
@@ -198,41 +208,49 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
  *
  * @param image The image to iterate
  * @param previous The previously returned LC_CMD address value, or 0 to iterate from the first LC_CMD.
- * @return Returns the address of the next load_command on success, or 0 on failure.
+ * @return Returns the address of the next load_command on success, or NULL on failure.
+ *
+ * @note A returned command is gauranteed to be readable, and fully within mapped address space. If the command
+ * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
+ * returned.
  */
-pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_address_t previous) {
-    struct load_command cmd;
+void *pl_async_macho_next_command (pl_async_macho_t *image, void *previous) {
+    struct load_command *cmd;
 
     /* On the first iteration, determine the LC_CMD offset from the Mach-O header. */
-    if (previous == 0) {
+    if (previous == NULL) {
         /* Sanity check */
         if (image->swap32(image->header.sizeofcmds) < sizeof(struct load_command)) {
             PLCF_DEBUG("Mach-O sizeofcmds is less than sizeof(struct load_command) in %s", image->name);
-            return 0;
+            return NULL;
         }
 
-        return image->header_addr + image->header_size;
+        return plcrash_async_mobject_remap_address(&image->load_cmds, image->header_addr + image->header_size,
+                                                   sizeof(struct load_command));
     }
 
-    /* Read the previous command value to get its size. */
-    if (plcrash_async_read_addr(image->task, previous, &cmd, sizeof(cmd)) != KERN_SUCCESS) {
-        PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " in: %s", (uint64_t) previous, image->name);
-        return 0;
-    }
-
-    /* Fetch the size */
-    uint32_t cmdsize = image->swap32(cmd.cmdsize);
-    
-    /* Verify that incrementing our command position won't overflow our address value */
-    if (PL_VM_ADDRESS_MAX - cmdsize < previous) {
-        PLCF_DEBUG("Received an unexpectedly large cmdsize value: %" PRIu32 " in: %s", cmdsize, image->name);
-        return 0;
+    /* We need the size from the previous load command; first, verify the pointer. */
+    cmd = previous;
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, sizeof(*cmd))) {
+        PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
+        return NULL;
     }
 
     /* Advance to the next command */
-    pl_vm_address_t next = previous + cmdsize;
-    if (next >= image->header_addr + image->swap32(image->header.sizeofcmds)) {
-        return 0;
+    uint32_t cmdsize = image->swap32(cmd->cmdsize);
+    void *next = ((uint8_t *)previous) + cmdsize;
+
+    /* Verify that it holds at least load_command */
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, sizeof(struct load_command))) {
+        PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
+        return NULL;
+    }
+
+    /* Verify the actual size. */
+    cmd = next;
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, image->swap32(cmd->cmdsize))) {
+        PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
+        return NULL;
     }
 
     return next;
@@ -244,73 +262,58 @@ pl_vm_address_t pl_async_macho_next_command (pl_async_macho_t *image, pl_vm_addr
  * @param image The image to iterate
  * @param previous The previously returned LC_CMD address value, or 0 to iterate from the first LC_CMD.
  * @param expectedCommand The LC_* command type to be returned. Only commands matching this type will be returned by the iterator.
- * @return Returns the address of the next load_command on success, or 0 on failure. If @a size is non-NULL, the size of
- * the next load command will be written to @a size.
+ * @return Returns the address of the next load_command on success, or 0 on failure. 
+ *
+ * @note A returned command is gauranteed to be readable, and fully within mapped address space. If the command
+ * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
+ * returned.
  */
-pl_vm_address_t pl_async_macho_next_command_type (pl_async_macho_t *image, pl_vm_address_t previous, uint32_t expectedCommand, uint32_t *size) {
-    pl_vm_address_t cmd_addr = previous;
+void *pl_async_macho_next_command_type (pl_async_macho_t *image, void *previous, uint32_t expectedCommand) {
+    struct load_command *cmd = previous;
 
     /* Iterate commands until we either find a match, or reach the end */
-    while ((cmd_addr = pl_async_macho_next_command(image, cmd_addr)) != 0) {
-        /* Read the load command type */
-        struct load_command cmd;
-        
-        kern_return_t kt;
-        if ((kt = plcrash_async_read_addr(image->task, cmd_addr, &cmd, sizeof(cmd))) != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " with error %d in: %s", (uint64_t) cmd_addr, kt, image->name);
-            return 0;
-        }
-
+    while ((cmd = pl_async_macho_next_command(image, cmd)) != NULL) {
         /* Return a match */
-        if (image->swap32(cmd.cmd) == expectedCommand) {
-            if (size != NULL)
-                *size = image->swap32(cmd.cmdsize);
-            return cmd_addr;
+        if (image->swap32(cmd->cmd) == expectedCommand) {
+            return cmd;
         }
     }
 
     /* No match found */
-    return 0;
+    return NULL;
 }
 
 /**
- * Find the first LC_CMD matching the given @a cmd type, and optionally copy @a size bytes of the command to @a result.
+ * Find the first LC_CMD matching the given @a cmd type.
  *
  * @param image The image to search.
- * @param cmd The LC_CMD type to find.
- * @param result A destination buffer to which @a size bytes of the command will be written, or NULL.
- * @param size The number of bytes to be read from the command and written to @a size.
+ * @param expectedCommand The LC_CMD type to find.
  *
  * @return Returns the address of the matching load_command on success, or 0 on failure.
+ *
+ * @note A returned command is gauranteed to be readable, and fully within mapped address space. If the command
+ * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
+ * returned.
  */
-pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t cmd, void *result, pl_vm_size_t size) {
-    pl_vm_address_t cmd_addr = 0;
+void *pl_async_macho_find_command (pl_async_macho_t *image, uint32_t expectedCommand) {
+    struct load_command *cmd = NULL;
 
-    /* Even if no result was requested by the user, we still need to read the command ourselves. Configure a
-     * buffer to hold the read command. */
-    struct load_command cmdbuf;
-    if (result == NULL) {
-        result = &cmdbuf;
-        size = sizeof(cmdbuf);
-    }
-    
     /* Iterate commands until we either find a match, or reach the end */
-    while ((cmd_addr = pl_async_macho_next_command(image, cmd_addr)) != 0) {        
-        kern_return_t kt;
-        if ((kt = plcrash_async_read_addr(image->task, cmd_addr, result, size)) != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to read LC_CMD at address %" PRIu64 " with error %d in: %s", (uint64_t) cmd_addr, kt, image->name);
-            return 0;
+    while ((cmd = pl_async_macho_next_command(image, cmd)) != NULL) {
+        /* Read the load command type */
+        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, sizeof(*cmd))) {
+            PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
+            return NULL;
         }
 
         /* Return a match */
-        struct load_command *r = result;
-        if (image->swap32(r->cmd) == cmd) {
-            return cmd_addr;
+        if (image->swap32(cmd->cmd) == expectedCommand) {
+            return cmd;
         }
     }
     
     /* No match found */
-    return 0;
+    return NULL;
 }
 
 /**
@@ -324,39 +327,25 @@ pl_vm_address_t pl_async_macho_find_command (pl_async_macho_t *image, uint32_t c
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_find_segment (pl_async_macho_t *image, const char *segname, pl_vm_address_t *outAddress, struct segment_command *outCmd_32, struct segment_command_64 *outCmd_64) {
-    pl_vm_address_t cmd_addr = 0;
-    
-    // bool found_segment = false;
-    uint32_t cmdsize = 0;
-    
-    while ((cmd_addr = pl_async_macho_next_command_type(image, cmd_addr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT, &cmdsize)) != 0) {
+void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segname) {
+    void *seg = NULL;
+
+    while ((seg = pl_async_macho_next_command_type(image, seg, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
+
         /* Read the load command */
-        struct segment_command cmd_32;
-        struct segment_command_64 cmd_64;
-        
-        /* Read in the full segment command */
-        plcrash_error_t err;
-        if (image->m64)
-            err = plcrash_async_read_addr(image->task, cmd_addr, &cmd_64, sizeof(cmd_64));
-        else
-            err = plcrash_async_read_addr(image->task, cmd_addr, &cmd_32, sizeof(cmd_32));
-        
-        if (err != PLCRASH_ESUCCESS)
-            return err;
-        
-        /* Check for match */
-        if (plcrash_async_strncmp(segname, image->m64 ? cmd_64.segname : cmd_32.segname, sizeof(cmd_64.segname)) == 0) {
-            *outAddress = cmd_addr;
-            if (outCmd_32 != NULL)
-                *outCmd_32 = cmd_32;
-            if (outCmd_64 != NULL)
-                *outCmd_64 = cmd_64;
-            return PLCRASH_ESUCCESS;
+        if (image->m64) {
+            struct segment_command_64 *cmd_64 = seg;
+            if (plcrash_async_strncmp(segname, cmd_64->segname, sizeof(cmd_64->segname)) == 0)
+                return seg;
+        } else {
+            struct segment_command *cmd_32 = seg;
+            if (plcrash_async_strncmp(segname, cmd_32->segname, sizeof(cmd_32->segname)) == 0)
+                return seg;
         }
     }
-    
-    return PLCRASH_ENOTFOUND;
+
+    PLCF_DEBUG("Could not find LC_SEGMENT command for %s", segname);
+    return NULL;
 }
 
 /**
@@ -371,23 +360,25 @@ plcrash_error_t pl_async_macho_find_segment (pl_async_macho_t *image, const char
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
 plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj) {
-    pl_vm_address_t cmd_addr = 0;
-    struct segment_command cmd_32;
-    struct segment_command_64 cmd_64;
+    struct segment_command *cmd_32;
+    struct segment_command_64 *cmd_64;
     
-    plcrash_error_t err = pl_async_macho_find_segment(image, segname, &cmd_addr, &cmd_32, &cmd_64);
-    if (err != PLCRASH_ESUCCESS)
-        return err;
-    
+    void *segment =  pl_async_macho_find_segment_cmd(image, segname);
+    if (segment == NULL)
+        return PLCRASH_ENOTFOUND;
+
+    cmd_32 = segment;
+    cmd_64 = segment;
+
     /* Calculate the in-memory address and size */
     pl_vm_address_t segaddr;
     pl_vm_size_t segsize;
     if (image->m64) {
-        segaddr = image->swap64(cmd_64.vmaddr) + image->vmaddr_slide;
-        segsize = image->swap64(cmd_64.vmsize);
+        segaddr = image->swap64(cmd_64->vmaddr) + image->vmaddr_slide;
+        segsize = image->swap64(cmd_64->vmsize);
     } else {
-        segaddr = image->swap32(cmd_32.vmaddr) + image->vmaddr_slide;
-        segsize = image->swap32(cmd_32.vmsize);
+        segaddr = image->swap32(cmd_32->vmaddr) + image->vmaddr_slide;
+        segsize = image->swap32(cmd_32->vmsize);
     }
     
     /* Perform and return the mapping */
@@ -408,57 +399,64 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
 plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
-    pl_vm_address_t cmd_addr = 0;
-    struct segment_command cmd_32;
-    struct segment_command_64 cmd_64;
+    struct segment_command *cmd_32;
+    struct segment_command_64 *cmd_64;
     
-    plcrash_error_t err = pl_async_macho_find_segment(image, segname, &cmd_addr, &cmd_32, &cmd_64);
-    if (err != PLCRASH_ESUCCESS)
-        return err;
+    void *segment =  pl_async_macho_find_segment_cmd(image, segname);
+    if (segment == NULL)
+        return PLCRASH_ENOTFOUND;
+
+    cmd_32 = segment;
+    cmd_64 = segment;
     
     uint32_t nsects;
-    pl_vm_address_t cursor = cmd_addr;
-    
+    uintptr_t cursor = (uintptr_t) segment;
+
     if (image->m64) {
-        nsects = cmd_64.nsects;
-        cursor += sizeof(cmd_64);
+        nsects = cmd_64->nsects;
+        cursor += sizeof(*cmd_64);
     } else {
-        nsects = cmd_32.nsects;
-        cursor += sizeof(cmd_32);
+        nsects = cmd_32->nsects;
+        cursor += sizeof(*cmd_32);
     }
-    
-    for (uint32_t i = 0; i < nsects; i++) {
-        struct section sect_32;
-        struct section_64 sect_64;
-        
+
+    for (uint32_t i = 0; i < nsects; i++) {        
+        struct section *sect_32 = NULL;
+        struct section_64 *sect_64 = NULL;
+       
         if (image->m64) {
-            err = plcrash_async_read_addr(image->task, cursor, &sect_64, sizeof(sect_64));
-            cursor += sizeof(sect_64);
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_64)))
+                return PLCRASH_EINVAL;
+            
+            sect_64 = (void *) cursor;
+            cursor += sizeof(*sect_64);
         } else {
-            err = plcrash_async_read_addr(image->task, cursor, &sect_32, sizeof(sect_32));
-            cursor += sizeof(sect_32);
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_32)))
+                return PLCRASH_EINVAL;
+            
+            sect_32 = (void *) cursor;
+            cursor += sizeof(*sect_32);
         }
         
-        if (err != PLCRASH_ESUCCESS)
-            return err;
-        
-        const char *image_sectname = image->m64 ? sect_64.sectname : sect_32.sectname;
-        if (plcrash_async_strncmp(sectname, image_sectname, sizeof(sect_64.sectname)) == 0) {
+        const char *image_sectname = image->m64 ? sect_64->sectname : sect_32->sectname;
+        if (plcrash_async_strncmp(sectname, image_sectname, sizeof(sect_64->sectname)) == 0) {
             /* Calculate the in-memory address and size */
             pl_vm_address_t sectaddr;
             pl_vm_size_t sectsize;
             if (image->m64) {
-                sectaddr = image->swap64(sect_64.addr) + image->vmaddr_slide;
-                sectsize = image->swap32(sect_64.size);
+                sectaddr = image->swap64(sect_64->addr) + image->vmaddr_slide;
+                sectsize = image->swap32(sect_64->size);
             } else {
-                sectaddr = image->swap32(sect_32.addr) + image->vmaddr_slide;
-                sectsize = image->swap32(sect_32.size);
+                sectaddr = image->swap32(sect_32->addr) + image->vmaddr_slide;
+                sectsize = image->swap32(sect_32->size);
             }
             
             
             /* Perform and return the mapping */
             return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize);
         }
+        
+        PLCF_DEBUG("Did not match on %s", image_sectname);
     }
     
     return PLCRASH_ENOTFOUND;
@@ -556,38 +554,21 @@ static bool pl_async_macho_find_symtab_symbol (pl_async_macho_t *image, pl_vm_ad
  * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, @a found_symbol will not be called.
  */
 plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
-    struct symtab_command symtab_cmd;
-    struct dysymtab_command dysymtab_cmd;
-    kern_return_t kt;
     plcrash_error_t retval;
     
     /* Compute the actual in-core PC. */
     pl_vm_address_t slide_pc = pc - image->vmaddr_slide;
 
     /* Fetch the symtab commands, if available. */
-    pl_vm_address_t symtab_cmd_addr = pl_async_macho_find_command(image, LC_SYMTAB, &symtab_cmd, sizeof(symtab_cmd));
-    pl_vm_address_t dysymtab_cmd_addr = pl_async_macho_find_command(image, LC_DYSYMTAB, &dysymtab_cmd, sizeof(dysymtab_cmd));
+    struct symtab_command *symtab_cmd = pl_async_macho_find_command(image, LC_SYMTAB);
+    struct dysymtab_command *dysymtab_cmd = pl_async_macho_find_command(image, LC_DYSYMTAB);
     
     PLCF_DEBUG("Searching for symbol in %s", image->name);
 
     /* The symtab command is required */
-    if (symtab_cmd_addr == 0) {
+    if (symtab_cmd == NULL) {
         PLCF_DEBUG("could not find LC_SYMTAB load command");
         return PLCRASH_ENOTFOUND;
-    }
-
-    /* Read in the symtab command */
-    if ((kt = plcrash_async_read_addr(image->task, symtab_cmd_addr, &symtab_cmd, sizeof(symtab_cmd))) != KERN_SUCCESS) {
-        PLCF_DEBUG("plcrash_async_read_addr() failure: %d", kt);
-        return PLCRASH_EINVAL;
-    }
-    
-    /* If available, read in the dsymtab_cmd */
-    if (dysymtab_cmd_addr != 0) {
-        if ((kt = plcrash_async_read_addr(image->task, dysymtab_cmd_addr, &dysymtab_cmd, sizeof(dysymtab_cmd))) != KERN_SUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr() failure: %d", kt);
-            return PLCRASH_EINVAL;
-        }
     }
 
     /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
@@ -599,26 +580,28 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     }
 
     /* Determine the string and symbol table sizes. */
-    uint32_t nsyms = image->swap32(symtab_cmd.nsyms);
+    uint32_t nsyms = image->swap32(symtab_cmd->nsyms);
     size_t nlist_struct_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
     size_t nlist_table_size = nsyms * nlist_struct_size;
 
-    size_t string_size = image->swap32(symtab_cmd.strsize);
+    size_t string_size = image->swap32(symtab_cmd->strsize);
 
     /* Fetch pointers to the symbol and string tables, and verify their size values */
     void *nlist_table;
     char *string_table;
 
-    nlist_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.symoff), nlist_table_size);
+    nlist_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd->symoff), nlist_table_size);
     if (nlist_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.symoff), (uint64_t) nlist_table_size);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff",
+                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
 
-    string_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd.stroff), string_size);
+    string_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd->stroff), string_size);
     if (string_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff", (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd.stroff), (uint64_t) string_size);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff",
+                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->stroff), (uint64_t) string_size);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
@@ -627,14 +610,14 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
      * based on the value using plcrash_async_mobject_remap_address() above. */
     pl_nlist_common *found_symbol = NULL;
 
-    if (dysymtab_cmd_addr != 0x0) {
+    if (dysymtab_cmd != NULL) {
         /* dysymtab is available; use it to constrain our symbol search to the global and local sections of the symbol table. */
 
-        uint32_t idx_syms_global = image->swap32(dysymtab_cmd.iextdefsym);
-        uint32_t idx_syms_local = image->swap32(dysymtab_cmd.ilocalsym);
+        uint32_t idx_syms_global = image->swap32(dysymtab_cmd->iextdefsym);
+        uint32_t idx_syms_local = image->swap32(dysymtab_cmd->ilocalsym);
         
-        uint32_t nsyms_global = image->swap32(dysymtab_cmd.nextdefsym);
-        uint32_t nsyms_local = image->swap32(dysymtab_cmd.nlocalsym);
+        uint32_t nsyms_global = image->swap32(dysymtab_cmd->nextdefsym);
+        uint32_t nsyms_local = image->swap32(dysymtab_cmd->nlocalsym);
 
         /* Sanity check the symbol offsets to ensure they're within our known-valid ranges */
         if (idx_syms_global + nsyms_global > nsyms || idx_syms_local + nsyms_local > nsyms) {
@@ -712,6 +695,8 @@ cleanup:
 void pl_async_macho_free (pl_async_macho_t *image) {
     if (image->name != NULL)
         free(image->name);
+    
+    plcrash_async_mobject_free(&image->load_cmds);
 
     mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, -1);
 }
