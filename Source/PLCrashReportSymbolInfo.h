@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2012 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,45 +26,36 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReportThreadInfo.h"
+#import <Foundation/Foundation.h>
 
-/**
- * Crash log per-thread state information.
+@interface PLCrashReportSymbolInfo : NSObject {
+@private
+    /** The symbol name. */
+    NSString *_symbolName;
+    
+    /** The symbol start address. */
+    uint64_t _startAddress;
+    
+    /** The symbol end address, if explicitly defined. Will be 0 if unknown. */
+    uint64_t _endAddress;
+}
+
+- (id) initWithSymbolName: (NSString *) symbolName
+             startAddress: (uint64_t) startAddress
+               endAddress: (uint64_t) endAddress;
+
+/** The symbol name. */
+@property(nonatomic, readonly) NSString *symbolName;
+
+/** The symbol start address. */
+@property(nonatomic, readonly) uint64_t startAddress;
+
+/* The symbol end address, if explicitly defined. This will only be included if the end address is
+ * explicitly defined (eg, by DWARF debugging information), will not be derived by best-guess
+ * heuristics.
  *
- * Provides thread state information, including a backtrace and register state.
+ * If unknown, the address will be 0.
  */
-@implementation PLCrashReportThreadInfo
-
-/**
- * Initialize the crash log thread information.
- */
-- (id) initWithThreadNumber: (NSInteger) threadNumber
-                stackFrames: (NSArray *) stackFrames
-                    crashed: (BOOL) crashed
-                  registers: (NSArray *) registers
-{
-    if ((self = [super init]) == nil)
-        return nil;
-
-    _threadNumber = threadNumber;
-    _stackFrames = [stackFrames retain];
-    _crashed = crashed;
-    _registers = [registers retain];
-
-    return self;
-}
-
-- (void) dealloc {
-    [_stackFrames release];
-    [_registers release];
-    [super dealloc];
-}
-
-@synthesize threadNumber = _threadNumber;
-@synthesize stackFrames = _stackFrames;
-@synthesize crashed = _crashed;
-@synthesize registers = _registers;
-
+@property(nonatomic, readonly) uint64_t endAddress;
 
 @end
-

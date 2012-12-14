@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2012 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,45 +26,27 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReportThreadInfo.h"
+#import <Foundation/Foundation.h>
+#import "PLCrashReportSymbolInfo.h"
 
-/**
- * Crash log per-thread state information.
- *
- * Provides thread state information, including a backtrace and register state.
- */
-@implementation PLCrashReportThreadInfo
+@interface PLCrashReportStackFrameInfo : NSObject {
+@private
+    /** Frame instruction pointer. */
+    uint64_t _instructionPointer;
 
-/**
- * Initialize the crash log thread information.
- */
-- (id) initWithThreadNumber: (NSInteger) threadNumber
-                stackFrames: (NSArray *) stackFrames
-                    crashed: (BOOL) crashed
-                  registers: (NSArray *) registers
-{
-    if ((self = [super init]) == nil)
-        return nil;
-
-    _threadNumber = threadNumber;
-    _stackFrames = [stackFrames retain];
-    _crashed = crashed;
-    _registers = [registers retain];
-
-    return self;
+    /** Symbol information, if available. Otherwise, will be nil. */
+    PLCrashReportSymbolInfo *_symbolInfo;
 }
 
-- (void) dealloc {
-    [_stackFrames release];
-    [_registers release];
-    [super dealloc];
-}
+- (id) initWithInstructionPointer: (uint64_t) instructionPointer symbolInfo: (PLCrashReportSymbolInfo *) symbolInfo;
 
-@synthesize threadNumber = _threadNumber;
-@synthesize stackFrames = _stackFrames;
-@synthesize crashed = _crashed;
-@synthesize registers = _registers;
+/**
+ * Frame's instruction pointer.
+ */
+@property(nonatomic, readonly) uint64_t instructionPointer;
 
+/** Symbol information for this frame.
+ * This may be unavailable, and this property will be nil. */
+@property(nonatomic, readonly) PLCrashReportSymbolInfo *symbolInfo;
 
 @end
-

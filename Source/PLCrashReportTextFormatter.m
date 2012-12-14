@@ -70,7 +70,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
 + (NSString *) stringValueForCrashReport: (PLCrashReport *) report withTextFormat: (PLCrashReportTextFormat) textFormat {
 	NSMutableString* text = [NSMutableString string];
 	boolean_t lp64 = true; // quiesce GCC uninitialized value warning
-    
+
 	/* Header */
 	
     /* Map to apple style OS nane */
@@ -450,6 +450,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     uint64_t baseAddress = 0x0;
     uint64_t pcOffset = 0x0;
     NSString *imageName = @"\?\?\?";
+    NSString *symbolString = nil;
     
     PLCrashReportBinaryImageInfo *imageInfo = [report imageForAddress: frameInfo.instructionPointer];
     if (imageInfo != nil) {
@@ -457,13 +458,40 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         baseAddress = imageInfo.imageBaseAddress;
         pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
     }
-    
-    return [NSString stringWithFormat: @"%-4ld%-36s0x%08" PRIx64 " 0x%" PRIx64 " + %" PRId64 "\n", 
+
+    /* If symbol info is available, the format used in Apple's reports is Sym + OffsetFromSym. Otherwise,
+     * the format used is imageBaseAddress + offsetToIP */
+    if (frameInfo.symbolInfo != nil) {
+        NSString *symbolName = frameInfo.symbolInfo.symbolName;
+
+        /* Apple strips the _ symbol prefix in their reports. Only OS X makes use of an
+         * underscore symbol prefix by default. */
+        if ([symbolName rangeOfString: @"_"].location == 0 && [symbolName length] > 1) {
+            switch (report.systemInfo.operatingSystem) {
+                case PLCrashReportOperatingSystemMacOSX:
+                case PLCrashReportOperatingSystemiPhoneOS:
+                case PLCrashReportOperatingSystemiPhoneSimulator:
+                    symbolName = [symbolName substringFromIndex: 1];
+                    break;
+
+                default:
+                    NSLog(@"Symbol prefix rules are unknown for this OS!");
+                    break;
+            }
+        }
+        
+        
+        uint64_t symOffset = frameInfo.instructionPointer - frameInfo.symbolInfo.startAddress;
+        symbolString = [NSString stringWithFormat: @"%@ + %" PRId64, symbolName, symOffset];
+    } else {
+        symbolString = [NSString stringWithFormat: @"0x%" PRIx64 " + %" PRId64, baseAddress, pcOffset];
+    }
+
+    return [NSString stringWithFormat: @"%-4ld%-36s0x%08" PRIx64 " %@\n", 
             (long) frameIndex,
             [imageName UTF8String],
             frameInfo.instructionPointer, 
-            baseAddress, 
-            pcOffset];
+            symbolString];
 }
 
 /**

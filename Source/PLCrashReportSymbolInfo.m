@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2012 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,45 +26,43 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReportThreadInfo.h"
+#import "PLCrashReportSymbolInfo.h"
 
 /**
- * Crash log per-thread state information.
+ * Crash log symbol information.
+ */
+@implementation PLCrashReportSymbolInfo
+
+@synthesize symbolName = _symbolName;
+@synthesize startAddress = _startAddress;
+@synthesize endAddress = _endAddress;
+
+/**
+ * Initialize with the provided symbol info.
  *
- * Provides thread state information, including a backtrace and register state.
+ * @param symbolName The symbol name.
+ * @param startAddress The symbol start address.
+ * @param endAddress The symbol end address, if available; otherwise, 0. This must only be provided if it has been
+ * explicitly defined by the available debugging info, and should not be derived from best-guess heuristics.
  */
-@implementation PLCrashReportThreadInfo
-
-/**
- * Initialize the crash log thread information.
- */
-- (id) initWithThreadNumber: (NSInteger) threadNumber
-                stackFrames: (NSArray *) stackFrames
-                    crashed: (BOOL) crashed
-                  registers: (NSArray *) registers
+- (id) initWithSymbolName: (NSString *) symbolName
+             startAddress: (uint64_t) startAddress
+               endAddress: (uint64_t) endAddress
 {
     if ((self = [super init]) == nil)
         return nil;
 
-    _threadNumber = threadNumber;
-    _stackFrames = [stackFrames retain];
-    _crashed = crashed;
-    _registers = [registers retain];
+    _symbolName = [symbolName retain];
+    _startAddress = startAddress;
+    _endAddress = endAddress;
 
     return self;
 }
 
 - (void) dealloc {
-    [_stackFrames release];
-    [_registers release];
+    [_symbolName release];
+
     [super dealloc];
 }
 
-@synthesize threadNumber = _threadNumber;
-@synthesize stackFrames = _stackFrames;
-@synthesize crashed = _crashed;
-@synthesize registers = _registers;
-
-
 @end
-

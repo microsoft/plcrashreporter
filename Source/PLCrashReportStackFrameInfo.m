@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2012 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,45 +26,36 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReportThreadInfo.h"
+#import "PLCrashReportStackFrameInfo.h"
 
 /**
- * Crash log per-thread state information.
+ * Crash log stack frame information.
+ */
+@implementation PLCrashReportStackFrameInfo
+
+@synthesize instructionPointer = _instructionPointer;
+@synthesize symbolInfo = _symbolInfo;
+
+/**
+ * Initialize with the provided frame info.
  *
- * Provides thread state information, including a backtrace and register state.
+ * @param instructionPointer The instruction pointer value for this frame.
+ * @param symbol Symbol information for this frame, if available. May be nil.
  */
-@implementation PLCrashReportThreadInfo
-
-/**
- * Initialize the crash log thread information.
- */
-- (id) initWithThreadNumber: (NSInteger) threadNumber
-                stackFrames: (NSArray *) stackFrames
-                    crashed: (BOOL) crashed
-                  registers: (NSArray *) registers
-{
+- (id) initWithInstructionPointer: (uint64_t) instructionPointer symbolInfo: (PLCrashReportSymbolInfo *) symbolInfo {
     if ((self = [super init]) == nil)
         return nil;
-
-    _threadNumber = threadNumber;
-    _stackFrames = [stackFrames retain];
-    _crashed = crashed;
-    _registers = [registers retain];
-
+    
+    _instructionPointer = instructionPointer;
+    _symbolInfo = [symbolInfo retain];
+    
     return self;
 }
 
 - (void) dealloc {
-    [_stackFrames release];
-    [_registers release];
+    [_symbolInfo release];
+
     [super dealloc];
 }
 
-@synthesize threadNumber = _threadNumber;
-@synthesize stackFrames = _stackFrames;
-@synthesize crashed = _crashed;
-@synthesize registers = _registers;
-
-
 @end
-

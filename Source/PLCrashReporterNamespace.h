@@ -55,6 +55,7 @@
 #define PLCrashReportRegisterInfo           PLNS(PLCrashReportRegisterInfo)
 #define PLCrashReportSignalInfo             PLNS(PLCrashReportSignalInfo)
 #define PLCrashReportStackFrameInfo         PLNS(PLCrashReportStackFrameInfo)
+#define PLCrashReportSymbolInfo             PLNS(PLCrashReportSymbolInfo)
 #define PLCrashReportSystemInfo             PLNS(PLCrashReportSystemInfo)
 #define PLCrashReportTextFormatter          PLNS(PLCrashReportTextFormatter)
 #define PLCrashReportThreadInfo             PLNS(PLCrashReportThreadInfo)

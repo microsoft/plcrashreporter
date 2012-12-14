@@ -36,6 +36,8 @@
 #import <fcntl.h>
 #import <dlfcn.h>
 
+#import <objc/runtime.h>
+
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
 
@@ -43,9 +45,6 @@
 @private
     /* Path to crash log */
     NSString *_logPath;
-
-    /* Test thread */
-    plframe_test_thead_t _thr_args;
 }
 
 @end
@@ -55,9 +54,6 @@
 - (void) setUp {
     /* Create a temporary log path */
     _logPath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
-
-    /* Create the test thread */
-    plframe_test_thread_spawn(&_thr_args);
 }
 
 - (void) tearDown {
@@ -66,14 +62,10 @@
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
     [_logPath release];
-    
-    /* Stop the test thread */
-    plframe_test_thread_stop(&_thr_args);
 }
 
 - (void) testWriteReport {
     siginfo_t info;
-    plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
@@ -81,18 +73,15 @@
     
     /* Initialze faux crash data */
     {
-        info.si_addr = 0x0;
+        info.si_addr = method_getImplementation(class_getInstanceMethod([self class], _cmd));
         info.si_errno = 0;
         info.si_pid = getpid();
         info.si_uid = getuid();
         info.si_code = SEGV_MAPERR;
         info.si_signo = SIGSEGV;
         info.si_status = 0;
-        
-        /* Steal the test thread's stack for iteration */
-        plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(_thr_args.thread));
     }
-    
+
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
     plcrash_async_file_init(&file, fd, 0);
@@ -117,8 +106,8 @@
         plcrash_async_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i), _dyld_get_image_name(i));
     }
 
-    /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &image_list, &file, &info, cursor.uap), @"Crash log failed");
+    /* Write the crash report */    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write_curthread(&writer, &image_list, &file, &info), @"Writing crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
@@ -198,6 +187,15 @@
             for (PLCrashReportRegisterInfo *registerInfo in threadInfo.registers) {
                 STAssertNotNil(registerInfo.registerName, @"Register name is nil");
             }
+
+            /* Symbol information should be available for an ObjC frame in our binary */
+            STAssertNotEquals((NSUInteger)0, [threadInfo.stackFrames count], @"Zero stack frames returned");
+            PLCrashReportStackFrameInfo *stackFrame = [threadInfo.stackFrames objectAtIndex: 0];
+            STAssertNotNil(stackFrame.symbolInfo, @"No symbol info found");
+            
+            NSString *symName = [NSString stringWithFormat: @"-[%@ %@]", [self class], NSStringFromSelector(_cmd)];
+            STAssertEqualStrings(stackFrame.symbolInfo.symbolName, symName, @"Incorrect symbol name");
+
             crashedFound = YES;
         }
         
