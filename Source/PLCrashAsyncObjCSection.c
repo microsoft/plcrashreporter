@@ -274,7 +274,8 @@ static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_cont
     /* Map in the __objc_const section, which is where all the read-only class data lives. */
     err = pl_async_macho_map_section(image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj, err);
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj, err);
         goto cleanup;
     }
     context->objcConstMobjInitialized = true;
@@ -282,7 +283,8 @@ static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_cont
     /* Map in the class list section.  */
     err = pl_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &context->classMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kClassListSectionName, &context->classMobj, err);
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kClassListSectionName, &context->classMobj, err);
         goto cleanup;
     }
     context->classMobjInitialized = true;
@@ -290,7 +292,8 @@ static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_cont
     /* Map in the __objc_data section, which is where the actual classes live. */
     err = pl_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj, err);
+        /* If the class list was found, the data section must also be found */
+        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj, err);
         goto cleanup;
     }
     context->objcDataMobjInitialized = true;
@@ -434,7 +437,8 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *i
     plcrash_async_mobject_t moduleMobj;
     err = pl_async_macho_map_section(image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj, err);
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj, err);
         goto cleanup;
     }
     
@@ -695,7 +699,9 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *
     /* Map memory objects. */
     err = map_sections(image, objcContext);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Unable to map relevant sections for ObjC2 class parsing, error %d", err);
+        /* Don't log an error if ObjC data was simply not found */
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("Unable to map relevant sections for ObjC2 class parsing, error %d", err);
         goto cleanup;
     }
     
@@ -891,13 +897,11 @@ plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_async_obj
         .searchIMP = imp
     };
 
-    /* If there's no ObjC segment, there's no point to trying to parse out the ObjC data */
-    if (pl_async_macho_find_segment_cmd(image, kObjCSegmentName) == NULL)
-        return PLCRASH_ENOTFOUND;
-
     plcrash_error_t err = pl_async_objc_parse(image, objcContext, pl_async_objc_find_method_search_callback, &searchCtx);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("pl_async_objc_parse(%p, 0x%llx, %p, %p) failure %d", image, (long long)imp, callback, ctx, err);
+        /* Don't log an error if ObjC data was simply not found */
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("pl_async_objc_parse(%p, 0x%llx, %p, %p) failure %d", image, (long long)imp, callback, ctx, err);
         return err;
     }
     
