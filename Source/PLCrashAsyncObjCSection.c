@@ -569,7 +569,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, 
             flags = classDataRW_32.flags;
         
         if ((flags & RW_REALIZED) == 0)  {
-            PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
+            // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
             goto cleanup;
         }
         

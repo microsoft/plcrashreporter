@@ -425,14 +425,18 @@ plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char 
         struct section_64 *sect_64 = NULL;
        
         if (image->m64) {
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_64)))
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_64))) {
+                PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
                 return PLCRASH_EINVAL;
+            }
             
             sect_64 = (void *) cursor;
             cursor += sizeof(*sect_64);
         } else {
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_32)))
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_32))) {
+                PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
                 return PLCRASH_EINVAL;
+            }
             
             sect_32 = (void *) cursor;
             cursor += sizeof(*sect_32);
@@ -455,8 +459,6 @@ plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char 
             /* Perform and return the mapping */
             return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize);
         }
-        
-        PLCF_DEBUG("Did not match on %s", image_sectname);
     }
     
     return PLCRASH_ENOTFOUND;
@@ -562,8 +564,7 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     /* Fetch the symtab commands, if available. */
     struct symtab_command *symtab_cmd = pl_async_macho_find_command(image, LC_SYMTAB);
     struct dysymtab_command *dysymtab_cmd = pl_async_macho_find_command(image, LC_DYSYMTAB);
-    
-    PLCF_DEBUG("Searching for symbol in %s", image->name);
+
 
     /* The symtab command is required */
     if (symtab_cmd == NULL) {
@@ -592,16 +593,16 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
 
     nlist_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd->symoff), nlist_table_size);
     if (nlist_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff",
-                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
+                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
 
     string_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd->stroff), string_size);
     if (string_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff",
-                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->stroff), (uint64_t) string_size);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
+                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
@@ -663,6 +664,7 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     const char *p = sym_name;
     do {
         if (!plcrash_async_mobject_verify_local_pointer(&linkedit_mobj, (uintptr_t) p, 1)) {
+            PLCF_DEBUG("End of mobject reached while walking string\n");
             retval = PLCRASH_EINVAL;
             goto cleanup;
         }
