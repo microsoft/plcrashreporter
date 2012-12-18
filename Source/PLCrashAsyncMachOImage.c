@@ -155,6 +155,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
     /* Map in header + load commands */
     pl_vm_size_t cmd_len = image->swap32(image->header.sizeofcmds);
     pl_vm_size_t cmd_offset = image->header_addr + image->header_size;
+    image->ncmds = image->swap32(image->header.ncmds);
     plcrash_error_t ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len);
     if (ret != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to map Mach-O load commands in image %s", image->name);
@@ -239,6 +240,10 @@ void *pl_async_macho_next_command (pl_async_macho_t *image, void *previous) {
     /* Advance to the next command */
     uint32_t cmdsize = image->swap32(cmd->cmdsize);
     void *next = ((uint8_t *)previous) + cmdsize;
+
+    /* Avoid walking off the end of the cmd buffer */
+    if ((uintptr_t)next >= image->load_cmds.address + image->load_cmds.length)
+        return NULL;
 
     /* Verify that it holds at least load_command */
     if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, sizeof(struct load_command))) {
@@ -344,7 +349,6 @@ void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segn
         }
     }
 
-    PLCF_DEBUG("Could not find LC_SEGMENT command for %s", segname);
     return NULL;
 }
 

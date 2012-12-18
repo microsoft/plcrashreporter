@@ -65,6 +65,9 @@ typedef struct pl_async_macho {
      * as the above field does not include the full mach_header_64 extensions to the mach_header. */
     pl_vm_size_t header_size;
 
+    /** Number of load commands */
+    uint32_t ncmds;
+
     /** Mapped Mach-O load commands */
     plcrash_async_mobject_t load_cmds;
 

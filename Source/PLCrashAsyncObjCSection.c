@@ -890,7 +890,11 @@ plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_async_obj
     struct pl_async_objc_find_method_search_context searchCtx = {
         .searchIMP = imp
     };
-    
+
+    /* If there's no ObjC segment, there's no point to trying to parse out the ObjC data */
+    if (pl_async_macho_find_segment_cmd(image, kObjCSegmentName) == NULL)
+        return PLCRASH_ENOTFOUND;
+
     plcrash_error_t err = pl_async_objc_parse(image, objcContext, pl_async_objc_find_method_search_callback, &searchCtx);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("pl_async_objc_parse(%p, 0x%llx, %p, %p) failure %d", image, (long long)imp, callback, ctx, err);

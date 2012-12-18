@@ -82,20 +82,24 @@
  * Test iteration of Mach-O load commands.
  */
 - (void) testIterateCommand {
-    struct load_command *cmd = NULL;
 
-    bool found_uuid = false;
-    while ((cmd = pl_async_macho_next_command(&_image, cmd)) != 0) {
-        /* If this is not LC_UUID command, nothing to do */
-        if (_image.swap32(cmd->cmd) != LC_UUID)
-            continue;
-        
-        // TODO - Validate the UUID value?
-        STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
-        found_uuid = true;
+    pl_async_macho_t image;
+    for (uint32_t i = 0; i < _dyld_image_count(); i++) {
+        pl_async_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));
+        struct load_command *cmd = NULL;
+
+        for (uint32_t ncmd = 0; ncmd < image.ncmds; ncmd++) {
+            cmd = pl_async_macho_next_command(&image, cmd);
+            STAssertNotNULL(cmd, @"Failed to fetch load command %" PRIu32 " of %" PRIu32 "in %s", ncmd, image.ncmds, image.name);
+
+            if (cmd == NULL)
+                break;
+
+            STAssertNotEquals((uint32_t)0, cmd->cmdsize, @"This test simply ensures that dereferencing the cmd pointer doesn't crash: %d:%d:%s", ncmd, image.ncmds, image.name);
+        }
+
+        pl_async_macho_free(&image);
     }
-
-    STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
 }
 
 /**
