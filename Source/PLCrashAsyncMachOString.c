@@ -55,24 +55,32 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
         return PLCRASH_ESUCCESS;
     
     pl_vm_address_t cursor = string->address;
-    
+
+    /* Map in the page containing the string, +1 up to one additional page. */
+    size_t page_count = 1;
+    plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, PAGE_SIZE);
+
     char c;
     do {
-        /* Read successive characters until we reach a 0. */
-        plcrash_error_t err = plcrash_async_read_addr(string->image->task, cursor, &c, 1);
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("in plcrash_async_macho_string_read, plcrash_async_read_addr at 0x%llx failure %d ", (long long)cursor, err);
-            return err;
+        char *p = plcrash_async_mobject_remap_address(&string->mobj, cursor, 1);
+        if (p == NULL) {
+            /* This should pretty much never happen */
+            PLCF_DEBUG("Mapped a string larger than one page! Remapping ...");
+            page_count++;
+            plcrash_async_mobject_free(&string->mobj);
+            err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, page_count*PAGE_SIZE);
+            if (err != PLCRASH_ESUCCESS)
+                return err;
         }
+
+        c = *p;
         cursor++;
-    } while(c != 0);
-    
+    } while(c != '\0');
+
     /* Compute the length of the string data and make a new memory object. */
-    pl_vm_size_t length = cursor - string->address - 1;
-    plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, length);
-    if (err == PLCRASH_ESUCCESS)
-        string->mobjIsInitialized = true;
-    return err;
+    string->length = cursor - string->address - 1;
+    string->mobjIsInitialized = true;
+    return PLCRASH_ESUCCESS;
 }
 
 /**
@@ -85,7 +93,7 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
 plcrash_error_t plcrash_async_macho_string_get_length (plcrash_async_macho_string_t *string, pl_vm_size_t *outLength) {
     plcrash_error_t err = plcrash_async_macho_string_read(string);
     if (err == PLCRASH_ESUCCESS)
-        *outLength = string->mobj.length;
+        *outLength = string->length;
     return err;
 }
 
