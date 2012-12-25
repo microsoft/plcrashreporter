@@ -55,6 +55,20 @@ void plcrash_populate_error (NSError **error, PLCrashReporterError code, NSStrin
 
 /**
  * Populate an PLCrashReporterErrorOperatingSystem NSError instance, using the provided
+ * Mach error value to create the underlying error cause.
+ *
+ * @param error Error instance to populate. If NULL, this method returns
+ * and nothing is modified.
+ * @param kr The Mach return value
+ * @param description A localized error description.
+ */
+void plcrash_populate_mach_error (NSError **error, kern_return_t kr, NSString *description) {
+    NSError *cause = [NSError errorWithDomain: NSMachErrorDomain code: kr userInfo: nil];
+    plcrash_populate_error(error, PLCrashReporterErrorOperatingSystem, description, cause);
+}
+
+/**
+ * Populate an PLCrashReporterErrorOperatingSystem NSError instance, using the provided
  * errno error value to create the underlying error cause.
  *
  * @param error Error instance to populate. If NULL, this method returns

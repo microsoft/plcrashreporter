@@ -62,6 +62,25 @@
 }
 
 /**
+ * Test mach error population
+ */
+- (void) testPopulateMach {
+    NSError *error = nil;
+    
+    plcrash_populate_mach_error(&error, KERN_INVALID_ARGUMENT, @"desc");
+    STAssertNotNil(error, @"Did not populate error");
+    STAssertEqualObjects([error domain], PLCrashReporterErrorDomain, @"Incorrect error domain");
+    STAssertEquals([error code], (NSInteger)PLCrashReporterErrorOperatingSystem, @"Incorrect error code");
+    STAssertEqualObjects([error localizedDescription], @"desc", @"Incorrect description");
+    
+    NSError *cause = [[error userInfo] objectForKey: NSUnderlyingErrorKey];
+    STAssertNotNil(cause, @"Missing error cause");
+    STAssertEqualObjects([cause domain], NSMachErrorDomain, @"Incorrect error domain");
+    STAssertEquals([cause code], (NSInteger)KERN_INVALID_ARGUMENT, @"Incorrect error code");
+}
+
+
+/**
  * Test posix error population
  */
 - (void) testPopulateErrno {

@@ -89,9 +89,6 @@
 		05654F770EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F780EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F790EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
-		0573B4481681107F00395F2A /* PLCrashReportRegisterInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E54E16765A0200B39833 /* PLCrashReportRegisterInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		0573B4491681108200395F2A /* PLCrashReportStackFrameInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E5431676598200B39833 /* PLCrashReportStackFrameInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		0573B44A1681108500395F2A /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0573B42C1681098E00395F2A /* PLCrashMachExceptionServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */; };
 		0573B42D1681098E00395F2A /* PLCrashMachExceptionServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */; };
 		0573B42E1681098E00395F2A /* PLCrashMachExceptionServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */; };
@@ -107,6 +104,9 @@
 		0573B43916810FBA00395F2A /* plcrash_exc_server.c in Sources */ = {isa = PBXBuildFile; fileRef = 0573B43516810FBA00395F2A /* plcrash_exc_server.c */; };
 		0573B43B16810FD400395F2A /* plcrash_exc_server.h in Headers */ = {isa = PBXBuildFile; fileRef = 0573B43A16810FD400395F2A /* plcrash_exc_server.h */; };
 		0573B43C16810FD400395F2A /* plcrash_exc_server.h in Headers */ = {isa = PBXBuildFile; fileRef = 0573B43A16810FD400395F2A /* plcrash_exc_server.h */; };
+		0573B4481681107F00395F2A /* PLCrashReportRegisterInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E54E16765A0200B39833 /* PLCrashReportRegisterInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0573B4491681108200395F2A /* PLCrashReportStackFrameInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E5431676598200B39833 /* PLCrashReportStackFrameInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0573B44A1681108500395F2A /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
@@ -439,6 +439,9 @@
 		05F76DDD16305A5800A668C7 /* PLCrashAsyncMachOImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */; };
 		05F76DDE16305A6A00A668C7 /* PLCrashAsyncMachOImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */; };
 		05F76DDF16305A7000A668C7 /* PLCrashAsyncMachOImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */; };
+		05FDFC84168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */; };
+		05FDFC85168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */; };
+		05FDFC86168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */; };
 		2D0E10461141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D0E10441141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D0E10471141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */; };
 		2D0E10481141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D0E10441141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h */; };
@@ -861,6 +864,7 @@
 		05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncMachOImage.c; sourceTree = "<group>"; };
 		05F76DD7162F215800A668C7 /* PLCrashAsyncMachOImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncMachOImage.h; sourceTree = "<group>"; };
 		05F76DD9162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOImageTests.m; sourceTree = "<group>"; };
+		05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServerTests.m; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		2D0E10441141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportProcessInfo.h; sourceTree = "<group>"; };
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
@@ -1037,6 +1041,7 @@
 			children = (
 				0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */,
 				0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */,
+				05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */,
 				0573B43516810FBA00395F2A /* plcrash_exc_server.c */,
 				0573B43A16810FD400395F2A /* plcrash_exc_server.h */,
 			);
@@ -2253,6 +2258,7 @@
 				C26022901642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
 				C2198E0A16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688F916445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
+				05FDFC84168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2298,6 +2304,7 @@
 				C26022911642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
 				C2198E0B16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688FA16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
+				05FDFC85168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2343,6 +2350,7 @@
 				C26022921642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
 				C2198E0C16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688FB16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
+				05FDFC86168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

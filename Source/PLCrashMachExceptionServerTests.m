@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2012 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,9 +26,24 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <Foundation/Foundation.h>
-#import "CrashReporter.h"
+#import "GTMSenTestCase.h"
 
-void plcrash_populate_error (NSError **error, PLCrashReporterError code, NSString *description, NSError *cause);
-void plcrash_populate_mach_error (NSError **error, kern_return_t kr, NSString *description);
-void plcrash_populate_posix_error (NSError **error, int errnoVal, NSString *description);
+#import "PLCrashMachExceptionServer.h"
+
+@interface PLCrashMachExceptionServerTests : SenTestCase @end
+
+@implementation PLCrashMachExceptionServerTests
+
+- (void) testSomething {
+    NSError *error;
+
+    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] init] autorelease];
+    STAssertNotNil(server, @"Failed to initialize server");
+
+    STAssertTrue([server registerHandlerForTask: mach_task_self()
+                                   withCallback: NULL /* TODO */
+                                        context: NULL
+                                          error: &error], @"Failed to configure handler: %@", error);
+}
+
+@end

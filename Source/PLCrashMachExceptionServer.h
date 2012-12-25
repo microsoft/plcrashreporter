@@ -28,6 +28,17 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+ * @internal
+ * Exception handler callback.
+ */
+typedef void (*PLCrashMachExceptionHandlerCallback)(void *context);
+
 @interface PLCrashMachExceptionServer : NSObject
+
+- (BOOL) registerHandlerForTask: (task_t) task
+                   withCallback: (PLCrashMachExceptionHandlerCallback) callback
+                        context: (void *) context
+                          error: (NSError **) outError;
 
 @end
