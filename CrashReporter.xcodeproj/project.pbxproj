@@ -2951,6 +2951,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks $(DEVELOPER_DIR)/Library/Frameworks";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Cocoa,
@@ -2983,6 +2984,7 @@
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks $(DEVELOPER_DIR)/Library/Frameworks";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Cocoa,

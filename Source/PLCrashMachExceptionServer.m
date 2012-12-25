@@ -119,14 +119,19 @@ struct exception_server_context {
 /**
  * Background exception server. Handles incoming exception messages and dispatches
  * them to the registered callback.
+ *
+ * This code must be written to be async-safe once a Mach exception message
+ * has been returned, as the state of the process' threads is entirely unknown.
  */
 static void *exception_server_thread (void *arg) {
     struct exception_server_context *exc_context = arg;
-    __Request__exception_raise_t request;
+    __Request__exception_raise_t *request = NULL;
+    size_t request_size;
     kern_return_t kr;
+    mach_msg_return_t mr;
 
+    /* Set up the exception handler, informing the waiting thread of completion (or failure). */
     pthread_mutex_lock(&exc_context->server_init_lock); {
-
         kr = task_set_exception_ports(exc_context->task, FATAL_EXCEPTION_MASK, exc_context->server_port, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
         exc_context->server_init_result = kr;
 
@@ -141,27 +146,65 @@ static void *exception_server_thread (void *arg) {
         }
     } pthread_mutex_unlock(&exc_context->server_init_lock);
 
-    
-    // Wait for the exception info
+    /* Initialize the received message with a default size */
+    request_size = round_page(sizeof(*request));
+    kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
+    if (kr != KERN_SUCCESS) {
+        /* Shouldn't happen ... */
+        fprintf(stderr, "Unexpected error in vm_allocate(): %x\n", kr);
+        return NULL;
+    }
+
     while (true) {
-        request.Head.msgh_local_port = exc_context->server_port;
-        request.Head.msgh_size = sizeof(request);
-        kr = mach_msg(&request.Head,
-                      MACH_RCV_MSG | MACH_RCV_LARGE, 0,
-                      request.Head.msgh_size,
+        request->Head.msgh_local_port = exc_context->server_port;
+        request->Head.msgh_size = request_size;
+        mr = mach_msg(&request->Head,
+                      MACH_RCV_MSG | MACH_RCV_LARGE,
+                      0,
+                      request->Head.msgh_size,
                       exc_context->server_port,
                       MACH_MSG_TIMEOUT_NONE,
                       MACH_PORT_NULL);
         
-        if (kr != KERN_SUCCESS) {
+        if (mr != MACH_MSG_SUCCESS) {
+            if (mr == MACH_RCV_TOO_LARGE) {
+                /* Determine the new size (before dropping the buffer) */
+                request_size = round_page(request->Head.msgh_size);
+
+                /* Drop the old receive buffer */
+                vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
+
+                /* Re-allocate a larger receive buffer */
+                kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
+                if (kr != KERN_SUCCESS) {
+                    /* Shouldn't happen ... */
+                    fprintf(stderr, "Unexpected error in vm_allocate(): %x\n", kr);
+                    return NULL;
+                }
+
+                continue;
+            }
+            
+            // TODO - handle MACH_RCV_INTERRUPTED and/or thread shutdown
+
             /* Shouldn't happen ... */
-            fprintf(stderr, "Unexpected error in mach_msg(): %d\n", kr);
-            continue;
+            fprintf(stderr, "Unexpected error in mach_msg(): %x\n", kr);
+            break;
         }
+        
 
         // TODO - Handle message
-        NSLog(@"Got mach exception message. Code: %d", request.exception);
+        fprintf(stderr, "Got mach exception message. exc=%x code=%x,%x\n", request->exception, request->code[0], request->code[1]);
+
+        // TODO - Send reply
+
+        break;
     }
+
+    /* Drop the receive buffer */
+    if (request != NULL)
+        vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
+
     return NULL;
 }
 
@@ -193,13 +236,15 @@ static void *exception_server_thread (void *arg) {
                         context: (void *) context
                           error: (NSError **) outError
 {
-    struct exception_server_context *exc_context;
+    struct exception_server_context *exc_context = NULL;
     pthread_attr_t attr;
     pthread_t thr;
 
     exc_context = calloc(1, sizeof(*context));
+    exc_context->task = task;
     exc_context->server_port = MACH_PORT_NULL;
     exc_context->server_init_result = KERN_SUCCESS;
+
     if (pthread_mutex_init(&exc_context->server_init_lock, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Mutex initialization failed");
         free(exc_context);
