@@ -28,12 +28,12 @@
 
 #import "PLCrashMachExceptionServer.h"
 #import "PLCrashReporterNSError.h"
+#import "PLCrashAsync.h"
 
 #import <pthread.h>
 #import <mach/mach.h>
 #import <mach/exc.h>
 
-#define EXCEPTION_MASK 
 
 /**
  * @internal
@@ -93,27 +93,25 @@ struct exception_server_context {
     /** Previously registered handlers. We will forward all exceptions here after
       * internal processing. */
     struct exception_handler_state prev_handler_state;
-
-    /** Registered handler state. */
-    struct exception_handler_state handler_state;
 };
 
-/***
- * @internal
- * Implements Crash Reporter mach exception handling.
- */
-@implementation PLCrashMachExceptionServer
-
 /**
- * Initialize a new Mach exception server. The exception server will
- * not register itself in the handler chain until PLCrashMachExceptionServer::registerHandlerAndReturnError:
- * is called.
+ * @internal
+ *
+ * Set exception ports defined in @a state for @a task.
+ *
+ * @param task The task for which the exception handler(s) were registered.
+ * @param state Exception handler state.
  */
-- (id) init {
-    if ((self = [super init]) == nil)
-        return nil;
+static void set_exception_ports (task_t task, struct exception_handler_state *state) {
+    kern_return_t kr;
+    for (mach_msg_type_number_t i = 0; i < state->count; ++i) {
+        kr = task_set_exception_ports(task, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i]);
 
-    return self;
+        /* Report errors, but continue to restore any remaining exception ports */
+        if (kr != KERN_SUCCESS)
+            PLCF_DEBUG("Failed to restore task exception ports: %x", kr);
+    }
 }
 
 /**
@@ -126,6 +124,7 @@ struct exception_server_context {
 static void *exception_server_thread (void *arg) {
     struct exception_server_context *exc_context = arg;
     __Request__exception_raise_t *request = NULL;
+    __Reply__exception_raise_t reply;
     size_t request_size;
     kern_return_t kr;
     mach_msg_return_t mr;
@@ -146,6 +145,9 @@ static void *exception_server_thread (void *arg) {
         }
     } pthread_mutex_unlock(&exc_context->server_init_lock);
 
+    /* Initialize the default reply message */
+    memset(&reply, 0, sizeof(reply));
+
     /* Initialize the received message with a default size */
     request_size = round_page(sizeof(*request));
     kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
@@ -155,7 +157,9 @@ static void *exception_server_thread (void *arg) {
         return NULL;
     }
 
+    /* Wait for an exception message */
     while (true) {
+        /* Initialize our request message */
         request->Head.msgh_local_port = exc_context->server_port;
         request->Head.msgh_size = request_size;
         mr = mach_msg(&request->Head,
@@ -165,47 +169,97 @@ static void *exception_server_thread (void *arg) {
                       exc_context->server_port,
                       MACH_MSG_TIMEOUT_NONE,
                       MACH_PORT_NULL);
-        
-        if (mr != MACH_MSG_SUCCESS) {
-            if (mr == MACH_RCV_TOO_LARGE) {
-                /* Determine the new size (before dropping the buffer) */
-                request_size = round_page(request->Head.msgh_size);
 
-                /* Drop the old receive buffer */
-                vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
+        /* Handle recoverable errors */
+        if (mr != MACH_MSG_SUCCESS && mr == MACH_RCV_TOO_LARGE) {
+            /* Determine the new size (before dropping the buffer) */
+            request_size = round_page(request->Head.msgh_size);
 
-                /* Re-allocate a larger receive buffer */
-                kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
-                if (kr != KERN_SUCCESS) {
-                    /* Shouldn't happen ... */
-                    fprintf(stderr, "Unexpected error in vm_allocate(): %x\n", kr);
-                    return NULL;
-                }
+            /* Drop the old receive buffer */
+            vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
 
-                continue;
+            /* Re-allocate a larger receive buffer */
+            kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
+            if (kr != KERN_SUCCESS) {
+                /* Shouldn't happen ... */
+                fprintf(stderr, "Unexpected error in vm_allocate(): 0x%x\n", kr);
+                return NULL;
             }
-            
+
+            continue;
+
+        /* Handle fatal errors */
+        } else if (mr != MACH_MSG_SUCCESS) {
             // TODO - handle MACH_RCV_INTERRUPTED and/or thread shutdown
 
             /* Shouldn't happen ... */
-            fprintf(stderr, "Unexpected error in mach_msg(): %x\n", kr);
+            PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x. Restoring exception ports and stopping server thread.", mr);
+
+            /* Restore exception ports; we won't be around to handle future exceptions */
+            set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
+
+            break;
+
+        /* Success! */
+        } else {
+            /* Restore exception ports; we don't want to double-fault if our exception handler crashes */
+            set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
+        
+            // TODO - Call handler
+            fprintf(stderr, "Got mach exception message. exc=%x code=%x,%x\n", request->exception, request->code[0], request->code[1]);
+
+            // TODO - Forward exception.
+
+            /* Inform the kernel that the thread should not be resumed (ie, the exception was not 'handled') */
+            reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
+            reply.Head.msgh_local_port = MACH_PORT_NULL;
+            reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
+            reply.Head.msgh_size = sizeof(reply);
+            reply.NDR = NDR_record;
+            reply.RetCode = KERN_FAILURE;
+
+            /*
+             * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
+             * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
+             * to change now)
+             *
+             * TODO: File a Radar and/or leverage a Technical Support Incident to get a straight answer on the
+             * undefined edge cases.
+             */
+            reply.Head.msgh_id = request->Head.msgh_id + 100;
+
+            mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+            if (mr != MACH_MSG_SUCCESS)
+                PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+
             break;
         }
-        
-
-        // TODO - Handle message
-        fprintf(stderr, "Got mach exception message. exc=%x code=%x,%x\n", request->exception, request->code[0], request->code[1]);
-
-        // TODO - Send reply
-
-        break;
     }
-
+    
     /* Drop the receive buffer */
     if (request != NULL)
         vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
-
+    
     return NULL;
+}
+
+
+/***
+ * @internal
+ * Implements Crash Reporter mach exception handling.
+ */
+@implementation PLCrashMachExceptionServer
+
+/**
+ * Initialize a new Mach exception server. The exception server will
+ * not register itself in the handler chain until PLCrashMachExceptionServer::registerHandlerAndReturnError:
+ * is called.
+ */
+- (id) init {
+    if ((self = [super init]) == nil)
+        return nil;
+
+    return self;
 }
 
 /**
@@ -221,6 +275,8 @@ static void *exception_server_thread (void *arg) {
  * fetching of the previous handler (to which exceptions <em>will</em> be forwarded), and
  * installation of the new handler (which will forward exceptions to the previously
  * fetched handler).
+ *
+ * XXX TODO: Use task_swap_exception_ports().
  *
  * @param task The mach task for which the handler should be registered.
  * @param callback Callback called upon receipt of an exception. The callback will execute
