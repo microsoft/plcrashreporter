@@ -38,11 +38,39 @@
 /**
  * @internal
  * Mask of monitored fatal exceptions.
+ *
+ * @warning Must be kept in sync with exception_to_mask();
  */
 static const exception_mask_t FATAL_EXCEPTION_MASK = EXC_MASK_BAD_ACCESS |
                                                      EXC_MASK_BAD_INSTRUCTION |
                                                      EXC_MASK_ARITHMETIC |
                                                      EXC_MASK_BREAKPOINT;
+
+/**
+ * @internal
+ * Map an exception type to its corresponding mask value.
+ *
+ * @note This only needs to handle the values listed in FATAL_EXCEPTION_MASK.
+ */
+static exception_mask_t exception_to_mask (exception_type_t exception) {
+#define EXM(n) case EXC_ ## n: return EXC_MASK_ ## n;
+    switch (exception) {
+        EXM(BAD_ACCESS);
+        EXM(BAD_INSTRUCTION);
+        EXM(ARITHMETIC);
+        EXM(EMULATION);
+        EXM(BREAKPOINT);
+        EXM(SOFTWARE);
+        EXM(SYSCALL);
+        EXM(MACH_SYSCALL);
+        EXM(RPC_ALERT);
+        EXM(CRASH);
+    }
+#undef EXM
+
+    PLCF_DEBUG("No mapping available from exception type 0x%d to an exception mask", exception);
+    return 0;
+}
 
 /**
  * @internal
@@ -206,31 +234,62 @@ static void *exception_server_thread (void *arg) {
             set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
         
             // TODO - Call handler
-            fprintf(stderr, "Got mach exception message. exc=%x code=%x,%x\n", request->exception, request->code[0], request->code[1]);
+            PLCF_DEBUG("Got mach exception message. exc=%x code=%x,%x", request->exception, request->code[0], request->code[1]);
 
-            // TODO - Forward exception.
+            /* Forward exception. */
+            exception_mask_t fwd_mask = exception_to_mask(request->exception);
+            bool fowarded = false;
+            for (mach_msg_type_number_t i = 0; i < exc_context->prev_handler_state.count; i++) {
+                if ((exc_context->prev_handler_state.masks[i] & fwd_mask) == 0)
+                    continue;
 
-            /* Inform the kernel that the thread should not be resumed (ie, the exception was not 'handled') */
-            reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
-            reply.Head.msgh_local_port = MACH_PORT_NULL;
-            reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
-            reply.Head.msgh_size = sizeof(reply);
-            reply.NDR = NDR_record;
-            reply.RetCode = KERN_FAILURE;
+                // TODO - handle state/identity behaviors
+                if (exc_context->prev_handler_state.behaviors[i] != EXCEPTION_DEFAULT) {
+                    PLCF_DEBUG("TODO: Unhandled exception port behavior: 0x%x", exc_context->prev_handler_state.behaviors[i]);
+                    continue;
+                }
 
-            /*
-             * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
-             * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
-             * to change now)
-             *
-             * TODO: File a Radar and/or leverage a Technical Support Incident to get a straight answer on the
-             * undefined edge cases.
-             */
-            reply.Head.msgh_id = request->Head.msgh_id + 100;
+                /* Re-raise the exception with the existing handler */
+                kr = exception_raise(exc_context->prev_handler_state.ports[i],
+                                     request->thread.name,
+                                     request->task.name,
+                                     request->exception,
+                                     request->code,
+                                     request->codeCnt);
+                if (kr != KERN_SUCCESS) {
+                    PLCF_DEBUG("Failed to forward exception to existing handler: 0x%x (port=0x%x)", kr, exc_context->prev_handler_state.ports[i]);
+                } else {
+                    fowarded = true;
+                }
 
-            mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-            if (mr != MACH_MSG_SUCCESS)
-                PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+                break;
+            }
+
+            /* Only reply if we haven't forwarded the message; we let the previous handler reply. */
+            if (!fowarded) {
+                PLCF_DEBUG("Replying to message");
+                /* Inform the kernel that the thread should not be resumed (ie, the exception was not 'handled') */
+                reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
+                reply.Head.msgh_local_port = MACH_PORT_NULL;
+                reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
+                reply.Head.msgh_size = sizeof(reply);
+                reply.NDR = NDR_record;
+                reply.RetCode = KERN_FAILURE;
+
+                /*
+                 * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
+                 * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
+                 * to change now)
+                 *
+                 * TODO: File a Radar and/or leverage a Technical Support Incident to get a straight answer on the
+                 * undefined edge cases.
+                 */
+                reply.Head.msgh_id = request->Head.msgh_id + 100;
+
+                mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+                if (mr != MACH_MSG_SUCCESS)
+                    PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+            }
 
             break;
         }
@@ -239,7 +298,7 @@ static void *exception_server_thread (void *arg) {
     /* Drop the receive buffer */
     if (request != NULL)
         vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
-    
+
     return NULL;
 }
 
@@ -315,7 +374,8 @@ static void *exception_server_thread (void *arg) {
 
     /* Fetch the current exception ports */
     exc_context->prev_handler_state.count = EXC_TYPES_COUNT;
-    kern_return_t kr = task_get_exception_ports(task, FATAL_EXCEPTION_MASK,
+    kern_return_t kr = task_get_exception_ports(task,
+                                                FATAL_EXCEPTION_MASK,
                                                 exc_context->prev_handler_state.masks,
                                                 &exc_context->prev_handler_state.count,
                                                 exc_context->prev_handler_state.ports,
