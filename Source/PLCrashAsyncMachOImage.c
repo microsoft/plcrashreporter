@@ -330,7 +330,7 @@ void *pl_async_macho_find_command (pl_async_macho_t *image, uint32_t expectedCom
  * @param outCmd_32 On successful return with a 32-bit image, contains the segment header.
  * @param outCmd_64 On successful return with a 64-bit image, contains the segment header.
  *
- * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
+ * @return Returns a mapped pointer to the segment on success, or NULL on failure.
  */
 void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segname) {
     void *seg = NULL;
@@ -358,12 +358,12 @@ void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segn
  *
  * @param image The image to search for @a segname.
  * @param segname The name of the segment to be mapped.
- * @param mobj The mobject to be initialized with a mapping of the segment's data. It is the caller's responsibility to dealloc @a mobj after
+ * @param seg The segment data to be initialized. It is the caller's responsibility to dealloc @a seg after
  * a successful initialization.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj) {
+plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg) {
     struct segment_command *cmd_32;
     struct segment_command_64 *cmd_64;
     
@@ -380,13 +380,19 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
     if (image->m64) {
         segaddr = image->swap64(cmd_64->vmaddr) + image->vmaddr_slide;
         segsize = image->swap64(cmd_64->vmsize);
+
+        seg->fileoff = image->swap64(cmd_64->fileoff);
+        seg->filesize = image->swap64(cmd_64->filesize);
     } else {
         segaddr = image->swap32(cmd_32->vmaddr) + image->vmaddr_slide;
         segsize = image->swap32(cmd_32->vmsize);
+        
+        seg->fileoff = image->swap32(cmd_32->fileoff);
+        seg->filesize = image->swap32(cmd_32->filesize);
     }
-    
+
     /* Perform and return the mapping */
-    return plcrash_async_mobject_init(mobj, image->task, segaddr, segsize);
+    return plcrash_async_mobject_init(&seg->mobj, image->task, segaddr, segsize);
 }
 
 /**
@@ -577,8 +583,8 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     }
 
     /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
-    plcrash_async_mobject_t linkedit_mobj;
-    plcrash_error_t err = pl_async_macho_map_segment(image, "__LINKEDIT", &linkedit_mobj);
+    pl_async_macho_mapped_segment_t linkedit_seg;
+    plcrash_error_t err = pl_async_macho_map_segment(image, "__LINKEDIT", &linkedit_seg);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
         return PLCRASH_EINTERNAL;
@@ -595,18 +601,22 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     void *nlist_table;
     char *string_table;
 
-    nlist_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd->symoff), nlist_table_size);
+    nlist_table = plcrash_async_mobject_remap_address(&linkedit_seg.mobj,
+                                                      linkedit_seg.mobj.task_address + (image->swap32(symtab_cmd->symoff) - linkedit_seg.fileoff),
+                                                      nlist_table_size);
     if (nlist_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
-                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
+                   (uint64_t) linkedit_seg.mobj.address + image->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
 
-    string_table = plcrash_async_mobject_remap_address(&linkedit_mobj, image->header_addr + image->swap32(symtab_cmd->stroff), string_size);
+    string_table = plcrash_async_mobject_remap_address(&linkedit_seg.mobj,
+                                                       linkedit_seg.mobj.task_address + (image->swap32(symtab_cmd->stroff) - linkedit_seg.fileoff),
+                                                       string_size);
     if (string_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
-                   (uint64_t) linkedit_mobj.address + image->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
+                   (uint64_t) linkedit_seg.mobj.address + image->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
@@ -667,7 +677,7 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     const char *sym_name = string_table + image->swap32(found_symbol->n32.n_un.n_strx);
     const char *p = sym_name;
     do {
-        if (!plcrash_async_mobject_verify_local_pointer(&linkedit_mobj, (uintptr_t) p, 1)) {
+        if (!plcrash_async_mobject_verify_local_pointer(&linkedit_seg.mobj, (uintptr_t) p, 1)) {
             PLCF_DEBUG("End of mobject reached while walking string\n");
             retval = PLCRASH_EINVAL;
             goto cleanup;
@@ -689,8 +699,17 @@ plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_addre
     retval = PLCRASH_ESUCCESS;
 
 cleanup:
-    plcrash_async_mobject_free(&linkedit_mobj);
+    pl_async_macho_mapped_segment_free(&linkedit_seg);
     return retval;
+}
+
+/**
+ * Free all mapped segment resources.
+ *
+ * @note Unlike most free() functions in this API, this function is async-safe.
+ */
+void pl_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment) {
+    plcrash_async_mobject_free(&segment->mobj);
 }
 
 /**
