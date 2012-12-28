@@ -147,6 +147,8 @@ void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_
 
 /**
  * Free the memory mapping.
+ *
+ * @note Unlike most free() functions in this API, this function is async-safe.
  */
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
     if (mobj->vm_address == 0x0)

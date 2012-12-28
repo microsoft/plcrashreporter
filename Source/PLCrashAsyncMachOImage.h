@@ -87,6 +87,17 @@ typedef struct pl_async_macho {
     uint64_t (*swap64)(uint64_t);
 } pl_async_macho_t;
 
+typedef struct pl_async_macho_mapped_segment {
+    /** The segment's mapped memory object */
+    plcrash_async_mobject_t mobj;
+
+    /* File offset of this segment. */
+    uint64_t	fileoff;
+    
+    /* File size of the segment. */
+	uint64_t	filesize;
+} pl_async_macho_mapped_segment_t;
+
 /**
  * Prototype of a callback function used to execute user code with async-safely fetched symbol.
  *
@@ -104,10 +115,11 @@ void *pl_async_macho_next_command_type (pl_async_macho_t *image, void *previous,
 void *pl_async_macho_find_command (pl_async_macho_t *image, uint32_t cmd);
 void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segname);
 
-plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, plcrash_async_mobject_t *mobj);
+plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg);
 plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj);
 plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
 
+void pl_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);
 void pl_async_macho_free (pl_async_macho_t *image);
 
 /**

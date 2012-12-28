@@ -160,10 +160,10 @@
  * Test memory mapping of a Mach-O segment
  */
 - (void) testMapSegment {
-    plcrash_async_mobject_t mobj;
+    pl_async_macho_mapped_segment_t seg;
 
     /* Try to map the segment */
-    STAssertEquals(PLCRASH_ESUCCESS, pl_async_macho_map_segment(&_image, "__LINKEDIT", &mobj), @"Failed to map segment");
+    STAssertEquals(PLCRASH_ESUCCESS, pl_async_macho_map_segment(&_image, "__LINKEDIT", &seg), @"Failed to map segment");
     
     /* Fetch the segment directly for comparison */
     unsigned long segsize = 0;
@@ -171,21 +171,37 @@
     STAssertNotNULL(data, @"Could not fetch segment data");
 
     /* Compare the address and length. We have to apply the slide to determine the original source address. */    
-    STAssertEquals((pl_vm_address_t)data, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Addresses do not match");
-    STAssertEquals((pl_vm_size_t)segsize, mobj.length, @"Sizes do not match");
+    STAssertEquals((pl_vm_address_t)data, (pl_vm_address_t) (seg.mobj.address + seg.mobj.vm_slide), @"Addresses do not match");
+    STAssertEquals((pl_vm_size_t)segsize, seg.mobj.length, @"Sizes do not match");
+    
+    /* Fetch the segment command for further comparison */
+    struct load_command *cmd = pl_async_macho_find_segment_cmd(&_image, "__LINKEDIT");
+    STAssertNotNULL(data, @"Could not fetch segment command");
+    if (_image.swap32(cmd->cmd) == LC_SEGMENT) {
+        struct segment_command *segcmd = (struct segment_command *) cmd;
+        STAssertEquals(seg.fileoff, (uint64_t) _image.swap32(segcmd->fileoff), @"File offset does not match");
+        STAssertEquals(seg.filesize, (uint64_t) _image.swap32(segcmd->filesize), @"File size does not match");
+
+    } else if (_image.swap32(cmd->cmd) == LC_SEGMENT_64) {
+        struct segment_command_64 *segcmd = (struct segment_command_64 *) cmd;
+        STAssertEquals(seg.fileoff, _image.swap64(segcmd->fileoff), @"File offset does not match");
+        STAssertEquals(seg.filesize, _image.swap64(segcmd->filesize), @"File size does not match");
+    } else {
+        STFail(@"Unsupported command type!");
+    }
 
     /* Compare the contents */
-    uint8_t *mapped_data = plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t) data, segsize);
+    uint8_t *mapped_data = plcrash_async_mobject_remap_address(&seg.mobj, (pl_vm_address_t) data, segsize);
     STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
 
     STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");
     STAssertTrue(memcmp(data, mapped_data, segsize) == 0, @"The mapped data is not equal");
 
     /* Clean up */
-    plcrash_async_mobject_free(&mobj);
+    pl_async_macho_mapped_segment_free(&seg);
 
     /* Test handling of a missing segment */
-    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
+    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &seg), @"Should have failed to map the segment");
 }
 
 /**
@@ -225,8 +241,8 @@
  * Test memory mapping of a missing Mach-O segment
  */
 - (void) testMapMissingSegment {
-    plcrash_async_mobject_t mobj;
-    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &mobj), @"Should have failed to map the segment");
+    pl_async_macho_mapped_segment_t seg;
+    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &seg), @"Should have failed to map the segment");
 }
 
 /* testFindSymbol callback handling */
