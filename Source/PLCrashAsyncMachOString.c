@@ -37,7 +37,7 @@
  * @param address The address of the string.
  * @return An error code.
  */
-plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, pl_async_macho_t *image, pl_vm_address_t address) {
+plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, plcrash_async_macho_t *image, pl_vm_address_t address) {
     string->image = image;
     string->address = address;
     string->mobjIsInitialized = false;

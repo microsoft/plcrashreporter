@@ -46,7 +46,7 @@
 /**
  * Return an error description for the given plcrash_error_t.
  */
-const char *plcrash_strerror (plcrash_error_t error) {
+const char *plcrash_async_strerror (plcrash_error_t error) {
     switch (error) {
         case PLCRASH_ESUCCESS:
             return "No error";

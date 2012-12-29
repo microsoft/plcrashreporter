@@ -259,7 +259,7 @@ static void free_mapped_sections (pl_async_objc_context_t *context) {
  * @param context The context.
  * @return An error code.
  */
-static plcrash_error_t map_sections (pl_async_macho_t *image, pl_async_objc_context_t *context) {
+static plcrash_error_t map_sections (plcrash_async_macho_t *image, pl_async_objc_context_t *context) {
     if (image == context->lastImage)
         return PLCRASH_ESUCCESS;
     
@@ -307,7 +307,7 @@ cleanup:
     return err;
 }
 
-static plcrash_error_t pl_async_parse_obj1_class(pl_async_macho_t *image, struct pl_objc1_class *class, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, struct pl_objc1_class *class, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Get the class's name. */
@@ -429,7 +429,7 @@ cleanup:
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the image doesn't
  * contain ObjC1 metadata, or another error code if a different error occurred.
  */
-static plcrash_error_t pl_async_objc_parse_from_module_info (pl_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err = PLCRASH_EUNKNOWN;
     
     /* Map the __module_info section. */
@@ -534,7 +534,7 @@ cleanup:
  * @param ctx A context pointer to pass to the callback.
  * @return An error code.
  */
-static plcrash_error_t pl_async_objc_parse_objc2_class(pl_async_macho_t *image, pl_async_objc_context_t *objcContext, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Set up the class name string and a flag to determine whether it needs cleanup. */
@@ -693,7 +693,7 @@ cleanup:
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if no ObjC2 data
  * exists in the image, and another error code if a different error occurred.
  */
-static plcrash_error_t pl_async_objc_parse_from_data_section (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Map memory objects. */
@@ -814,7 +814,7 @@ void pl_async_objc_context_free (pl_async_objc_context_t *context) {
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
+plcrash_error_t pl_async_objc_parse (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     if (objcContext == NULL)
@@ -892,7 +892,7 @@ static void pl_async_objc_find_method_call_callback (bool isClassMethod, plcrash
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx) {
+plcrash_error_t pl_async_objc_find_method (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx) {
     struct pl_async_objc_find_method_search_context searchCtx = {
         .searchIMP = imp
     };

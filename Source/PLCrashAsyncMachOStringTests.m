@@ -38,7 +38,7 @@
 
 @interface PLCrashAsyncMachOStringTests : SenTestCase {
     /** The image containing our class. */
-    pl_async_macho_t _image;
+    plcrash_async_macho_t _image;
 }
 @end
 
@@ -61,7 +61,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
     
-    pl_async_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+    plcrash_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
     
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");

@@ -38,7 +38,7 @@
 
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
     /** The image containing our class. */
-    pl_async_macho_t _image;
+    plcrash_async_macho_t _image;
 }
 @end
 
@@ -62,7 +62,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
 
-    pl_async_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+    plcrash_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
 
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -83,13 +83,13 @@
  */
 - (void) testIterateCommand {
 
-    pl_async_macho_t image;
+    plcrash_async_macho_t image;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-        pl_async_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));
+        plcrash_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));
         struct load_command *cmd = NULL;
 
         for (uint32_t ncmd = 0; ncmd < image.ncmds; ncmd++) {
-            cmd = pl_async_macho_next_command(&image, cmd);
+            cmd = plcrash_async_macho_next_command(&image, cmd);
             STAssertNotNULL(cmd, @"Failed to fetch load command %" PRIu32 " of %" PRIu32 "in %s", ncmd, image.ncmds, image.name);
 
             if (cmd == NULL)
@@ -110,7 +110,7 @@
     
     bool found_uuid = false;
 
-    while ((cmd = pl_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
+    while ((cmd = plcrash_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
         /* Validate the command type and size */
         STAssertEquals(_image.swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
         STAssertEquals((size_t)_image.swap32(cmd->cmdsize), sizeof(struct uuid_command), @"Incorrect load command size returned by iterator");
@@ -122,7 +122,7 @@
     STAssertTrue(found_uuid, @"Failed to iterate LC_CMD structures");
     
     /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
-    cmd = pl_async_macho_next_command_type(&_image, NULL, LC_SUB_UMBRELLA);
+    cmd = plcrash_async_macho_next_command_type(&_image, NULL, LC_SUB_UMBRELLA);
     STAssertNULL(cmd, @"Should not have found the requested load command");
 }
 
@@ -134,7 +134,7 @@
     
     /* If the following doesn't crash dereferencing the NULL cmdsize argument, success! */
     bool found_uuid = false;
-    while ((cmd = pl_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
+    while ((cmd = plcrash_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
         STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
         found_uuid = true;
     }

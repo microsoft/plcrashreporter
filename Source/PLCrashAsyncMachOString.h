@@ -35,7 +35,7 @@
 
 typedef struct plcrash_async_macho_string {
     /** The Mach-O image the string is found in. */
-    pl_async_macho_t *image;
+    plcrash_async_macho_t *image;
     
     /** The address of the start of the string. */
     pl_vm_address_t address;
@@ -51,7 +51,7 @@ typedef struct plcrash_async_macho_string {
 } plcrash_async_macho_string_t;
 
 
-plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, pl_async_macho_t *image, pl_vm_address_t address);
+plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, plcrash_async_macho_t *image, pl_vm_address_t address);
 
 plcrash_error_t plcrash_async_macho_string_get_length (plcrash_async_macho_string_t *string, pl_vm_size_t *outLength);
 

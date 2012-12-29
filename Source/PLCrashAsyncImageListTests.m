@@ -50,11 +50,11 @@
 @implementation PLCrashAsyncImageTests
 
 - (void) setUp {
-    plcrash_async_image_list_init(&_list, mach_task_self());
+    plcrash_image_list_init(&_list, mach_task_self());
 }
 
 - (void) tearDown {
-    plcrash_async_image_list_free(&_list);
+    plcrash_image_list_free(&_list);
 }
 
 - (void) testAppendImage {
@@ -62,15 +62,15 @@
     uint32_t count = _dyld_image_count();
     STAssertTrue(count >= 5, @"We need at least five Mach-O images for this test. This should not be a problem on a modern system.");
     
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(0), _dyld_get_image_vmaddr_slide(0), _dyld_get_image_name(0));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(0), _dyld_get_image_vmaddr_slide(0), _dyld_get_image_name(0));
 
     STAssertNotNULL(_list.head, @"List HEAD should be set to our new image entry");
     STAssertEquals(_list.head, _list.tail, @"The list head and tail should be equal for the first entry");
     
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(1), _dyld_get_image_vmaddr_slide(1), _dyld_get_image_name(1));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(2), _dyld_get_image_vmaddr_slide(2), _dyld_get_image_name(2));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(3), _dyld_get_image_vmaddr_slide(3), _dyld_get_image_name(3));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(4), _dyld_get_image_vmaddr_slide(4), _dyld_get_image_name(4));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(1), _dyld_get_image_vmaddr_slide(1), _dyld_get_image_name(1));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(2), _dyld_get_image_vmaddr_slide(2), _dyld_get_image_name(2));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(3), _dyld_get_image_vmaddr_slide(3), _dyld_get_image_name(3));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(4), _dyld_get_image_vmaddr_slide(4), _dyld_get_image_name(4));
     
     /* Verify the appended elements */
     plcrash_async_image_t *item = NULL;
@@ -94,8 +94,8 @@
 
 /* Test removing the last image in the list. */
 - (void) testRemoveLastImage {
-    plcrash_async_image_list_append(&_list, 0x0, 0x10, "image_name");
-    plcrash_async_image_list_remove(&_list, 0x0);
+    plcrash_image_list_append(&_list, 0x0, 0x10, "image_name");
+    plcrash_image_list_remove(&_list, 0x0);
 
     STAssertNULL(_list.head, @"List HEAD should now be NULL");
     STAssertNULL(_list.tail, @"List TAIL should now be NULL");
@@ -106,18 +106,18 @@
     uint32_t count = _dyld_image_count();
     STAssertTrue(count >= 5, @"We need at least five Mach-O images for this test. This should not be a problem on a modern system.");
 
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(0), _dyld_get_image_vmaddr_slide(0), _dyld_get_image_name(0));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(1), _dyld_get_image_vmaddr_slide(1), _dyld_get_image_name(1));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(2), _dyld_get_image_vmaddr_slide(2), _dyld_get_image_name(2));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(3), _dyld_get_image_vmaddr_slide(3), _dyld_get_image_name(3));
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(4), _dyld_get_image_vmaddr_slide(4), _dyld_get_image_name(4));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(0), _dyld_get_image_vmaddr_slide(0), _dyld_get_image_name(0));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(1), _dyld_get_image_vmaddr_slide(1), _dyld_get_image_name(1));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(2), _dyld_get_image_vmaddr_slide(2), _dyld_get_image_name(2));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(3), _dyld_get_image_vmaddr_slide(3), _dyld_get_image_name(3));
+    plcrash_image_list_append(&_list, (pl_vm_address_t) _dyld_get_image_header(4), _dyld_get_image_vmaddr_slide(4), _dyld_get_image_name(4));
 
     /* Try a non-existent item */
-    plcrash_async_image_list_remove(&_list, 0x42);
+    plcrash_image_list_remove(&_list, 0x42);
 
     /* Remove real items */
-    plcrash_async_image_list_remove(&_list, (pl_vm_address_t) _dyld_get_image_header(1));
-    plcrash_async_image_list_remove(&_list, (pl_vm_address_t) _dyld_get_image_header(3));
+    plcrash_image_list_remove(&_list, (pl_vm_address_t) _dyld_get_image_header(1));
+    plcrash_image_list_remove(&_list, (pl_vm_address_t) _dyld_get_image_header(3));
 
     /* Verify the contents of the list */
     plcrash_async_image_t *item = NULL;
@@ -159,7 +159,7 @@
     STAssertTrue(found_image, @"Could not find dyld image record");
 
     /* Initialize our image list using our discovered image */
-    plcrash_async_image_list_append(&_list, (pl_vm_address_t) dli.dli_fbase, vmaddr_slide, dli.dli_fname);
+    plcrash_image_list_append(&_list, (pl_vm_address_t) dli.dli_fbase, vmaddr_slide, dli.dli_fname);
 
     /* Verify that image_base-1 returns NULL */
     STAssertNULL(plcrash_async_image_containing_address(&_list, (pl_vm_address_t) dli.dli_fbase-1), @"Should not return an image for invalid address");

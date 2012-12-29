@@ -164,7 +164,7 @@ typedef enum  {
     PLCRASH_ENOTFOUND,
 } plcrash_error_t;
 
-const char *plcrash_strerror (plcrash_error_t error);
+const char *plcrash_async_strerror (plcrash_error_t error);
 
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
 

@@ -86,7 +86,7 @@ static uint64_t macho_nswap64 (uint64_t input) {
  * @warning This method is not async safe.
  * @note On error, pl_async_macho_free() must be called to free any resources still held by the @a image.
  */
-plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
+plcrash_error_t plcrash_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
     /* This must be done first, as our free() function will always decrement the port's reference count. */
     mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
     image->task = task;
@@ -166,7 +166,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
     void *cmdptr = NULL;
     image->text_size = 0x0;
     bool found_text_seg = false;
-    while ((cmdptr = pl_async_macho_next_command_type(image, cmdptr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
+    while ((cmdptr = plcrash_async_macho_next_command_type(image, cmdptr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
         if (image->m64) {
             struct segment_command_64 *segment = cmdptr;
             if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
@@ -215,7 +215,7 @@ plcrash_error_t pl_async_macho_init (pl_async_macho_t *image, mach_port_t task, 
  * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
  * returned.
  */
-void *pl_async_macho_next_command (pl_async_macho_t *image, void *previous) {
+void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *previous) {
     struct load_command *cmd;
 
     /* On the first iteration, determine the LC_CMD offset from the Mach-O header. */
@@ -273,11 +273,11 @@ void *pl_async_macho_next_command (pl_async_macho_t *image, void *previous) {
  * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
  * returned.
  */
-void *pl_async_macho_next_command_type (pl_async_macho_t *image, void *previous, uint32_t expectedCommand) {
+void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void *previous, uint32_t expectedCommand) {
     struct load_command *cmd = previous;
 
     /* Iterate commands until we either find a match, or reach the end */
-    while ((cmd = pl_async_macho_next_command(image, cmd)) != NULL) {
+    while ((cmd = plcrash_async_macho_next_command(image, cmd)) != NULL) {
         /* Return a match */
         if (image->swap32(cmd->cmd) == expectedCommand) {
             return cmd;
@@ -300,11 +300,11 @@ void *pl_async_macho_next_command_type (pl_async_macho_t *image, void *previous,
  * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
  * returned.
  */
-void *pl_async_macho_find_command (pl_async_macho_t *image, uint32_t expectedCommand) {
+void *pl_async_macho_find_command (plcrash_async_macho_t *image, uint32_t expectedCommand) {
     struct load_command *cmd = NULL;
 
     /* Iterate commands until we either find a match, or reach the end */
-    while ((cmd = pl_async_macho_next_command(image, cmd)) != NULL) {
+    while ((cmd = plcrash_async_macho_next_command(image, cmd)) != NULL) {
         /* Read the load command type */
         if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, sizeof(*cmd))) {
             PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
@@ -332,10 +332,10 @@ void *pl_async_macho_find_command (pl_async_macho_t *image, uint32_t expectedCom
  *
  * @return Returns a mapped pointer to the segment on success, or NULL on failure.
  */
-void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segname) {
+void *pl_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const char *segname) {
     void *seg = NULL;
 
-    while ((seg = pl_async_macho_next_command_type(image, seg, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
+    while ((seg = plcrash_async_macho_next_command_type(image, seg, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
 
         /* Read the load command */
         if (image->m64) {
@@ -363,7 +363,7 @@ void *pl_async_macho_find_segment_cmd (pl_async_macho_t *image, const char *segn
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg) {
+plcrash_error_t pl_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg) {
     struct segment_command *cmd_32;
     struct segment_command_64 *cmd_64;
     
@@ -408,7 +408,7 @@ plcrash_error_t pl_async_macho_map_segment (pl_async_macho_t *image, const char 
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_map_section (pl_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
+plcrash_error_t pl_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
     struct segment_command *cmd_32;
     struct segment_command_64 *cmd_64;
     
@@ -502,7 +502,7 @@ typedef union {
  * @warning This function implements no validation of the symbol table pointer. It is the caller's responsibility
  * to verify that the referenced symtab is valid and mapped PROT_READ.
  */
-static bool pl_async_macho_find_symtab_symbol (pl_async_macho_t *image, pl_vm_address_t slide_pc, pl_nlist_common *symtab,
+static bool pl_async_macho_find_symtab_symbol (plcrash_async_macho_t *image, pl_vm_address_t slide_pc, pl_nlist_common *symtab,
                                                uint32_t nsyms, pl_nlist_common **found_symbol)
 {
     /* nlist_64 and nlist are identical other than the trailing address field, so we use
@@ -565,7 +565,7 @@ static bool pl_async_macho_find_symtab_symbol (pl_async_macho_t *image, pl_vm_ad
  *
  * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, @a found_symbol will not be called.
  */
-plcrash_error_t pl_async_macho_find_symbol (pl_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
+plcrash_error_t pl_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
     plcrash_error_t retval;
     
     /* Compute the actual in-core PC. */
@@ -717,7 +717,7 @@ void pl_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segmen
  *
  * @warning This method is not async safe.
  */
-void pl_async_macho_free (pl_async_macho_t *image) {
+void pl_async_macho_free (plcrash_async_macho_t *image) {
     if (image->name != NULL)
         free(image->name);
     

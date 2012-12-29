@@ -934,7 +934,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t 
  * @param name binary image path (or name).
  * @param image_base Mach-O image base.
  */
-static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, pl_async_macho_t *image) {
+static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plcrash_async_macho_t *image) {
     size_t rv = 0;
 
     /* Fetch the CPU types. Note that the wire format represents these as 64-bit unsigned integers.

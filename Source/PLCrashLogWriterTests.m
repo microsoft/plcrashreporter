@@ -241,7 +241,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", false), @"Initialization failed");
     
     /* Initialize the image list */
-    plcrash_async_image_list_init(&image_list, mach_task_self());
+    plcrash_image_list_init(&image_list, mach_task_self());
 
     /* Set an exception with a valid return address call stack. */
     NSException *e;
@@ -259,7 +259,7 @@
     /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
-    plcrash_async_image_list_free(&image_list);
+    plcrash_image_list_free(&image_list);
 
     /* Flush the output */
     plcrash_async_file_flush(&file);
@@ -315,10 +315,10 @@ static uintptr_t getPC () {
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", true), @"Initialization failed");
     
     /* Provide binary image info */
-    plcrash_async_image_list_init(&image_list, mach_task_self());
+    plcrash_image_list_init(&image_list, mach_task_self());
     uint32_t image_count = _dyld_image_count();
     for (uint32_t i = 0; i < image_count; i++) {
-        plcrash_async_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i), _dyld_get_image_name(i));
+        plcrash_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i), _dyld_get_image_name(i));
     }
 
     
@@ -331,7 +331,7 @@ static uintptr_t getPC () {
     /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
-    plcrash_async_image_list_free(&image_list);
+    plcrash_image_list_free(&image_list);
     
     /* Flush the output */
     plcrash_async_file_flush(&file);

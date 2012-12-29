@@ -137,7 +137,7 @@ void pl_async_local_find_symbol_context_free (pl_async_local_find_symbol_context
     pl_async_objc_context_free(&context->objcContext);
 }
 
-plcrash_error_t pl_async_local_find_symbol(pl_async_macho_t *image, pl_async_local_find_symbol_context_t *findContext, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
+plcrash_error_t pl_async_local_find_symbol(plcrash_async_macho_t *image, pl_async_local_find_symbol_context_t *findContext, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
     pl_vm_address_t machoAddress = 0;
     plcrash_error_t machoErr = pl_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
     

@@ -47,7 +47,7 @@ typedef struct pl_async_objc_context {
     bool gotObjC2Info;
     
     /** The last MachO image seen. The image for which the memory objects below are valid. */
-    pl_async_macho_t *lastImage;
+    plcrash_async_macho_t *lastImage;
     
     /** Whether the objcConst object is initialized. */
     bool objcConstMobjInitialized;
@@ -94,8 +94,8 @@ void pl_async_objc_context_free (pl_async_objc_context_t *context);
  */
 typedef void (*pl_async_objc_found_method_cb)(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx);
 
-plcrash_error_t pl_async_objc_parse (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx);
+plcrash_error_t pl_async_objc_parse (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx);
 
-plcrash_error_t pl_async_objc_find_method (pl_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
+plcrash_error_t pl_async_objc_find_method (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
 
 #endif // PLCrashAsyncObjCSection_h
