@@ -34,7 +34,15 @@
  */
 typedef void (*PLCrashMachExceptionHandlerCallback)(void *context);
 
-@interface PLCrashMachExceptionServer : NSObject
+struct plcrash_exception_server_context;
+
+@interface PLCrashMachExceptionServer : NSObject {
+@private
+    /** Backing server context. This structure will not be allocated until the background
+     * exception server thread is spawned; once the server thread has been successfully started,
+     * it is that server thread's responsibility to deallocate this structure. */
+    struct plcrash_exception_server_context *_serverContext;
+}
 
 - (BOOL) registerHandlerForTask: (task_t) task
                    withCallback: (PLCrashMachExceptionHandlerCallback) callback
