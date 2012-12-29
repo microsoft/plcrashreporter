@@ -164,6 +164,7 @@ static void *exception_server_thread (void *arg) {
     /* Atomically swap in our up the exception handler, also informing the waiting thread of
      * completion (or failure). */
     pthread_mutex_lock(&exc_context->server_init_lock); {
+        exc_context->prev_handler_state.count = EXC_TYPES_COUNT;
         kr = task_swap_exception_ports(exc_context->task,
                                        FATAL_EXCEPTION_MASK,
                                        exc_context->server_port,
@@ -257,6 +258,9 @@ static void *exception_server_thread (void *arg) {
             kern_return_t forward_result = KERN_SUCCESS;
 
             for (mach_msg_type_number_t i = 0; i < exc_context->prev_handler_state.count; i++) {
+                if (!MACH_PORT_VALID(exc_context->prev_handler_state.ports[i]))
+                    continue;
+
                 if ((exc_context->prev_handler_state.masks[i] & fwd_mask) == 0)
                     continue;
 
