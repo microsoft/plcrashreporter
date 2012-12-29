@@ -147,6 +147,38 @@ static void set_exception_ports (task_t task, struct exception_handler_state *st
 }
 
 /**
+ * Send a Mach exception reply for the given @a request and return the result.
+ *
+ * @param request The request to which a reply should be sent.
+ * @param retcode The reply return code to supply.
+ */
+static mach_msg_return_t exception_server_reply (__Request__exception_raise_t *request, kern_return_t retcode) {
+    __Reply__exception_raise_t reply;
+    
+    /* Initialize the reply */
+    memset(&reply, 0, sizeof(reply));
+    reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
+    reply.Head.msgh_local_port = MACH_PORT_NULL;
+    reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
+    reply.Head.msgh_size = sizeof(reply);
+    reply.NDR = NDR_record;
+    reply.RetCode = retcode;
+    
+    /*
+     * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
+     * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
+     * to change now)
+     *
+     * TODO: File a Radar and/or leverage a Technical Support Incident to get a straight answer on the
+     * undefined edge cases.
+     */
+    reply.Head.msgh_id = request->Head.msgh_id + 100;
+
+    /* Dispatch the reply */
+    return mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+}
+
+/**
  * Background exception server. Handles incoming exception messages and dispatches
  * them to the registered callback.
  *
@@ -156,7 +188,6 @@ static void set_exception_ports (task_t task, struct exception_handler_state *st
 static void *exception_server_thread (void *arg) {
     struct exception_server_context *exc_context = arg;
     __Request__exception_raise_t *request = NULL;
-    __Reply__exception_raise_t reply;
     size_t request_size;
     kern_return_t kr;
     mach_msg_return_t mr;
@@ -188,9 +219,6 @@ static void *exception_server_thread (void *arg) {
             return NULL;
         }
     } pthread_mutex_unlock(&exc_context->server_init_lock);
-
-    /* Initialize the default reply message */
-    memset(&reply, 0, sizeof(reply));
 
     /* Initialize the received message with a default size */
     request_size = round_page(sizeof(*request));
@@ -246,6 +274,24 @@ static void *exception_server_thread (void *arg) {
 
         /* Success! */
         } else {
+            /*
+             * Ignore exceptions from tasks other than our target task. This should only be possible if
+             * a crash occurs after a fork(), but before our pthread_atfork() handler de-registers 
+             * the parent exception handler.
+             *
+             * TODO: Support writing out a crash report even in this case?
+             */
+            if (request->task.name != exc_context->task) {
+                PLCF_DEBUG("Mach exception message received from unexpected task.");
+
+                /* Let our sender know that the message was not handled */
+                if (exception_server_reply(request, KERN_FAILURE) != MACH_MSG_SUCCESS)
+                    PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+
+                /* Wait for the next (hopefully valid) message */
+                continue;
+            }
+
             /* Restore exception ports; we don't want to double-fault if our exception handler crashes */
             set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
         
@@ -280,34 +326,17 @@ static void *exception_server_thread (void *arg) {
                 forwarded = true;
                 break;
             }
-            
-            /* Reply to the message */
-            PLCF_DEBUG("Replying to message (ctx=%p, forwarded=%d, forwarded_result=%d)", exc_context, forwarded, forward_result);
-            reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
-            reply.Head.msgh_local_port = MACH_PORT_NULL;
-            reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
-            reply.Head.msgh_size = sizeof(reply);
-            reply.NDR = NDR_record;
 
-            /* If the message was forwarded, provide the handler's reply. Otherwise, we're the final handler; inform the kernel that the
+            /* Reply to the message.
+             *
+             * If the message was forwarded, provide the handler's reply. Otherwise, we're the final handler; inform the kernel that the
              * thread should not be resumed (ie, the exception was not 'handled') */
             if (forwarded) {
-                reply.RetCode = forward_result;
+                mr = exception_server_reply(request, forward_result);
             } else {
-                reply.RetCode = KERN_FAILURE;
+                mr = exception_server_reply(request, KERN_FAILURE);
             }
 
-            /*
-             * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
-             * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
-             * to change now)
-             *
-             * TODO: File a Radar and/or leverage a Technical Support Incident to get a straight answer on the
-             * undefined edge cases.
-             */
-            reply.Head.msgh_id = request->Head.msgh_id + 100;
-
-            mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
             if (mr != MACH_MSG_SUCCESS)
                 PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
 
