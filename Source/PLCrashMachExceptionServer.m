@@ -275,28 +275,32 @@ static void *exception_server_thread (void *arg) {
         /* Success! */
         } else {
             /*
-             * Ignore exceptions from tasks other than our target task. This should only be possible if
+             * Detect exceptions from tasks other than our target task. This should only be possible if
              * a crash occurs after a fork(), but before our pthread_atfork() handler de-registers 
-             * the parent exception handler.
+             * our exception handler.
+             *
+             * The exception still needs to be forwarded to any previous exception handlers, but we will
+             * not call our callback handler.
              *
              * TODO: Support writing out a crash report even in this case?
              */
+            bool is_monitored_task = true;
             if (request->task.name != exc_context->task) {
                 PLCF_DEBUG("Mach exception message received from unexpected task.");
-
-                /* Let our sender know that the message was not handled */
-                if (exception_server_reply(request, KERN_FAILURE) != MACH_MSG_SUCCESS)
-                    PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
-
-                /* Wait for the next (hopefully valid) message */
-                continue;
+                is_monitored_task = false;
             }
 
             /* Restore exception ports; we don't want to double-fault if our exception handler crashes */
+            // TODO - We should register a thread-specific double-fault handler to specifically handle
+            // this state by executing a "safe mode" logging path.
             set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
-        
-            // TODO - Call handler
-            PLCF_DEBUG("Got mach exception message. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+
+            if (is_monitored_task) {
+                // TODO - Call handler
+                PLCF_DEBUG("Got mach exception message. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+            } else {
+                PLCF_DEBUG("Ignoring exception message from forked task. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+            }
 
             /* Forward exception. */
             exception_mask_t fwd_mask = exception_to_mask(request->exception);
@@ -327,10 +331,12 @@ static void *exception_server_thread (void *arg) {
                 break;
             }
 
-            /* Reply to the message.
+            /*
+             * Reply to the message.
              *
              * If the message was forwarded, provide the handler's reply. Otherwise, we're the final handler; inform the kernel that the
-             * thread should not be resumed (ie, the exception was not 'handled') */
+             * thread should not be resumed (ie, the exception was not 'handled')
+             */
             if (forwarded) {
                 mr = exception_server_reply(request, forward_result);
             } else {
@@ -339,8 +345,6 @@ static void *exception_server_thread (void *arg) {
 
             if (mr != MACH_MSG_SUCCESS)
                 PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
-
-            break;
         }
     }
     
