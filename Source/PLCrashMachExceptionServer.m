@@ -80,7 +80,7 @@ static exception_mask_t exception_to_mask (exception_type_t exception) {
  * is provided via exception_handler_state::count. The values
  * stored in the arrays correspond positionally.
  */
-struct exception_handler_state {
+struct plcrash_exception_handler_state {
     /** Number of independent mask/port/behavior/flavor sets
      * (up to EXC_TYPES_COUNT). */
     mach_msg_type_number_t count;
@@ -101,7 +101,7 @@ struct exception_handler_state {
 /**
  * Exception handler context.
  */
-struct exception_server_context {
+struct plcrash_exception_server_context {
     /** The target mach task. */
     task_t task;
 
@@ -124,7 +124,7 @@ struct exception_server_context {
 
     /** Previously registered handlers. We will forward all exceptions here after
       * internal processing. */
-    struct exception_handler_state prev_handler_state;
+    struct plcrash_exception_handler_state prev_handler_state;
 };
 
 /**
@@ -135,7 +135,7 @@ struct exception_server_context {
  * @param task The task for which the exception handler(s) were registered.
  * @param state Exception handler state.
  */
-static void set_exception_ports (task_t task, struct exception_handler_state *state) {
+static void set_exception_ports (task_t task, struct plcrash_exception_handler_state *state) {
     kern_return_t kr;
     for (mach_msg_type_number_t i = 0; i < state->count; ++i) {
         kr = task_set_exception_ports(task, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i]);
@@ -186,7 +186,7 @@ static mach_msg_return_t exception_server_reply (__Request__exception_raise_t *r
  * has been returned, as the state of the process' threads is entirely unknown.
  */
 static void *exception_server_thread (void *arg) {
-    struct exception_server_context *exc_context = arg;
+    struct plcrash_exception_server_context *exc_context = arg;
     __Request__exception_raise_t *request = NULL;
     size_t request_size;
     kern_return_t kr;
@@ -364,8 +364,8 @@ static void *exception_server_thread (void *arg) {
 
 /**
  * Initialize a new Mach exception server. The exception server will
- * not register itself in the handler chain until PLCrashMachExceptionServer::registerHandlerAndReturnError:
- * is called.
+ * not register itself in the handler chain until
+ * PLCrashMachExceptionServer::registerHandlerForTask:withCallback:context:error is called.
  */
 - (id) init {
     if ((self = [super init]) == nil)
@@ -379,7 +379,7 @@ static void *exception_server_thread (void *arg) {
  * Should not be called more than once.
  *
  * @note If this method returns NO, the exception handler will remain unmodified.
- * @note Inserting a new Mach task handlers is performed atomically, and multiple handlers
+ * @note Inserting the Mach task handler is performed atomically, and multiple handlers
  * may be initialized concurrently.
  *
  * @param task The mach task for which the handler should be registered.
@@ -396,39 +396,44 @@ static void *exception_server_thread (void *arg) {
                         context: (void *) context
                           error: (NSError **) outError
 {
-    struct exception_server_context *exc_context = NULL;
     pthread_attr_t attr;
     pthread_t thr;
     kern_return_t kr;
 
     /* Initialize the bare context. */
-    exc_context = calloc(1, sizeof(*exc_context));
-    exc_context->task = task;
-    exc_context->server_port = MACH_PORT_NULL;
-    exc_context->server_init_result = KERN_SUCCESS;
+    _serverContext = calloc(1, sizeof(*_serverContext));
+    _serverContext->task = task;
+    _serverContext->server_port = MACH_PORT_NULL;
+    _serverContext->server_init_result = KERN_SUCCESS;
 
-    if (pthread_mutex_init(&exc_context->server_init_lock, NULL) != 0) {
+    if (pthread_mutex_init(&_serverContext->server_init_lock, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Mutex initialization failed");
-        free(exc_context);
+
+        free(_serverContext);
+        _serverContext = NULL;
+
         return NO;
     }
 
-    if (pthread_cond_init(&exc_context->server_init_cond, NULL) != 0) {
+    if (pthread_cond_init(&_serverContext->server_init_cond, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Condition initialization failed");
-        free(exc_context);
+
+        free(_serverContext);
+        _serverContext = NULL;
+
         return NO;
     }
 
     /*
      * Initalize our server's port
      */
-    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &exc_context->server_port);
+    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &_serverContext->server_port);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to allocate exception server's port");
         goto error;
     }
 
-    kr = mach_port_insert_right(mach_task_self(), exc_context->server_port, exc_context->server_port, MACH_MSG_TYPE_MAKE_SEND);
+    kr = mach_port_insert_right(mach_task_self(), _serverContext->server_port, _serverContext->server_port, MACH_MSG_TYPE_MAKE_SEND);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to add send right to exception server's port");
         goto error;
@@ -448,7 +453,7 @@ static void *exception_server_thread (void *arg) {
         // by crashing code.
         // pthread_attr_setstack(&attr, sp, stacksize);
         
-        if (pthread_create(&thr, &attr, &exception_server_thread, exc_context) != 0) {
+        if (pthread_create(&thr, &attr, &exception_server_thread, _serverContext) != 0) {
             plcrash_populate_posix_error(outError, errno, @"Failed to create exception server thread");
             pthread_attr_destroy(&attr);
             goto error;
@@ -457,28 +462,29 @@ static void *exception_server_thread (void *arg) {
         pthread_attr_destroy(&attr);
     }
 
-    pthread_mutex_lock(&exc_context->server_init_lock);
+    pthread_mutex_lock(&_serverContext->server_init_lock);
     
-    while (!exc_context->server_init_done)
-        pthread_cond_wait(&exc_context->server_init_cond, &exc_context->server_init_lock);
+    while (!_serverContext->server_init_done)
+        pthread_cond_wait(&_serverContext->server_init_cond, &_serverContext->server_init_lock);
 
-    if (exc_context->server_init_result != KERN_SUCCESS) {
-        plcrash_populate_mach_error(outError, exc_context->server_init_result, @"Failed to set task exception ports");
+    if (_serverContext->server_init_result != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, _serverContext->server_init_result, @"Failed to set task exception ports");
         goto error;
     }
-    pthread_mutex_unlock(&exc_context->server_init_lock);
+    pthread_mutex_unlock(&_serverContext->server_init_lock);
 
     return YES;
 
 error:
-    if (exc_context != NULL) {
-        if (exc_context->server_port != MACH_PORT_NULL)
-            mach_port_deallocate(mach_task_self(), exc_context->server_port);
+    if (_serverContext != NULL) {
+        if (_serverContext->server_port != MACH_PORT_NULL)
+            mach_port_deallocate(mach_task_self(), _serverContext->server_port);
 
-        pthread_cond_destroy(&exc_context->server_init_cond);
-        pthread_mutex_destroy(&exc_context->server_init_lock);
+        pthread_cond_destroy(&_serverContext->server_init_cond);
+        pthread_mutex_destroy(&_serverContext->server_init_lock);
 
-        free(exc_context);
+        free(_serverContext);
+        _serverContext = NULL;
     }
 
     return NO;
