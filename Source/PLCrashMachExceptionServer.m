@@ -113,6 +113,10 @@ struct exception_server_context {
     
     /** Condition used to signal waiting initialization thread. */
     pthread_cond_t server_init_cond;
+    
+    /** Intended to be observed by the waiting initialization thread. Informs
+     * the waiting thread that initialization has completed . */
+    bool server_init_done;
 
     /** Intended to be observed by the waiting initialization thread. Contains
      * the result of setting the task exception handler. */
@@ -157,10 +161,21 @@ static void *exception_server_thread (void *arg) {
     kern_return_t kr;
     mach_msg_return_t mr;
 
-    /* Set up the exception handler, informing the waiting thread of completion (or failure). */
+    /* Atomically swap in our up the exception handler, also informing the waiting thread of
+     * completion (or failure). */
     pthread_mutex_lock(&exc_context->server_init_lock); {
-        kr = task_set_exception_ports(exc_context->task, FATAL_EXCEPTION_MASK, exc_context->server_port, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
+        kr = task_swap_exception_ports(exc_context->task,
+                                       FATAL_EXCEPTION_MASK,
+                                       exc_context->server_port,
+                                       EXCEPTION_DEFAULT,
+                                       THREAD_STATE_NONE,
+                                       exc_context->prev_handler_state.masks,
+                                       &exc_context->prev_handler_state.count,
+                                       exc_context->prev_handler_state.ports,
+                                       exc_context->prev_handler_state.behaviors,
+                                       exc_context->prev_handler_state.flavors);
         exc_context->server_init_result = kr;
+        exc_context->server_init_done = true;
 
         /* Notify our spawning thread of our initialization */
         pthread_cond_signal(&exc_context->server_init_cond);
@@ -247,7 +262,7 @@ static void *exception_server_thread (void *arg) {
 
                 // TODO - handle state/identity behaviors
                 if (exc_context->prev_handler_state.behaviors[i] != EXCEPTION_DEFAULT) {
-                    PLCF_DEBUG("TODO: Unhandled exception port behavior: 0x%x", exc_context->prev_handler_state.behaviors[i]);
+                    PLCF_DEBUG("TODO: Unhandled exception port behavior: 0x%x for port %d", exc_context->prev_handler_state.behaviors[i], exc_context->prev_handler_state.ports[i]);
                     continue;
                 }
 
@@ -327,16 +342,8 @@ static void *exception_server_thread (void *arg) {
  * Should not be called more than once.
  *
  * @note If this method returns NO, the exception handler will remain unmodified.
- * @warning Inserting a new Mach task handlers is not atomic, and no support for
- * synchronization is possible through the Mach APIs; thus, a race condition exists
- * if task exception handlers are concurrently modified (in-process or by an
- * external process). It is possible that a handler set concurrently to this
- * call will not be forwarded exception messages if it is registered between this call's
- * fetching of the previous handler (to which exceptions <em>will</em> be forwarded), and
- * installation of the new handler (which will forward exceptions to the previously
- * fetched handler).
- *
- * XXX TODO: Use task_swap_exception_ports().
+ * @note Inserting a new Mach task handlers is performed atomically, and multiple handlers
+ * may be initialized concurrently.
  *
  * @param task The mach task for which the handler should be registered.
  * @param callback Callback called upon receipt of an exception. The callback will execute
@@ -355,7 +362,9 @@ static void *exception_server_thread (void *arg) {
     struct exception_server_context *exc_context = NULL;
     pthread_attr_t attr;
     pthread_t thr;
+    kern_return_t kr;
 
+    /* Initialize the bare context. */
     exc_context = calloc(1, sizeof(*exc_context));
     exc_context->task = task;
     exc_context->server_port = MACH_PORT_NULL;
@@ -373,20 +382,6 @@ static void *exception_server_thread (void *arg) {
         return NO;
     }
 
-    /* Fetch the current exception ports */
-    exc_context->prev_handler_state.count = EXC_TYPES_COUNT;
-    kern_return_t kr = task_get_exception_ports(task,
-                                                FATAL_EXCEPTION_MASK,
-                                                exc_context->prev_handler_state.masks,
-                                                &exc_context->prev_handler_state.count,
-                                                exc_context->prev_handler_state.ports,
-                                                exc_context->prev_handler_state.behaviors,
-                                                exc_context->prev_handler_state.flavors);
-    if (kr != KERN_SUCCESS) {
-        plcrash_populate_mach_error(outError, kr, @"Failed to fetch existing task exception ports");
-        goto error;
-    }
-    
     /*
      * Initalize our server's port
      */
@@ -426,7 +421,10 @@ static void *exception_server_thread (void *arg) {
     }
 
     pthread_mutex_lock(&exc_context->server_init_lock);
-    pthread_cond_wait(&exc_context->server_init_cond, &exc_context->server_init_lock);
+    
+    while (!exc_context->server_init_done)
+        pthread_cond_wait(&exc_context->server_init_cond, &exc_context->server_init_lock);
+
     if (exc_context->server_init_result != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, exc_context->server_init_result, @"Failed to set task exception ports");
         goto error;
