@@ -356,7 +356,7 @@ static void *exception_server_thread (void *arg) {
     pthread_attr_t attr;
     pthread_t thr;
 
-    exc_context = calloc(1, sizeof(*context));
+    exc_context = calloc(1, sizeof(*exc_context));
     exc_context->task = task;
     exc_context->server_port = MACH_PORT_NULL;
     exc_context->server_init_result = KERN_SUCCESS;
