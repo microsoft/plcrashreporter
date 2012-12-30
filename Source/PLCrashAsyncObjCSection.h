@@ -34,12 +34,15 @@
 
 
 /**
- * A context object that helps ObjC parsing go faster by caching information
- * across multiple calls. Note that it is invalid to reuse this context for
- * multiple tasks, and any pl_async_macho-t pointers passed in must be valid
- * across all calls using this context.
+ * Caches Objective-C data across API calls.
+ *
+ * This is used to speed up ObjC parsing.
+ *
+ * @warning It is invalid to reuse this context for multiple Mach tasks.
+ * @warning Any plcrash_async_macho_t pointers passed in must be valid across all
+ * calls using this context.
  */
-typedef struct pl_async_objc_context {
+typedef struct plcrash_async_objc_cache {
     /**
      * Whether any ObjC info has ever been successfully obtained. If it has, then
      * ObjC1 info can be skipped.
@@ -75,27 +78,22 @@ typedef struct pl_async_objc_context {
     
     /** Array of class cache values. These are pointers to class_ro data. */
     pl_vm_address_t *classCacheValues;
-} pl_async_objc_context_t;
+} plcrash_async_objc_cache_t;
 
-plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context);
-void pl_async_objc_context_free (pl_async_objc_context_t *context);
+plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *context);
+void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *context);
 
 /**
  * A callback to invoke when an Objective-C method is found.
  *
- * @param className A pointer to a string containing the class's name. Not NUL
- * terminated.
- * @param classNameLength The length of the class name string, in bytes.
- * @param methodName A pointer to a string containing the method's name. Not
- * NUL terminated.
- * @param methodNameLength The length of the method name string, in bytes.
+ * @param isClassMethod If true, the method is a class (rather than an instance) method.
+ * @param className The class's name.
+ * @param methodName The method's name.
  * @param imp The method's IMP (function pointer to the method's implementation).
  * @param ctx The context pointer specified by the original caller.
  */
-typedef void (*pl_async_objc_found_method_cb)(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx);
+typedef void (*plcrash_async_objc_found_method_cb)(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx);
 
-plcrash_error_t pl_async_objc_parse (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx);
-
-plcrash_error_t pl_async_objc_find_method (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx);
+plcrash_error_t plcrash_async_objc_find_method (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *cache, pl_vm_address_t imp, plcrash_async_objc_found_method_cb callback, void *ctx);
 
 #endif // PLCrashAsyncObjCSection_h

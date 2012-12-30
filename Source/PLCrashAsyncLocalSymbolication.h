@@ -38,7 +38,7 @@
  */
 typedef struct plcrash_async_symbol_cache {
     /** Objective-C look-up cache. */
-    pl_async_objc_context_t objcContext;
+    plcrash_async_objc_cache_t objc_cache;
 } plcrash_async_symbol_cache_t;
 
 plcrash_error_t plcrash_async_symbol_cache_init (plcrash_async_symbol_cache_t *cache);

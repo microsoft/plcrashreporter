@@ -161,7 +161,7 @@ struct pl_objc2_list_header {
  * @param The key.
  * @return The index.
  */
-static size_t cache_index (pl_async_objc_context_t *context, pl_vm_address_t key) {
+static size_t cache_index (plcrash_async_objc_cache_t *context, pl_vm_address_t key) {
     return (key >> 2) % context->classCacheSize;
 }
 
@@ -171,7 +171,7 @@ static size_t cache_index (pl_async_objc_context_t *context, pl_vm_address_t key
  * @param context The context.
  * @return The total number of bytes allocated for the cache.
  */
-static size_t cache_allocation_size (pl_async_objc_context_t *context) {
+static size_t cache_allocation_size (plcrash_async_objc_cache_t *context) {
     size_t size = context->classCacheSize;
     return size * sizeof(*context->classCacheKeys) + size * sizeof(*context->classCacheValues);
 }
@@ -183,7 +183,7 @@ static size_t cache_allocation_size (pl_async_objc_context_t *context) {
  * @param key The key to look up.
  * @return The value stored in the cache for that key, or 0 if none was found.
  */
-static pl_vm_address_t cache_lookup (pl_async_objc_context_t *context, pl_vm_address_t key) {
+static pl_vm_address_t cache_lookup (plcrash_async_objc_cache_t *context, pl_vm_address_t key) {
     if (context->classCacheSize > 0) {
         size_t index = cache_index(context, key);
         if (context->classCacheKeys[index] == key) {
@@ -201,7 +201,7 @@ static pl_vm_address_t cache_lookup (pl_async_objc_context_t *context, pl_vm_add
  * @param key The key to store.
  * @param value The value to store.
  */
-static void cache_set (pl_async_objc_context_t *context, pl_vm_address_t key, pl_vm_address_t value) {
+static void cache_set (plcrash_async_objc_cache_t *context, pl_vm_address_t key, pl_vm_address_t value) {
     /* If nothing has used the cache yet, allocate the memory. */
     if (context->classCacheKeys == NULL) {
         size_t size = 1024;
@@ -236,7 +236,7 @@ static void cache_set (pl_async_objc_context_t *context, pl_vm_address_t key, pl
  *
  * @param context The context.
  */
-static void free_mapped_sections (pl_async_objc_context_t *context) {
+static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
     if (context->objcConstMobjInitialized) {
         plcrash_async_mobject_free(&context->objcConstMobj);
         context->objcConstMobjInitialized = false;
@@ -259,7 +259,7 @@ static void free_mapped_sections (pl_async_objc_context_t *context) {
  * @param context The context.
  * @return An error code.
  */
-static plcrash_error_t map_sections (plcrash_async_macho_t *image, pl_async_objc_context_t *context) {
+static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *context) {
     if (image == context->lastImage)
         return PLCRASH_ESUCCESS;
     
@@ -307,7 +307,7 @@ cleanup:
     return err;
 }
 
-static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, struct pl_objc1_class *class, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, struct pl_objc1_class *class, bool isMetaClass, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Get the class's name. */
@@ -429,7 +429,7 @@ cleanup:
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the image doesn't
  * contain ObjC1 metadata, or another error code if a different error occurred.
  */
-static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho_t *image, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho_t *image, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err = PLCRASH_EUNKNOWN;
     
     /* Map the __module_info section. */
@@ -534,7 +534,7 @@ cleanup:
  * @param ctx A context pointer to pass to the callback.
  * @return An error code.
  */
-static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objcContext, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Set up the class name string and a flag to determine whether it needs cleanup. */
@@ -693,7 +693,7 @@ cleanup:
  * @return PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if no ObjC2 data
  * exists in the image, and another error code if a different error occurred.
  */
-static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objcContext, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
     /* Map memory objects. */
@@ -775,52 +775,55 @@ cleanup:
 }
 
 /**
- * Initialize an ObjC context object.
+ * Initialize an ObjC cache object.
  *
- * @param context A pointer to the context object to initialize.
+ * @param cache A pointer to the cache object to initialize.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_context_init (pl_async_objc_context_t *context) {
-    context->gotObjC2Info = false;
-    context->lastImage = NULL;
-    context->objcConstMobjInitialized = false;
-    context->classMobjInitialized = false;
-    context->objcDataMobjInitialized = false;
-    context->classCacheSize = 0;
-    context->classCacheKeys = NULL;
-    context->classCacheValues = NULL;
+plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *cache) {
+    cache->gotObjC2Info = false;
+    cache->lastImage = NULL;
+    cache->objcConstMobjInitialized = false;
+    cache->classMobjInitialized = false;
+    cache->objcDataMobjInitialized = false;
+    cache->classCacheSize = 0;
+    cache->classCacheKeys = NULL;
+    cache->classCacheValues = NULL;
     return PLCRASH_ESUCCESS;
 }
 
 /**
- * Free an ObjC context object.
+ * Free an ObjC cache object.
  *
- * @param context A pointer to the context object to free.
+ * @param cache A pointer to the cache object to free.
  */
-void pl_async_objc_context_free (pl_async_objc_context_t *context) {
-    free_mapped_sections(context);
-    if (context->classCacheKeys != NULL)
-        vm_deallocate(mach_task_self(), (vm_address_t)context->classCacheKeys, cache_allocation_size(context));
+void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *cache) {
+    free_mapped_sections(cache);
+
+    if (cache->classCacheKeys != NULL)
+        vm_deallocate(mach_task_self(), (vm_address_t)cache->classCacheKeys, cache_allocation_size(cache));
 }
 
 /**
+ * @internal
+ *
  * Parse Objective-C class data from a Mach-O image, invoking a callback
  * for each method found in the data. This tries both old-style ObjC1
  * class data and new-style ObjC2 data.
  *
  * @param image The image to read class data from.
- * @param objcContext An ObjC context object.
+ * @param cache An ObjC context object.
  * @param callback The callback to invoke for each method.
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_parse (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_async_objc_found_method_cb callback, void *ctx) {
+static plcrash_error_t plcrash_async_objc_parse (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *cache, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_error_t err;
     
-    if (objcContext == NULL)
+    if (cache == NULL)
         return PLCRASH_EACCESS;
    
-    if (!objcContext->gotObjC2Info) {
+    if (!cache->gotObjC2Info) {
         /* Try ObjC1 data. */
         err = pl_async_objc_parse_from_module_info(image, callback, ctx);
     } else {
@@ -830,10 +833,10 @@ plcrash_error_t pl_async_objc_parse (plcrash_async_macho_t *image, pl_async_objc
     
     /* If there wasn't any, try ObjC2 data. */
     if (err == PLCRASH_ENOTFOUND) {
-        err = pl_async_objc_parse_from_data_section(image, objcContext, callback, ctx);
+        err = pl_async_objc_parse_from_data_section(image, cache, callback, ctx);
         if (err == PLCRASH_ESUCCESS) {
             /* ObjC2 info successfully obtained, note that so we can stop trying ObjC1 next time around. */
-            objcContext->gotObjC2Info = true;
+            cache->gotObjC2Info = true;
         }
     }
     
@@ -847,7 +850,7 @@ struct pl_async_objc_find_method_search_context {
 
 struct pl_async_objc_find_method_call_context {
     pl_vm_address_t searchIMP;
-    pl_async_objc_found_method_cb outerCallback;
+    plcrash_async_objc_found_method_cb outerCallback;
     void *outerCallbackCtx;
 };
 
@@ -892,12 +895,12 @@ static void pl_async_objc_find_method_call_callback (bool isClassMethod, plcrash
  * @param ctx The context pointer to pass to the callback.
  * @return An error code.
  */
-plcrash_error_t pl_async_objc_find_method (plcrash_async_macho_t *image, pl_async_objc_context_t *objcContext, pl_vm_address_t imp, pl_async_objc_found_method_cb callback, void *ctx) {
+plcrash_error_t plcrash_async_objc_find_method (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objcContext, pl_vm_address_t imp, plcrash_async_objc_found_method_cb callback, void *ctx) {
     struct pl_async_objc_find_method_search_context searchCtx = {
         .searchIMP = imp
     };
 
-    plcrash_error_t err = pl_async_objc_parse(image, objcContext, pl_async_objc_find_method_search_callback, &searchCtx);
+    plcrash_error_t err = plcrash_async_objc_parse(image, objcContext, pl_async_objc_find_method_search_callback, &searchCtx);
     if (err != PLCRASH_ESUCCESS) {
         /* Don't log an error if ObjC data was simply not found */
         if (err != PLCRASH_ENOTFOUND)
@@ -914,6 +917,6 @@ plcrash_error_t pl_async_objc_find_method (plcrash_async_macho_t *image, pl_asyn
         .outerCallbackCtx = ctx
     };
     
-    return pl_async_objc_parse(image, objcContext, pl_async_objc_find_method_call_callback, &callCtx);
+    return plcrash_async_objc_parse(image, objcContext, pl_async_objc_find_method_call_callback, &callCtx);
 }
 

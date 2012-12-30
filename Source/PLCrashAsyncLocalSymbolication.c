@@ -125,7 +125,7 @@ static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string
  * @return An error code.
  */
 plcrash_error_t plcrash_async_symbol_cache_init (plcrash_async_symbol_cache_t *cache) {
-    return pl_async_objc_context_init(&cache->objcContext);
+    return plcrash_async_objc_cache_init(&cache->objc_cache);
 }
 
 /**
@@ -134,7 +134,7 @@ plcrash_error_t plcrash_async_symbol_cache_init (plcrash_async_symbol_cache_t *c
  * @param cache A pointer to the cache object to free.
  */
 void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache) {
-    pl_async_objc_context_free(&cache->objcContext);
+    plcrash_async_objc_cache_free(&cache->objc_cache);
 }
 
 plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *findContext, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx) {
@@ -142,7 +142,7 @@ plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_
     plcrash_error_t machoErr = plcrash_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
     
     pl_vm_address_t objcAddress = 0;
-    plcrash_error_t objcErr = pl_async_objc_find_method(image, &findContext->objcContext, pc, saveObjCAddressCB, &objcAddress);
+    plcrash_error_t objcErr = plcrash_async_objc_find_method(image, &findContext->objc_cache, pc, saveObjCAddressCB, &objcAddress);
     
     if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Could not find symbol for PC %p image %p", (void *)pc, image);
@@ -164,7 +164,7 @@ plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_
             .imp = 0,
             .didError = false
         };
-        plcrash_error_t err = pl_async_objc_find_method(image, &findContext->objcContext, pc, callbackObjCAddressCB, &innerCtx);
+        plcrash_error_t err = plcrash_async_objc_find_method(image, &findContext->objc_cache, pc, callbackObjCAddressCB, &innerCtx);
         if (err == PLCRASH_ESUCCESS && innerCtx.imp != 0 && !innerCtx.didError) {
             callback(innerCtx.imp, symString, ctx);
             return PLCRASH_ESUCCESS;
