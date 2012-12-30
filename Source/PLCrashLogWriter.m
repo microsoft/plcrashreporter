@@ -45,7 +45,7 @@
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsync.h"
 #import "PLCrashAsyncSignalInfo.h"
-#import "PLCrashAsyncLocalSymbolication.h"
+#import "PLCrashAsyncSymbolication.h"
 #import "PLCrashFrameWalker.h"
 
 #import "PLCrashSysctl.h"

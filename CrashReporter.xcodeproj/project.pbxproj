@@ -463,16 +463,16 @@
 		C2198E0A16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */; };
 		C2198E0B16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */; };
 		C2198E0C16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */; };
-		C26022861642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C26022871642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C26022881642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C26022891642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C260228A1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C260228B1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C260228C1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */; };
-		C26022901642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */; };
-		C26022911642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */; };
-		C26022921642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */; };
+		C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C26022871642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C26022881642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C26022891642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C260228A1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C260228B1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C260228C1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
+		C26022901642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
+		C26022911642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
+		C26022921642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -865,9 +865,9 @@
 		C2198DE316402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncObjCSectionTests.m; sourceTree = "<group>"; };
 		C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncMachOString.c; sourceTree = "<group>"; };
 		C2198E0E16441D72006EB46A /* PLCrashAsyncMachOString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncMachOString.h; sourceTree = "<group>"; };
-		C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncLocalSymbolication.c; sourceTree = "<group>"; };
-		C260228D1642FCAF007FC29F /* PLCrashAsyncLocalSymbolication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncLocalSymbolication.h; sourceTree = "<group>"; };
-		C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncLocalSymbolicationTests.m; sourceTree = "<group>"; };
+		C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncSymbolication.c; sourceTree = "<group>"; };
+		C260228D1642FCAF007FC29F /* PLCrashAsyncSymbolication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncSymbolication.h; sourceTree = "<group>"; };
+		C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncSymbolicationTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1148,9 +1148,9 @@
 		05BB4C9F166D40AD0075171B /* Symbolication */ = {
 			isa = PBXGroup;
 			children = (
-				C260228D1642FCAF007FC29F /* PLCrashAsyncLocalSymbolication.h */,
-				C26022851642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c */,
-				C260228F1642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m */,
+				C260228D1642FCAF007FC29F /* PLCrashAsyncSymbolication.h */,
+				C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */,
+				C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */,
 			);
 			name = Symbolication;
 			sourceTree = "<group>";
@@ -2139,7 +2139,7 @@
 				05F76DD5162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6411636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DDB1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
-				C26022881642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
+				C26022881642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
 				C2198E0816441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E54B1676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55616765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
@@ -2185,7 +2185,7 @@
 				05F76DD6162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6421636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DDC1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
-				C26022891642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
+				C26022891642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
 				C2198E0916441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E54C1676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55716765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
@@ -2231,8 +2231,8 @@
 				05DEE64B1636E721007E99DC /* PLCrashAsyncMObjectTests.m in Sources */,
 				C2198DDD1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 				C2198DE416402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
-				C260228A1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
-				C26022901642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
+				C260228A1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
+				C26022901642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */,
 				C2198E0A16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688F916445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 				05FDFC84168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
@@ -2277,8 +2277,8 @@
 				05DEE64C1636E721007E99DC /* PLCrashAsyncMObjectTests.m in Sources */,
 				C2198DDE1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 				C2198DE516402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
-				C260228B1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
-				C26022911642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
+				C260228B1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
+				C26022911642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */,
 				C2198E0B16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688FA16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 				05FDFC85168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
@@ -2323,8 +2323,8 @@
 				05DEE64D1636E721007E99DC /* PLCrashAsyncMObjectTests.m in Sources */,
 				C2198DDF1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
 				C2198DE616402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
-				C260228C1642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
-				C26022921642FE9B007FC29F /* PLCrashAsyncLocalSymbolicationTests.m in Sources */,
+				C260228C1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
+				C26022921642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */,
 				C2198E0C16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688FB16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 				05FDFC86168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
@@ -2376,7 +2376,7 @@
 				05F76DD3162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE63F1636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
-				C26022861642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
+				C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
 				C2198E0616441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E5491676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55416765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
@@ -2430,7 +2430,7 @@
 				05F76DD4162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6401636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DDA1640188C006EB46A /* PLCrashAsyncObjCSection.c in Sources */,
-				C26022871642FCA6007FC29F /* PLCrashAsyncLocalSymbolication.c in Sources */,
+				C26022871642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
 				C2198E0716441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E54A1676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55516765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
