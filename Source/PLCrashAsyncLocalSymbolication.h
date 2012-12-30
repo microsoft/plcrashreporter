@@ -34,7 +34,11 @@
 
 
 /**
- * Context object that helps repeated symbol lookups go faster.
+ * Context object that helps speed up repeated symbol lookups.
+ *
+ * @warning It is invalid to reuse this context for multiple Mach tasks.
+ * @warning Any plcrash_async_macho_t pointers passed in must be valid across all
+ * calls using this context.
  */
 typedef struct plcrash_async_symbol_cache {
     /** Objective-C look-up cache. */
@@ -55,6 +59,6 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache);
  */
 typedef void (*plcrash_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
-plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *findContext, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx);
+plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *cache, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx);
 
 #endif

@@ -137,12 +137,24 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache) {
     plcrash_async_objc_cache_free(&cache->objc_cache);
 }
 
-plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *findContext, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx) {
+/**
+ * Find the best-guess matching symbol name for a given @a pc address, using heuristics based on symbol and @a pc address locality.
+ *
+ * @param image The Mach-O image to search for this symbol.
+ * @param cache The task-specific cache to use for lookups.
+ * @param pc The program counter (instruction pointer) address for which a symbol will be searched.
+ * @param callback The callback to be issued when a matching symbol is found. If no symbol is found, the provided function will not be called, and an error other than PLCRASH_ESUCCESS
+ * will be returned.
+ * @param ctx The context to be provided to @a callback.
+ *
+ * @return Calls @a callback and returns PLCRASH_ESUCCESS if a matching symbol is found. Otherwise, returns one of the other defined plcrash_error_t error values.
+ */
+plcrash_error_t plcrash_async_find_symbol (plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *cache, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx) {
     pl_vm_address_t machoAddress = 0;
     plcrash_error_t machoErr = plcrash_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
     
     pl_vm_address_t objcAddress = 0;
-    plcrash_error_t objcErr = plcrash_async_objc_find_method(image, &findContext->objc_cache, pc, saveObjCAddressCB, &objcAddress);
+    plcrash_error_t objcErr = plcrash_async_objc_find_method(image, &cache->objc_cache, pc, saveObjCAddressCB, &objcAddress);
     
     if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Could not find symbol for PC %p image %p", (void *)pc, image);
@@ -164,7 +176,7 @@ plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_
             .imp = 0,
             .didError = false
         };
-        plcrash_error_t err = plcrash_async_objc_find_method(image, &findContext->objc_cache, pc, callbackObjCAddressCB, &innerCtx);
+        plcrash_error_t err = plcrash_async_objc_find_method(image, &cache->objc_cache, pc, callbackObjCAddressCB, &innerCtx);
         if (err == PLCRASH_ESUCCESS && innerCtx.imp != 0 && !innerCtx.didError) {
             callback(innerCtx.imp, symString, ctx);
             return PLCRASH_ESUCCESS;
