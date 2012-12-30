@@ -27,6 +27,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <mach/mach.h>
 
 /**
  * @internal
