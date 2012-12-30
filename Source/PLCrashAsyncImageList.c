@@ -55,7 +55,7 @@
  *
  * @warning This method is not async safe.
  */
-void plcrash_image_list_init (plcrash_async_image_list_t *list, mach_port_t task) {
+void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, mach_port_t task) {
     memset(list, 0, sizeof(*list));
 
     list->task = task;
@@ -69,7 +69,7 @@ void plcrash_image_list_init (plcrash_async_image_list_t *list, mach_port_t task
  *
  * @warning This method is not async safe.
  */
-void plcrash_image_list_free (plcrash_async_image_list_t *list) {
+void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
     /* Free all nodes */
     plcrash_async_image_t *next = list->head;
     while (next != NULL) {
@@ -78,7 +78,7 @@ void plcrash_image_list_free (plcrash_async_image_list_t *list) {
         next = cur->next;
         
         /* Deallocate the current item. */
-        pl_async_macho_free(&cur->macho_image);
+        plcrash_nasync_macho_free(&cur->macho_image);
         free(cur);
     }
 
@@ -95,15 +95,15 @@ void plcrash_image_list_free (plcrash_async_image_list_t *list) {
  *
  * @warning This method is not async safe.
  */
-void plcrash_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, int64_t vmaddr_slide, const char *name) {
+void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, int64_t vmaddr_slide, const char *name) {
     plcrash_error_t ret;
 
     /* Initialize the new entry. */
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
-    if ((ret = plcrash_macho_init(&new->macho_image, list->task, name, header, vmaddr_slide)) != PLCRASH_ESUCCESS) {
+    if ((ret = plcrash_nasync_macho_init(&new->macho_image, list->task, name, header, vmaddr_slide)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Unexpected failure initializing Mach-O structure for %s: %d", name, ret);
         
-        pl_async_macho_free(&new->macho_image);
+        plcrash_nasync_macho_free(&new->macho_image);
         free(new);
 
         return;
@@ -151,7 +151,7 @@ void plcrash_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_
  *
  * @warning This method is not async safe.
  */
-void plcrash_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header) {
+void plcrash_nasync_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header) {
     /* Lock the list from other writers. */
     OSSpinLockLock(&list->write_lock); {
         /* Find the record. */
@@ -200,7 +200,7 @@ void plcrash_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_
         while (list->refcount > 0) {
         }
 
-        pl_async_macho_free(&item->macho_image);
+        plcrash_nasync_macho_free(&item->macho_image);
         free(item);
     } OSSpinLockUnlock(&list->write_lock);
 }

@@ -121,25 +121,25 @@ static void callbackObjCAddressCB(bool isClassMethod, plcrash_async_macho_string
 /**
  * Initialize a symbol-finding context object.
  *
- * @param context A pointer to the context object to initialize.
+ * @param cache A pointer to the cache object to initialize.
  * @return An error code.
  */
-plcrash_error_t pl_async_local_find_symbol_context_init (pl_async_local_find_symbol_context_t *context) {
-    return pl_async_objc_context_init(&context->objcContext);
+plcrash_error_t plcrash_async_symbol_cache_init (plcrash_async_symbol_cache_t *cache) {
+    return pl_async_objc_context_init(&cache->objcContext);
 }
 
 /**
  * Free a symbol-finding context object.
  *
- * @param context A pointer to the context object to free.
+ * @param cache A pointer to the cache object to free.
  */
-void pl_async_local_find_symbol_context_free (pl_async_local_find_symbol_context_t *context) {
-    pl_async_objc_context_free(&context->objcContext);
+void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache) {
+    pl_async_objc_context_free(&cache->objcContext);
 }
 
-plcrash_error_t pl_async_local_find_symbol(plcrash_async_macho_t *image, pl_async_local_find_symbol_context_t *findContext, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx) {
+plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *findContext, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx) {
     pl_vm_address_t machoAddress = 0;
-    plcrash_error_t machoErr = pl_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
+    plcrash_error_t machoErr = plcrash_async_macho_find_symbol(image, pc, saveMachOAddressCB, &machoAddress);
     
     pl_vm_address_t objcAddress = 0;
     plcrash_error_t objcErr = pl_async_objc_find_method(image, &findContext->objcContext, pc, saveObjCAddressCB, &objcAddress);
@@ -153,7 +153,7 @@ plcrash_error_t pl_async_local_find_symbol(plcrash_async_macho_t *image, pl_asyn
     /* Choose whichever one has the higher address (closer match), or whichever one
      * didn't error. */
     if (objcErr != PLCRASH_ESUCCESS || machoAddress > objcAddress) {
-        return pl_async_macho_find_symbol(image, pc, callback, ctx);
+        return plcrash_async_macho_find_symbol(image, pc, callback, ctx);
     } else {
         char symString[128] = {};
         int maxLen = sizeof(symString) - 1;
@@ -169,7 +169,7 @@ plcrash_error_t pl_async_local_find_symbol(plcrash_async_macho_t *image, pl_asyn
             callback(innerCtx.imp, symString, ctx);
             return PLCRASH_ESUCCESS;
         } else {
-            return pl_async_macho_find_symbol(image, pc, callback, ctx);
+            return plcrash_async_macho_find_symbol(image, pc, callback, ctx);
         }
     }
 }

@@ -272,7 +272,7 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, pl_async_objc
     plcrash_error_t err;
     
     /* Map in the __objc_const section, which is where all the read-only class data lives. */
-    err = pl_async_macho_map_section(image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj);
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
             PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj, err);
@@ -281,7 +281,7 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, pl_async_objc
     context->objcConstMobjInitialized = true;
     
     /* Map in the class list section.  */
-    err = pl_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &context->classMobj);
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &context->classMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
             PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kClassListSectionName, &context->classMobj, err);
@@ -290,7 +290,7 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, pl_async_objc
     context->classMobjInitialized = true;
     
     /* Map in the __objc_data section, which is where the actual classes live. */
-    err = pl_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj);
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj);
     if (err != PLCRASH_ESUCCESS) {
         /* If the class list was found, the data section must also be found */
         PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj, err);
@@ -435,7 +435,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
     /* Map the __module_info section. */
     bool moduleMobjInitialized = false;
     plcrash_async_mobject_t moduleMobj;
-    err = pl_async_macho_map_section(image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj);
+    err = plcrash_async_macho_map_section(image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
             PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj, err);

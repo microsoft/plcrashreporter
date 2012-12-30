@@ -62,7 +62,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
 
-    plcrash_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
 
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -75,7 +75,7 @@
 }
 
 - (void) tearDown {
-    pl_async_macho_free(&_image);
+    plcrash_nasync_macho_free(&_image);
 }
 
 /**
@@ -85,7 +85,7 @@
 
     plcrash_async_macho_t image;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-        plcrash_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));
+        plcrash_nasync_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));
         struct load_command *cmd = NULL;
 
         for (uint32_t ncmd = 0; ncmd < image.ncmds; ncmd++) {
@@ -98,7 +98,7 @@
             STAssertNotEquals((uint32_t)0, cmd->cmdsize, @"This test simply ensures that dereferencing the cmd pointer doesn't crash: %d:%d:%s", ncmd, image.ncmds, image.name);
         }
 
-        pl_async_macho_free(&image);
+        plcrash_nasync_macho_free(&image);
     }
 }
 
@@ -146,13 +146,13 @@
  * Test simple short-cut for finding a single load_command.
  */
 - (void) testFindCommand {
-    struct load_command *cmd = pl_async_macho_find_command(&_image, LC_UUID);
+    struct load_command *cmd = plcrash_async_macho_find_command(&_image, LC_UUID);
     STAssertNotNULL(cmd, @"Failed to find command");
     STAssertEquals(_image.swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
     STAssertEquals(_image.swap32(cmd->cmdsize), (uint32_t)sizeof(struct uuid_command), @"Incorrect load command size returned");
     
     /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
-    cmd = pl_async_macho_find_command(&_image, LC_SUB_UMBRELLA);
+    cmd = plcrash_async_macho_find_command(&_image, LC_SUB_UMBRELLA);
     STAssertNULL(cmd, @"Should not have found the requested load command");
 }
 
@@ -163,7 +163,7 @@
     pl_async_macho_mapped_segment_t seg;
 
     /* Try to map the segment */
-    STAssertEquals(PLCRASH_ESUCCESS, pl_async_macho_map_segment(&_image, "__LINKEDIT", &seg), @"Failed to map segment");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_macho_map_segment(&_image, "__LINKEDIT", &seg), @"Failed to map segment");
     
     /* Fetch the segment directly for comparison */
     unsigned long segsize = 0;
@@ -175,7 +175,7 @@
     STAssertEquals((pl_vm_size_t)segsize, seg.mobj.length, @"Sizes do not match");
     
     /* Fetch the segment command for further comparison */
-    struct load_command *cmd = pl_async_macho_find_segment_cmd(&_image, "__LINKEDIT");
+    struct load_command *cmd = plcrash_async_macho_find_segment_cmd(&_image, "__LINKEDIT");
     STAssertNotNULL(data, @"Could not fetch segment command");
     if (_image.swap32(cmd->cmd) == LC_SEGMENT) {
         struct segment_command *segcmd = (struct segment_command *) cmd;
@@ -198,10 +198,10 @@
     STAssertTrue(memcmp(data, mapped_data, segsize) == 0, @"The mapped data is not equal");
 
     /* Clean up */
-    pl_async_macho_mapped_segment_free(&seg);
+    plcrash_async_macho_mapped_segment_free(&seg);
 
     /* Test handling of a missing segment */
-    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &seg), @"Should have failed to map the segment");
+    STAssertEquals(PLCRASH_ENOTFOUND, plcrash_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &seg), @"Should have failed to map the segment");
 }
 
 /**
@@ -211,7 +211,7 @@
     plcrash_async_mobject_t mobj;
     
     /* Try to map the section */
-    STAssertEquals(PLCRASH_ESUCCESS, pl_async_macho_map_section(&_image, "__DATA", "__const", &mobj), @"Failed to map section");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_macho_map_section(&_image, "__DATA", "__const", &mobj), @"Failed to map section");
     
     /* Fetch the section directly for comparison */
     unsigned long sectsize = 0;
@@ -233,7 +233,7 @@
     plcrash_async_mobject_free(&mobj);
     
     /* Test handling of a missing section */
-    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_section(&_image, "__DATA", "__NO_SUCH_SECT", &mobj), @"Should have failed to map the section");
+    STAssertEquals(PLCRASH_ENOTFOUND, plcrash_async_macho_map_section(&_image, "__DATA", "__NO_SUCH_SECT", &mobj), @"Should have failed to map the section");
 }
 
 
@@ -242,7 +242,7 @@
  */
 - (void) testMapMissingSegment {
     pl_async_macho_mapped_segment_t seg;
-    STAssertEquals(PLCRASH_ENOTFOUND, pl_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &seg), @"Should have failed to map the segment");
+    STAssertEquals(PLCRASH_ENOTFOUND, plcrash_async_macho_map_segment(&_image, "__NO_SUCH_SEG", &seg), @"Should have failed to map the segment");
 }
 
 /* testFindSymbol callback handling */
@@ -269,7 +269,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     /* Perform our symbol lookup */
     struct testFindSymbol_cb_ctx ctx;
-    plcrash_error_t res = pl_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0], testFindSymbol_cb, &ctx);
+    plcrash_error_t res = plcrash_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0], testFindSymbol_cb, &ctx);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol");
     
     /* The following tests will crash if the above did not succeed */

@@ -108,19 +108,20 @@ typedef struct plcrash_async_macho_mapped_segment_t {
  */
 typedef void (*pl_async_macho_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
-plcrash_error_t plcrash_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
+plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide);
 
 void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *previous);
 void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void *previous, uint32_t expectedCommand);
-void *pl_async_macho_find_command (plcrash_async_macho_t *image, uint32_t cmd);
-void *pl_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const char *segname);
+void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t cmd);
+void *plcrash_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const char *segname);
 
-plcrash_error_t pl_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg);
-plcrash_error_t pl_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj);
-plcrash_error_t pl_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
+plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg);
+plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj);
+plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
 
-void pl_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);
-void pl_async_macho_free (plcrash_async_macho_t *image);
+void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);
+
+void plcrash_nasync_macho_free (plcrash_async_macho_t *image);
 
 /**
  * @}

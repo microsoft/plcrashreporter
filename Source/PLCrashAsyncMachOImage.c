@@ -86,7 +86,7 @@ static uint64_t macho_nswap64 (uint64_t input) {
  * @warning This method is not async safe.
  * @note On error, pl_async_macho_free() must be called to free any resources still held by the @a image.
  */
-plcrash_error_t plcrash_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
+plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
     /* This must be done first, as our free() function will always decrement the port's reference count. */
     mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
     image->task = task;
@@ -300,7 +300,7 @@ void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void 
  * command can not be verified to have available MAX(sizeof(struct load_command), cmd->cmdsize) bytes, NULL will be
  * returned.
  */
-void *pl_async_macho_find_command (plcrash_async_macho_t *image, uint32_t expectedCommand) {
+void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t expectedCommand) {
     struct load_command *cmd = NULL;
 
     /* Iterate commands until we either find a match, or reach the end */
@@ -332,7 +332,7 @@ void *pl_async_macho_find_command (plcrash_async_macho_t *image, uint32_t expect
  *
  * @return Returns a mapped pointer to the segment on success, or NULL on failure.
  */
-void *pl_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const char *segname) {
+void *plcrash_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const char *segname) {
     void *seg = NULL;
 
     while ((seg = plcrash_async_macho_next_command_type(image, seg, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
@@ -363,11 +363,11 @@ void *pl_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const char 
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg) {
+plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg) {
     struct segment_command *cmd_32;
     struct segment_command_64 *cmd_64;
     
-    void *segment =  pl_async_macho_find_segment_cmd(image, segname);
+    void *segment =  plcrash_async_macho_find_segment_cmd(image, segname);
     if (segment == NULL)
         return PLCRASH_ENOTFOUND;
 
@@ -408,11 +408,11 @@ plcrash_error_t pl_async_macho_map_segment (plcrash_async_macho_t *image, const 
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
-plcrash_error_t pl_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
+plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
     struct segment_command *cmd_32;
     struct segment_command_64 *cmd_64;
     
-    void *segment =  pl_async_macho_find_segment_cmd(image, segname);
+    void *segment =  plcrash_async_macho_find_segment_cmd(image, segname);
     if (segment == NULL)
         return PLCRASH_ENOTFOUND;
 
@@ -502,7 +502,7 @@ typedef union {
  * @warning This function implements no validation of the symbol table pointer. It is the caller's responsibility
  * to verify that the referenced symtab is valid and mapped PROT_READ.
  */
-static bool pl_async_macho_find_symtab_symbol (plcrash_async_macho_t *image, pl_vm_address_t slide_pc, pl_nlist_common *symtab,
+static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image, pl_vm_address_t slide_pc, pl_nlist_common *symtab,
                                                uint32_t nsyms, pl_nlist_common **found_symbol)
 {
     /* nlist_64 and nlist are identical other than the trailing address field, so we use
@@ -565,15 +565,15 @@ static bool pl_async_macho_find_symtab_symbol (plcrash_async_macho_t *image, pl_
  *
  * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, @a found_symbol will not be called.
  */
-plcrash_error_t pl_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
+plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
     plcrash_error_t retval;
     
     /* Compute the actual in-core PC. */
     pl_vm_address_t slide_pc = pc - image->vmaddr_slide;
 
     /* Fetch the symtab commands, if available. */
-    struct symtab_command *symtab_cmd = pl_async_macho_find_command(image, LC_SYMTAB);
-    struct dysymtab_command *dysymtab_cmd = pl_async_macho_find_command(image, LC_DYSYMTAB);
+    struct symtab_command *symtab_cmd = plcrash_async_macho_find_command(image, LC_SYMTAB);
+    struct dysymtab_command *dysymtab_cmd = plcrash_async_macho_find_command(image, LC_DYSYMTAB);
 
 
     /* The symtab command is required */
@@ -584,7 +584,7 @@ plcrash_error_t pl_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_
 
     /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
     pl_async_macho_mapped_segment_t linkedit_seg;
-    plcrash_error_t err = pl_async_macho_map_segment(image, "__LINKEDIT", &linkedit_seg);
+    plcrash_error_t err = plcrash_async_macho_map_segment(image, "__LINKEDIT", &linkedit_seg);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
         return PLCRASH_EINTERNAL;
@@ -653,11 +653,11 @@ plcrash_error_t pl_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_
             local_nlist = (pl_nlist_common *) (n32 + idx_syms_local);
         }
 
-        pl_async_macho_find_symtab_symbol(image, slide_pc, global_nlist, nsyms_global, &found_symbol);
-        pl_async_macho_find_symtab_symbol(image, slide_pc, local_nlist, nsyms_local, &found_symbol);
+        plcrash_async_macho_find_symtab_symbol(image, slide_pc, global_nlist, nsyms_global, &found_symbol);
+        plcrash_async_macho_find_symtab_symbol(image, slide_pc, local_nlist, nsyms_local, &found_symbol);
     } else {
         /* If dysymtab is not available, search all symbols */
-        pl_async_macho_find_symtab_symbol(image, slide_pc, nlist_table, nsyms, &found_symbol);
+        plcrash_async_macho_find_symtab_symbol(image, slide_pc, nlist_table, nsyms, &found_symbol);
     }
 
     /* No symbol found. */
@@ -699,7 +699,7 @@ plcrash_error_t pl_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_
     retval = PLCRASH_ESUCCESS;
 
 cleanup:
-    pl_async_macho_mapped_segment_free(&linkedit_seg);
+    plcrash_async_macho_mapped_segment_free(&linkedit_seg);
     return retval;
 }
 
@@ -708,7 +708,7 @@ cleanup:
  *
  * @note Unlike most free() functions in this API, this function is async-safe.
  */
-void pl_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment) {
+void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment) {
     plcrash_async_mobject_free(&segment->mobj);
 }
 
@@ -717,7 +717,7 @@ void pl_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segmen
  *
  * @warning This method is not async safe.
  */
-void pl_async_macho_free (plcrash_async_macho_t *image) {
+void plcrash_nasync_macho_free (plcrash_async_macho_t *image) {
     if (image->name != NULL)
         free(image->name);
     

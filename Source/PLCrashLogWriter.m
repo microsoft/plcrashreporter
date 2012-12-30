@@ -799,7 +799,7 @@ static void plcrash_writer_write_thread_frame_symbol_cb (pl_vm_address_t address
  * @param file Output file
  * @param pcval The frame PC value.
  */
-static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uint64_t pcval, plcrash_async_image_list_t *image_list, pl_async_local_find_symbol_context_t *findContext) {
+static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uint64_t pcval, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
     size_t rv = 0;
 
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &pcval);
@@ -815,13 +815,13 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
          * our callback is called and PLCRASH_ESUCCESS is returned. */
         ctx.file = NULL;
         ctx.msgsize = 0x0;
-        ret = pl_async_local_find_symbol(&image->macho_image, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+        ret = plcrash_async_find_symbol(&image->macho_image, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
         if (ret == PLCRASH_ESUCCESS) {
             /* Write the header and message */
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &ctx.msgsize);
 
             ctx.file = file;
-            ret = pl_async_local_find_symbol(&image->macho_image, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+            ret = plcrash_async_find_symbol(&image->macho_image, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
             if (ret == PLCRASH_ESUCCESS) {
                 rv += ctx.msgsize;
             } else {
@@ -847,7 +847,7 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
  * @param crashctx Context to use for currently running thread (rather than fetching the thread
  * context, which we've invalidated by running at all)
  */
-static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx, plcrash_async_image_list_t *image_list, pl_async_local_find_symbol_context_t *findContext)
+static size_t plcrash_writer_write_thread (plcrash_async_file_t *file, thread_t thread, uint32_t thread_number, ucontext_t *crashctx, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext)
 {
     size_t rv = 0;
     plframe_cursor_t cursor;
@@ -961,7 +961,7 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plc
 
     /* UUID */
     struct uuid_command *uuid;
-    uuid = pl_async_macho_find_command(image, LC_UUID);
+    uuid = plcrash_async_macho_find_command(image, LC_UUID);
     if (uuid != NULL) {
         PLProtobufCBinaryData binary;
     
@@ -990,7 +990,7 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plc
  * @param file Output file
  * @param writer Writer containing exception data
  */
-static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer, plcrash_async_image_list_t *image_list, pl_async_local_find_symbol_context_t *findContext) {
+static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
     size_t rv = 0;
 
     /* Write the name and reason */
@@ -1089,8 +1089,8 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
     mach_msg_type_number_t thread_count;
     
     /* Set up a symbol-finding context. */
-    pl_async_local_find_symbol_context_t findContext;
-    plcrash_error_t err = pl_async_local_find_symbol_context_init(&findContext);
+    plcrash_async_symbol_cache_t findContext;
+    plcrash_error_t err = plcrash_async_symbol_cache_init(&findContext);
     /* Abort if it failed, although that should never actually happen, ever. */
     if (err != PLCRASH_ESUCCESS)
         return err;
@@ -1260,7 +1260,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, plcrash_
         plcrash_writer_write_signal(file, siginfo);
     }
     
-    pl_async_local_find_symbol_context_free(&findContext);
+    plcrash_async_symbol_cache_free(&findContext);
     
     return PLCRASH_ESUCCESS;
 }

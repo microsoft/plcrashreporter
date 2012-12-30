@@ -62,7 +62,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
     
-    plcrash_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
     
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -75,7 +75,7 @@
 }
 
 - (void) tearDown {
-    pl_async_macho_free(&_image);
+    plcrash_nasync_macho_free(&_image);
 }
 
 /* testFindSymbol callback handling */
@@ -97,22 +97,22 @@ void PLCrashAsyncLocalSymbolicationTestsDummyFunction(void) {}
     struct testFindSymbol_cb_ctx ctx = {};
     plcrash_error_t err;
     
-    pl_async_local_find_symbol_context_t findContext;
-    err = pl_async_local_find_symbol_context_init(&findContext);
+    plcrash_async_symbol_cache_t findContext;
+    err = plcrash_async_symbol_cache_init(&findContext);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"pl_async_local_find_symbol_context_init failed (that should not be possible, how did you do that?)");
     
-    err = pl_async_local_find_symbol(&_image, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
+    err = plcrash_async_find_symbol(&_image, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
     STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Got bad address finding symbol");
     STAssertEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Got wrong symbol name");
     
     pl_vm_address_t localPC = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] longLongValue];
-    err = pl_async_local_find_symbol(&_image, &findContext, localPC, testFindSymbol_cb, &ctx);
+    err = plcrash_async_find_symbol(&_image, &findContext, localPC, testFindSymbol_cb, &ctx);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
     STAssertEquals(ctx.addr, (pl_vm_address_t)[self methodForSelector: _cmd], @"Got bad address finding symbol");
     STAssertEqualCStrings(ctx.name, "-[PLCrashAsyncLocalSymbolicationTests testFindSymbol]", @"Got wrong symbol name");
     
-    pl_async_local_find_symbol_context_free(&findContext);
+    plcrash_async_symbol_cache_free(&findContext);
 }
 
 @end

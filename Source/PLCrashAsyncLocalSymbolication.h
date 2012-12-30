@@ -36,12 +36,13 @@
 /**
  * Context object that helps repeated symbol lookups go faster.
  */
-typedef struct pl_async_local_find_symbol_context {
+typedef struct plcrash_async_symbol_cache {
+    /** Objective-C look-up cache. */
     pl_async_objc_context_t objcContext;
-} pl_async_local_find_symbol_context_t;
+} plcrash_async_symbol_cache_t;
 
-plcrash_error_t pl_async_local_find_symbol_context_init (pl_async_local_find_symbol_context_t *context);
-void pl_async_local_find_symbol_context_free (pl_async_local_find_symbol_context_t *context);
+plcrash_error_t plcrash_async_symbol_cache_init (plcrash_async_symbol_cache_t *cache);
+void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache);
 
 
 /**
@@ -52,8 +53,8 @@ void pl_async_local_find_symbol_context_free (pl_async_local_find_symbol_context
  * after the callback returns.
  * @param context The API client's supplied context value.
  */
-typedef void (*pl_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
+typedef void (*plcrash_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
-plcrash_error_t pl_async_local_find_symbol(plcrash_async_macho_t *image, pl_async_local_find_symbol_context_t *findContext, pl_vm_address_t pc, pl_async_found_symbol_cb callback, void *ctx);
+plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *findContext, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx);
 
 #endif
