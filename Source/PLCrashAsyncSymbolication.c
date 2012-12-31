@@ -30,9 +30,12 @@
 
 #include <inttypes.h>
 
+/* Maximum symbol name size */
+#define SYMBOL_NAME_BUFLEN 256
+
 struct symbol_lookup_ctx {
     /** Buffer to which the symbol name should be written. */
-    char buffer[256];
+    char buffer[SYMBOL_NAME_BUFLEN];
 
     /** If true, the symbol was found. If false, no symbol was found */
     bool found;
@@ -141,7 +144,7 @@ static void macho_symbol_callback (pl_vm_address_t address, const char *name, vo
     lookup_ctx->found = true;
 
     /* Write out the symbol name; we set the limit with room for a terminating NULL */
-    int limit = sizeof(lookup_ctx->buffer) - 1;
+    int limit = SYMBOL_NAME_BUFLEN - 1;
     int cursor = 0;
 
     for (const char *p = name; *p != '\0'; p++)
@@ -192,7 +195,7 @@ static void objc_symbol_callback (bool isClassMethod, plcrash_async_macho_string
     }
 
     /* Write out the symbol name; we set the limit with room for a terminating NULL */
-    int limit = sizeof(lookup_ctx->buffer) - 1;
+    int limit = SYMBOL_NAME_BUFLEN - 1;
     int cursor = 0;
 
     append_char(lookup_ctx->buffer, isClassMethod ? '+' : '-', &cursor, limit);
