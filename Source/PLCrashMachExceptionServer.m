@@ -336,14 +336,10 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
 
             default:
                 PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                *forwarded = false;
                 return KERN_FAILURE;
         }
     } else {
-#if !HANDLE_MACH64_CODES
-        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-        kr = KERN_FAILURE;
-#else
+#if HANDLE_MACH64_CODES
         switch (behavior & ~MACH_EXCEPTION_CODES) {
             case EXCEPTION_DEFAULT:
                 kr = mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
@@ -361,9 +357,11 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
                 
             default:
                 PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                *forwarded = false;
                 return KERN_FAILURE;
         }
+#else
+        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+        return KERN_FAILURE;
 #endif
     }
 
