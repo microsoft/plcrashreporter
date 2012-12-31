@@ -26,6 +26,49 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/*
+ * WARNING:
+ *
+ * I've held off from implementing Mach exception handling due to the fact that the APIs required for a complete
+ * implementation are not public on iOS. However, a commercial crash reporter is now shipping with support for Mach
+ * exceptions, which implies that either they've received special dispensation to use private APIs / private structures,
+ * or they're just doing so and hoping for the best.
+ *
+ * Nominally I'd just not bother with Mach exception handlers, but sigaltstack() is broken in later iOS releases,
+ * necessitating an alternative fix. Even if it wasn't broken, it only ever supported handling stack overflow on the
+ * main thread, and mach exceptions would be a preferrable solution.
+ *
+ * As such, this file provides a proof-of-concept implementation of Mach exception handling, intended to
+ * provide support for Mac OS X using public API, and to ferret out what cannot be implemented on iOS
+ * without the use of private API on iOS.
+ *
+ * As it turns out, there are two iOS issues:
+ *  - The msgh_id values required for an exception reply message are not available from the available
+ *    headers and must be hard-coded. This prevents one from safely replying to exception messages, which
+ *    means that it is impossible to (correctly) inform the server that an exception has *not* been
+ *    handled.
+ *
+ *    Impact:
+ *      This can lead to the process locking up and not dispatching to the host exception handler (eg, Apple's 
+ *      crash reporter), depending on the behavior of the kernel exception code.
+ *
+ *  - The mach_* structure/type variants required by MACH_EXCEPTION_CODES are not publicly defined (on Mac OS X,
+ *    these are provided by mach_exc.defs). This prevents one from forwarding exception messages to an existing
+ *    handler that was registered with a MACH_EXCEPTION_CODES behavior.
+ *    
+ *    Impact:
+ *      This can break forwarding to any task exception handler that registers itself with MACH_EXCEPTION_CODES.
+ *      This is the case with LLDB; it will register a task exception handler with MACH_EXCEPTION_CODES set. Failure
+ *      to correctly forward these exceptions will result in the debugger breaking in interesting ways; for example,
+ *      changes to the set of dyld-loaded images are detected by setting a breakpoint on the dyld image registration
+ *      funtions, and this functionality will break if the exception is not correctly forwarded.
+ *
+ * Since mach exception handling is important for a fully functional crash reporter, I've filed both a radar
+ * and a paid DTS incident to request that the API either be made public, or Apple's position be clarified:
+ *  Radar: rdar://12939497 RFE: Provide mach_exc.defs for iOS
+ *  DTS Incident: mach exception handler and SPI.
+ */
+
 #import "PLCrashMachExceptionServer.h"
 #import "PLCrashReporterNSError.h"
 #import "PLCrashAsync.h"
