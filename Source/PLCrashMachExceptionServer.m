@@ -392,7 +392,11 @@ static void *exception_server_thread (void *arg) {
         kr = task_swap_exception_ports(exc_context->task,
                                        FATAL_EXCEPTION_MASK,
                                        exc_context->server_port,
+#if HANDLE_MACH64_CODES
+                                       EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES,
+#else
                                        EXCEPTION_DEFAULT,
+#endif
                                        THREAD_STATE_NONE,
                                        exc_context->prev_handler_state.masks,
                                        &exc_context->prev_handler_state.count,
