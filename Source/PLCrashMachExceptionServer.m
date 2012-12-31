@@ -271,7 +271,8 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     mach_msg_type_number_t thread_state_count;
     mach_port_t port;
     kern_return_t kr;
-    
+    bool code64 = false;
+
     /* Default state of non-forwarded */
     *forwarded = false;
 
@@ -296,9 +297,14 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     if (!found) {
         return KERN_FAILURE;
     }
+    
+    /* Clean up behavior */
+    if (behavior & MACH_EXCEPTION_CODES)
+        code64 = true;
+    behavior &= ~MACH_EXCEPTION_CODES;
 
     /* Fetch thread state if required */
-    if ((behavior & ~MACH_EXCEPTION_CODES) != EXCEPTION_DEFAULT) {
+    if (behavior != EXCEPTION_DEFAULT) {
         thread_state_count = THREAD_STATE_MAX;
         kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
         if (kr != KERN_SUCCESS) {
@@ -309,16 +315,16 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
 
     /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
 #if HANDLE_MACH64_CODES
-    int32_t code32[request->codeCnt];
+    exception_data_type_t code32[request->codeCnt];
     for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-        code32[i] = request->code[i];
+        code32[i] = (uint64_t) request->code[i];
     }
 #else
     int32_t *code32 = request->code;
 #endif
 
     /* Handle the supported behaviors */
-    if ((behavior & MACH_EXCEPTION_CODES) == 0) {
+    if (!code64) {
         switch (behavior) {
             case EXCEPTION_DEFAULT:
                 kr = exception_raise(port, request->thread.name, request->task.name, request->exception, code32, request->codeCnt);
@@ -340,7 +346,7 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
         }
     } else {
 #if HANDLE_MACH64_CODES
-        switch (behavior & ~MACH_EXCEPTION_CODES) {
+        switch (behavior) {
             case EXCEPTION_DEFAULT:
                 kr = mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
                 break;
@@ -504,6 +510,7 @@ static void *exception_server_thread (void *arg) {
              * not call our callback handler.
              *
              * TODO: Support writing out a crash report even in this case?
+             * TODO: Implement pthread_atfork() cleanup handler.
              */
             bool is_monitored_task = true;
             if (request->task.name != exc_context->task) {
