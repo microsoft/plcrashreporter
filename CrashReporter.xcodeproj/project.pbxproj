@@ -103,6 +103,8 @@
 		0573B44A1681108500395F2A /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0581B521168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
+		0581B522168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
 		059666DD0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */ = {isa = PBXBuildFile; fileRef = 059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */; };
 		059666DE0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
@@ -753,6 +755,7 @@
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashMachExceptionServer.h; sourceTree = "<group>"; };
 		0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServer.m; sourceTree = "<group>"; };
+		0581B520168FDB280098C103 /* mach_exc.defs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mig; name = mach_exc.defs; path = usr/include/mach/mach_exc.defs; sourceTree = SDKROOT; };
 		058812B91040582D009128FB /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameWalker.h; sourceTree = "<group>"; };
 		059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameWalker.c; sourceTree = "<group>"; };
@@ -1031,6 +1034,7 @@
 				0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */,
 				0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */,
 				05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */,
+				0581B520168FDB280098C103 /* mach_exc.defs */,
 			);
 			name = "Mach Exception Server";
 			sourceTree = "<group>";
@@ -2382,6 +2386,7 @@
 				05D9E55416765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
 				05D9E55F16765D0200B39833 /* PLCrashReportSymbolInfo.m in Sources */,
 				0573B4301681098E00395F2A /* PLCrashMachExceptionServer.m in Sources */,
+				0581B521168FDB280098C103 /* mach_exc.defs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2436,6 +2441,7 @@
 				05D9E55516765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
 				05D9E56016765D0200B39833 /* PLCrashReportSymbolInfo.m in Sources */,
 				0573B4311681098E00395F2A /* PLCrashMachExceptionServer.m in Sources */,
+				0581B522168FDB280098C103 /* mach_exc.defs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

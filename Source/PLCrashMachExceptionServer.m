@@ -79,6 +79,20 @@
 #import <mach/mach.h>
 #import <mach/exc.h>
 
+/* On Mac OS X, we are free to use the 64-bit mach_* APIs. No headers are provided for these,
+ * but the MIG defs are available and may be included directly in the build */
+#if !TARGET_OS_IPHONE
+#define HANDLE_MACH64_CODES 1
+#import "mach_exc.h"
+#endif
+
+#if HANDLE_MACH64_CODES
+typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
+typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
+#else
+typedef PLRequest_exception_raise_t PLRequest_exception_raise_t;
+typedef __Reply__exception_raise_t PLReply_exception_raise_t;
+#endif
 
 /**
  * @internal
@@ -214,9 +228,9 @@ static void set_exception_ports (task_t task, struct plcrash_exception_handler_s
  * @param request The request to which a reply should be sent.
  * @param retcode The reply return code to supply.
  */
-static mach_msg_return_t exception_server_reply (__Request__exception_raise_t *request, kern_return_t retcode) {
-    __Reply__exception_raise_t reply;
-    
+static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *request, kern_return_t retcode) {
+    PLReply_exception_raise_t reply;
+
     /* Initialize the reply */
     memset(&reply, 0, sizeof(reply));
     reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
@@ -250,7 +264,7 @@ static mach_msg_return_t exception_server_reply (__Request__exception_raise_t *r
  * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
  * if the exception was not handled or no handling server was registered.
  */
-static kern_return_t exception_server_forward (__Request__exception_raise_t *request, struct plcrash_exception_handler_state *state, bool *forwarded) {
+static kern_return_t exception_server_forward (PLRequest_exception_raise_t *request, struct plcrash_exception_handler_state *state, bool *forwarded) {
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
     thread_state_data_t thread_state;
@@ -293,27 +307,64 @@ static kern_return_t exception_server_forward (__Request__exception_raise_t *req
         }
     }
 
+    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
+#if HANDLE_MACH64_CODES
+    int32_t code32[request->codeCnt];
+    for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+        code32[i] = request->code[i];
+    }
+#else
+    int32_t *code32 = request->code;
+#endif
+
     /* Handle the supported behaviors */
-    // TODO - MACH_EXCEPTION_CODES support
-    switch (behavior & ~MACH_EXCEPTION_CODES) {
-        case EXCEPTION_DEFAULT:
-            kr = exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
-            break;
+    if ((behavior & MACH_EXCEPTION_CODES) == 0) {
+        switch (behavior) {
+            case EXCEPTION_DEFAULT:
+                kr = exception_raise(port, request->thread.name, request->task.name, request->exception, code32, request->codeCnt);
+                break;
 
-        case EXCEPTION_STATE:
-            kr = exception_raise_state(port, request->exception, request->code, request->codeCnt, &flavor, thread_state,
-                                       thread_state_count, thread_state, &thread_state_count);
-            break;
+            case EXCEPTION_STATE:
+                kr = exception_raise_state(port, request->exception, code32, request->codeCnt, &flavor, thread_state,
+                                           thread_state_count, thread_state, &thread_state_count);
+                break;
 
-        case EXCEPTION_STATE_IDENTITY:
-            kr = exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
-                                                request->codeCnt, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
-            break;
+            case EXCEPTION_STATE_IDENTITY:
+                kr = exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, code32,
+                                                    request->codeCnt, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+                break;
 
-        default:
-            PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-            kr = KERN_FAILURE;
-            break;
+            default:
+                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+                kr = KERN_FAILURE;
+                break;
+        }
+    } else {
+#if !HANDLE_MACH64_CODES
+        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+        kr = KERN_FAILURE;
+#else
+        switch (behavior & ~MACH_EXCEPTION_CODES) {
+            case EXCEPTION_DEFAULT:
+                kr = mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
+                break;
+                
+            case EXCEPTION_STATE:
+                kr = mach_exception_raise_state(port, request->exception, request->code, request->codeCnt, &flavor, thread_state,
+                                                thread_state_count, thread_state, &thread_state_count);
+                break;
+                
+            case EXCEPTION_STATE_IDENTITY:
+                kr = mach_exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
+                                                         request->codeCnt, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+                break;
+                
+            default:
+                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+                kr = KERN_FAILURE;
+                break;
+        }
+#endif
     }
 
     *forwarded = true;
@@ -329,7 +380,7 @@ static kern_return_t exception_server_forward (__Request__exception_raise_t *req
  */
 static void *exception_server_thread (void *arg) {
     struct plcrash_exception_server_context *exc_context = arg;
-    __Request__exception_raise_t *request = NULL;
+    PLRequest_exception_raise_t *request = NULL;
     size_t request_size;
     kern_return_t kr;
     mach_msg_return_t mr;
@@ -471,9 +522,9 @@ static void *exception_server_thread (void *arg) {
             /* Only call the handler (and log a report) if the message was not successfully handled */
             if (!forwarded && is_monitored_task) {
                 // TODO - Call handler
-                PLCF_DEBUG("Got mach exception message. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+                PLCF_DEBUG("Got mach exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
             } else {
-                PLCF_DEBUG("Ignoring exception message. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+                PLCF_DEBUG("Ignoring exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
             }
 
             /*
