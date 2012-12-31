@@ -336,8 +336,8 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
 
             default:
                 PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                kr = KERN_FAILURE;
-                break;
+                *forwarded = false;
+                return KERN_FAILURE;
         }
     } else {
 #if !HANDLE_MACH64_CODES
@@ -361,8 +361,8 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
                 
             default:
                 PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                kr = KERN_FAILURE;
-                break;
+                *forwarded = false;
+                return KERN_FAILURE;
         }
 #endif
     }
