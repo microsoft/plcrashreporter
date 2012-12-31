@@ -263,6 +263,14 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
  *
  * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
  * if the exception was not handled or no handling server was registered.
+ *
+ * TODO: Handling the exception replies internally breaks external debuggers, as they assume it is safe to
+ * leave a thread suspended. This results in the target thread never resuming, as our thread never wakes up
+ * to reply to the message. Fixing this is difficult; we could forward the message directly and avoid handling the reply,
+ * but this means that we can not differentiate between a handled exception and an unhandled one. We could also
+ * try detecting the debugger as being attached, in which case we'd want to disable ourselves anyway.
+ *
+ * TODO: We need to be able to determine if an exception can be/will/was handled by a signal handler.
  */
 static kern_return_t exception_server_forward (PLRequest_exception_raise_t *request, struct plcrash_exception_handler_state *state, bool *forwarded) {
     exception_behavior_t behavior;
