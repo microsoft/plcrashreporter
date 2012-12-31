@@ -34,7 +34,10 @@
 
 @implementation PLCrashMachExceptionServerTests
 
-- (void) testSomething {
+/**
+ * Test inserting/removing the mach exception server from the handler chain.
+ */
+- (void) testServerInsertion {
     NSError *error;
 
     PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] init] autorelease];
@@ -44,6 +47,8 @@
                                    withCallback: NULL /* TODO */
                                         context: NULL
                                           error: &error], @"Failed to configure handler: %@", error);
+    
+    STAssertTrue([server deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
 }
 
 @end

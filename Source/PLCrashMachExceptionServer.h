@@ -50,4 +50,6 @@ struct plcrash_exception_server_context;
                         context: (void *) context
                           error: (NSError **) outError;
 
+- (BOOL) deregisterHandlerAndReturnError: (NSError **) outError;
+
 @end

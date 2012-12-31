@@ -31,6 +31,8 @@
 #import "PLCrashAsync.h"
 
 #import <pthread.h>
+#import <libkern/OSAtomic.h>
+
 #import <mach/mach.h>
 #import <mach/exc.h>
 
@@ -109,10 +111,10 @@ struct plcrash_exception_server_context {
     mach_port_t server_port;
 
     /** Lock used to signal waiting initialization thread. */
-    pthread_mutex_t server_init_lock;
+    pthread_mutex_t lock;
     
     /** Condition used to signal waiting initialization thread. */
-    pthread_cond_t server_init_cond;
+    pthread_cond_t server_cond;
     
     /** Intended to be observed by the waiting initialization thread. Informs
      * the waiting thread that initialization has completed . */
@@ -121,6 +123,23 @@ struct plcrash_exception_server_context {
     /** Intended to be observed by the waiting initialization thread. Contains
      * the result of setting the task exception handler. */
     kern_return_t server_init_result;
+    
+    /**
+     * Intended to be set by a controlling termination thread. Informs the mach exception
+     * thread that it should de-register itself and then signal completion.
+     *
+     * This value must be updated atomically and with a memory barrier, as it will be accessed
+     * without locking.
+     */
+    uint32_t server_should_stop;
+
+    /** Intended to be observed by the waiting initialization thread. Informs
+     * the waiting thread that shutdown has completed . */
+    bool server_stop_done;
+    
+    /** Intended to be observed by the waiting initialization thread. Contains
+     * the result of resetting the task exception handler. */
+    kern_return_t server_stop_result;
 
     /** Previously registered handlers. We will forward all exceptions here after
       * internal processing. */
@@ -194,7 +213,7 @@ static void *exception_server_thread (void *arg) {
 
     /* Atomically swap in our up the exception handler, also informing the waiting thread of
      * completion (or failure). */
-    pthread_mutex_lock(&exc_context->server_init_lock); {
+    pthread_mutex_lock(&exc_context->lock); {
         exc_context->prev_handler_state.count = EXC_TYPES_COUNT;
         kr = task_swap_exception_ports(exc_context->task,
                                        FATAL_EXCEPTION_MASK,
@@ -210,15 +229,15 @@ static void *exception_server_thread (void *arg) {
         exc_context->server_init_done = true;
 
         /* Notify our spawning thread of our initialization */
-        pthread_cond_signal(&exc_context->server_init_cond);
+        pthread_cond_signal(&exc_context->server_cond);
 
         /* Exit on error. If a failure occured, it's now unsafe to access exc_server; the spawning
          * thread may have already deallocated it. */
         if (kr != KERN_SUCCESS) {
-            pthread_mutex_unlock(&exc_context->server_init_lock);
+            pthread_mutex_unlock(&exc_context->lock);
             return NULL;
         }
-    } pthread_mutex_unlock(&exc_context->server_init_lock);
+    } pthread_mutex_unlock(&exc_context->lock);
 
     /* Initialize the received message with a default size */
     request_size = round_page(sizeof(*request));
@@ -262,8 +281,6 @@ static void *exception_server_thread (void *arg) {
 
         /* Handle fatal errors */
         } else if (mr != MACH_MSG_SUCCESS) {
-            // TODO - handle MACH_RCV_INTERRUPTED and/or thread shutdown
-
             /* Shouldn't happen ... */
             PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x. Restoring exception ports and stopping server thread.", mr);
 
@@ -274,6 +291,34 @@ static void *exception_server_thread (void *arg) {
 
         /* Success! */
         } else {
+            /* Detect 'short' messages. */
+            if (request->Head.msgh_size < sizeof(*request)) {
+                /* We intentionally do not acquire a lock here. It is possible that we've been woken
+                 * spuriously with the process in an unknown state, in which case we must not call
+                 * out to non-async-safe functions */
+                if (exc_context->server_should_stop) {
+                    /* Restore exception ports; we won't be around to handle future exceptions */
+                    // TODO - This is non-atomic; should we cycle through a mach_msg() call to clear
+                    // exception messages that may have been enqueued?
+                    set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
+
+                    /* Inform the requesting thread of completion */
+                    pthread_mutex_lock(&exc_context->lock); {
+                        // TODO - Report errors resetting the exception ports?
+                        exc_context->server_stop_result = KERN_SUCCESS;
+                        exc_context->server_stop_done = true;
+
+                        pthread_cond_signal(&exc_context->server_cond);
+                    } pthread_mutex_unlock(&exc_context->lock);
+
+                    /* Ensure a quick death if we access exc_context after termination  */
+                    exc_context = NULL;
+
+                    /* Trigger cleanup */
+                    break;
+                }
+            }
+
             /*
              * Detect exceptions from tasks other than our target task. This should only be possible if
              * a crash occurs after a fork(), but before our pthread_atfork() handler de-registers 
@@ -347,7 +392,7 @@ static void *exception_server_thread (void *arg) {
                 PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
         }
     }
-    
+
     /* Drop the receive buffer */
     if (request != NULL)
         vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
@@ -376,7 +421,6 @@ static void *exception_server_thread (void *arg) {
 
 /**
  * Register the task signal handlers with the provided callback.
- * Should not be called more than once.
  *
  * @note If this method returns NO, the exception handler will remain unmodified.
  * @note Inserting the Mach task handler is performed atomically, and multiple handlers
@@ -387,7 +431,7 @@ static void *exception_server_thread (void *arg) {
  * on the exception server's thread, distinctly from the crashed thread.
  * @param context Context to be passed to the callback. May be NULL.
  * @param outError A pointer to an NSError object variable. If an error occurs, this
- * pointer will contain an error object indicating why the signal handlers could not be
+ * pointer will contain an error object indicating why the exception handler could not be
  * registered. If no error occurs, this parameter will be left unmodified. You may specify
  * NULL for this parameter, and no error information will be provided.
  */
@@ -399,6 +443,8 @@ static void *exception_server_thread (void *arg) {
     pthread_attr_t attr;
     pthread_t thr;
     kern_return_t kr;
+    
+    NSAssert(_serverContext == NULL, @"Register called twice!");
 
     /* Initialize the bare context. */
     _serverContext = calloc(1, sizeof(*_serverContext));
@@ -406,7 +452,7 @@ static void *exception_server_thread (void *arg) {
     _serverContext->server_port = MACH_PORT_NULL;
     _serverContext->server_init_result = KERN_SUCCESS;
 
-    if (pthread_mutex_init(&_serverContext->server_init_lock, NULL) != 0) {
+    if (pthread_mutex_init(&_serverContext->lock, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Mutex initialization failed");
 
         free(_serverContext);
@@ -415,7 +461,7 @@ static void *exception_server_thread (void *arg) {
         return NO;
     }
 
-    if (pthread_cond_init(&_serverContext->server_init_cond, NULL) != 0) {
+    if (pthread_cond_init(&_serverContext->server_cond, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Condition initialization failed");
 
         free(_serverContext);
@@ -462,16 +508,16 @@ static void *exception_server_thread (void *arg) {
         pthread_attr_destroy(&attr);
     }
 
-    pthread_mutex_lock(&_serverContext->server_init_lock);
+    pthread_mutex_lock(&_serverContext->lock);
     
     while (!_serverContext->server_init_done)
-        pthread_cond_wait(&_serverContext->server_init_cond, &_serverContext->server_init_lock);
+        pthread_cond_wait(&_serverContext->server_cond, &_serverContext->lock);
 
     if (_serverContext->server_init_result != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, _serverContext->server_init_result, @"Failed to set task exception ports");
         goto error;
     }
-    pthread_mutex_unlock(&_serverContext->server_init_lock);
+    pthread_mutex_unlock(&_serverContext->lock);
 
     return YES;
 
@@ -480,14 +526,71 @@ error:
         if (_serverContext->server_port != MACH_PORT_NULL)
             mach_port_deallocate(mach_task_self(), _serverContext->server_port);
 
-        pthread_cond_destroy(&_serverContext->server_init_cond);
-        pthread_mutex_destroy(&_serverContext->server_init_lock);
+        pthread_cond_destroy(&_serverContext->server_cond);
+        pthread_mutex_destroy(&_serverContext->lock);
 
         free(_serverContext);
         _serverContext = NULL;
     }
 
     return NO;
+}
+
+/**
+ * De-register the mach exception handler.
+ 
+ * @param outError A pointer to an NSError object variable. If an error occurs, this
+ * pointer will contain an error object indicating why the signal handlers could not be
+ * registered. If no error occurs, this parameter will be left unmodified. You may specify
+ * NULL for this parameter, and no error information will be provided.
+ *
+ * @warning Removing the Mach task handler is not currently performed atomically; if an exception message
+ * is received during deregistration, the exception may be lost. As such, removing the exception handler
+ * is not currently recommended. This restriction may be lifted in a future release.
+ */
+- (BOOL) deregisterHandlerAndReturnError: (NSError **) outError {
+    mach_msg_return_t mr;
+    BOOL result = YES;
+
+    NSAssert(_serverContext != NULL, @"No handler registered!");
+
+    /* Mark the server for termination */
+    OSAtomicCompareAndSwap32Barrier(0, 1, (int32_t *) &_serverContext->server_should_stop);
+
+    /* Wake up the waiting server */
+    mach_msg_header_t msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE);
+    msg.msgh_local_port = MACH_PORT_NULL;
+    msg.msgh_remote_port = _serverContext->server_port;
+    msg.msgh_size = sizeof(msg);
+    msg.msgh_id = 0;
+
+    mr = mach_msg(&msg, MACH_SEND_MSG, msg.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+
+    if (mr != MACH_MSG_SUCCESS) {
+        /* It's defined by the mach headers as safe to treat a mach_msg_return_t as a kern_return_t */
+        plcrash_populate_mach_error(outError, mr, @"Failed to send termination message to background thread");
+        return NO;
+    }
+
+    /* Wait for completion */
+    pthread_mutex_lock(&_serverContext->lock);
+    while (!_serverContext->server_stop_done) {
+        pthread_cond_wait(&_serverContext->server_cond, &_serverContext->lock);
+    }
+    pthread_mutex_unlock(&_serverContext->lock);
+
+    if (_serverContext->server_stop_result != KERN_SUCCESS) {
+        result = NO;
+        plcrash_populate_mach_error(outError, _serverContext->server_stop_result, @"Failed to reset mach exception handlers");
+    }
+
+    /* Once we've been signaled by the background thread, it will no longer access exc_context */
+    free(_serverContext);
+    _serverContext = NULL;
+
+    return result;
 }
 
 @end
