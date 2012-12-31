@@ -241,6 +241,86 @@ static mach_msg_return_t exception_server_reply (__Request__exception_raise_t *r
 }
 
 /**
+ * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
+ *
+ * @param request The incoming request that should be forwarded to @a server_port.
+ * @param state The set of exception handlers to which the message should be forwarded.
+ * @param forwarded Set to true if the exception was forwarded, false otherwise.
+ *
+ * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
+ * if the exception was not handled or no handling server was registered.
+ */
+static kern_return_t exception_server_forward (__Request__exception_raise_t *request, struct plcrash_exception_handler_state *state, bool *forwarded) {
+    exception_behavior_t behavior;
+    thread_state_flavor_t flavor;
+    thread_state_data_t thread_state;
+    mach_msg_type_number_t thread_state_count;
+    mach_port_t port;
+    kern_return_t kr;
+    
+    /* Default state of non-forwarded */
+    *forwarded = false;
+
+    /* Find a matching handler */
+    exception_mask_t fwd_mask = exception_to_mask(request->exception);
+    bool found = false;
+    for (mach_msg_type_number_t i = 0; i < state->count; i++) {
+        if (!MACH_PORT_VALID(state->ports[i]))
+            continue;
+
+        if ((state->masks[i] & fwd_mask) == 0)
+            continue;
+
+        found = true;
+        port = state->ports[i];
+        behavior = state->behaviors[i];
+        flavor = state->flavors[i];
+        break;
+    }
+
+    /* No handler found */
+    if (!found) {
+        return KERN_FAILURE;
+    }
+
+    /* Fetch thread state if required */
+    if ((behavior & ~MACH_EXCEPTION_CODES) != EXCEPTION_DEFAULT) {
+        thread_state_count = THREAD_STATE_MAX;
+        kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
+        if (kr != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to fetch thread state for thread, kr=0x%x", kr);
+            return kr;
+        }
+    }
+
+    /* Handle the supported behaviors */
+    // TODO - MACH_EXCEPTION_CODES support
+    switch (behavior & ~MACH_EXCEPTION_CODES) {
+        case EXCEPTION_DEFAULT:
+            kr = exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
+            break;
+
+        case EXCEPTION_STATE:
+            kr = exception_raise_state(port, request->exception, request->code, request->codeCnt, &flavor, thread_state,
+                                       thread_state_count, thread_state, &thread_state_count);
+            break;
+
+        case EXCEPTION_STATE_IDENTITY:
+            kr = exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
+                                                request->codeCnt, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+            break;
+
+        default:
+            PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+            kr = KERN_FAILURE;
+            break;
+    }
+
+    *forwarded = true;
+    return kr;
+}
+
+/**
  * Background exception server. Handles incoming exception messages and dispatches
  * them to the registered callback.
  *
@@ -383,50 +463,27 @@ static void *exception_server_thread (void *arg) {
             // this state by executing a "safe mode" logging path.
             set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
 
-            if (is_monitored_task) {
+
+            /* Forward exception. */
+            bool forwarded;
+            kern_return_t forward_result = exception_server_forward(request, &exc_context->prev_handler_state, &forwarded);
+
+            /* Only call the handler (and log a report) if the message was not successfully handled */
+            if (!forwarded && is_monitored_task) {
                 // TODO - Call handler
                 PLCF_DEBUG("Got mach exception message. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
             } else {
-                PLCF_DEBUG("Ignoring exception message from forked task. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
-            }
-
-            /* Forward exception. */
-            exception_mask_t fwd_mask = exception_to_mask(request->exception);
-            bool forwarded = false;
-            kern_return_t forward_result = KERN_SUCCESS;
-
-            for (mach_msg_type_number_t i = 0; i < exc_context->prev_handler_state.count; i++) {
-                if (!MACH_PORT_VALID(exc_context->prev_handler_state.ports[i]))
-                    continue;
-
-                if ((exc_context->prev_handler_state.masks[i] & fwd_mask) == 0)
-                    continue;
-
-                // TODO - handle state/identity behaviors
-                if (exc_context->prev_handler_state.behaviors[i] != EXCEPTION_DEFAULT) {
-                    PLCF_DEBUG("TODO: Unhandled exception port behavior: 0x%x for port %d", exc_context->prev_handler_state.behaviors[i], exc_context->prev_handler_state.ports[i]);
-                    continue;
-                }
-
-                /* Re-raise the exception with the existing handler */
-                forward_result = exception_raise(exc_context->prev_handler_state.ports[i],
-                                                 request->thread.name,
-                                                 request->task.name,
-                                                 request->exception,
-                                                 request->code,
-                                                 request->codeCnt);
-                forwarded = true;
-                break;
+                PLCF_DEBUG("Ignoring exception message. exc=%x code=%x,%x ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
             }
 
             /*
              * Reply to the message.
              *
-             * If the message was forwarded, provide the handler's reply. Otherwise, we're the final handler; inform the kernel that the
-             * thread should not be resumed (ie, the exception was not 'handled')
+             * If the message was forwarded and handled by the exception server, provide the handler's reply. Otherwise, we're the
+             * final handler; inform the kernel that the thread should not be resumed (ie, the exception was not 'handled')
              */
-            if (forwarded) {
-                mr = exception_server_reply(request, forward_result);
+            if (forward_result == KERN_SUCCESS) {
+                mr = exception_server_reply(request, KERN_SUCCESS);
             } else {
                 mr = exception_server_reply(request, KERN_FAILURE);
             }
