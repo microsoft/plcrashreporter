@@ -35,8 +35,6 @@
  */
 typedef void (*PLCrashMachExceptionHandlerCallback)(void *context);
 
-struct plcrash_exception_server_context;
-
 @interface PLCrashMachExceptionServer : NSObject {
 @private
     /** Backing server context. This structure will not be allocated until the background
