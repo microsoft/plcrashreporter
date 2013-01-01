@@ -37,14 +37,15 @@
  * @param thread The thread on which the exception occured. The thread will be suspended when the callback is issued, and may be resumed
  * by the callback using thread_resume().
  * @param exception_type Mach exception type.
- * @param codes Mach exception codes.
+ * @param code Mach exception codes.
  * @param code_count The number of codes provided.
  * @param double_fault If true, the callback is being called from a double-fault handler. This occurs when
  * your callback -- or the exception server itself -- crashes during handling. Triple faults are not handled, and will
  * simply trigger the OS crash reporter.
  * @param context The context supplied to PLCrashMachExceptionServer::registerHandlerForTask:withCallback:context:error
  *
- * @return Return true if the exception has been handled and @a thread has been resumed. Return false otherwise.
+ * @return Return true if the exception has been handled. Return false otherwise. If true, the thread
+ * will be resumed.
  *
  * @par Double Faults 
  *
@@ -81,7 +82,7 @@
 typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
                                                      thread_t thread,
                                                      exception_type_t exception_type,
-                                                     mach_exception_data_t codes,
+                                                     mach_exception_data_t code,
                                                      mach_msg_type_number_t code_count,
                                                      bool double_fault,
                                                      void *context);

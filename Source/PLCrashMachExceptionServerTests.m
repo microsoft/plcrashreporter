@@ -30,9 +30,26 @@
 
 #import "PLCrashMachExceptionServer.h"
 
+#include <sys/mman.h>
+
 @interface PLCrashMachExceptionServerTests : SenTestCase @end
 
 @implementation PLCrashMachExceptionServerTests
+
+static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
+
+static bool exception_callback (task_t task,
+                                thread_t thread,
+                                exception_type_t exception_type,
+                                mach_exception_data_t code,
+                                mach_msg_type_number_t code_count,
+                                bool double_fault,
+                                void *context)
+{
+    mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
+    crash_page[1] = 0xFE;
+    return true;
+}
 
 /**
  * Test inserting/removing the mach exception server from the handler chain.
@@ -44,10 +61,18 @@
     STAssertNotNil(server, @"Failed to initialize server");
 
     STAssertTrue([server registerHandlerForTask: mach_task_self()
-                                   withCallback: NULL /* TODO */
+                                   withCallback: exception_callback
                                         context: NULL
                                           error: &error], @"Failed to configure handler: %@", error);
-    
+
+    mprotect(crash_page, sizeof(crash_page), 0);
+
+    /* If the test doesn't lock up here, it's working */
+    crash_page[0] = 0xCA;
+
+    STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Page should have been set to test value");
+    STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
+
     STAssertTrue([server deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
 }
 

@@ -166,6 +166,12 @@ struct plcrash_exception_server_context {
 
     /** Registered exception port. */
     mach_port_t server_port;
+    
+    /** User callback. */
+    PLCrashMachExceptionHandlerCallback callback;
+
+    /** User callback context. */
+    void *callback_context;
 
     /** Lock used to signal waiting initialization thread. */
     pthread_mutex_t lock;
@@ -531,32 +537,47 @@ static void *exception_server_thread (void *arg) {
             // TODO - We should register a thread-specific double-fault handler to specifically handle
             // this state by executing a "safe mode" logging path.
             set_exception_ports(exc_context->task, &exc_context->prev_handler_state);
+            
+            /* Map 32-bit codes to 64-bit types. */
+#if !HANDLE_MACH64_CODES
+            mach_exception_data_type_t code64[request->codeCnt];
+            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+                code64[i] = (uint32_t) request->code[i];
+            }
+#else
+            mach_exception_data_type_t *code64 = request->code;
+#endif
 
+            /* Call our handler. */
+            kern_return_t exc_result = KERN_FAILURE;
+            bool exception_handled;
 
-            /* Forward exception. */
-            bool forwarded;
-            kern_return_t forward_result = exception_server_forward(request, &exc_context->prev_handler_state, &forwarded);
-
-            /* Only call the handler (and log a report) if the message was not successfully handled */
-            if (!forwarded && is_monitored_task) {
-                // TODO - Call handler
-                PLCF_DEBUG("Got mach exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, (uint64_t) request->code[0], (uint64_t) request->code[1], exc_context);
+            exception_handled = exc_context->callback(request->task.name,
+                                                     request->thread.name,
+                                                     request->exception,
+                                                     code64,
+                                                     request->codeCnt,
+                                                     false, /* TODO: double fault handling */
+                                                     exc_context->callback_context);
+            
+            if (exception_handled) {
+                /* Mark as handled */
+                exc_result = KERN_SUCCESS;
             } else {
-                PLCF_DEBUG("Ignoring exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, (uint64_t) request->code[0], (uint64_t) request->code[1], exc_context);
+                /* If not exception was not handled internally (ie, the thread was not corrected and resumed), then
+                 * forward the exception. */
+                kern_return_t forward_result;
+                bool forwarded;
+
+                forward_result = exception_server_forward(request, &exc_context->prev_handler_state, &forwarded);
+                if (forwarded)
+                    exc_result = forward_result;
             }
 
             /*
              * Reply to the message.
-             *
-             * If the message was forwarded and handled by the exception server, provide the handler's reply. Otherwise, we're the
-             * final handler; inform the kernel that the thread should not be resumed (ie, the exception was not 'handled')
              */
-            if (forward_result == KERN_SUCCESS) {
-                mr = exception_server_reply(request, KERN_SUCCESS);
-            } else {
-                mr = exception_server_reply(request, KERN_FAILURE);
-            }
-
+            mr = exception_server_reply(request, exc_result);
             if (mr != MACH_MSG_SUCCESS)
                 PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
         }
@@ -620,6 +641,8 @@ static void *exception_server_thread (void *arg) {
     _serverContext->task = task;
     _serverContext->server_port = MACH_PORT_NULL;
     _serverContext->server_init_result = KERN_SUCCESS;
+    _serverContext->callback = callback;
+    _serverContext->callback_context = context;
 
     if (pthread_mutex_init(&_serverContext->lock, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Mutex initialization failed");
