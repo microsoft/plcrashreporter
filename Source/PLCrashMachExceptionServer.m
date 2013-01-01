@@ -90,7 +90,7 @@
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
 #else
-typedef PLRequest_exception_raise_t PLRequest_exception_raise_t;
+typedef __Request__exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__exception_raise_t PLReply_exception_raise_t;
 #endif
 
@@ -540,9 +540,9 @@ static void *exception_server_thread (void *arg) {
             /* Only call the handler (and log a report) if the message was not successfully handled */
             if (!forwarded && is_monitored_task) {
                 // TODO - Call handler
-                PLCF_DEBUG("Got mach exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+                PLCF_DEBUG("Got mach exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, (uint64_t) request->code[0], (uint64_t) request->code[1], exc_context);
             } else {
-                PLCF_DEBUG("Ignoring exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, request->code[0], request->code[1], exc_context);
+                PLCF_DEBUG("Ignoring exception message. exc=%x code=%" PRIx64 ",%" PRIx64 " ctx=%p", request->exception, (uint64_t) request->code[0], (uint64_t) request->code[1], exc_context);
             }
 
             /*
