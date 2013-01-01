@@ -32,8 +32,59 @@
 /**
  * @internal
  * Exception handler callback.
+ *
+ * @param task The task in which the exception occured.
+ * @param thread The thread on which the exception occured. The thread will be suspended when the callback is issued, and may be resumed
+ * by the callback using thread_resume().
+ * @param exception_type Mach exception type.
+ * @param codes Mach exception codes.
+ * @param code_count The number of codes provided.
+ * @param double_fault If true, the callback is being called from a double-fault handler. This occurs when
+ * your callback -- or the exception server itself -- crashes during handling. Triple faults are not handled, and will
+ * simply trigger the OS crash reporter.
+ * @param context The context supplied to PLCrashMachExceptionServer::registerHandlerForTask:withCallback:context:error
+ *
+ * @return Return true if the exception has been handled and @a thread has been resumed. Return false otherwise.
+ *
+ * @par Double Faults 
+ *
+ * In the case of a double fault, it is valuable to be able to detect that the crash reporter itself crashed,
+ * and if possible, provide debugging information that can be reported to our upstream project.
+ *
+ * How this is handled depends on whether you are running in-process, or out-of-process.
+ *
+ * @par Out-of-process
+ * handlers, it is recommended that you write a cookie to disk to track that the reporter itself failed,
+ * and then actually use a crash reporter *on your crash reporter* to report the crash.
+ *
+ * Yes, "Yo dawg, I heard you like crash reporters ...". It's less likely that a crash handling a user's
+ * process is likely to *also* crash the crash reporting process.
+ *
+ * @par In-process
+ *
+ * When running in-process (ie, on iOS), it is far more likely that re-running the crash reporter
+ * will trigger the same crash again. Thus, it is recommended that an implementor handle double
+ * faults in a "safe mode" less likely to trigger an additional crash, and gauranteed to record
+ * (at a minimum) that the crash report itself crashed, even if no additional crash data can be
+ * recorded.
+ *
+ * An example implementation might do the following:
+ * - Before performing any other operations, create a cookie file on-disk that can be checked on
+ *   startup to determine whether the crash reporter itself crashed. This at the very least will
+ *   let users know that a problem exists.
+ * - Re-run the crash report writer, disabling any risky code paths that are not strictly necessary, e.g.:
+ *     - Disable local symbolication if it has been enabled by the user. This will avoid
+ *       a great deal if binary parsing.
+ *     - Disable reporting on any threads other than the crashed thread. This will avoid
+ *       any bugs that may have occured in the stack unwinding code for existing threads:
  */
-typedef void (*PLCrashMachExceptionHandlerCallback)(void *context);
+typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
+                                                     thread_t thread,
+                                                     exception_type_t exception_type,
+                                                     mach_exception_data_t codes,
+                                                     mach_msg_type_number_t code_count,
+                                                     bool double_fault,
+                                                     void *context);
 
 @interface PLCrashMachExceptionServer : NSObject {
 @private
