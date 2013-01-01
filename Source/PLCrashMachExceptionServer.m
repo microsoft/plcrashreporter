@@ -524,7 +524,6 @@ static void *exception_server_thread (void *arg) {
              * The exception still needs to be forwarded to any previous exception handlers, but we will
              * not call our callback handler.
              *
-             * TODO: Support writing out a crash report even in this case?
              * TODO: Implement pthread_atfork() cleanup handler.
              */
             bool is_monitored_task = true;
