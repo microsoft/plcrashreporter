@@ -55,8 +55,9 @@
  * How this is handled depends on whether you are running in-process, or out-of-process.
  *
  * @par Out-of-process
- * handlers, it is recommended that you write a cookie to disk to track that the reporter itself failed,
- * and then actually use a crash reporter *on your crash reporter* to report the crash.
+ * In the case that the reporter is running out-of-process, it is recommended that you write a
+ * cookie to disk to track that the reporter itself failed, and then actually use a crash reporter
+ * *on your crash reporter* to report the crash.
  *
  * Yes, "Yo dawg, I heard you like crash reporters ...". It's less likely that a crash handling a user's
  * process is likely to *also* crash the crash reporting process.
