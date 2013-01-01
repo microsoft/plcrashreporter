@@ -2,7 +2,7 @@
  * Author: Damian Morris <damian@moso.com.au>
  *
  * Copyright (c) 2010 MOSO Corporation, Pty Ltd.
- * Copyright (c) 2010 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2010-2013 Plausible Labs Cooperative, Inc.
  *
  * All rights reserved.
  *

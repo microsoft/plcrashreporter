@@ -1,7 +1,7 @@
 Except as noted below, PLCrashReporter is provided under the
 following license:
 
-    Copyright (c) 2008 - 2012 Plausible Labs Cooperative, Inc.
+    Copyright (c) 2008 - 2013 Plausible Labs Cooperative, Inc.
     All rights reserved.
 
     Permission is hereby granted, free of charge, to any person
@@ -24,6 +24,17 @@ following license:
     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
+
+Additional contributions have been made under the same license terms
+as above, with copyright held by their respective authors:
+
+       Damian Morris <damian@moso.com.au>
+       Copyright (c) 2010 MOSO Corporation, Pty Ltd.
+       All rights reserved.
+
+       HockeyApp/Bitstadium
+       Copyright (c) 2012 HockeyApp, Bit Stadium GmbH.
+       All rights reserved.
 
 The protobuf-c library, as well as the PLCrashLogWriterEncoding.c
 file are licensed as follows:
