@@ -247,7 +247,23 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         
         [text appendString: @"\n"];
     }
-    
+
+    /* If an exception stack trace is available, output an Apple-compatible backtrace. */
+    if (report.exceptionInfo != nil && report.exceptionInfo.stackFrames != nil && [report.exceptionInfo.stackFrames count] > 0) {
+        PLCrashReportExceptionInfo *exception = report.exceptionInfo;
+        
+        /* Create the header. */
+        [text appendString: @"Last Exception Backtrace:\n"];
+
+        /* Write out the frames. In raw reports, Apple writes this out as a simple list of PCs. In the minimally
+         * post-processed report, Apple writes this out as full frame entries. We use the latter format. */
+        for (NSUInteger frame_idx = 0; frame_idx < [exception.stackFrames count]; frame_idx++) {
+            PLCrashReportStackFrameInfo *frameInfo = [exception.stackFrames objectAtIndex: frame_idx];
+            [text appendString: [self formatStackFrame: frameInfo frameIndex: frame_idx report: report]];
+        }
+        [text appendString: @"\n"];
+    }
+
     /* Threads */
     PLCrashReportThreadInfo *crashed_thread = nil;
     NSInteger maxThreadNum = 0;
@@ -266,23 +282,6 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
 
         /* Track the highest thread number */
         maxThreadNum = MAX(maxThreadNum, thread.threadNumber);
-    }
-    
-    /* If an exception stack trace is available, output a pseudo-thread to provide the frame info */
-    if (report.exceptionInfo != nil && report.exceptionInfo.stackFrames != nil && [report.exceptionInfo.stackFrames count] > 0) {
-        PLCrashReportExceptionInfo *exception = report.exceptionInfo;
-        NSInteger threadNum = maxThreadNum + 1;
-
-        /* Create the pseudo-thread header. We use the named thread format to mark this thread */
-        [text appendFormat: @"Thread %ld name:  Exception Backtrace\n", (long) threadNum];
-        [text appendFormat: @"Thread %ld:\n", (long) threadNum];
-
-        /* Write out the frames */
-        for (NSUInteger frame_idx = 0; frame_idx < [exception.stackFrames count]; frame_idx++) {
-            PLCrashReportStackFrameInfo *frameInfo = [exception.stackFrames objectAtIndex: frame_idx];
-            [text appendString: [self formatStackFrame: frameInfo frameIndex: frame_idx report: report]];
-        }
-        [text appendString: @"\n"];
     }
 
     /* Registers */
