@@ -143,7 +143,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
  * Write a crash log, fetching the thread state from the current thread.
  *
  * @internal
- * @note This is implement with an assembly trampoline that fetches the current thread state. Solutions such
+ * @note This is implemented with an assembly trampoline that fetches the current thread state. Solutions such
  * as getcontext() are not viable here, as returning from getcontext() mutates the state of the stack that
  * we will then walk.
  */
