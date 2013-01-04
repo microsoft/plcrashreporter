@@ -305,7 +305,7 @@ size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLPro
         case PLPROTOBUF_C_TYPE_FIXED32:
         case PLPROTOBUF_C_TYPE_FLOAT:
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_32BIT;
-            rv += fixed32_pack (*(const uint64_t *) value, scratch + rv);
+            rv += fixed32_pack (*(const uint32_t *) value, scratch + rv);
             if (file != NULL)
                 plcrash_async_file_write(file, scratch, rv);
             break;
