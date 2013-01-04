@@ -45,6 +45,7 @@
 #define PLNS_impl(prefix, symbol) PLNS_impl2(prefix, symbol)
 #define PLNS(symbol) PLNS_impl(PLCRASHREPORTER_PREFIX, symbol)
 
+#define PLCrashMachExceptionServer          PLNS(PLCrashMachExceptionServer)
 #define PLCrashReport                       PLNS(PLCrashReport)
 #define PLCrashReportApplicationInfo        PLNS(PLCrashReportApplicationInfo)
 #define PLCrashReportBinaryImageInfo        PLNS(PLCrashReportBinaryImageInfo)
