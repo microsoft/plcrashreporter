@@ -131,7 +131,7 @@ static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
     /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write(&sigctx->writer, &shared_image_list, &file, info, uap);
+    plcrash_log_writer_write(&sigctx->writer, mach_thread_self(), &shared_image_list, &file, info, uap);
     plcrash_log_writer_close(&sigctx->writer);
 
     /* Finished */

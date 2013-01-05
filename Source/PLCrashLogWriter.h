@@ -144,11 +144,12 @@ plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_t *writer
                                                     plcrash_async_file_t *file, 
                                                     siginfo_t *siginfo);
 
-plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer, 
+plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
+                                          thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file, 
                                           siginfo_t *siginfo,
-                                          ucontext_t *crashctx);
+                                          ucontext_t *current_context);
 
 plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer);
 void plcrash_log_writer_free (plcrash_log_writer_t *writer);

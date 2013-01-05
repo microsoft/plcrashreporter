@@ -60,7 +60,7 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *w
     memset(&mctx->__es, 0, sizeof(mctx->__es));
     memset(&mctx->__fs, 0, sizeof(mctx->__fs));
 
-    return plcrash_log_writer_write(writer, image_list, file, siginfo, &ctx);
+    return plcrash_log_writer_write(writer, mach_thread_self(), image_list, file, siginfo, &ctx);
 }
 
 

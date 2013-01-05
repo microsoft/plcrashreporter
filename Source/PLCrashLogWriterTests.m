@@ -218,6 +218,7 @@
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
+    thread_t thread;
 
     /* Initialze faux crash data */
     {
@@ -230,7 +231,8 @@
         info.si_status = 0;
         
         /* Steal the test thread's stack for iteration */
-        plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(_thr_args.thread));
+        thread = pthread_mach_thread_np(_thr_args.thread);
+        plframe_cursor_thread_init(&cursor, thread);
     }
 
     /* Open the output file */
@@ -254,7 +256,7 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, &image_list, &file, &info, cursor.uap), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, cursor.uap), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
@@ -267,6 +269,10 @@
 
     /* Load and validate the written report */
     Plcrash__CrashReport *crashReport = [self loadReport];
+    STAssertNotNULL(crashReport, @"Failed to load report");
+    if (crashReport == NULL)
+        return;
+
     STAssertFalse(crashReport->report_info->user_requested, @"Report not correctly marked as non-user-requested");
 
     /* Test the report */
@@ -278,7 +284,38 @@
     STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
     STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
     STAssertEquals((uint64_t) 0x42, crashReport->signal->address, @"Signal address incorrect");
-    
+
+
+    /* Validate the 'crashed' flag is on a thread with the expected PC. */
+    uint64_t expectedPC;
+#if __x86_64__
+    expectedPC = cursor.uap->uc_mcontext->__ss.__rip;
+#elif __i386__
+    expectedPC = cursor.uap->uc_mcontext->__ss.__eip;
+#elif __arm__
+    expectedPC = cursor.uap->uc_mcontext->__ss.__pc;
+#else
+#error Unsupported Platform
+#endif
+    BOOL foundCrashed = NO;
+    for (int i = 0; i < crashReport->n_threads; i++) {
+        Plcrash__CrashReport__Thread *thread = crashReport->threads[i];        
+        if (!thread->crashed)
+            continue;
+        
+        foundCrashed = YES;
+
+        /* Load the first frame */
+        STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
+        Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[0];
+
+        /* Validate PC. This check is inexact, as otherwise we would need to carefully instrument the 
+         * call to plcrash_log_writer_write_curthread() in order to determine the exact PC value. */
+        STAssertTrue(expectedPC - f->pc <= 20, @"PC value not within reasonable range");
+    }
+   
+    STAssertTrue(foundCrashed, @"No thread marked as crashed");
+ 
     /* Free it */
     protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
 }
