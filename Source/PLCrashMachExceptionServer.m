@@ -34,15 +34,24 @@
  * exceptions, which implies that either they've received special dispensation to use private APIs / private structures,
  * or they're just doing so and hoping for the best.
  *
- * Nominally I'd just not bother with Mach exception handlers, but sigaltstack() is broken in later iOS releases,
- * necessitating an alternative fix. Even if it wasn't broken, it only ever supported handling stack overflow on the
- * main thread, and mach exceptions would be a preferrable solution.
+ * After filing a request with Apple DTS to clarify the issue, they provided the following guidance:
+ *    Our engineers have reviewed your request and have determined that this would be best handled as a bug report,
+ *    which you have already filed. _There is no documented way of accomplishing this, nor is there a workaround
+ *    possible._
+ *
+ * Emphasis mine. As such, I don't believe it is be possible to support the use of Mach exceptions on iOS
+ * without the use of undocumented functionality.
+ *
+ * Unfortunately, sigaltstack() is broken in later iOS releases, necessitating an alternative fix. Even if it wasn't
+ * broken, it only ever supported handling stack overflow on the main thread, and mach exceptions would be a preferrable
+ * solution.
  *
  * As such, this file provides a proof-of-concept implementation of Mach exception handling, intended to
  * provide support for Mac OS X using public API, and to ferret out what cannot be implemented on iOS
- * without the use of private API on iOS.
+ * without the use of private API on iOS. Some developers have requested that Mach exceptions be provided as
+ * option on iOS, which we may provide in the future.
  *
- * As it turns out, there are two iOS issues:
+ * The following issues exist in the iOS implementation:
  *  - The msgh_id values required for an exception reply message are not available from the available
  *    headers and must be hard-coded. This prevents one from safely replying to exception messages, which
  *    means that it is impossible to (correctly) inform the server that an exception has *not* been
@@ -63,10 +72,9 @@
  *      changes to the set of dyld-loaded images are detected by setting a breakpoint on the dyld image registration
  *      funtions, and this functionality will break if the exception is not correctly forwarded.
  *
- * Since mach exception handling is important for a fully functional crash reporter, I've filed both a radar
- * and a paid DTS incident to request that the API either be made public, or Apple's position be clarified:
+ * Since Mach exception handling is important for a fully functional crash reporter, I've also filed a radar
+ * to request that the API be made public:
  *  Radar: rdar://12939497 RFE: Provide mach_exc.defs for iOS
- *  DTS Incident: mach exception handler and SPI.
  */
 
 #import "PLCrashMachExceptionServer.h"
