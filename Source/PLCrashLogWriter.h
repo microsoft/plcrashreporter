@@ -139,6 +139,14 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
+/**
+ * Write a crash log, fetching the thread state from the current thread.
+ *
+ * @internal
+ * @note This is implemented with an assembly trampoline that fetches the current thread state. Solutions such
+ * as getcontext() are not viable here, as returning from getcontext() mutates the state of the stack that
+ * we will then walk.
+ */
 plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_t *writer,
                                                     plcrash_async_image_list_t *image_list,
                                                     plcrash_async_file_t *file, 
