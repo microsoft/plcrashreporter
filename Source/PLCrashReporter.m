@@ -346,6 +346,94 @@ static void uncaught_exception_handler (NSException *exception) {
     return YES;
 }
 
+/**
+ * Generate a live crash report for a given @a thread, without triggering an actual crash condition.
+ * This may be used to log current process state without actually crashing. The crash report data will be
+ * returned on success.
+ *
+ * @param thread The thread which will be marked as the failing thread in the generated report.
+ *
+ * @return Returns nil if the crash report data could not be generated.
+ *
+ * @sa PLCrashReporter::generateLiveReportWithMachThread:error:
+ */
+- (NSData *) generateLiveReportWithThread: (thread_t) thread {
+    return [self generateLiveReportWithThread: thread error: NULL];
+}
+
+
+/**
+ * Generate a live crash report for a given @a thread, without triggering an actual crash condition.
+ * This may be used to log current process state without actually crashing. The crash report data will be
+ * returned on success.
+ *
+ * @param thread The thread which will be marked as the failing thread in the generated report.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the crash report could not be generated or loaded. If no
+ * error occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no
+ * error information will be provided.
+ *
+ * @return Returns nil if the crash report data could not be loaded.
+ *
+ */
+- (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
+    plcrash_log_writer_t writer;
+    plcrash_async_file_t file;
+    
+    /* Open the output file */
+    NSString *templateStr = [NSTemporaryDirectory() stringByAppendingPathComponent: @"live_crash_report.XXXXXX"];
+    char *path = strdup([templateStr fileSystemRepresentation]);
+    
+    int fd = mkstemp(path);
+    if (fd < 0) {
+        plcrash_populate_posix_error(outError, errno, NSLocalizedString(@"Failed to create temporary path", @"Error opening temporary output path"));
+        free(path);
+
+        return nil;
+    }
+
+    /* Initialize the output context */
+    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, true);
+    plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
+    
+    /* Mock up a SIGTRAP-based siginfo_t */
+    siginfo_t info;
+    memset(&info, 0, sizeof(info));
+    info.si_signo = SIGTRAP;
+    info.si_code = TRAP_TRACE;
+    info.si_addr = __builtin_return_address(0);
+    
+    /* Write the crash log using the already-initialized writer */
+    if (thread == mach_thread_self()) {
+        plcrash_log_writer_write_curthread(&writer, &shared_image_list, &file, &info);
+    } else {
+        plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &info, NULL);
+    }
+    plcrash_log_writer_close(&writer);
+
+    /* Finished -- clean up. */
+    plcrash_async_file_flush(&file);
+    plcrash_async_file_close(&file);
+    
+    plcrash_log_writer_free(&writer);
+    
+    NSData *data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
+    if (data == nil) {
+        /* This should only happen if our data is deleted out from under us */
+        plcrash_populate_error(outError, PLCrashReporterErrorUnknown, NSLocalizedString(@"Unable to open live crash report for reading", nil), nil);
+        free(path);
+        return nil;
+    }
+    
+    if (unlink(path) != 0) {
+        /* This shouldn't fail, but if it does, there's no use in returning nil */
+        NSLog(@"Failure occured deleting live crash report: %s", strerror(errno));
+    }
+
+    free(path);
+    return data;
+}
+
 
 /**
  * Generate a live crash report, without triggering an actual crash condition. This may be used to log
@@ -358,67 +446,23 @@ static void uncaught_exception_handler (NSException *exception) {
     return [self generateLiveReportAndReturnError: NULL];
 }
 
+
 /**
- * Generate a live crash report, without triggering an actual crash condition. This may be used to log
- * current process state without actually crashing. The crash report data will be returned on
- * success.
+ * Generate a live crash report for the current thread, without triggering an actual crash condition.
+ * This may be used to log current process state without actually crashing. The crash report data will be
+ * returned on success.
  *
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error object indicating why the pending crash report could not be
- * loaded. If no error occurs, this parameter will be left unmodified. You may specify
+ * generated or loaded. If no error occurs, this parameter will be left unmodified. You may specify
  * nil for this parameter, and no error information will be provided.
  * 
  * @return Returns nil if the crash report data could not be loaded.
  */
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
-    plcrash_log_writer_t writer;
-    plcrash_async_file_t file;
-
-    /* Open the output file */
-    NSString *templateStr = [NSTemporaryDirectory() stringByAppendingPathComponent: @"live_crash_report.XXXXXX"];
-    char *path = strdup([templateStr fileSystemRepresentation]);
-
-    int fd = mkstemp(path);
-    if (fd < 0) {
-        plcrash_populate_posix_error(outError, errno, NSLocalizedString(@"Failed to create temporary path", @"Error opening temporary output path"));
-        return nil;
-    }
-    
-    /* Initialize the output context */
-    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, true);
-    plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
-
-    /* Mock up a SIGTRAP-based siginfo_t */
-    siginfo_t info;
-    memset(&info, 0, sizeof(info));
-    info.si_signo = SIGTRAP;
-    info.si_code = TRAP_TRACE;
-    info.si_addr = __builtin_return_address(0);
-
-    /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write_curthread(&writer, &shared_image_list, &file, &info);
-    plcrash_log_writer_close(&writer);
-
-    /* Finished -- clean up. */
-    plcrash_async_file_flush(&file);
-    plcrash_async_file_close(&file);
-
-    plcrash_log_writer_free(&writer);
-
-    NSData *data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
-    if (data == nil) {
-        /* This should only happen if our data is deleted out from under us */
-        plcrash_populate_error(outError, PLCrashReporterErrorUnknown, NSLocalizedString(@"Unable to open live crash report for reading", nil), nil);
-        return nil;
-    }
-
-    if (unlink(path) != 0) {
-        /* This shouldn't fail, but if it does, there's no use in returning nil */
-        NSLog(@"Failure occured deleting live crash report: %s", strerror(errno));
-    }
-
-    return data;
+    return [self generateLiveReportWithThread: mach_thread_self() error: outError];
 }
+
 
 /**
  * Set the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.

@@ -86,6 +86,9 @@ typedef struct PLCrashReporterCallbacks {
 - (NSData *) loadPendingCrashReportData;
 - (NSData *) loadPendingCrashReportDataAndReturnError: (NSError **) outError;
 
+- (NSData *) generateLiveReportWithThread: (thread_t) thread;
+- (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError;
+
 - (NSData *) generateLiveReport;
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError;
 
