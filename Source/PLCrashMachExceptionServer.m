@@ -32,7 +32,7 @@
  * I've held off from implementing Mach exception handling due to the fact that the APIs required for a complete
  * implementation are not public on iOS. However, a commercial crash reporter is now shipping with support for Mach
  * exceptions, which implies that either they've received special dispensation to use private APIs / private structures,
- * or they're just doing so and hoping for the best.
+ * they've found another way to do it, or they're just using undocumented functionality and hoping for the best.
  *
  * After filing a request with Apple DTS to clarify the issue, they provided the following guidance:
  *    Our engineers have reviewed your request and have determined that this would be best handled as a bug report,
