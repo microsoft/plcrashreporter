@@ -54,6 +54,12 @@
 /* Begin PBXBuildFile section */
 		050DE25E0F61B93900152ED3 /* libCrashReporter-MacOSX-Static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */; };
 		050DE2A90F61BD8D00152ED3 /* fuzz-main.m in Sources */ = {isa = PBXBuildFile; fileRef = 050DE2A80F61BD8D00152ED3 /* fuzz-main.m */; };
+		052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
+		052951EB1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
+		052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
+		052951EF1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */ = {isa = PBXBuildFile; fileRef = 052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */; };
+		052951F01696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */ = {isa = PBXBuildFile; fileRef = 052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */; };
+		052951F11696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */ = {isa = PBXBuildFile; fileRef = 052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */; };
 		052A45DA1363542800987004 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40CF10EF7AC0E008050CF /* main.m */; };
 		052A46271363553A00987004 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
 		052A4649136355FD00987004 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40CF10EF7AC0E008050CF /* main.m */; };
@@ -743,6 +749,8 @@
 		050DE24D0F61B80B00152ED3 /* Fuzz Testing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Fuzz Testing"; sourceTree = BUILT_PRODUCTS_DIR; };
 		050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */ = {isa = PBXFileReference; lastKnownFileType = file; name = fuzz_report.plcrash; path = Resources/fuzz_report.plcrash; sourceTree = "<group>"; };
 		050DE2A80F61BD8D00152ED3 /* fuzz-main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "fuzz-main.m"; sourceTree = "<group>"; };
+		052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogWriterEncodingTests.m; sourceTree = "<group>"; };
+		052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PLCrashLogWriterEncodingTests.proto; sourceTree = "<group>"; };
 		052A45CF136353FB00987004 /* DemoCrash-iOS-Device.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS-Device.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		052A464F136355FD00987004 /* DemoCrash-iOS-Simulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS-Simulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		052A46BC1363650100987004 /* PLCrashAsyncImageList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncImageList.h; sourceTree = "<group>"; };
@@ -1065,6 +1073,8 @@
 				0596702D0EEF6B51008A0601 /* PLCrashLogWriterTests.m */,
 				05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */,
 				05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */,
+				052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */,
+				052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */,
 				05EB2B0215B4597B0066EB4D /* Current Thread Trampoline */,
 			);
 			name = "Crash Log Writer";
@@ -2240,6 +2250,8 @@
 				C2198E0A16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688F916445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 				05FDFC84168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
+				052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */,
+				052951EF1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2286,6 +2298,8 @@
 				C2198E0B16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688FA16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 				05FDFC85168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
+				052951EB1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */,
+				052951F01696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2332,6 +2346,8 @@
 				C2198E0C16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				C21688FB16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */,
 				05FDFC86168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
+				052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */,
+				052951F11696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
