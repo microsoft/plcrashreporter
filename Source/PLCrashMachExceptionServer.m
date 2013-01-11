@@ -280,10 +280,12 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
  *
  * TODO: When operating in-process, handling the exception replies internally breaks external debuggers,
  * as they assume it is safe to leave a thread suspended. This results in the target thread never resuming,
- * as our thread never wakes up to reply to the message. Fixing this is difficult; we could forward the message
- * directly and avoid handling the reply, but this means that we can not differentiate between a handled
- * exception and an unhandled one. We could also try detecting the debugger as being attached, in which case
- * we'd want to disable ourselves anyway.
+ * as our thread never wakes up to reply to the message. If we forward messages directly, then we can remove
+ * ourselves from the critical path during exception replies. This has been implemented, and may be enabled
+ * with DIRECT_PROXY_REQUESTS. However, if we do not remove our exception server from the chain before
+ * forwarding a request, we will still block the next exception message, as our exception server's thread
+ * may not be restarted. Additionally, if threads are suspended due to an exception message that our
+ * exception server is not registered for, we will never deregister ourselves, and the same lockup will occur.
  *
  * TODO: We need to be able to determine if an exception can be/will/was handled by a signal handler.
  */
@@ -346,6 +348,8 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     int32_t *code32 = request->code;
 #endif
 
+
+#ifndef DIRECT_PROXY_REQUESTS
     /* Handle the supported behaviors */
     if (!code64) {
         switch (behavior) {
@@ -388,11 +392,152 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
                 PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
                 return KERN_FAILURE;
         }
-#else
+#else /* HANDLE_MACH64_CODES */
         PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
         return KERN_FAILURE;
-#endif
+#endif /* HANDLE_MACH64_CODES */
     }
+#else /* PROXY_REQUESTS */
+
+    // TODO
+    // Review implementation of non-proxied messaging.
+    union {
+        __Request__exception_raise_t fwd_default;
+        __Request__exception_raise_state_t fwd_state;
+        __Request__exception_raise_state_identity_t fwd_state_identity;
+
+#if HANDLE_MACH64_CODES
+        __Request__mach_exception_raise_t mach_fwd_default;
+        __Request__mach_exception_raise_state_t mach_fwd_state;
+        __Request__mach_exception_raise_state_identity_t mach_fwd_state_identity;
+#endif
+    } reqs;
+
+    /* Initialize common message header */
+    mach_msg_base_t *fwd = (mach_msg_base_t *) &reqs;
+    reqs.fwd_default.Head = request->Head;
+    reqs.fwd_default.Head.msgh_remote_port = port;
+
+    /* Handle the supported behaviors */
+    if (!code64) {
+        switch (behavior) {
+            case EXCEPTION_DEFAULT: {
+                __Request__exception_raise_t *msg = &reqs.fwd_default;
+                msg->Head.msgh_size = sizeof(*msg);
+
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+
+                fwd = (mach_msg_base_t *) msg;
+                break;
+            }
+
+            case EXCEPTION_STATE: {
+                __Request__exception_raise_state_t *msg = &reqs.fwd_state;
+                msg->Head.msgh_size = sizeof(*msg);
+
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+
+                fwd = (mach_msg_base_t *) msg;
+                break;
+            }
+                
+            case EXCEPTION_STATE_IDENTITY: {
+                __Request__exception_raise_state_identity_t *msg = &reqs.fwd_state_identity;
+                msg->Head.msgh_size = sizeof(*msg);
+
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+                break;
+            }
+                
+            default:
+                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+                return KERN_FAILURE;
+        }
+    } else {
+#if HANDLE_MACH64_CODES
+        switch (behavior) {
+            case EXCEPTION_DEFAULT: {
+                __Request__mach_exception_raise_t *msg = &reqs.mach_fwd_default;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                
+                fwd = (mach_msg_base_t *) msg;
+                break;
+            }
+                
+            case EXCEPTION_STATE: {
+                __Request__mach_exception_raise_state_t *msg = &reqs.mach_fwd_state;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+                break;
+            }
+                
+            case EXCEPTION_STATE_IDENTITY: {
+                __Request__mach_exception_raise_state_identity_t *msg = &reqs.mach_fwd_state_identity;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+                break;
+            }
+                
+            default:
+                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+                return KERN_FAILURE;
+        }
+
+        // TODO: Move down to the standard return path below.
+        *forwarded = true;
+        return mach_msg(&fwd->header, MACH_SEND_MSG, fwd->header.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+
+#else /* HANDLE_MACH64_CODES */
+        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
+        return KERN_FAILURE;
+#endif /* HANDLE_MACH64_CODES */
+    }
+
+#endif /* PROXY_REQUESTS */
 
     *forwarded = true;
     return kr;
