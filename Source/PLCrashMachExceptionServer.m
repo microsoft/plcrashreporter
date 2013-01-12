@@ -269,6 +269,244 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
 }
 
 /**
+ * Forward an exception request directly to @a port.
+ *
+ * @param request The request to forward.
+ * @param port The port to which the exception should be forwarded.
+ * @param behavior The behavior with which @a port was registered.
+ * @param mach_exception_codes If true, whether MACH_EXCEPTION_CODES was specified for @a port's behavior.
+ * @param code32 If mach_exception_codes is false, this array must be populated with 32-bit exception codes
+ * that may be passed to the next exception server.
+ * @param thread_state The thread state of the exception corresponding to @a request.
+ * @param thread_state_count The number of thread state entries in @a thread_state.
+ * @param thread_state_flavor The thead flavor of @a thread_state.
+ * @param forwarded Set to true if the exception was forwarded, false otherwise.
+ *
+ * @return If KERN_SUCCESS, the exception server at @a port handled the exception, and the failed thread
+ * may be resumed. Otherwise, the exception should be considered unhandled, due to either an error
+ * with mach messaging, or due to a negative response from the target @a port.
+ */
+static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t *request,
+                                                     mach_port_t port,
+                                                     exception_behavior_t behavior,
+                                                     bool mach_exception_codes,
+                                                     exception_data_type_t code32[],
+                                                     thread_state_data_t thread_state,
+                                                     mach_msg_type_number_t thread_state_count,
+                                                     thread_state_flavor_t thread_state_flavor,
+                                                     bool *forwarded)
+{
+    /* This will only be false in the case where we can't handle the requested exception behavior */
+    *forwarded = true;
+
+    /* Handle the supported behaviors */
+    switch (behavior) {
+        case EXCEPTION_DEFAULT:
+            if (mach_exception_codes) {
+#if HANDLE_MACH64_CODES
+                return mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
+#endif
+            } else {
+                return exception_raise(port, request->thread.name, request->task.name, request->exception, code32, request->codeCnt);
+            }
+            break;
+            
+        case EXCEPTION_STATE:
+            if (mach_exception_codes) {
+#if HANDLE_MACH64_CODES
+                return mach_exception_raise_state(port, request->exception, request->code, request->codeCnt, &thread_state_flavor, thread_state,
+                                                  thread_state_count, thread_state, &thread_state_count);
+#endif
+            } else {
+                return exception_raise_state(port, request->exception, code32, request->codeCnt, &thread_state_flavor, thread_state,
+                                             thread_state_count, thread_state, &thread_state_count);                    
+            }
+            break;
+            
+        case EXCEPTION_STATE_IDENTITY:
+            if (mach_exception_codes) {
+#if HANDLE_MACH64_CODES
+                return mach_exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
+                                                           request->codeCnt, &thread_state_flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+#endif
+            } else {
+                return exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, code32,
+                                                      request->codeCnt, &thread_state_flavor, thread_state, thread_state_count, thread_state, &thread_state_count);                    
+            }
+            break;
+
+        default:
+            /* Handled below */
+            break;
+    }
+
+    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exception_codes ? "true" : "false");
+    *forwarded = false;
+    return KERN_FAILURE;
+}
+
+/**
+ * Forward an exception request directly to @a port.
+ *
+ * @param request The request to forward.
+ * @param port The port to which the exception should be forwarded.
+ * @param behavior The behavior with which @a port was registered.
+ * @param mach_exception_codes If true, whether MACH_EXCEPTION_CODES was specified for @a port's behavior.
+ * @param code32 If mach_exception_codes is false, this array must be populated with 32-bit exception codes
+ * that may be passed to the next exception server.
+ * @param thread_state The thread state of the exception corresponding to @a request.
+ * @param thread_state_count The number of thread state entries in @a thread_state.
+ * @param thread_state_flavor The thead flavor of @a thread_state.
+ *
+ * @return If KERN_SUCCESS, the exception message was successfully forwarded to @a port. The result is unknown,
+ * as any response will be sent directly to the original Mach exception client.
+ */
+static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_t *request,
+                                                      mach_port_t port,
+                                                      exception_behavior_t behavior,
+                                                      bool mach_exception_codes,
+                                                      exception_data_type_t code32[],
+                                                      thread_state_data_t thread_state,
+                                                      mach_msg_type_number_t thread_state_count,
+                                                      thread_state_flavor_t thread_state_flavor)
+{
+    union {
+        __Request__exception_raise_t fwd_default;
+        __Request__exception_raise_state_t fwd_state;
+        __Request__exception_raise_state_identity_t fwd_state_identity;
+
+#if HANDLE_MACH64_CODES
+        __Request__mach_exception_raise_t mach_fwd_default;
+        __Request__mach_exception_raise_state_t mach_fwd_state;
+        __Request__mach_exception_raise_state_identity_t mach_fwd_state_identity;
+#endif
+    } reqs;
+    
+    /* Initialize common message header */
+    mach_msg_base_t *fwd = NULL;
+    reqs.fwd_default.Head = request->Head;
+    reqs.fwd_default.Head.msgh_remote_port = port;
+
+
+    /* Populate the message as per the requested behavior. */
+    switch (behavior) {
+        case EXCEPTION_DEFAULT: {
+            if (mach_exception_codes) {
+#if HANDLE_MACH64_CODES
+                __Request__mach_exception_raise_t *msg = &reqs.mach_fwd_default;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                
+                fwd = (mach_msg_base_t *) msg;
+#endif
+            } else {
+                __Request__exception_raise_t *msg = &reqs.fwd_default;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                
+                fwd = (mach_msg_base_t *) msg;
+            }
+            break;
+        }
+            
+        case EXCEPTION_STATE: {
+            if (mach_exception_codes) {
+#if HANDLE_MACH64_CODES
+                __Request__mach_exception_raise_state_t *msg = &reqs.mach_fwd_state;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+#endif
+            } else {
+                __Request__exception_raise_state_t *msg = &reqs.fwd_state;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+            }
+            break;
+        }
+            
+        case EXCEPTION_STATE_IDENTITY: {
+            if (mach_exception_codes) {
+#if HANDLE_MACH64_CODES
+                __Request__mach_exception_raise_state_identity_t *msg = &reqs.mach_fwd_state_identity;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+
+                msg->flavor = thread_state_flavor;
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+#endif
+            } else {
+                __Request__exception_raise_state_identity_t *msg = &reqs.fwd_state_identity;
+                msg->Head.msgh_size = sizeof(*msg);
+                
+                msg->thread = request->thread;
+                msg->task = request->task;
+                msg->NDR = NDR_record;
+                msg->exception = request->exception;
+
+                msg->codeCnt = request->codeCnt;
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+
+                msg->flavor = thread_state_flavor;
+                msg->old_stateCnt = thread_state_count;
+                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+                
+                fwd = (mach_msg_base_t *) msg;
+            }
+            break;
+        }
+            
+        default:
+            /* Handled below */
+            break;
+    }
+    
+    if (fwd == NULL) {
+        PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exception_codes ? "true" : "false");
+        return KERN_FAILURE;
+    }
+
+    return mach_msg(&fwd->header, MACH_SEND_MSG, fwd->header.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+}
+
+/**
  * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
  *
  * @param request The incoming request that should be forwarded to @a server_port.
@@ -296,7 +534,7 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     mach_msg_type_number_t thread_state_count;
     mach_port_t port;
     kern_return_t kr;
-    bool code64 = false;
+    bool mach_exception_codes = false;
 
     /* Default state of non-forwarded */
     *forwarded = false;
@@ -325,7 +563,7 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     
     /* Clean up behavior */
     if (behavior & MACH_EXCEPTION_CODES)
-        code64 = true;
+        mach_exception_codes = true;
     behavior &= ~MACH_EXCEPTION_CODES;
 
     /* Fetch thread state if required */
@@ -348,198 +586,16 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     int32_t *code32 = request->code;
 #endif
 
+    // TODO: Allow specifying the preferred forwarding mechanism
+    if (true) {
+        kr = exception_server_forward_direct(request, port, behavior, mach_exception_codes, code32, thread_state, thread_state_count, flavor);
 
-#ifndef DIRECT_PROXY_REQUESTS
-    /* Handle the supported behaviors */
-    if (!code64) {
-        switch (behavior) {
-            case EXCEPTION_DEFAULT:
-                kr = exception_raise(port, request->thread.name, request->task.name, request->exception, code32, request->codeCnt);
-                break;
-
-            case EXCEPTION_STATE:
-                kr = exception_raise_state(port, request->exception, code32, request->codeCnt, &flavor, thread_state,
-                                           thread_state_count, thread_state, &thread_state_count);
-                break;
-
-            case EXCEPTION_STATE_IDENTITY:
-                kr = exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, code32,
-                                                    request->codeCnt, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
-                break;
-
-            default:
-                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                return KERN_FAILURE;
-        }
+        if (kr == KERN_SUCCESS)
+            *forwarded = true;
     } else {
-#if HANDLE_MACH64_CODES
-        switch (behavior) {
-            case EXCEPTION_DEFAULT:
-                kr = mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
-                break;
-                
-            case EXCEPTION_STATE:
-                kr = mach_exception_raise_state(port, request->exception, request->code, request->codeCnt, &flavor, thread_state,
-                                                thread_state_count, thread_state, &thread_state_count);
-                break;
-                
-            case EXCEPTION_STATE_IDENTITY:
-                kr = mach_exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
-                                                         request->codeCnt, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
-                break;
-                
-            default:
-                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                return KERN_FAILURE;
-        }
-#else /* HANDLE_MACH64_CODES */
-        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-        return KERN_FAILURE;
-#endif /* HANDLE_MACH64_CODES */
-    }
-#else /* PROXY_REQUESTS */
-
-    // TODO
-    // Review implementation of non-proxied messaging.
-    union {
-        __Request__exception_raise_t fwd_default;
-        __Request__exception_raise_state_t fwd_state;
-        __Request__exception_raise_state_identity_t fwd_state_identity;
-
-#if HANDLE_MACH64_CODES
-        __Request__mach_exception_raise_t mach_fwd_default;
-        __Request__mach_exception_raise_state_t mach_fwd_state;
-        __Request__mach_exception_raise_state_identity_t mach_fwd_state_identity;
-#endif
-    } reqs;
-
-    /* Initialize common message header */
-    mach_msg_base_t *fwd = (mach_msg_base_t *) &reqs;
-    reqs.fwd_default.Head = request->Head;
-    reqs.fwd_default.Head.msgh_remote_port = port;
-
-    /* Handle the supported behaviors */
-    if (!code64) {
-        switch (behavior) {
-            case EXCEPTION_DEFAULT: {
-                __Request__exception_raise_t *msg = &reqs.fwd_default;
-                msg->Head.msgh_size = sizeof(*msg);
-
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-
-                fwd = (mach_msg_base_t *) msg;
-                break;
-            }
-
-            case EXCEPTION_STATE: {
-                __Request__exception_raise_state_t *msg = &reqs.fwd_state;
-                msg->Head.msgh_size = sizeof(*msg);
-
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-
-                fwd = (mach_msg_base_t *) msg;
-                break;
-            }
-                
-            case EXCEPTION_STATE_IDENTITY: {
-                __Request__exception_raise_state_identity_t *msg = &reqs.fwd_state_identity;
-                msg->Head.msgh_size = sizeof(*msg);
-
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
-                break;
-            }
-                
-            default:
-                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                return KERN_FAILURE;
-        }
-    } else {
-#if HANDLE_MACH64_CODES
-        switch (behavior) {
-            case EXCEPTION_DEFAULT: {
-                __Request__mach_exception_raise_t *msg = &reqs.mach_fwd_default;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                
-                fwd = (mach_msg_base_t *) msg;
-                break;
-            }
-                
-            case EXCEPTION_STATE: {
-                __Request__mach_exception_raise_state_t *msg = &reqs.mach_fwd_state;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
-                break;
-            }
-                
-            case EXCEPTION_STATE_IDENTITY: {
-                __Request__mach_exception_raise_state_identity_t *msg = &reqs.mach_fwd_state_identity;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
-                break;
-            }
-                
-            default:
-                PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-                return KERN_FAILURE;
-        }
-
-        // TODO: Move down to the standard return path below.
-        *forwarded = true;
-        return mach_msg(&fwd->header, MACH_SEND_MSG, fwd->header.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-
-#else /* HANDLE_MACH64_CODES */
-        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-        return KERN_FAILURE;
-#endif /* HANDLE_MACH64_CODES */
+        kr = exception_server_forward_proxy(request, port, behavior, mach_exception_codes, code32, thread_state, thread_state_count, flavor, forwarded);
     }
 
-#endif /* PROXY_REQUESTS */
-
-    *forwarded = true;
     return kr;
 }
 
