@@ -888,9 +888,19 @@ error:
  * registered. If no error occurs, this parameter will be left unmodified. You may specify
  * NULL for this parameter, and no error information will be provided.
  *
- * @warning Removing the Mach task handler is not currently performed atomically; if an exception message
- * is received during deregistration, the exception may be lost. As such, removing the exception handler
- * is not currently recommended. This restriction may be lifted in a future release.
+ * @warning Removing the exception handler for a currently executing process may lead to
+ * undefined behavior, and should be avoided in production code. Once registered, a handler
+ * should remain valid until the termination of a process. If multiple Mach task handlers have
+ * been registered, it is not possible for the receiver to correctly restore the appropriate
+ * exception ports, as the ports saved at the time of registration will no longer correspond to
+ * top-level registered handler. Additionally, a reference to the receiver's Mach exception
+ * ports may have been saved by another exception handler; there is no way to inform said
+ * handler of the termination of the receiver, or direct it to use a different target when
+ * forwarding exception messages. As such, once registered, an exception server should continue
+ * to run for the lifetime of the target thread or process.
+ *
+ * @warning Removing the Mach task handler is not currently performed atomically; if an
+ * exception message is received during deregistration, the exception may be lost.
  */
 - (BOOL) deregisterHandlerAndReturnError: (NSError **) outError {
     mach_msg_return_t mr;
