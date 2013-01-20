@@ -257,10 +257,10 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
     /*
      * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
      * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
-     * to change now)
+     * to change now). See the top-level file warning regarding use on iOS.
      *
-     * TODO: File a Radar and/or leverage a Technical Support Incident to get a straight answer on the
-     * undefined edge cases.
+     * On Mac OS X, the reply_id offset may be considered implicitly defined due to mach_exc.defs and
+     * exc.defs being public.
      */
     reply.Head.msgh_id = request->Head.msgh_id + 100;
 
