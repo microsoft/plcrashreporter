@@ -97,6 +97,7 @@ typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
 }
 
 - (BOOL) registerHandlerForTask: (task_t) task
+                         thread: (thread_t) thread
                    withCallback: (PLCrashMachExceptionHandlerCallback) callback
                         context: (void *) context
                           error: (NSError **) outError;
