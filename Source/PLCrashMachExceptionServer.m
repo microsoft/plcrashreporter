@@ -401,8 +401,9 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
                 msg->NDR = NDR_record;
                 msg->exception = request->exception;
                 msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
-                
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(request->code[0]));
+
                 fwd = (mach_msg_base_t *) msg;
 #endif
             } else {
@@ -414,8 +415,9 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
                 msg->NDR = NDR_record;
                 msg->exception = request->exception;
                 msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                
+                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(code32[0]));
+
                 fwd = (mach_msg_base_t *) msg;
             }
             break;
@@ -430,7 +432,9 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
                 msg->NDR = NDR_record;
                 msg->exception = request->exception;
                 msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(request->code[0]));
+
                 msg->old_stateCnt = thread_state_count;
                 memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
                 
@@ -443,7 +447,9 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
                 msg->NDR = NDR_record;
                 msg->exception = request->exception;
                 msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(code32[0]));
+
                 msg->old_stateCnt = thread_state_count;
                 memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
                 
@@ -464,7 +470,8 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
                 msg->exception = request->exception;
 
                 msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(request->code[0]));
 
                 msg->flavor = thread_state_flavor;
                 msg->old_stateCnt = thread_state_count;
@@ -482,7 +489,8 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
                 msg->exception = request->exception;
 
                 msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
+                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
+                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(code32[0]));
 
                 msg->flavor = thread_state_flavor;
                 msg->old_stateCnt = thread_state_count;

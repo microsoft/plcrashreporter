@@ -47,7 +47,16 @@ static bool exception_callback (task_t task,
                                 void *context)
 {
     mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
-    crash_page[1] = 0xFE;
+    
+    if (code_count != 2) {
+        crash_page[1] = 0xFA;
+    } else if (code[1] != (uintptr_t) crash_page) {
+        crash_page[1] = 0xFB;
+    } else {
+        // Success
+        crash_page[1] = 0xFE;
+    }
+
     return true;
 }
 
