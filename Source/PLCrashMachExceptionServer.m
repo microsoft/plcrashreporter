@@ -540,6 +540,9 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
  * Additionally, if threads are suspended due to an exception message that our exception server is not
  * registered for, we will never de-register ourselves, and the same lockup will occur.
  *
+ * Additionally, removing this exception handler will inescapably remove this handler, <em>as well as all handlers
+ * registered after this handler</em>, as the relationship between handlers is effectively a single-ordered list.
+ *
  * The recommened solution is to simply not register a Mach exception handler in the case where a debugger
  * is already attached. If this can not be avoided, then direct forwarding should be used.
  *
