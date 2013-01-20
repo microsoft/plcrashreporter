@@ -527,8 +527,8 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
  * TODO: When operating in-process, handling the exception replies internally breaks external debuggers,
  * as they assume it is safe to leave a thread suspended. This results in the target thread never resuming,
  * as our thread never wakes up to reply to the message. If we forward messages directly, then we can remove
- * ourselves from the critical path during exception replies. This has been implemented, and may be enabled
- * with DIRECT_PROXY_REQUESTS. However, if we do not remove our exception server from the chain before
+ * ourselves from the critical path during exception replies. This has been implemented, and may be disabled
+ * by changing the dispatch function used below. However, if we do not remove our exception server from the chain before
  * forwarding a request, we will still block the next exception message, as our exception server's thread
  * may not be restarted. Additionally, if threads are suspended due to an exception message that our
  * exception server is not registered for, we will never deregister ourselves, and the same lockup will occur.
