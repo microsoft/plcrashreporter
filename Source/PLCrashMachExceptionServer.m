@@ -517,25 +517,41 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
 /**
  * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
  *
- * @param request The incoming request that should be forwarded to @a server_port.
+ * @param request The incoming request that should be forwarded.
  * @param state The set of exception handlers to which the message should be forwarded.
+ * @param forward_direct If false, the exception message will be sent with a local mach reply port,
+ * and the result will be returned. If true, the exception message will be sent with its original
+ * reply port, and the response will be unavailable.
  * @param forwarded Set to true if the exception was forwarded, false otherwise.
  *
  * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
  * if the exception was not handled or no handling server was registered.
  *
- * TODO: When operating in-process, handling the exception replies internally breaks external debuggers,
- * as they assume it is safe to leave a thread suspended. This results in the target thread never resuming,
- * as our thread never wakes up to reply to the message. If we forward messages directly, then we can remove
- * ourselves from the critical path during exception replies. This has been implemented, and may be disabled
- * by changing the dispatch function used below. However, if we do not remove our exception server from the chain before
- * forwarding a request, we will still block the next exception message, as our exception server's thread
- * may not be restarted. Additionally, if threads are suspended due to an exception message that our
- * exception server is not registered for, we will never deregister ourselves, and the same lockup will occur.
+ * @par In-Process Operation
  *
- * TODO: We need to be able to determine if an exception can be/will/was handled by a signal handler.
+ * When operating in-process, handling the exception replies internally breaks external debuggers,
+ * as they assume it is safe to leave our thread suspended. This results in the target thread never resuming,
+ * as our thread never wakes up to reply to the message. If messages are forwarded directly, rather than proxied,
+ * then the current process will be removed from the critical path during exception replies. To do so, the
+ * @a forward_direct argument should be true.
+ *
+ * Note, however, that if we do not remove our exception server from the chain before forwarding a request,
+ * we will still block the next exception message, as our exception server's thread may not be restarted.
+ * Additionally, if threads are suspended due to an exception message that our exception server is not
+ * registered for, we will never de-register ourselves, and the same lockup will occur.
+ *
+ * The recommened solution is to simply not register a Mach exception handler in the case where a debugger
+ * is already attached. If this can not be avoided, then direct forwarding should be used.
+ *
+ * @TODO We need to be able to determine if an exception can be/will/was handled by a signal handler. Failure
+ * to detect such a case will result in spurious reports written for otherwise handled signals. See also:
+ * https://bugzilla.xamarin.com/show_bug.cgi?id=4120
  */
-static kern_return_t exception_server_forward (PLRequest_exception_raise_t *request, struct plcrash_exception_handler_state *state, bool *forwarded) {
+static kern_return_t exception_server_forward (PLRequest_exception_raise_t *request,
+                                               struct plcrash_exception_handler_state *state,
+                                               bool forward_direct,
+                                               bool *forwarded)
+{
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
     thread_state_data_t thread_state;
@@ -594,8 +610,8 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     int32_t *code32 = request->code;
 #endif
 
-    // TODO: Allow specifying the preferred forwarding mechanism
-    if (true) {
+    /* Use the preferred forwarding mechanism */
+    if (forward_direct) {
         kr = exception_server_forward_direct(request, port, behavior, mach_exception_codes, code32, thread_state, thread_state_count, flavor);
 
         if (kr == KERN_SUCCESS)
@@ -785,7 +801,8 @@ static void *exception_server_thread (void *arg) {
                 kern_return_t forward_result;
                 bool forwarded;
 
-                forward_result = exception_server_forward(request, &exc_context->prev_handler_state, &forwarded);
+                // TODO - allow selecting between forwarding mechanisms
+                forward_result = exception_server_forward(request, &exc_context->prev_handler_state, true, &forwarded);
                 if (forwarded)
                     exc_result = forward_result;
             }
