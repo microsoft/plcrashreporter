@@ -62,7 +62,7 @@
     plframe_cursor_t cursor;
 
     /* Initialize the cursor */
-    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, pthread_mach_thread_np(_thr_args.thread)), @"Initialization failed");
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread)), @"Initialization failed");
 
     /* Try fetching the first frame */
     plframe_error_t ferr = plframe_cursor_next(&cursor);

@@ -41,22 +41,29 @@
 #ifdef __i386__
 
 // PLFrameWalker API
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap) {
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap) {
     cursor->uap = uap;
     cursor->init_frame = true;
     cursor->fp[0] = NULL;
+
+    cursor->task = task;
+    mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
 
     return PLFRAME_ESUCCESS;
 }
 
 // PLFrameWalker API
-plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t thread) {
+plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread) {
     kern_return_t kr;
     ucontext_t *uap;
 
     /* Perform basic initialization */
     uap = &cursor->_uap_data;
     uap->uc_mcontext = (void *) &cursor->_mcontext_data;
+    cursor->task = MACH_PORT_NULL;
+
+    /* Required by plframe_cursor_free() in the case that the below initialization */
+    cursor->task = MACH_PORT_NULL;
 
     /* Zero the signal mask */
     sigemptyset(&uap->uc_sigmask);
@@ -94,7 +101,7 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t t
     }
 
     /* Perform standard initialization */
-    plframe_cursor_init(cursor, uap);
+    plframe_cursor_init(cursor, task, uap);
 
     return PLFRAME_ESUCCESS;
 }

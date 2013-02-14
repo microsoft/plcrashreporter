@@ -96,3 +96,13 @@ void plframe_test_thread_stop (plframe_test_thead_t *args) {
     /* Wait for exit */
     pthread_join(args->thread, NULL);
 }
+
+/**
+ * Free any resources associated with the frame cursor.
+ *
+ * @param cursor Cursor record to be freed
+ */
+void plframe_cursor_free(plframe_cursor_t *cursor) {
+    if (cursor->task != MACH_PORT_NULL)
+        mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, -1);
+}

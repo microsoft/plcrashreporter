@@ -94,6 +94,9 @@ typedef int plframe_regnum_t;
  * Frame cursor context.
  */
 typedef struct plframe_cursor {
+    /** The task in which the thread stack resides */
+    task_t task;
+
     /** true if this is the initial frame */
     bool init_frame;
     
@@ -102,7 +105,7 @@ typedef struct plframe_cursor {
     
     /** Stack frame data */
     void *fp[PLFRAME_STACKFRAME_LEN];
-    
+
     // for thread-initialized cursors
     /** Generated ucontext_t */
     ucontext_t _uap_data;
@@ -154,6 +157,7 @@ const char *plframe_strerror (plframe_error_t error);
 
 void plframe_test_thread_spawn (plframe_test_thead_t *args);
 void plframe_test_thread_stop (plframe_test_thead_t *args);
+void plframe_cursor_free(plframe_cursor_t *cursor);
 
 /* Platform specific funtions */
 
@@ -161,21 +165,29 @@ void plframe_test_thread_stop (plframe_test_thead_t *args);
  * Initialize the frame cursor.
  *
  * @param cursor Cursor record to be initialized.
+ * @param task The task from which @a uap was derived. All memory will be mapped from this task.
  * @param uap The context to use for cursor initialization.
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
+ *
+ * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
+ * fails.
  */
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, ucontext_t *uap);
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
 
 /**
  * Initialize the frame cursor by acquiring state from the provided mach thread.
  *
  * @param cursor Cursor record to be initialized.
+ * @param task The task in which @a thread is running. All memory will be mapped from this task.
  * @param thread The thread to use for cursor initialization.
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
+ *
+ * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
+ * fails.
  */
-plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, thread_t thread);
+plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
 
 /**
  * Fetch the next cursor.

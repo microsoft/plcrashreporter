@@ -697,9 +697,10 @@ static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, 
  * Write all thread backtrace register messages
  *
  * @param file Output file
+ * @param task The task from which @a uap was derived. All memory accesses will be mapped from this task.
  * @param cursor The cursor from which to acquire frame data.
  */
-static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, ucontext_t *uap) {
+static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, task_t task, ucontext_t *uap) {
     plframe_cursor_t cursor;
     plframe_error_t frame_err;
     uint32_t regCount;
@@ -709,7 +710,7 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
     regCount = PLFRAME_REG_LAST + 1;
 
     /* Create the crashed thread frame cursor */
-    if ((frame_err = plframe_cursor_init(&cursor, uap)) != PLFRAME_ESUCCESS) {
+    if ((frame_err = plframe_cursor_init(&cursor, task, uap)) != PLFRAME_ESUCCESS) {
         PLCF_DEBUG("Failed to initialize frame cursor for crashed thread: %s", plframe_strerror(frame_err));
         return 0;
     }
@@ -843,6 +844,7 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
  * Write a thread message
  *
  * @param file Output file
+ * @param task The task in which @a thread is executing.
  * @param thread Thread for which we'll output data.
  * @param thread_number The thread's index number.
  * @param thread_ctx Context to use for stack walking. If NULL, the thread state will be fetched from @a thread. If
@@ -852,6 +854,7 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
  * @param crashed If true, mark this as a crashed thread.
  */
 static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
+                                           task_t task,
                                            thread_t thread,
                                            uint32_t thread_number,
                                            ucontext_t *thread_ctx,
@@ -864,7 +867,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
     plframe_error_t ferr;
 
     /* A context must be supplied when walking the current thread */
-    PLCF_ASSERT(thread_ctx != NULL || thread != mach_thread_self());
+    PLCF_ASSERT(task != mach_task_self() || thread_ctx != NULL || thread != mach_thread_self());
 
     /* Write the required elements first; fatal errors may occur below, in which case we need to have
      * written out required elements before returning. */
@@ -883,9 +886,9 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
         {
             /* Use the ctx if available */
             if (thread_ctx) {
-                ferr = plframe_cursor_init(&cursor, thread_ctx);
+                ferr = plframe_cursor_init(&cursor, task, thread_ctx);
             } else {
-                ferr = plframe_cursor_thread_init(&cursor, thread);
+                ferr = plframe_cursor_thread_init(&cursor, task, thread);
             }
 
             /* Did cursor initialization succeed? If not, it is impossible to proceed */
@@ -925,7 +928,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
 
     /* Dump registers for the crashed thread */
     if (crashed) {
-        rv += plcrash_writer_write_thread_registers(file, cursor.uap);
+        rv += plcrash_writer_write_thread_registers(file, task, cursor.uap);
     }
 
     return rv;
@@ -1229,11 +1232,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         }
 
         /* Determine the size */
-        size = plcrash_writer_write_thread(NULL, thread, thread_number, thr_ctx, image_list, &findContext, crashed);
+        size = plcrash_writer_write_thread(NULL, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
 
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_thread(file, thread, thread_number, thr_ctx, image_list, &findContext, crashed);
+        plcrash_writer_write_thread(file, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
 
         thread_number++;
     }

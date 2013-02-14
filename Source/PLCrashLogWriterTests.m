@@ -232,7 +232,7 @@
         
         /* Steal the test thread's stack for iteration */
         thread = pthread_mach_thread_np(_thr_args.thread);
-        plframe_cursor_thread_init(&cursor, thread);
+        plframe_cursor_thread_init(&cursor, mach_task_self(), thread);
     }
 
     /* Open the output file */
