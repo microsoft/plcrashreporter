@@ -109,6 +109,8 @@
 		0573B44A1681108500395F2A /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		057CD98616CD5D5C0067E670 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057CD98516CD5D5C0067E670 /* Default-568h@2x.png */; };
+		057CD98716CD5D7A0067E670 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057CD98516CD5D5C0067E670 /* Default-568h@2x.png */; };
 		0581B521168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		0581B522168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
@@ -438,7 +440,6 @@
 		05F415560EF9E078008050CF /* PLCrashReportExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F415520EF9E078008050CF /* PLCrashReportExceptionInfo.m */; };
 		05F415570EF9E078008050CF /* PLCrashReportExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F415510EF9E078008050CF /* PLCrashReportExceptionInfo.h */; };
 		05F415580EF9E078008050CF /* PLCrashReportExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F415520EF9E078008050CF /* PLCrashReportExceptionInfo.m */; };
-		05F76DCE162CB85000A668C7 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 05F76DCD162CB85000A668C7 /* Default-568h@2x.png */; };
 		05F76DD3162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */; };
 		05F76DD4162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */; };
 		05F76DD5162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */; };
@@ -774,6 +775,7 @@
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashMachExceptionServer.h; sourceTree = "<group>"; };
 		0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServer.m; sourceTree = "<group>"; };
+		057CD98516CD5D5C0067E670 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		0581B520168FDB280098C103 /* mach_exc.defs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mig; name = mach_exc.defs; path = usr/include/mach/mach_exc.defs; sourceTree = SDKROOT; };
 		058812B91040582D009128FB /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0592C8E6169B899B00209116 /* crash_report_v2.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = crash_report_v2.proto; sourceTree = "<group>"; };
@@ -872,7 +874,6 @@
 		05F4150C0EF9DD9B008050CF /* PLCrashReportBinaryImageInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportBinaryImageInfo.m; sourceTree = "<group>"; };
 		05F415510EF9E078008050CF /* PLCrashReportExceptionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportExceptionInfo.h; sourceTree = "<group>"; };
 		05F415520EF9E078008050CF /* PLCrashReportExceptionInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportExceptionInfo.m; sourceTree = "<group>"; };
-		05F76DCD162CB85000A668C7 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		05F76DCF162DBF8300A668C7 /* GTMObjC2Runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GTMObjC2Runtime.h; path = Foundation/GTMObjC2Runtime.h; sourceTree = "<group>"; };
 		05F76DD0162DC2BC00A668C7 /* GTMGarbageCollection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GTMGarbageCollection.h; path = Foundation/GTMGarbageCollection.h; sourceTree = "<group>"; };
 		05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncMachOImage.c; sourceTree = "<group>"; };
@@ -1460,7 +1461,7 @@
 		089C1665FE841158C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				05F76DCD162CB85000A668C7 /* Default-568h@2x.png */,
+				057CD98516CD5D5C0067E670 /* Default-568h@2x.png */,
 				05F40CE90EF7AB80008050CF /* DemoCrash-Info.plist */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				05CD32AF0EE94086000FDE88 /* Tests-iPhone-Info.plist */,
@@ -1977,6 +1978,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				057CD98616CD5D5C0067E670 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2012,7 +2014,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05F76DCE162CB85000A668C7 /* Default-568h@2x.png in Resources */,
+				057CD98716CD5D7A0067E670 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
