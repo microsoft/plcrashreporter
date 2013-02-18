@@ -179,6 +179,9 @@ struct plcrash_exception_server_context {
     /** Registered exception port. */
     mach_port_t server_port;
     
+    /** The mask of exceptions for which we're registered. */
+    exception_mask_t exc_mask;
+
     /** User callback. */
     PLCrashMachExceptionHandlerCallback callback;
 
@@ -228,19 +231,39 @@ struct plcrash_exception_server_context {
  *
  * @param task The task for which the exception handler(s) were registered.
  * @param thread If not MACH_PORT_NULL, the thread for which the exception ports should be set.
+ * @param required_mask The mask of exception types for which the ports should be set. If @a state does not contain handlers
+ * for all types specified in @a required_mask, a port of MACH_PORT_NULL will be set for the given exception type.
  * @param state Exception handler state.
  */
-static void set_exception_ports (task_t task, thread_t thread, struct plcrash_exception_handler_state *state) {
+static void set_exception_ports (task_t task, thread_t thread, exception_mask_t required_mask, struct plcrash_exception_handler_state *state) {
     kern_return_t kr;
+
+    /* Set exception ports for all supplied state entries. */
+    exception_mask_t remaining_mask = required_mask;
     for (mach_msg_type_number_t i = 0; i < state->count; ++i) {
+        if (MACH_PORT_VALID(!state->ports[i]))
+            continue;
+
         if (thread == MACH_PORT_NULL)
             kr = task_set_exception_ports(task, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i]);
         else
             kr = thread_set_exception_ports(thread, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i]);
 
         /* Log errors, but continue to restore any remaining exception ports */
-        if (kr != KERN_SUCCESS)
-            PLCF_DEBUG("Failed to restore task exception ports: %x", kr);
+        if (kr == KERN_SUCCESS) {
+            /* Mark as completed */
+            remaining_mask &= ~state->masks[i];
+        } else {
+            PLCF_DEBUG("Failed to restore task exception ports (i=%x, m=%x, p=%x, b=%x, f=%x): %x", i, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i], kr);
+        }
+    }
+
+    /* Reset any remaining exception types that were not handled above. */
+    if (remaining_mask != 0) {
+        if (thread == MACH_PORT_NULL)
+            kr = task_set_exception_ports(task, remaining_mask, MACH_PORT_NULL, EXCEPTION_STATE_IDENTITY, MACHINE_THREAD_STATE);
+        else
+            kr = thread_set_exception_ports(thread, remaining_mask, MACH_PORT_NULL, EXCEPTION_STATE_IDENTITY, MACHINE_THREAD_STATE);
     }
 }
 
@@ -661,7 +684,7 @@ static void *exception_server_thread (void *arg) {
         
         if (exc_context->thread == MACH_PORT_NULL) {
             kr = task_swap_exception_ports(exc_context->task,
-                                           FATAL_EXCEPTION_MASK,
+                                           exc_context->exc_mask,
                                            exc_context->server_port,
                                            behavior,
                                            THREAD_STATE_NONE,
@@ -672,7 +695,7 @@ static void *exception_server_thread (void *arg) {
                                            exc_context->prev_handler_state.flavors);
         } else {
             kr = thread_swap_exception_ports(exc_context->thread,
-                                             FATAL_EXCEPTION_MASK,
+                                             exc_context->exc_mask,
                                              exc_context->server_port,
                                              behavior,
                                              THREAD_STATE_NONE,
@@ -742,7 +765,7 @@ static void *exception_server_thread (void *arg) {
             PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x. Restoring exception ports and stopping server thread.", mr);
 
             /* Restore exception ports; we won't be around to handle future exceptions */
-            set_exception_ports(exc_context->task, exc_context->thread, &exc_context->prev_handler_state);
+            set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
 
             break;
 
@@ -757,7 +780,7 @@ static void *exception_server_thread (void *arg) {
                     /* Restore exception ports; we won't be around to handle future exceptions */
                     // TODO - This is non-atomic; should we cycle through a mach_msg() call to clear
                     // exception messages that may have been enqueued?
-                    set_exception_ports(exc_context->task, exc_context->thread, &exc_context->prev_handler_state);
+                    set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
 
                     /* Inform the requesting thread of completion */
                     pthread_mutex_lock(&exc_context->lock); {
@@ -795,7 +818,7 @@ static void *exception_server_thread (void *arg) {
             /* Restore exception ports; we don't want to double-fault if our exception handler crashes */
             // TODO - We should register a thread-specific double-fault handler to specifically handle
             // this state by executing a "safe mode" logging path.
-            set_exception_ports(exc_context->task, exc_context->thread, &exc_context->prev_handler_state);
+            set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
             
             /* Map 32-bit codes to 64-bit types. */
 #if !HANDLE_MACH64_CODES
@@ -903,6 +926,7 @@ static void *exception_server_thread (void *arg) {
     _serverContext = calloc(1, sizeof(*_serverContext));
     _serverContext->task = task;
     _serverContext->thread = thread;
+    _serverContext->exc_mask = FATAL_EXCEPTION_MASK;
     _serverContext->server_port = MACH_PORT_NULL;
     _serverContext->server_init_result = KERN_SUCCESS;
     _serverContext->callback = callback;
