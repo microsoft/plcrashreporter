@@ -108,7 +108,7 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
 bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length) {
     /* Verify that the address starts within range */
     if (address < mobj->address) {
-        PLCF_DEBUG("Address %" PRIx64 " < base address %" PRIx64 "", (uint64_t) address, (uint64_t) mobj->address);
+        // PLCF_DEBUG("Address %" PRIx64 " < base address %" PRIx64 "", (uint64_t) address, (uint64_t) mobj->address);
         return false;
     }
     
@@ -118,7 +118,7 @@ bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, 
     
     /* Check that the block ends within range */
     if (mobj->address + mobj->length < address + length) {
-        PLCF_DEBUG("Address %" PRIx64 " out of range %" PRIx64 " + %" PRIx64, (uint64_t) address, (uint64_t) mobj->address, (uint64_t) mobj->length);
+        // PLCF_DEBUG("Address %" PRIx64 " out of range %" PRIx64 " + %" PRIx64, (uint64_t) address, (uint64_t) mobj->address, (uint64_t) mobj->length);
         return false;
     }
 

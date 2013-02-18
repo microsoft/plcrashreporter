@@ -40,7 +40,20 @@ static char * const kObjCDataSectionName = "__objc_data";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
-static uint32_t RW_REALIZED = (1<<31);
+
+/**
+ * @internal
+ *
+ * Class's rw data structure has been realized.
+ */
+static const uint32_t RW_REALIZED = (1<<31);
+
+/**
+ * @internal
+ *
+ * A realized class' data pointer is a heap-copied copy of class_ro_t.
+ */
+static const uint32_t RW_COPIED_RO = (1<<27);
 
 struct pl_objc1_module {
     uint32_t version;
@@ -548,13 +561,24 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
                                : image->swap32(class_32->data_rw));
     dataPtr &= ~(pl_vm_address_t)3;
     
-    /* Grab the data RO pointer from the cache. */
-    pl_vm_address_t dataROPtr = cache_lookup(objcContext, dataPtr);
     
-    if (dataROPtr == 0) {
-        /* Read an architecture-appropriate class_rw structure for the class. */
+    /* References to the class' RO data. */
+    struct pl_objc2_class_data_ro_32 *classDataRO_32 = NULL;
+    struct pl_objc2_class_data_ro_64 *classDataRO_64 = NULL;
+    union {
+        struct pl_objc2_class_data_ro_32 cls32;
+        struct pl_objc2_class_data_ro_64 cls64;
+    } cls_copied_ro;
+    pl_vm_size_t class_ro_length = (image->m64 ? sizeof(*classDataRO_64) : sizeof(*classDataRO_32));
+
+
+    /* Grab the data RO pointer from the cache. If unavailable, we'll fetch the data and populate the class. */
+    pl_vm_address_t cached_data_ro_addr = cache_lookup(objcContext, dataPtr);
+    if (cached_data_ro_addr == 0) {
         struct pl_objc2_class_data_rw_32 classDataRW_32;
         struct pl_objc2_class_data_rw_64 classDataRW_64;
+
+        /* Read an architecture-appropriate class_rw structure for the class. */
         if (image->m64)
             err = plcrash_async_read_addr(image->task, dataPtr, &classDataRW_64, sizeof(classDataRW_64));
         else
@@ -576,30 +600,50 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
             // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
             goto cleanup;
         }
-        
+
         /* Grab the data_ro pointer. The RO data (read-only) contains the class name
          * and method list. */
-        dataROPtr = (image->m64
+        cached_data_ro_addr = (image->m64
                      ? image->swap64(classDataRW_64.data_ro)
                      : image->swap32(classDataRW_32.data_ro));
         
+        /* Validate the data pointer. It will either be heap allocated (RW_COPIED_RO), or found within the
+         * __objc_const section */
+        if ((flags & RW_COPIED_RO) != 0) {
+            if (plcrash_async_read_addr(image->task, cached_data_ro_addr, &cls_copied_ro, class_ro_length) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx returned NULL", (long long)cached_data_ro_addr);
+                goto cleanup;
+            }
+
+            classDataRO_32 = &cls_copied_ro.cls32;
+            classDataRO_64 = &cls_copied_ro.cls64;
+        } else {
+            void *classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, cached_data_ro_addr, class_ro_length);
+            if (classDataROPtr == NULL) {
+                PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx returned NULL", (long long)cached_data_ro_addr);
+                goto cleanup;
+            }
+            
+            classDataRO_32 = classDataROPtr;
+            classDataRO_64 = classDataROPtr;
+        }
+        
         /* Add a new cache entry. */
-        cache_set(objcContext, dataPtr, dataROPtr);
+        cache_set(objcContext, dataPtr, cached_data_ro_addr);
+    } else {
+        /* We know that the address is valid (it wouldn't be in the cache otherwise). We try the cheaper memory mapping first,
+         * and then fall back to a memory copy. */
+        void *classDataROPtr;
+        if ((classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, cached_data_ro_addr, class_ro_length)) != NULL) {
+            classDataRO_32 = classDataROPtr;
+            classDataRO_64 = classDataROPtr;
+        } else if (plcrash_async_read_addr(image->task, cached_data_ro_addr, &cls_copied_ro, class_ro_length) == PLCRASH_ESUCCESS) {
+            classDataRO_32 = &cls_copied_ro.cls32;
+            classDataRO_64 = &cls_copied_ro.cls64;
+        } else {
+            PLCF_DEBUG("Failed to read validated class_ro data at 0x%llx", (long long)cached_data_ro_addr);
+        }
     }
-    
-    /* Grab the pointer to the class_ro structure. */
-    struct pl_objc2_class_data_ro_32 *classDataRO_32;
-    struct pl_objc2_class_data_ro_64 *classDataRO_64;
-    pl_vm_size_t length = (image->m64 ? sizeof(*classDataRO_64) : sizeof(*classDataRO_32));
-    void *classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, dataROPtr, length);
-    
-    if (classDataROPtr == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx returned NULL", (long long)dataROPtr);
-        goto cleanup;
-    }
-    
-    classDataRO_32 = classDataROPtr;
-    classDataRO_64 = classDataROPtr;
     
     /* Fetch the pointer to the class name, and make the string. */
     pl_vm_address_t classNamePtr = (image->m64
