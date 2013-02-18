@@ -33,79 +33,12 @@
 #import <assert.h>
 #import <stdlib.h>
 
-#define RETGEN(name, type, uap, result) {\
-    *result = (uap->uc_mcontext->__ ## type . __ ## name); \
+#define RETGEN(name, type, ts, result) {\
+    *result = (ts->x86_state. type . __ ## name); \
     return PLFRAME_ESUCCESS; \
 }
 
 #ifdef __i386__
-
-// PLFrameWalker API
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap) {
-    cursor->uap = uap;
-    cursor->init_frame = true;
-    cursor->fp[0] = NULL;
-
-    cursor->task = task;
-    mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
-
-    return PLFRAME_ESUCCESS;
-}
-
-// PLFrameWalker API
-plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread) {
-    kern_return_t kr;
-    ucontext_t *uap;
-
-    /* Perform basic initialization */
-    uap = &cursor->_uap_data;
-    uap->uc_mcontext = (void *) &cursor->_mcontext_data;
-    cursor->task = MACH_PORT_NULL;
-
-    /* Required by plframe_cursor_free() in the case that the below initialization */
-    cursor->task = MACH_PORT_NULL;
-
-    /* Zero the signal mask */
-    sigemptyset(&uap->uc_sigmask);
-
-    /* Fetch the thread states */
-    mach_msg_type_number_t state_count;
-
-    /* Sanity check */
-    assert(sizeof(cursor->_mcontext_data.__ss) == sizeof(x86_thread_state32_t));
-    assert(sizeof(cursor->_mcontext_data.__es) == sizeof(x86_exception_state32_t));
-    assert(sizeof(cursor->_mcontext_data.__fs) == sizeof(x86_float_state32_t));
-    
-    // thread state
-    state_count = x86_THREAD_STATE32_COUNT;
-    kr = thread_get_state(thread, x86_THREAD_STATE32, (thread_state_t) &cursor->_mcontext_data.__ss, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86 thread state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-
-    // floating point state
-    state_count = x86_FLOAT_STATE32_COUNT;
-    kr = thread_get_state(thread, x86_FLOAT_STATE32, (thread_state_t) &cursor->_mcontext_data.__fs, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86 float state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-
-    // exception state
-    state_count = x86_EXCEPTION_STATE32_COUNT;
-    kr = thread_get_state(thread, x86_EXCEPTION_STATE32, (thread_state_t) &cursor->_mcontext_data.__es, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86 exception state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-
-    /* Perform standard initialization */
-    plframe_cursor_init(cursor, task, uap);
-
-    return PLFRAME_ESUCCESS;
-}
-
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
@@ -120,7 +53,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     } else {
         if (cursor->fp[0] == NULL) {
             /* No frame data has been loaded, fetch it from register state */
-            kr = plcrash_async_read_addr(mach_task_self(), cursor->uap->uc_mcontext->__ss.__ebp, cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(mach_task_self(), cursor->thread_state.x86_state.thread.uts.ts32.__ebp, cursor->fp, sizeof(cursor->fp));
         } else {
             /* Frame data loaded, walk the stack */
             kr = plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
@@ -146,8 +79,8 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
 // PLFrameWalker API
 plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
-    ucontext_t *uap = cursor->uap;
-    
+    plframe_cursor_thread_state_t *ts = &cursor->thread_state;
+
     /* Supported register for this context state? */
     if (cursor->fp[0] != NULL) {
         if (regnum == PLFRAME_X86_EIP) {
@@ -161,52 +94,52 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
     /* All word-sized registers */
     switch (regnum) {
         case PLFRAME_X86_EAX:
-            RETGEN(eax, ss, uap, reg);
+            RETGEN(eax, thread.uts.ts32, ts, reg);
     
         case PLFRAME_X86_EDX:
-            RETGEN(edx, ss, uap, reg);
+            RETGEN(edx, thread.uts.ts32, ts, reg);
             
         case PLFRAME_X86_ECX:
-            RETGEN(ecx, ss, uap, reg);
+            RETGEN(ecx, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_EBX:
-            RETGEN(ebx, ss, uap, reg);
+            RETGEN(ebx, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_EBP:
-            RETGEN(ebp, ss, uap, reg);
+            RETGEN(ebp, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_ESI:
-            RETGEN(esi, ss, uap, reg);
+            RETGEN(esi, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_EDI:
-            RETGEN(edi, ss, uap, reg);
+            RETGEN(edi, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_ESP:
-            RETGEN(esp, ss, uap, reg);
+            RETGEN(esp, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_EIP:
-            RETGEN(eip, ss, uap, reg);
+            RETGEN(eip, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_EFLAGS:
-            RETGEN(eflags, ss, uap, reg);
+            RETGEN(eflags, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_TRAPNO:
-            RETGEN(trapno, es, uap, reg);
+            RETGEN(trapno, exception.ues.es32, ts, reg);
 
         case PLFRAME_X86_CS:
-            RETGEN(cs, ss, uap, reg);
+            RETGEN(cs, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_DS:
-            RETGEN(ds, ss, uap, reg);
+            RETGEN(ds, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_ES:
-            RETGEN(es, ss, uap, reg);
+            RETGEN(es, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_FS:
-            RETGEN(fs, ss, uap, reg);
+            RETGEN(fs, thread.uts.ts32, ts, reg);
 
         case PLFRAME_X86_GS:
-            RETGEN(gs, ss, uap, reg);
+            RETGEN(gs, thread.uts.ts32, ts, reg);
 
         default:
             // Unsupported register

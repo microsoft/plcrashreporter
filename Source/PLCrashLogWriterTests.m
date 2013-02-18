@@ -40,6 +40,7 @@
 
 #import <mach-o/loader.h>
 #import <mach-o/dyld.h>
+#import <CrashReporter/CrashReporter.h>
 
 #import "crash_report.pb-c.h"
 
@@ -256,7 +257,9 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, cursor.uap), @"Crash log failed");
+    // THREAD_STATE_TODO: This test is broken until we can modify it to support passing in a plframe_thread_state_t or some
+    // other similar value
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, NULL), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
@@ -289,11 +292,11 @@
     /* Validate the 'crashed' flag is on a thread with the expected PC. */
     uint64_t expectedPC;
 #if __x86_64__
-    expectedPC = cursor.uap->uc_mcontext->__ss.__rip;
+    expectedPC = cursor.thread_state.x86_state.thread.uts.ts64.__rip;
 #elif __i386__
-    expectedPC = cursor.uap->uc_mcontext->__ss.__eip;
+    expectedPC = cursor.thread_state.x86_state.thread.uts.ts32.__eip;
 #elif __arm__
-    expectedPC = cursor.uap->uc_mcontext->__ss.__pc;
+    expectedPC = cursor.thread_state.arm_state.thread.__pc;
 #else
 #error Unsupported Platform
 #endif

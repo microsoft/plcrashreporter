@@ -30,82 +30,15 @@
 #import "PLCrashAsync.h"
 
 #import <signal.h>
-#import <assert.h>
 #import <stdlib.h>
+#import <assert.h>
 
 #ifdef __arm__
 
-#define RETGEN(name, type, uap, result) {\
-    *result = (uap->uc_mcontext->__ ## type . __ ## name); \
+#define RETGEN(name, type, ts, result) {\
+    *result = (ts->arm_state. type . __ ## name); \
     return PLFRAME_ESUCCESS; \
 }
-
-// PLFrameWalker API
-plframe_error_t plframe_cursor_init(plframe_cursor_t *cursor, task_t task, ucontext_t *uap) {
-    cursor->uap = uap;
-    cursor->init_frame = true;
-    cursor->fp[0] = NULL;
-
-    cursor->task = task;
-    mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
-
-    return PLFRAME_ESUCCESS;
-}
-
-
-// PLFrameWalker API
-plframe_error_t plframe_cursor_thread_init(plframe_cursor_t *cursor, task_t task, thread_t thread) {
-    kern_return_t kr;
-    ucontext_t *uap;
-    
-    /* Perform basic initialization */
-    uap = &cursor->_uap_data;
-    uap->uc_mcontext = (void *) &cursor->_mcontext_data;
-
-    /* Required by plframe_cursor_free() in the case that the below initialization */
-    cursor->task = MACH_PORT_NULL;
-
-    /* Zero the signal mask */
-    sigemptyset(&uap->uc_sigmask);
-    
-    /* Fetch the thread states */
-    mach_msg_type_number_t state_count;
-    
-    /* Sanity check */
-    assert(sizeof(cursor->_mcontext_data.__ss) == sizeof(arm_thread_state_t));
-    assert(sizeof(cursor->_mcontext_data.__es) == sizeof(arm_exception_state_t));
-    assert(sizeof(cursor->_mcontext_data.__fs) == sizeof(arm_vfp_state_t));
-    
-    // thread state
-    state_count = ARM_THREAD_STATE_COUNT;
-    kr = thread_get_state(thread, ARM_THREAD_STATE, (thread_state_t) &cursor->_mcontext_data.__ss, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of arm thread state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-    
-    // floating point state
-    state_count = ARM_VFP_STATE_COUNT;
-    kr = thread_get_state(thread, ARM_VFP_STATE, (thread_state_t) &cursor->_mcontext_data.__fs, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of arm vfp state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-    
-    // exception state
-    state_count = ARM_EXCEPTION_STATE_COUNT;
-    kr = thread_get_state(thread, ARM_EXCEPTION_STATE, (thread_state_t) &cursor->_mcontext_data.__es, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of ARM exception state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-    
-    /* Perform standard initialization */
-    plframe_cursor_init(cursor, task, uap);
-    
-    return PLFRAME_ESUCCESS;
-}
-
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
@@ -120,7 +53,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     } else {
         if (cursor->fp[0] == NULL) {
             /* No frame data has been loaded, fetch it from register state */
-            kr = plcrash_async_read_addr(mach_task_self(), cursor->uap->uc_mcontext->__ss.__r[7], cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(mach_task_self(), cursor->thread_state.arm_state.thread.__r[7], cursor->fp, sizeof(cursor->fp));
         } else {
             /* Frame data loaded, walk the stack */
             kr = plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
@@ -146,8 +79,8 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
 // PLFrameWalker API
 plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
-    ucontext_t *uap = cursor->uap;
-    
+    plframe_cursor_thread_state_t *ts = &cursor->thread_state;
+
     /* Supported register for this context state? */
     if (cursor->fp[0] != NULL) {
         if (regnum == PLFRAME_ARM_PC) {
@@ -173,19 +106,19 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
         case PLFRAME_ARM_R11:
         case PLFRAME_ARM_R12:
             // Map enum to actual register index */
-            RETGEN(r[regnum - PLFRAME_ARM_R0], ss, uap, reg);
+            RETGEN(r[regnum - PLFRAME_ARM_R0], thread, ts, reg);
 
         case PLFRAME_ARM_SP:
-            RETGEN(sp, ss, uap, reg);
+            RETGEN(sp, thread, ts, reg);
 
         case PLFRAME_ARM_LR:
-            RETGEN(lr, ss, uap, reg);
+            RETGEN(lr, thread, ts, reg);
 
         case PLFRAME_ARM_PC:
-            RETGEN(pc, ss, uap, reg);
+            RETGEN(pc, thread, ts, reg);
             
         case PLFRAME_ARM_CPSR:
-            RETGEN(cpsr, ss, uap, reg);
+            RETGEN(cpsr, thread, ts, reg);
             
         default:
             return PLFRAME_ENOTSUP;

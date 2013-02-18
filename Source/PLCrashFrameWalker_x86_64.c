@@ -33,78 +33,12 @@
 #import <assert.h>
 #import <stdlib.h>
 
-#define RETGEN(name, type, uap, result) {\
-    *result = (uap->uc_mcontext->__ ## type . __ ## name); \
+#define RETGEN(name, type, ts, result) {\
+    *result = (ts->x86_state. type . __ ## name); \
     return PLFRAME_ESUCCESS; \
 }
 
 #ifdef __x86_64__
-
-// PLFrameWalker API
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap) {
-    cursor->uap = uap;
-    cursor->init_frame = true;
-    cursor->fp[0] = NULL;
-
-    cursor->task = task;
-    mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
-    
-    return PLFRAME_ESUCCESS;
-}
-
-// PLFrameWalker API
-plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread) {
-    kern_return_t kr;
-    ucontext_t *uap;
-    
-    /* Perform basic initialization */
-    uap = &cursor->_uap_data;
-    uap->uc_mcontext = (void *) &cursor->_mcontext_data;
-
-    /* Required by plframe_cursor_free() in the case that the below initialization */
-    cursor->task = MACH_PORT_NULL;
-
-    /* Zero the signal mask */
-    sigemptyset(&uap->uc_sigmask);
-    
-    /* Fetch the thread states */
-    mach_msg_type_number_t state_count;
-    
-    /* Sanity check */
-    assert(sizeof(cursor->_mcontext_data.__ss) == sizeof(x86_thread_state64_t));
-    assert(sizeof(cursor->_mcontext_data.__es) == sizeof(x86_exception_state64_t));
-    assert(sizeof(cursor->_mcontext_data.__fs) == sizeof(x86_float_state64_t));
-    
-    // thread state
-    state_count = x86_THREAD_STATE64_COUNT;
-    kr = thread_get_state(thread, x86_THREAD_STATE64, (thread_state_t) &cursor->_mcontext_data.__ss, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86-64 thread state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-    
-    // floating point state
-    state_count = x86_FLOAT_STATE64_COUNT;
-    kr = thread_get_state(thread, x86_FLOAT_STATE64, (thread_state_t) &cursor->_mcontext_data.__fs, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86-64 float state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-    
-    // exception state
-    state_count = x86_EXCEPTION_STATE64_COUNT;
-    kr = thread_get_state(thread, x86_EXCEPTION_STATE64, (thread_state_t) &cursor->_mcontext_data.__es, &state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86-64 exception state failed with mach error: %d", kr);
-        return PLFRAME_INTERNAL;
-    }
-
-    /* Perform standard initialization */
-    plframe_cursor_init(cursor, task, uap);
-    
-    return PLFRAME_ESUCCESS;
-}
-
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
@@ -119,7 +53,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     } else {
         if (cursor->fp[0] == NULL) {
             /* No frame data has been loaded, fetch it from register state */
-            kr = plcrash_async_read_addr(mach_task_self(), cursor->uap->uc_mcontext->__ss.__rbp, cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(mach_task_self(), cursor->thread_state.x86_state.thread.uts.ts64.__rbp, cursor->fp, sizeof(cursor->fp));
         } else {
             /* Frame data loaded, walk the stack */
             kr = plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
@@ -145,7 +79,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
 // PLFrameWalker API
 plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
-    ucontext_t *uap = cursor->uap;
+    plframe_cursor_thread_state_t *ts = &cursor->thread_state;
     
     /* Supported register for this context state? */
     if (cursor->fp[0] != NULL) {
@@ -159,61 +93,61 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
 
     switch (regnum) {
         case PLFRAME_X86_64_RAX:
-            RETGEN(rax, ss, uap, reg);
+            RETGEN(rax, thread.uts.ts64, ts, reg);
 
         case PLFRAME_X86_64_RBX:
-            RETGEN(rbx, ss, uap, reg);
+            RETGEN(rbx, thread.uts.ts64, ts, reg);
 
         case PLFRAME_X86_64_RCX:
-            RETGEN(rcx, ss, uap, reg);
+            RETGEN(rcx, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RDX:
-            RETGEN(rdx, ss, uap, reg);
+            RETGEN(rdx, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RDI:
-            RETGEN(rdi, ss, uap, reg);
+            RETGEN(rdi, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RSI:
-            RETGEN(rsi, ss, uap, reg);
+            RETGEN(rsi, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RBP:
-            RETGEN(rbp, ss, uap, reg);
+            RETGEN(rbp, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RSP:
-            RETGEN(rsp, ss, uap, reg);
+            RETGEN(rsp, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_R10:
-            RETGEN(r10, ss, uap, reg);
+            RETGEN(r10, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_R11:
-            RETGEN(r11, ss, uap, reg);
+            RETGEN(r11, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_R12:
-            RETGEN(r12, ss, uap, reg);
+            RETGEN(r12, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_R13:
-            RETGEN(r13, ss, uap, reg);
+            RETGEN(r13, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_R14:    
-            RETGEN(r14, ss, uap, reg);
+            RETGEN(r14, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_R15:
-            RETGEN(r15, ss, uap, reg);
+            RETGEN(r15, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RIP:
-            RETGEN(rip, ss, uap, reg);
+            RETGEN(rip, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_RFLAGS:
-            RETGEN(rflags, ss, uap, reg);
+            RETGEN(rflags, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_CS:
-            RETGEN(cs, ss, uap, reg);
+            RETGEN(cs, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_FS:
-            RETGEN(fs, ss, uap, reg);
+            RETGEN(fs, thread.uts.ts64, ts, reg);
             
         case PLFRAME_X86_64_GS:
-            RETGEN(gs, ss, uap, reg);
+            RETGEN(gs, thread.uts.ts64, ts, reg);
             
         default:
             // Unsupported register

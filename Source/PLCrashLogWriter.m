@@ -698,28 +698,15 @@ static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, 
  *
  * @param file Output file
  * @param task The task from which @a uap was derived. All memory accesses will be mapped from this task.
- * @param cursor The cursor from which to acquire frame data.
+ * @param cursor The cursor from which to acquire frame registers.
  */
-static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, task_t task, ucontext_t *uap) {
-    plframe_cursor_t cursor;
+static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, task_t task, plframe_cursor_t *cursor) {
     plframe_error_t frame_err;
     uint32_t regCount;
     size_t rv = 0;
 
     /* Last is an index value, so increment to get the count */
     regCount = PLFRAME_REG_LAST + 1;
-
-    /* Create the crashed thread frame cursor */
-    if ((frame_err = plframe_cursor_init(&cursor, task, uap)) != PLFRAME_ESUCCESS) {
-        PLCF_DEBUG("Failed to initialize frame cursor for crashed thread: %s", plframe_strerror(frame_err));
-        return 0;
-    }
-    
-    /* Fetch the first frame */
-    if ((frame_err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
-        PLCF_DEBUG("Could not fetch crashed thread frame: %s", plframe_strerror(frame_err));
-        return 0;
-    }
     
     /* Write out register messages */
     for (int i = 0; i < regCount; i++) {
@@ -728,7 +715,7 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
         uint32_t msgsize;
 
         /* Fetch the register value */
-        if ((frame_err = plframe_get_reg(&cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
+        if ((frame_err = plframe_get_reg(cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
             // Should never happen
             PLCF_DEBUG("Could not fetch register %i value: %s", i, plframe_strerror(frame_err));
             regVal = 0;
@@ -886,7 +873,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
         {
             /* Use the ctx if available */
             if (thread_ctx) {
-                ferr = plframe_cursor_init(&cursor, task, thread_ctx);
+                ferr = plframe_cursor_signal_init(&cursor, task, thread_ctx);
             } else {
                 ferr = plframe_cursor_thread_init(&cursor, task, thread);
             }
@@ -902,6 +889,11 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
         uint32_t frame_count = 0;
         while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < MAX_THREAD_FRAMES) {
             uint32_t frame_size;
+            
+            /* On the first frame, dump registers for the crashed thread */
+            if (frame_count == 0 && crashed) {
+                rv += plcrash_writer_write_thread_registers(file, task, &cursor);
+            }
 
             /* Fetch the PC value */
             plframe_greg_t pc = 0;
@@ -924,11 +916,6 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
              * final frame pointer is not NULL. */
             PLCF_DEBUG("Terminated stack walking early: %s", plframe_strerror(ferr));
         }
-    }
-
-    /* Dump registers for the crashed thread */
-    if (crashed) {
-        rv += plcrash_writer_write_thread_registers(file, task, cursor.uap);
     }
 
     return rv;

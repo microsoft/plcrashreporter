@@ -35,6 +35,27 @@
 
 #import <mach/mach.h>
 
+/* Configure supported targets based on the host build architecture. There's currently
+ * no deployed architecture on which simultaneous support for different processor families
+ * is required (or supported), but -- in theory -- such cross-architecture support could be
+ * enabled by modifying these defines. */
+#if defined(__i386__) || defined(__x86_64__)
+#define PLFRAME_X86_SUPPORT 1
+#endif
+
+#if defined(__arm__)
+#define PLFRAME_ARM_SUPPORT 1
+#endif
+
+
+#ifdef PLFRAME_ARM_SUPPORT
+#include <mach/arm/thread_state.h>
+#endif
+
+#ifdef PLFRAME_X86_SUPPORT
+#include <mach/i386/thread_state.h>
+#endif
+
 /**
  * @internal
  * @defgroup plframe_backtrace Backtrace Frame Walker
@@ -77,6 +98,32 @@ typedef enum  {
     PLFRAME_EBADREG
 } plframe_error_t;
 
+/**
+ * Target-neutral thread-state union.
+ *
+ * Thread state union large enough to hold the thread state for any supported
+ * architecture.
+ */
+typedef union plframe_cursor_thread_state {
+#ifdef PLFRAME_ARM_SUPPORT
+    struct {
+        /** ARM thread state */
+        arm_thread_state_t thread;
+    } arm_state;
+#endif
+
+#ifdef PLFRAME_X86_SUPPORT
+    /** Combined x86 32/64 thread state */
+    struct {
+        /** Thread state */
+        x86_thread_state_t thread;
+
+        /** Exception state. */
+        x86_exception_state_t exception;
+    } x86_state;
+#endif
+} plframe_cursor_thread_state_t;
+
 
 /** Register number type */
 typedef int plframe_regnum_t;
@@ -84,7 +131,6 @@ typedef int plframe_regnum_t;
 #import "PLCrashFrameWalker_x86_64.h"
 #import "PLCrashFrameWalker_i386.h"
 #import "PLCrashFrameWalker_arm.h"
-#import "PLCrashFrameWalker_ppc.h"
 
 /** Platform-specific length of stack to be read when iterating frames */
 #define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
@@ -100,18 +146,11 @@ typedef struct plframe_cursor {
     /** true if this is the initial frame */
     bool init_frame;
     
-    /** Thread context */
-    ucontext_t *uap;
-    
+    /** Thread state */
+    plframe_cursor_thread_state_t thread_state;
+
     /** Stack frame data */
     void *fp[PLFRAME_STACKFRAME_LEN];
-
-    // for thread-initialized cursors
-    /** Generated ucontext_t */
-    ucontext_t _uap_data;
-
-    /** Generated mcontext_t */
-    _STRUCT_MCONTEXT _mcontext_data;
 } plframe_cursor_t;
 
 /**
@@ -161,32 +200,8 @@ void plframe_cursor_free(plframe_cursor_t *cursor);
 
 /* Platform specific funtions */
 
-/**
- * Initialize the frame cursor.
- *
- * @param cursor Cursor record to be initialized.
- * @param task The task from which @a uap was derived. All memory will be mapped from this task.
- * @param uap The context to use for cursor initialization.
- *
- * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
- *
- * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
- * fails.
- */
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
-
-/**
- * Initialize the frame cursor by acquiring state from the provided mach thread.
- *
- * @param cursor Cursor record to be initialized.
- * @param task The task in which @a thread is running. All memory will be mapped from this task.
- * @param thread The thread to use for cursor initialization.
- *
- * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
- *
- * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
- * fails.
- */
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plframe_cursor_thread_state_t *thread_state);
+plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
 
 /**
