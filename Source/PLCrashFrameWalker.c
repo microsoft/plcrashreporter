@@ -282,10 +282,10 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
                 return PLFRAME_EUNKNOWN;
             }
 
-            kr = plcrash_async_read_addr(mach_task_self(), nfp, cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(cursor->task, nfp, cursor->fp, sizeof(cursor->fp));
         } else {
             /* Frame data loaded, walk the stack */
-            kr = plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
+            kr = plcrash_async_read_addr(cursor->task, (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
         }
     }
 
