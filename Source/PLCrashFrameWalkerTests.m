@@ -94,13 +94,11 @@
 /* Test plframe_thread_state_thread_init() */
 - (void) testThreadStateThreadInit {
     plframe_thread_state_t thr_state;
-    plframe_test_thead_t test_thr;
     mach_msg_type_number_t state_count;
     thread_t thr;
 
     /* Spawn a test thread */
-    plframe_test_thread_spawn(&test_thr);
-    thr = pthread_mach_thread_np(test_thr.thread);
+    thr = pthread_mach_thread_np(_thr_args.thread);
     thread_suspend(thr);
 
     /* Fetch the thread state */
@@ -149,7 +147,6 @@
 
     /* Clean up */
     thread_resume(thr);
-    plframe_test_thread_stop(&test_thr);
 }
 
 /* test plframe_cursor_init() */
