@@ -26,14 +26,16 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef __i386__
 
-// 32-bit
-typedef uintptr_t plframe_pdef_greg_t;
-typedef uintptr_t plframe_pdef_fpreg_t;
+#if defined(__i386__) || defined(__x86_64__)
+
+// Large enough for 64-bit or 32-bit
+typedef uint64_t plframe_pdef_greg_t;
+typedef uint64_t plframe_pdef_fpreg_t;
 
 // Data we'll read off the stack frame
 #define PLFRAME_PDEF_STACKFRAME_LEN 2
+#endif /* __i386__ */
 
 /**
  * @internal
@@ -96,13 +98,94 @@ typedef enum {
     /** Segment register */
     PLFRAME_X86_GS,
 
-
+#ifdef __i386__
     /* Common registers */
     PLFRAME_PDEF_REG_IP = PLFRAME_X86_EIP,
     PLFRAME_PDEF_REG_FP = PLFRAME_X86_EBP,
     
     /** Last register */
     PLFRAME_PDEF_LAST_REG = PLFRAME_X86_GS
+#endif /* __i386__ */
+
 } plframe_x86_regnum_t;
 
-#endif /* __i386__ */
+/**
+ * @internal
+ * x86-64 Registers
+ */
+typedef enum {
+    /*
+     * General
+     */
+    
+    /** First return register. */
+    PLFRAME_X86_64_RAX = 0,
+    
+    /** Local register variable. */
+    PLFRAME_X86_64_RBX,
+    
+    /** Fourth integer function argument. */
+    PLFRAME_X86_64_RCX,
+    
+    /** Third function argument. Second return register. */
+    PLFRAME_X86_64_RDX,
+    
+    /** First function argument. */
+    PLFRAME_X86_64_RDI,
+    
+    /** Second function argument. */
+    PLFRAME_X86_64_RSI,
+    
+    /** Optional stack frame pointer. */
+    PLFRAME_X86_64_RBP,
+    
+    /** Stack pointer. */
+    PLFRAME_X86_64_RSP,
+    
+    /** Temporary register. */
+    PLFRAME_X86_64_R10,
+    
+    /** Callee-saved register. */
+    PLFRAME_X86_64_R11,
+    
+    /** Callee-saved register. */
+    PLFRAME_X86_64_R12,
+    
+    /** Callee-saved register. */
+    PLFRAME_X86_64_R13,
+    
+    /** Callee-saved register. */
+    PLFRAME_X86_64_R14,
+    
+    /** Callee-saved register. */
+    PLFRAME_X86_64_R15,
+    
+    /** Instruction pointer */
+    PLFRAME_X86_64_RIP,
+    
+    /** Flags */
+    PLFRAME_X86_64_RFLAGS,
+    
+    /*
+     * Segment Registers
+     */
+    
+    /** Segment register */
+    PLFRAME_X86_64_CS,
+    
+    /** Segment register */
+    PLFRAME_X86_64_FS,
+    
+    /** Segment register */
+    PLFRAME_X86_64_GS,
+
+#ifdef __x86_64__
+    /* Common registers */
+    PLFRAME_PDEF_REG_IP = PLFRAME_X86_64_RIP,
+    PLFRAME_PDEF_REG_FP = PLFRAME_X86_64_RBP,
+    
+    /** Last register */
+    PLFRAME_PDEF_LAST_REG = PLFRAME_X86_64_GS
+#endif /* __x86_64__ */
+} plframe_x86_64_regnum_t;
+

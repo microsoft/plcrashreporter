@@ -128,7 +128,6 @@ typedef union plframe_cursor_thread_state {
 /** Register number type */
 typedef int plframe_regnum_t;
 
-#import "PLCrashFrameWalker_x86_64.h"
 #import "PLCrashFrameWalker_i386.h"
 #import "PLCrashFrameWalker_arm.h"
 
