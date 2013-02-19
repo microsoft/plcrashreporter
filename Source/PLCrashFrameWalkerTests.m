@@ -27,6 +27,8 @@
  */
 
 #import <pthread.h>
+#import <mach/i386/thread_status.h>
+#import <CrashReporter/CrashReporter.h>
 
 #import "GTMSenTestCase.h"
 
@@ -56,6 +58,40 @@
     }
 }
 
+/* Test plframe_thread_state_ucontext_init() */
+- (void) testThreadStateContextInit {
+    plframe_thread_state_t thr_state;
+    ucontext_t uap;
+    _STRUCT_MCONTEXT mcontext_data;
+
+    memset(&mcontext_data, 'A', sizeof(mcontext_data));
+    uap.uc_mcontext = &mcontext_data;
+
+    plframe_thread_state_ucontext_init(&thr_state, &uap);
+
+#if defined(PLFRAME_ARM_SUPPORT)
+    STAssertTrue(memcmp(&thr_state.arm_state.thread, &uap.uc_mcontext->__ss, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
+
+#elif defined(PLFRAME_X86_SUPPORT) && defined(__LP64__)
+    STAssertEquals(thr_state.x86_state.thread.tsh.count, (int)x86_THREAD_STATE64_COUNT, @"Incorrect thread state count for a 64-bit system");
+    STAssertEquals(thr_state.x86_state.thread.tsh.flavor, (int)x86_THREAD_STATE64, @"Incorrect thread state flavor for a 64-bit system");
+    STAssertTrue(memcmp(&thr_state.x86_state.thread.uts.ts64, &uap.uc_mcontext->__ss, sizeof(thr_state.x86_state.thread.uts.ts64)) == 0, @"Incorrectly copied");
+
+    STAssertEquals(thr_state.x86_state.exception.esh.count, (int) x86_EXCEPTION_STATE64_COUNT, @"Incorrect thread state count for a 64-bit system");
+    STAssertEquals(thr_state.x86_state.exception.esh.flavor, (int) x86_EXCEPTION_STATE64, @"Incorrect thread state flavor for a 64-bit system");
+    STAssertTrue(memcmp(&thr_state.x86_state.exception.ues.es64, &uap.uc_mcontext->__es, sizeof(thr_state.x86_state.exception.ues.es64)) == 0, @"Incorrectly copied");
+#elif defined(PLFRAME_X86_SUPPORT)
+    STAssertEquals(thr_state.x86_state.thread.tsh.count, (int)x86_THREAD_STATE32_COUNT, @"Incorrect thread state count for a 32-bit system");
+    STAssertEquals(thr_state.x86_state.thread.tsh.flavor, (int)x86_THREAD_STATE32, @"Incorrect thread state flavor for a 32-bit system");
+    STAssertTrue(memcmp(&thr_state.x86_state.thread.uts.ts32, &uap.uc_mcontext->__ss, sizeof(thr_state.x86_state.thread.uts.ts32)) == 0, @"Incorrectly copied");
+
+    STAssertEquals(thr_state.x86_state.exception.esh.count, (int)x86_THREAD_STATE32_COUNT, @"Incorrect thread state count for a 32-bit system");
+    STAssertEquals(thr_state.x86_state.exception.esh.flavor, (int)x86_THREAD_STATE32, @"Incorrect thread state flavor for a 32-bit system");
+    STAssertTrue(memcmp(&thr_state.x86_state.exception.ues.es32, &uap.uc_mcontext->__es, sizeof(thr_state.x86_state.exception.ues.es32)) == 0, @"Incorrectly copied");
+#else
+#error Add platform support
+#endif
+}
 
 /* test plframe_cursor_init() */
 - (void) testInitFrame {

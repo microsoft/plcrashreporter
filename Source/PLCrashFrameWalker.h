@@ -196,13 +196,17 @@ const char *plframe_strerror (plframe_error_t error);
 
 void plframe_test_thread_spawn (plframe_test_thead_t *args);
 void plframe_test_thread_stop (plframe_test_thead_t *args);
-void plframe_cursor_free(plframe_cursor_t *cursor);
 
-/* Platform specific funtions */
+void plframe_thread_state_ucontext_init (plframe_thread_state_t *thread_state, ucontext_t *uap);
+plframe_error_t plframe_thread_state_thread_init (plframe_thread_state_t *thread_state, thread_t thread);
 
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plframe_thread_state_t *thread_state);
 plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
+
+void plframe_cursor_free(plframe_cursor_t *cursor);
+
+/* Platform specific funtions */
 
 /**
  * Fetch the next cursor.
