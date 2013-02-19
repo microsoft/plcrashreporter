@@ -219,6 +219,7 @@
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
+    plframe_thread_state_t thread_state;
     thread_t thread;
 
     /* Initialze faux crash data */
@@ -234,6 +235,7 @@
         /* Steal the test thread's stack for iteration */
         thread = pthread_mach_thread_np(_thr_args.thread);
         plframe_cursor_thread_init(&cursor, mach_task_self(), thread);
+        plframe_thread_state_thread_init(&thread_state, thread);
     }
 
     /* Open the output file */
@@ -257,9 +259,7 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Write the crash report */
-    // THREAD_STATE_TODO: This test is broken until we can modify it to support passing in a plframe_thread_state_t or some
-    // other similar value
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, NULL), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &thread_state), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
