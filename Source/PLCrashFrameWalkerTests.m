@@ -27,8 +27,6 @@
  */
 
 #import <pthread.h>
-#import <mach/i386/thread_status.h>
-#import <CrashReporter/CrashReporter.h>
 
 #import "GTMSenTestCase.h"
 
@@ -113,7 +111,7 @@
     arm_thread_state_t local_thr_state;
     state_count = ARM_THREAD_STATE_COUNT;
 
-    STAssertEquals(thread_get_state(thr, ARM_THREAD_STATE, &local_thr_state, &state_count), KERN_SUCCESS, @"Failed to fetch thread state");
+    STAssertEquals(thread_get_state(thr, ARM_THREAD_STATE, (thread_state_t) &local_thr_state, &state_count), KERN_SUCCESS, @"Failed to fetch thread state");
     STAssertTrue(memcmp(&thr_state.arm_state.thread, &local_thr_state, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
 
 #elif defined(PLFRAME_X86_SUPPORT) && defined(__LP64__)
