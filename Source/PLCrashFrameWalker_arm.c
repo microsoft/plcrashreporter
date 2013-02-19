@@ -56,20 +56,43 @@ plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plframe_regnum
     
     switch (regnum) {
         case PLFRAME_ARM_R0:
+            RETGEN(r[0], thread, ts, reg);
+
         case PLFRAME_ARM_R1:
+            RETGEN(r[1], thread, ts, reg);
+
         case PLFRAME_ARM_R2:
+            RETGEN(r[2], thread, ts, reg);
+
         case PLFRAME_ARM_R3:
+            RETGEN(r[3], thread, ts, reg);
+
         case PLFRAME_ARM_R4:
+            RETGEN(r[4], thread, ts, reg);
+
         case PLFRAME_ARM_R5:
+            RETGEN(r[5], thread, ts, reg);
+
         case PLFRAME_ARM_R6:
+            RETGEN(r[6], thread, ts, reg);
+
         case PLFRAME_ARM_R7:
+            RETGEN(r[7], thread, ts, reg);
+
         case PLFRAME_ARM_R8:
+            RETGEN(r[8], thread, ts, reg);
+
         case PLFRAME_ARM_R9:
+            RETGEN(r[9], thread, ts, reg);
+
         case PLFRAME_ARM_R10:
+            RETGEN(r[10], thread, ts, reg);
+
         case PLFRAME_ARM_R11:
+            RETGEN(r[11], thread, ts, reg);
+
         case PLFRAME_ARM_R12:
-            // Map enum to actual register index */
-            RETGEN(r[regnum - PLFRAME_ARM_R0], thread, ts, reg);
+            RETGEN(r[12], thread, ts, reg);
 
         case PLFRAME_ARM_SP:
             RETGEN(sp, thread, ts, reg);

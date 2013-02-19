@@ -46,14 +46,20 @@ typedef enum {
      * General
      */
 
-    PLFRAME_ARM_R0 = 0,
+    /** Program counter (r15) */
+    PLFRAME_ARM_PC = PLFRAME_REG_IP,
+
+    /** Frame pointer */
+    PLFRAME_ARM_R7 = PLFRAME_REG_FP,
+
+    PLFRAME_ARM_R0,
     PLFRAME_ARM_R1,
     PLFRAME_ARM_R2,
     PLFRAME_ARM_R3,
     PLFRAME_ARM_R4,
     PLFRAME_ARM_R5,
     PLFRAME_ARM_R6,
-    PLFRAME_ARM_R7,
+    // R7 is defined above
     PLFRAME_ARM_R8,
     PLFRAME_ARM_R9,
     PLFRAME_ARM_R10,
@@ -65,18 +71,9 @@ typedef enum {
 
     /* link register (r14) */
     PLFRAME_ARM_LR,
-
-    /** Program counter (r15) */
-    PLFRAME_ARM_PC,
     
     /** Current program status register */
     PLFRAME_ARM_CPSR,
-
-#ifdef __arm__
-    /* Common registers */
-    PLFRAME_PDEF_REG_IP = PLFRAME_ARM_PC,
-    PLFRAME_PDEF_REG_FP = PLFRAME_ARM_R7,
-#endif /* __arm__ */
 
     /** Last register */
     PLFRAME_ARM_LAST_REG = PLFRAME_ARM_CPSR
