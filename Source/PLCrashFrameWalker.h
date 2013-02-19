@@ -41,19 +41,12 @@
  * enabled by modifying these defines. */
 #if defined(__i386__) || defined(__x86_64__)
 #define PLFRAME_X86_SUPPORT 1
+#include <mach/i386/thread_state.h>
 #endif
 
 #if defined(__arm__)
 #define PLFRAME_ARM_SUPPORT 1
-#endif
-
-
-#ifdef PLFRAME_ARM_SUPPORT
 #include <mach/arm/thread_state.h>
-#endif
-
-#ifdef PLFRAME_X86_SUPPORT
-#include <mach/i386/thread_state.h>
 #endif
 
 /**
