@@ -916,6 +916,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
         }
     }
 
+    plframe_cursor_free(&cursor);
     return rv;
 }
 

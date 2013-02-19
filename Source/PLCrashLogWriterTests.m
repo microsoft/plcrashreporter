@@ -319,7 +319,8 @@
    
     STAssertTrue(foundCrashed, @"No thread marked as crashed");
  
-    /* Free it */
+    /* Clean up */
+    plframe_cursor_free(&cursor);
     protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
 }
 
