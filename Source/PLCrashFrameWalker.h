@@ -121,6 +121,22 @@ typedef union plframe_cursor_thread_state {
 /** Register number type */
 typedef int plframe_regnum_t;
 
+
+/**
+ * General pseudo-registers common across platforms.
+ *
+ * Platform registers must be allocated starting at a 0
+ * index, with no breaks. The following pseudo-register
+ * values must be valid, and unused by other registers.
+ */
+typedef enum {
+    /** Instruction pointer */
+    PLFRAME_REG_IP = 0,
+    
+    /** Frame pointer */
+    PLFRAME_REG_FP = 1,
+} plframe_gen_regnum_t;
+
 #import "PLCrashFrameWalker_x86.h"
 #import "PLCrashFrameWalker_arm.h"
 
@@ -144,24 +160,6 @@ typedef struct plframe_cursor {
     /** Stack frame data */
     void *fp[PLFRAME_STACKFRAME_LEN];
 } plframe_cursor_t;
-
-/**
- * General pseudo-registers common across platforms.
- *
- * Platform registers must be allocated starting at a 0
- * index, with no breaks. The last valid register number must
- * be provided as PLFRAME_PDEF_LAST_REG.
- */
-typedef enum {
-    /** Instruction pointer */
-    PLFRAME_REG_IP = PLFRAME_PDEF_REG_IP,
-
-    /** Frame pointer */
-    PLFRAME_REG_FP = PLFRAME_PDEF_REG_FP,
-    
-    /** Last register */
-    PLFRAME_REG_LAST = PLFRAME_PDEF_LAST_REG
-} plframe_gen_regnum_t;
 
 
 /** Platform word type */
@@ -209,6 +207,13 @@ void plframe_cursor_free(plframe_cursor_t *cursor);
  * Get a register's name.
  */
 char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plframe_regnum_t regnum);
+
+/**
+ * Get the total number of registers supported by the @a cursor's target thread.
+ *
+ * @param cursor The target cursor.
+ */
+size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor);
 
 /**
  * Get a register value.

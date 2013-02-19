@@ -45,9 +45,15 @@ typedef enum {
     /*
      * General
      */
+
+    /** Instruction pointer */
+    PLFRAME_X86_EIP = PLFRAME_REG_IP,
     
+    /** Stack frame pointer */
+    PLFRAME_X86_EBP = PLFRAME_REG_FP,
+
     /** Return value */
-    PLFRAME_X86_EAX = 0,
+    PLFRAME_X86_EAX ,
 
     /** Dividend register */
     PLFRAME_X86_EDX,
@@ -57,9 +63,6 @@ typedef enum {
 
     /** Local register variable */
     PLFRAME_X86_EBX,
-    
-    /** Stack frame pointer */
-    PLFRAME_X86_EBP,
 
     /** Local register variable */
     PLFRAME_X86_ESI,
@@ -70,8 +73,6 @@ typedef enum {
     /** Stack pointer */
     PLFRAME_X86_ESP,
 
-    /** Instruction pointer */
-    PLFRAME_X86_EIP,
     
     /** Flags */
     PLFRAME_X86_EFLAGS,
@@ -98,15 +99,8 @@ typedef enum {
     /** Segment register */
     PLFRAME_X86_GS,
 
-#ifdef __i386__
-    /* Common registers */
-    PLFRAME_PDEF_REG_IP = PLFRAME_X86_EIP,
-    PLFRAME_PDEF_REG_FP = PLFRAME_X86_EBP,
-    
     /** Last register */
-    PLFRAME_PDEF_LAST_REG = PLFRAME_X86_GS
-#endif /* __i386__ */
-
+    PLFRAME_X86_LAST_REG = PLFRAME_X86_GS
 } plframe_x86_regnum_t;
 
 /**
@@ -118,8 +112,14 @@ typedef enum {
      * General
      */
     
+    /** Instruction pointer */
+    PLFRAME_X86_64_RIP = PLFRAME_REG_IP,
+
+    /** Optional stack frame pointer. */
+    PLFRAME_X86_64_RBP = PLFRAME_REG_FP,
+
     /** First return register. */
-    PLFRAME_X86_64_RAX = 0,
+    PLFRAME_X86_64_RAX,
     
     /** Local register variable. */
     PLFRAME_X86_64_RBX,
@@ -135,9 +135,6 @@ typedef enum {
     
     /** Second function argument. */
     PLFRAME_X86_64_RSI,
-    
-    /** Optional stack frame pointer. */
-    PLFRAME_X86_64_RBP,
     
     /** Stack pointer. */
     PLFRAME_X86_64_RSP,
@@ -160,9 +157,6 @@ typedef enum {
     /** Callee-saved register. */
     PLFRAME_X86_64_R15,
     
-    /** Instruction pointer */
-    PLFRAME_X86_64_RIP,
-    
     /** Flags */
     PLFRAME_X86_64_RFLAGS,
     
@@ -178,14 +172,8 @@ typedef enum {
     
     /** Segment register */
     PLFRAME_X86_64_GS,
-
-#ifdef __x86_64__
-    /* Common registers */
-    PLFRAME_PDEF_REG_IP = PLFRAME_X86_64_RIP,
-    PLFRAME_PDEF_REG_FP = PLFRAME_X86_64_RBP,
     
     /** Last register */
-    PLFRAME_PDEF_LAST_REG = PLFRAME_X86_64_GS
-#endif /* __x86_64__ */
+    PLFRAME_X86_64_LAST_REG = PLFRAME_X86_64_GS
 } plframe_x86_64_regnum_t;
 

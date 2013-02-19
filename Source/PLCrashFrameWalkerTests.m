@@ -53,7 +53,7 @@
     plframe_cursor_t cursor;
     plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread));
 
-    for (int i = 0; i < PLFRAME_REG_LAST + 1; i++) {
+    for (int i = 0; i < plframe_cursor_get_regcount(&cursor); i++) {
         const char *name = plframe_cursor_get_regname(&cursor, i);
         STAssertNotNULL(name, @"Register name for %d is NULL", i);
         STAssertNotEquals((size_t)0, strlen(name), @"Register name for %d is 0 length", i);
@@ -167,7 +167,7 @@
     STAssertEquals(PLFRAME_ESUCCESS, ferr, @"Next failed: %s", plframe_strerror(ferr));
 
     /* Verify that all registers are supported */
-    for (int i = 0; i < PLFRAME_REG_LAST + 1; i++) {
+    for (int i = 0; i < plframe_cursor_get_regcount(&cursor); i++) {
         plframe_greg_t val;
         STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_get_reg(&cursor, i, &val), @"Could not fetch register value");
     }

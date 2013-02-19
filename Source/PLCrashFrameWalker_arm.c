@@ -90,6 +90,11 @@ plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plframe_regnum
     return PLFRAME_ENOTSUP;
 }
 
+// PLFrameWalker API
+size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor) {
+    /* Last is an index value, so increment to get the count */
+    return PLFRAME_ARM_LAST_REG+1;
+}
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {

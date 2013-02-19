@@ -35,6 +35,8 @@ typedef uintptr_t plframe_pdef_fpreg_t;
 // Data we'll read off the stack frame
 #define PLFRAME_PDEF_STACKFRAME_LEN 2
 
+#endif /* __arm__ */
+
 /**
  * @internal
  * Arm registers
@@ -70,12 +72,13 @@ typedef enum {
     /** Current program status register */
     PLFRAME_ARM_CPSR,
 
+#ifdef __arm__
     /* Common registers */
     PLFRAME_PDEF_REG_IP = PLFRAME_ARM_PC,
     PLFRAME_PDEF_REG_FP = PLFRAME_ARM_R7,
-    
+#endif /* __arm__ */
+
     /** Last register */
-    PLFRAME_PDEF_LAST_REG = PLFRAME_ARM_CPSR
+    PLFRAME_ARM_LAST_REG = PLFRAME_ARM_CPSR
 } plframe_arm_regnum_t;
 
-#endif

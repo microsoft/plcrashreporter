@@ -700,11 +700,8 @@ static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, 
  */
 static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, task_t task, plframe_cursor_t *cursor) {
     plframe_error_t frame_err;
-    uint32_t regCount;
+    uint32_t regCount = plframe_cursor_get_regcount(cursor);
     size_t rv = 0;
-
-    /* Last is an index value, so increment to get the count */
-    regCount = PLFRAME_REG_LAST + 1;
     
     /* Write out register messages */
     for (int i = 0; i < regCount; i++) {

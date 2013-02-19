@@ -69,6 +69,16 @@ char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plframe_regnum
     }
 }
 
+// PLFrameWalker API
+size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor) {
+    /* Last is an index value, so increment to get the count */
+    if (cursor->thread_state.x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
+        return PLFRAME_X86_LAST_REG+1;
+    } else {
+        return PLFRAME_X86_64_LAST_REG+1;
+    }
+}
+
 /**
  * @internal
  * 32-bit implementation of plframe_cursor_get_reg()
