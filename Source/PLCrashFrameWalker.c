@@ -119,7 +119,7 @@ static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task)
  * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
  * fails.
  */
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plframe_cursor_thread_state_t *thread_state) {
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plframe_thread_state_t *thread_state) {
     plframe_cursor_internal_init(cursor, task);
     plcrash_async_memcpy(&cursor->thread_state, thread_state, sizeof(cursor->thread_state));
     

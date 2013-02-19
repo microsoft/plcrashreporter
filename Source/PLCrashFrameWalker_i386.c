@@ -79,7 +79,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
 
 // PLFrameWalker API
 plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
-    plframe_cursor_thread_state_t *ts = &cursor->thread_state;
+    plframe_thread_state_t *ts = &cursor->thread_state;
 
     /* Supported register for this context state? */
     if (cursor->fp[0] != NULL) {

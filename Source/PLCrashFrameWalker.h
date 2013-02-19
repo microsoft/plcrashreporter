@@ -122,7 +122,7 @@ typedef union plframe_cursor_thread_state {
         x86_exception_state_t exception;
     } x86_state;
 #endif
-} plframe_cursor_thread_state_t;
+} plframe_thread_state_t;
 
 
 /** Register number type */
@@ -147,7 +147,7 @@ typedef struct plframe_cursor {
     bool init_frame;
     
     /** Thread state */
-    plframe_cursor_thread_state_t thread_state;
+    plframe_thread_state_t thread_state;
 
     /** Stack frame data */
     void *fp[PLFRAME_STACKFRAME_LEN];
@@ -200,7 +200,7 @@ void plframe_cursor_free(plframe_cursor_t *cursor);
 
 /* Platform specific funtions */
 
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plframe_cursor_thread_state_t *thread_state);
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plframe_thread_state_t *thread_state);
 plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
 
