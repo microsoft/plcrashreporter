@@ -41,43 +41,6 @@
 #ifdef __x86_64__
 
 // PLFrameWalker API
-plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
-    kern_return_t kr;
-    void *prevfp = cursor->fp[0];
-    
-    /* Fetch the next stack address */
-    if (cursor->init_frame) {
-        /* The first frame is already available, so there's nothing to do */
-        cursor->init_frame = false;
-        return PLFRAME_ESUCCESS;
-    } else {
-        if (cursor->fp[0] == NULL) {
-            /* No frame data has been loaded, fetch it from register state */
-            kr = plcrash_async_read_addr(mach_task_self(), cursor->thread_state.x86_state.thread.uts.ts64.__rbp, cursor->fp, sizeof(cursor->fp));
-        } else {
-            /* Frame data loaded, walk the stack */
-            kr = plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
-        }
-    }
-    
-    /* Was the read successful? */
-    if (kr != KERN_SUCCESS)
-        return PLFRAME_EBADFRAME;
-    
-    /* Check for completion */
-    if (cursor->fp[0] == NULL)
-        return PLFRAME_ENOFRAME;
-    
-    /* Is the stack growing in the right direction? */
-    if (!cursor->init_frame && prevfp > cursor->fp[0])
-        return PLFRAME_EBADFRAME;
-    
-    /* New frame fetched */
-    return PLFRAME_ESUCCESS;
-}
-
-
-// PLFrameWalker API
 plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
     plframe_thread_state_t *ts = &cursor->thread_state;
     

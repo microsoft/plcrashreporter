@@ -96,7 +96,10 @@ typedef enum {
     /** Segment register */
     PLFRAME_X86_GS,
 
+
+    /* Common registers */
     PLFRAME_PDEF_REG_IP = PLFRAME_X86_EIP,
+    PLFRAME_PDEF_REG_FP = PLFRAME_X86_EBP,
     
     /** Last register */
     PLFRAME_PDEF_LAST_REG = PLFRAME_X86_GS

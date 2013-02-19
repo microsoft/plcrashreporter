@@ -145,7 +145,7 @@ typedef struct plframe_cursor {
 
     /** true if this is the initial frame */
     bool init_frame;
-    
+
     /** Thread state */
     plframe_thread_state_t thread_state;
 
@@ -163,6 +163,9 @@ typedef struct plframe_cursor {
 typedef enum {
     /** Instruction pointer */
     PLFRAME_REG_IP = PLFRAME_PDEF_REG_IP,
+
+    /** Frame pointer */
+    PLFRAME_REG_FP = PLFRAME_PDEF_REG_FP,
     
     /** Last register */
     PLFRAME_REG_LAST = PLFRAME_PDEF_LAST_REG
@@ -204,17 +207,11 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plfr
 plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
 
+plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor);
+
 void plframe_cursor_free(plframe_cursor_t *cursor);
 
 /* Platform specific funtions */
-
-/**
- * Fetch the next cursor.
- *
- * @param cursor A cursor instance initialized with plframe_cursor_init();
- * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
- */
-plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor);
 
 /**
  * Get a register's name.

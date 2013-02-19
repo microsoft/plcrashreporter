@@ -71,8 +71,8 @@ typedef enum {
     PLFRAME_ARM_CPSR,
 
     /* Common registers */
-    
     PLFRAME_PDEF_REG_IP = PLFRAME_ARM_PC,
+    PLFRAME_PDEF_REG_FP = PLFRAME_ARM_R7,
     
     /** Last register */
     PLFRAME_PDEF_LAST_REG = PLFRAME_ARM_CPSR
