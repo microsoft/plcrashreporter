@@ -40,23 +40,40 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
-static plframe_error_t plframe_get_reg_32 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg);
-static plframe_error_t plframe_get_reg_64 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg);
+static plframe_error_t plframe_cursor_get_reg_32 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg);
+static plframe_error_t plframe_cursor_get_reg_64 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg);
+static const char *plframe_cursor_get_regname_32 (plframe_regnum_t regnum);
+static const char *plframe_cursor_get_regname_64 (plframe_regnum_t regnum);
 
 // PLFrameWalker API
-plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
+plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
     if (cursor->thread_state.x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
-        return plframe_get_reg_32(cursor, regnum, reg);
+        return plframe_cursor_get_reg_32(cursor, regnum, reg);
     } else {
-        return plframe_get_reg_64(cursor, regnum, reg);
+        return plframe_cursor_get_reg_64(cursor, regnum, reg);
+    }
+}
+
+
+// PLFrameWalker API
+plframe_error_t plframe_cursor_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {
+    return PLFRAME_ENOTSUP;
+}
+
+// PLFrameWalker API
+char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plframe_regnum_t regnum) {
+    if (cursor->thread_state.x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
+        return plframe_cursor_get_regname_32(regnum);
+    } else {
+        return plframe_cursor_get_regname_64(regnum);
     }
 }
 
 /**
  * @internal
- * 32-bit implementation of plframe_get_reg()
+ * 32-bit implementation of plframe_cursor_get_reg()
  */
-static plframe_error_t plframe_get_reg_32 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
+static plframe_error_t plframe_cursor_get_reg_32 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
     plframe_thread_state_t *ts = &cursor->thread_state;
 
     /* Supported register for this context state? */
@@ -128,8 +145,11 @@ static plframe_error_t plframe_get_reg_32 (plframe_cursor_t *cursor, plframe_reg
     return PLFRAME_EUNKNOWN;
 }
 
-// PLFrameWalker API
-plframe_error_t plframe_get_reg_64 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
+/**
+ * @internal
+ * 64-bit implementation of plframe_cursor_get_reg()
+ */
+plframe_error_t plframe_cursor_get_reg_64 (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
     plframe_thread_state_t *ts = &cursor->thread_state;
     
     /* Supported register for this context state? */
@@ -208,20 +228,11 @@ plframe_error_t plframe_get_reg_64 (plframe_cursor_t *cursor, plframe_regnum_t r
     return PLFRAME_ENOTSUP;
 }
 
-// PLFrameWalker API
-plframe_error_t plframe_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {
-    return PLFRAME_ENOTSUP;
-}
-
-#endif /* defined(__i386__) || defined(__x86_64__) */
-
-
-// TODO - These will need to be unified by passing in the thread flavor, or some other mechanism.
-// Alternatively we may just get rid of this API entirely, as the next version of the reporter syntax does
-// away with string register names.
-#if defined(__i386__)
-// PLFrameWalker API
-const char *plframe_get_regname (plframe_regnum_t regnum) {
+/**
+ * @internal
+ * 32-bit implementation of plframe_cursor_get_regname()
+ */
+static char const *plframe_cursor_get_regname_32 (plframe_regnum_t regnum) {
     /* All word-sized registers */
     switch (regnum) {
         case PLFRAME_X86_EAX:
@@ -282,9 +293,11 @@ const char *plframe_get_regname (plframe_regnum_t regnum) {
     abort();
 }
 
-#elif defined(__x86_64__)
-
-const char *plframe_get_regname (plframe_regnum_t regnum) {
+/**
+ * @internal
+ * 64-bit implementation of plframe_cursor_get_regname()
+ */
+static const char *plframe_cursor_get_regname_64 (plframe_regnum_t regnum) {
     switch (regnum) {
         case PLFRAME_X86_64_RAX:
             return "rax";
@@ -353,4 +366,4 @@ const char *plframe_get_regname (plframe_regnum_t regnum) {
     abort();
 }
 
-#endif /* __x86_64__ */
+#endif /* defined(__i386__) || defined(__x86_64__) */

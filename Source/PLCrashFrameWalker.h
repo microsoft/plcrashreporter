@@ -208,17 +208,17 @@ void plframe_cursor_free(plframe_cursor_t *cursor);
 /**
  * Get a register's name.
  */
-const char *plframe_get_regname (plframe_regnum_t regnum);
+char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plframe_regnum_t regnum);
 
 /**
  * Get a register value.
  */
-plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg);
+plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg);
 
 /**
  * Get a floating point register value.
  */
-plframe_error_t plframe_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg);
+plframe_error_t plframe_cursor_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg);
 
 /**
  * @} plcrash_framewalker

@@ -41,7 +41,7 @@
 }
 
 // PLFrameWalker API
-plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
+plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_greg_t *reg) {
     plframe_thread_state_t *ts = &cursor->thread_state;
 
     /* Supported register for this context state? */
@@ -92,13 +92,13 @@ plframe_error_t plframe_get_reg (plframe_cursor_t *cursor, plframe_regnum_t regn
 
 
 // PLFrameWalker API
-plframe_error_t plframe_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {
+plframe_error_t plframe_cursor_get_freg (plframe_cursor_t *cursor, plframe_regnum_t regnum, plframe_fpreg_t *fpreg) {
     return PLFRAME_ENOTSUP;
 }
 
 
 // PLFrameWalker API
-const char *plframe_get_regname (plframe_regnum_t regnum) {
+const char *plframe_cursor_get_regname (plframe_cursor_t *cursor, plframe_regnum_t regnum) {
     switch (regnum) {
         case PLFRAME_ARM_R0:
             return "r0";

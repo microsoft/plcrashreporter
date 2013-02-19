@@ -275,7 +275,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
             plframe_greg_t nfp;
             plframe_error_t err;
 
-            if ((err = plframe_get_reg(cursor, PLFRAME_REG_FP, &nfp)) != PLFRAME_ESUCCESS) {
+            if ((err = plframe_cursor_get_reg(cursor, PLFRAME_REG_FP, &nfp)) != PLFRAME_ESUCCESS) {
                 /* This should never fail, as it is called only at the top of the stack, where thread state is
                  * available. */
                 PLCF_DEBUG("Unexpected error fetching frame pointer: %s", plframe_strerror(err));

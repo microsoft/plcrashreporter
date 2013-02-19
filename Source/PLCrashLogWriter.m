@@ -713,14 +713,14 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
         uint32_t msgsize;
 
         /* Fetch the register value */
-        if ((frame_err = plframe_get_reg(cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
+        if ((frame_err = plframe_cursor_get_reg(cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
             // Should never happen
             PLCF_DEBUG("Could not fetch register %i value: %s", i, plframe_strerror(frame_err));
             regVal = 0;
         }
 
         /* Fetch the register name */
-        regname = plframe_get_regname(i);
+        regname = plframe_cursor_get_regname(cursor, i);
 
         /* Get the register message size */
         msgsize = plcrash_writer_write_thread_register(NULL, regname, regVal);
@@ -895,7 +895,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
 
             /* Fetch the PC value */
             plframe_greg_t pc = 0;
-            if ((ferr = plframe_get_reg(&cursor, PLFRAME_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
+            if ((ferr = plframe_cursor_get_reg(&cursor, PLFRAME_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
                 PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(ferr));
                 break;
             }
