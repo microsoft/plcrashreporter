@@ -1045,12 +1045,8 @@
 			children = (
 				059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */,
 				059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */,
-				0596672E0EEDEA97008A0601 /* PLCrashFrameWalker_x86.h */,
-				059667590EEDECA7008A0601 /* PLCrashFrameWalker_x86.c */,
-				05966A1A0EEE5280008A0601 /* PLCrashFrameWalker_arm.h */,
-				05966A1B0EEE5280008A0601 /* PLCrashFrameWalker_arm.c */,
 				059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */,
-				05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameWalker_arm_Tests.m */,
+				05A533E116D6D8F300C5E2B3 /* Platforms */,
 			);
 			name = "Frame Walking";
 			sourceTree = "<group>";
@@ -1124,6 +1120,18 @@
 				05EB2B1F15B6FE400066EB4D /* Error Reporting */,
 			);
 			name = "Private API";
+			sourceTree = "<group>";
+		};
+		05A533E116D6D8F300C5E2B3 /* Platforms */ = {
+			isa = PBXGroup;
+			children = (
+				0596672E0EEDEA97008A0601 /* PLCrashFrameWalker_x86.h */,
+				059667590EEDECA7008A0601 /* PLCrashFrameWalker_x86.c */,
+				05966A1A0EEE5280008A0601 /* PLCrashFrameWalker_arm.h */,
+				05966A1B0EEE5280008A0601 /* PLCrashFrameWalker_arm.c */,
+				05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameWalker_arm_Tests.m */,
+			);
+			name = Platforms;
 			sourceTree = "<group>";
 		};
 		05BB4C9D166D3BE10075171B /* Mach-O ABI */ = {
