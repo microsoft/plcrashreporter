@@ -43,7 +43,7 @@
  * @param thread_state The thread state to be initialized.
  * @param uap The context to use for cursor initialization.
  */
-void plcrash_async_tstate_ucontext_init (plcrash_async_tstate_t *thread_state, ucontext_t *uap) {
+void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap) {
     /* Copy in the ucontext's thread state */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     /* Sanity check. This should never be false */
@@ -81,7 +81,7 @@ void plcrash_async_tstate_ucontext_init (plcrash_async_tstate_t *thread_state, u
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
  */
-plcrash_error_t plcrash_async_tstate_mach_thread_init (plcrash_async_tstate_t *thread_state, thread_t thread) {
+plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread) {
     mach_msg_type_number_t state_count;
     kern_return_t kr;
     

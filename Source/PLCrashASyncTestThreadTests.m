@@ -40,11 +40,11 @@
 @implementation PLCrashAsyncTestThreadTests
 
 - (void) testExecution {
-    plcrash_async_tstate_t thread_state;
+    plcrash_async_thread_state_t thread_state;
     plcrash_async_test_thread_t thr;
 
     plcrash_nasync_test_thread_spawn(&thr);
-    STAssertEquals(plcrash_async_tstate_mach_thread_init(&thread_state, pthread_mach_thread_np(thr.thread)),
+    STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thread_state, pthread_mach_thread_np(thr.thread)),
                    PLCRASH_ESUCCESS, @"Could not fetch thread state from test thread");
     plcrash_nasync_test_thread_stop(&thr);
 }

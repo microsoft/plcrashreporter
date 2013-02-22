@@ -43,14 +43,14 @@
 
 /* Test plcrash_async_thread_state_ucontext_init() */
 - (void) testThreadStateContextInit {
-    plcrash_async_tstate_t thr_state;
+    plcrash_async_thread_state_t thr_state;
     ucontext_t uap;
     _STRUCT_MCONTEXT mcontext_data;
 
     memset(&mcontext_data, 'A', sizeof(mcontext_data));
     uap.uc_mcontext = &mcontext_data;
     
-    plcrash_async_tstate_ucontext_init(&thr_state, &uap);
+    plcrash_async_thread_state_ucontext_init(&thr_state, &uap);
     
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     STAssertTrue(memcmp(&thr_state.arm_state.thread, &uap.uc_mcontext->__ss, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
@@ -78,7 +78,7 @@
 
 /* Test plframe_thread_state_thread_init() */
 - (void) testThreadStateThreadInit {
-    plcrash_async_tstate_t thr_state;
+    plcrash_async_thread_state_t thr_state;
     mach_msg_type_number_t state_count;
     thread_t thr;
     
@@ -89,7 +89,7 @@
     thread_suspend(thr);
     
     /* Fetch the thread state */
-    STAssertEquals(plcrash_async_tstate_mach_thread_init(&thr_state, thr), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thr_state, thr), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
     
     /* Test the results */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)

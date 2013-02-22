@@ -58,7 +58,7 @@
  * Thread state union large enough to hold the thread state for any supported
  * architecture.
  */
-typedef union plcrash_async_tstate {
+typedef union plcrash_async_thread_state {
 #ifdef PLCRASH_ASYNC_THREAD_ARM_SUPPORT
     struct {
         /** ARM thread state */
@@ -76,10 +76,10 @@ typedef union plcrash_async_tstate {
         x86_exception_state_t exception;
     } x86_state;
 #endif
-} plcrash_async_tstate_t;
+} plcrash_async_thread_state_t;
 
-void plcrash_async_tstate_ucontext_init (plcrash_async_tstate_t *thread_state, ucontext_t *uap);
-plcrash_error_t plcrash_async_tstate_mach_thread_init (plcrash_async_tstate_t *thread_state, thread_t thread);
+void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
+plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
 /**
  * @}
