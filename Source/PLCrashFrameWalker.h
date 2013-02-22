@@ -172,26 +172,8 @@ typedef plframe_pdef_greg_t plframe_greg_t;
 typedef plframe_pdef_fpreg_t plframe_fpreg_t;
 
 
-/**
- * @internal
- * State for test threads */
-typedef struct plframe_test_thread {
-    /** Running test thread */
-    pthread_t thread;
-
-    /** Thread signaling lock */
-    pthread_mutex_t lock;
-
-    /** Thread signaling (used to inform waiting callee that thread is active) */
-    pthread_cond_t cond;
-} plframe_test_thead_t;
-
-
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
-
-void plframe_test_thread_spawn (plframe_test_thead_t *args);
-void plframe_test_thread_stop (plframe_test_thead_t *args);
 
 void plframe_thread_state_ucontext_init (plframe_thread_state_t *thread_state, ucontext_t *uap);
 plframe_error_t plframe_thread_state_thread_init (plframe_thread_state_t *thread_state, thread_t thread);
