@@ -29,24 +29,24 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashAsyncThread.h"
-#import "PLCrashAsyncTestThread.h"
+#import "PLCrashTestThread.h"
 
-@interface PLCrashAsyncTestThreadTests : SenTestCase {
+@interface PLCrashTestThreadTests : SenTestCase {
 @private
 }
 
 @end
 
-@implementation PLCrashAsyncTestThreadTests
+@implementation PLCrashTestThreadTests
 
 - (void) testExecution {
     plcrash_async_thread_state_t thread_state;
-    plcrash_async_test_thread_t thr;
+    plcrash_test_thread_t thr;
 
-    plcrash_nasync_test_thread_spawn(&thr);
+    plcrash_test_thread_spawn(&thr);
     STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thread_state, pthread_mach_thread_np(thr.thread)),
                    PLCRASH_ESUCCESS, @"Could not fetch thread state from test thread");
-    plcrash_nasync_test_thread_stop(&thr);
+    plcrash_test_thread_stop(&thr);
 }
 
 @end

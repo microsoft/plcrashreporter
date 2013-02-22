@@ -31,7 +31,7 @@
 
 /**
  * @internal
- * @ingroup plcrash_async_test_thread
+ * @ingroup plcrash_test_thread
  * @{
  */
 
@@ -40,7 +40,7 @@
 /**
  * @internal
  * State for test threads */
-typedef struct plcrash_async_test_thread {
+typedef struct plcrash_test_thread {
     /** Running test thread */
     pthread_t thread;
     
@@ -49,11 +49,11 @@ typedef struct plcrash_async_test_thread {
     
     /** Thread signaling (used to inform waiting callee that thread is active) */
     pthread_cond_t cond;
-} plcrash_async_test_thread_t;
+} plcrash_test_thread_t;
 
 
-void plcrash_nasync_test_thread_spawn (plcrash_async_test_thread_t *thread);
-void plcrash_nasync_test_thread_stop (plcrash_async_test_thread_t *thread);
+void plcrash_test_thread_spawn (plcrash_test_thread_t *thread);
+void plcrash_test_thread_stop (plcrash_test_thread_t *thread);
 
 /**
  * @}

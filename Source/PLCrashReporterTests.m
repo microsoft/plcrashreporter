@@ -31,7 +31,7 @@
 #import "PLCrashReport.h"
 #import "PLCrashReporter.h"
 #import "PLCrashFrameWalker.h"
-#import "PLCrashAsyncTestThread.h"
+#import "PLCrashTestThread.h"
 
 @interface PLCrashReporterTests : SenTestCase
 @end
@@ -49,13 +49,13 @@
 - (void) testGenerateLiveReportWithThread {
     NSError *error;
     NSData *reportData;
-    plcrash_async_test_thread_t thr;
+    plcrash_test_thread_t thr;
 
     /* Spawn a thread and generate a report for it */
-    plcrash_nasync_test_thread_spawn(&thr);
+    plcrash_test_thread_spawn(&thr);
     reportData = [[PLCrashReporter sharedReporter] generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
                                                                               error: &error];
-    plcrash_nasync_test_thread_stop(&thr);
+    plcrash_test_thread_stop(&thr);
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
 
     /* Try parsing the result */

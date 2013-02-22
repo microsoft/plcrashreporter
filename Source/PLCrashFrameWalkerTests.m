@@ -31,22 +31,22 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashFrameWalker.h"
-#import "PLCrashAsyncTestThread.h"
+#import "PLCrashTestThread.h"
 
 @interface PLCrashFrameWalkerTests : SenTestCase {
 @private
-    plcrash_async_test_thread_t _thr_args;
+    plcrash_test_thread_t _thr_args;
 }
 @end
 
 @implementation PLCrashFrameWalkerTests
     
 - (void) setUp {
-    plcrash_nasync_test_thread_spawn(&_thr_args);
+    plcrash_test_thread_spawn(&_thr_args);
 }
 
 - (void) tearDown {
-    plcrash_nasync_test_thread_stop(&_thr_args);
+    plcrash_test_thread_stop(&_thr_args);
 }
 
 - (void) testGetRegName {

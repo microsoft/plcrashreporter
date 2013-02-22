@@ -42,7 +42,7 @@
 #import <mach-o/dyld.h>
 
 #import "crash_report.pb-c.h"
-#import "PLCrashAsyncTestThread.h"
+#import "PLCrashTestThread.h"
 
 @interface PLCrashLogWriterTests : SenTestCase {
 @private
@@ -50,7 +50,7 @@
     NSString *_logPath;
     
     /* Test thread */
-    plcrash_async_test_thread_t _thr_args;
+    plcrash_test_thread_t _thr_args;
 }
 
 @end
@@ -63,7 +63,7 @@
     _logPath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
     
     /* Create the test thread */
-    plcrash_nasync_test_thread_spawn(&_thr_args);
+    plcrash_test_thread_spawn(&_thr_args);
 }
 
 - (void) tearDown {
@@ -74,7 +74,7 @@
     [_logPath release];
 
     /* Stop the test thread */
-    plcrash_nasync_test_thread_stop(&_thr_args);
+    plcrash_test_thread_stop(&_thr_args);
 }
 
 // check a crash report's system info

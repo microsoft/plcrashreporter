@@ -29,7 +29,7 @@
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsync.h"
 #include "PLCrashFrameStackUnwind.h"
-#include "PLCrashAsyncTestThread.h"
+#include "PLCrashTestThread.h"
 
 #pragma mark Error Handling
 
@@ -64,7 +64,7 @@ const char *plframe_strerror (plframe_error_t error) {
 
 /* A thread that exists just to give us a stack to iterate */
 static void *test_stack_thr (void *arg) {
-    plcrash_async_test_thread_t *args = arg;
+    plcrash_test_thread_t *args = arg;
     
     /* Acquire the lock and inform our caller that we're active */
     pthread_mutex_lock(&args->lock);
@@ -79,7 +79,7 @@ static void *test_stack_thr (void *arg) {
 
 
 /** Spawn a test thread that may be used as an iterable stack. (For testing only!) */
-void plframe_test_thread_spawn (plcrash_async_test_thread_t *args) {
+void plframe_test_thread_spawn (plcrash_test_thread_t *args) {
     /* Initialize the args */
     pthread_mutex_init(&args->lock, NULL);
     pthread_cond_init(&args->cond, NULL);
@@ -92,7 +92,7 @@ void plframe_test_thread_spawn (plcrash_async_test_thread_t *args) {
 }
 
 /** Stop a test thread. */
-void plframe_test_thread_stop (plcrash_async_test_thread_t *args) {
+void plframe_test_thread_stop (plcrash_test_thread_t *args) {
     /* Signal the thread to exit */
     pthread_mutex_lock(&args->lock);
     pthread_cond_signal(&args->cond);

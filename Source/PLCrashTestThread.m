@@ -26,12 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncTestThread.h"
+#include "PLCrashTestThread.h"
 
 /**
  * @internal
- * @ingroup plcrash_async
- * @defgroup plcrash_async_test_thread Test Thread API
+ * @ingroup plcrash_internal
+ * @defgroup plcrash_test_thread Test Thread API
  *
  * An API capable of starting/stopping threads, to provide a simple stack to iterate.
  * @{
@@ -39,7 +39,7 @@
 
 /* Thread entry point; simply waits to be asked to exit. */
 static void *test_thread_entry (void *arg) {
-    plcrash_async_test_thread_t *args = arg;
+    plcrash_test_thread_t *args = arg;
     
     /* Acquire the lock and inform our caller that we're active */
     pthread_mutex_lock(&args->lock);
@@ -54,7 +54,7 @@ static void *test_thread_entry (void *arg) {
 
 
 /** Spawn a test thread that may be used as an iterable stack. (For testing only!) */
-void plcrash_nasync_test_thread_spawn (plcrash_async_test_thread_t *args) {
+void plcrash_test_thread_spawn (plcrash_test_thread_t *args) {
     /* Initialize the args */
     pthread_mutex_init(&args->lock, NULL);
     pthread_cond_init(&args->cond, NULL);
@@ -67,7 +67,7 @@ void plcrash_nasync_test_thread_spawn (plcrash_async_test_thread_t *args) {
 }
 
 /** Stop a test thread. */
-void plcrash_nasync_test_thread_stop (plcrash_async_test_thread_t *args) {
+void plcrash_test_thread_stop (plcrash_test_thread_t *args) {
     /* Signal the thread to exit */
     pthread_mutex_lock(&args->lock);
     pthread_cond_signal(&args->cond);

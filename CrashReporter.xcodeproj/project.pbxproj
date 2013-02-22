@@ -178,12 +178,12 @@
 		05A17DD316D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD216D8080A00888448 /* PLCrashAsyncThreadTests.m */; };
 		05A17DD416D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD216D8080A00888448 /* PLCrashAsyncThreadTests.m */; };
 		05A17DD516D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD216D8080A00888448 /* PLCrashAsyncThreadTests.m */; };
-		05A17DD816D80B2A00888448 /* PLCrashAsyncTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD716D80B2A00888448 /* PLCrashAsyncTestThread.m */; };
-		05A17DD916D80B2A00888448 /* PLCrashAsyncTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD716D80B2A00888448 /* PLCrashAsyncTestThread.m */; };
-		05A17DDA16D80B2A00888448 /* PLCrashAsyncTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD716D80B2A00888448 /* PLCrashAsyncTestThread.m */; };
-		05A17DDE16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DDD16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m */; };
-		05A17DDF16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DDD16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m */; };
-		05A17DE016D80CEC00888448 /* PLCrashAsyncTestThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DDD16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m */; };
+		05A17DD816D80B2A00888448 /* PLCrashTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD716D80B2A00888448 /* PLCrashTestThread.m */; };
+		05A17DD916D80B2A00888448 /* PLCrashTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD716D80B2A00888448 /* PLCrashTestThread.m */; };
+		05A17DDA16D80B2A00888448 /* PLCrashTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DD716D80B2A00888448 /* PLCrashTestThread.m */; };
+		05A17DDE16D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DDD16D80CEC00888448 /* PLCrashTestThreadTests.m */; };
+		05A17DDF16D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DDD16D80CEC00888448 /* PLCrashTestThreadTests.m */; };
+		05A17DE016D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DDD16D80CEC00888448 /* PLCrashTestThreadTests.m */; };
 		05A533DE16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
@@ -807,9 +807,9 @@
 		05A17DC416D7F81600888448 /* PLCrashAsyncThread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncThread.c; sourceTree = "<group>"; };
 		05A17DCC16D7F82700888448 /* PLCrashAsyncThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncThread.h; sourceTree = "<group>"; };
 		05A17DD216D8080A00888448 /* PLCrashAsyncThreadTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncThreadTests.m; sourceTree = "<group>"; };
-		05A17DD616D80B2A00888448 /* PLCrashAsyncTestThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncTestThread.h; sourceTree = "<group>"; };
-		05A17DD716D80B2A00888448 /* PLCrashAsyncTestThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncTestThread.m; sourceTree = "<group>"; };
-		05A17DDD16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncTestThreadTests.m; sourceTree = "<group>"; };
+		05A17DD616D80B2A00888448 /* PLCrashTestThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashTestThread.h; sourceTree = "<group>"; };
+		05A17DD716D80B2A00888448 /* PLCrashTestThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashTestThread.m; sourceTree = "<group>"; };
+		05A17DDD16D80CEC00888448 /* PLCrashTestThreadTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashTestThreadTests.m; sourceTree = "<group>"; };
 		05A2077215AB30C9001E3EFC /* PLCrashReporterNamespace.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashReporterNamespace.h; sourceTree = "<group>"; };
 		05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashFrameStackUnwindTests.m; sourceTree = "<group>"; };
 		05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportProcessorInfo.h; sourceTree = "<group>"; };
@@ -1156,6 +1156,7 @@
 				05BB84AF1364F5C600D53B84 /* Async-Safe APIs */,
 				05BB84B01364F5DB00D53B84 /* Host Statistics */,
 				059670210EEF5459008A0601 /* Crash Log Writer */,
+				05A17DDB16D80C7C00888448 /* Test Thread */,
 				0596674D0EEDEBB1008A0601 /* Frame Walking */,
 				05EB2B1F15B6FE400066EB4D /* Error Reporting */,
 			);
@@ -1175,9 +1176,9 @@
 		05A17DDB16D80C7C00888448 /* Test Thread */ = {
 			isa = PBXGroup;
 			children = (
-				05A17DD616D80B2A00888448 /* PLCrashAsyncTestThread.h */,
-				05A17DD716D80B2A00888448 /* PLCrashAsyncTestThread.m */,
-				05A17DDD16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m */,
+				05A17DD616D80B2A00888448 /* PLCrashTestThread.h */,
+				05A17DD716D80B2A00888448 /* PLCrashTestThread.m */,
+				05A17DDD16D80CEC00888448 /* PLCrashTestThreadTests.m */,
 			);
 			name = "Test Thread";
 			sourceTree = "<group>";
@@ -1331,7 +1332,6 @@
 				052A46BD1363650100987004 /* PLCrashAsyncImageList.c */,
 				052A46F713637DE000987004 /* PLCrashAsyncImageListTests.m */,
 				05A17DC316D7F7FB00888448 /* Thread State */,
-				05A17DDB16D80C7C00888448 /* Test Thread */,
 				05D8FE4916ACAA44000ED70C /* Allocator */,
 				05BB4CA0166D40B90075171B /* Memory Objects */,
 				05BB4C9F166D40AD0075171B /* Symbolication */,
@@ -2338,8 +2338,8 @@
 				05A17DB816D7E36400888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DC916D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DD316D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */,
-				05A17DD816D80B2A00888448 /* PLCrashAsyncTestThread.m in Sources */,
-				05A17DDE16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m in Sources */,
+				05A17DD816D80B2A00888448 /* PLCrashTestThread.m in Sources */,
+				05A17DDE16D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2393,8 +2393,8 @@
 				05A17DB916D7E36A00888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DCA16D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DD416D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */,
-				05A17DD916D80B2A00888448 /* PLCrashAsyncTestThread.m in Sources */,
-				05A17DDF16D80CEC00888448 /* PLCrashAsyncTestThreadTests.m in Sources */,
+				05A17DD916D80B2A00888448 /* PLCrashTestThread.m in Sources */,
+				05A17DDF16D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2448,8 +2448,8 @@
 				05A17DBA16D7E37100888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DCB16D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DD516D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */,
-				05A17DDA16D80B2A00888448 /* PLCrashAsyncTestThread.m in Sources */,
-				05A17DE016D80CEC00888448 /* PLCrashAsyncTestThreadTests.m in Sources */,
+				05A17DDA16D80B2A00888448 /* PLCrashTestThread.m in Sources */,
+				05A17DE016D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

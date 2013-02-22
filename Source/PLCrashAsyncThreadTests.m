@@ -29,7 +29,7 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashAsyncThread.h"
-#import "PLCrashAsyncTestThread.h"
+#import "PLCrashTestThread.h"
 
 #import <pthread.h>
 
@@ -83,8 +83,8 @@
     thread_t thr;
     
     /* Spawn a test thread */
-    plcrash_async_test_thread_t test_thr;
-    plcrash_nasync_test_thread_spawn(&test_thr);
+    plcrash_test_thread_t test_thr;
+    plcrash_test_thread_spawn(&test_thr);
     thr = pthread_mach_thread_np(test_thr.thread);
     thread_suspend(thr);
     
@@ -134,7 +134,7 @@
     
     /* Clean up */
     thread_resume(thr);
-    plcrash_nasync_test_thread_stop(&test_thr);
+    plcrash_test_thread_stop(&test_thr);
 }
 
 @end
