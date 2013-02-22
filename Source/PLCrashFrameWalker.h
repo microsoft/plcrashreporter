@@ -26,6 +26,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_FRAMEWALKER_H
+#define PLCRASH_FRAMEWALKER_H
+
 #import <sys/ucontext.h>
 #import <pthread.h>
 
@@ -228,3 +231,5 @@ plframe_error_t plframe_cursor_get_freg (plframe_cursor_t *cursor, plframe_regnu
 /**
  * @} plcrash_framewalker
  */
+
+#endif /* PLCRASH_FRAMEWALKER_H */
