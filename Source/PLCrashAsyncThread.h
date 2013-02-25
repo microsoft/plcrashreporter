@@ -78,6 +78,28 @@ typedef union plcrash_async_thread_state {
 #endif
 } plcrash_async_thread_state_t;
 
+/** Register number type */
+typedef int plframe_regnum_t;
+
+/**
+ * General pseudo-registers common across platforms.
+ *
+ * Platform registers must be allocated starting at a 0
+ * index, with no breaks. The following pseudo-register
+ * values must be valid, and unused by other registers.
+ */
+typedef enum {
+    /** Instruction pointer */
+    PLCRASH_REG_IP = 0,
+    
+    /** Frame pointer */
+    PLCRASH_REG_FP = 1,
+} plcrash_gen_regnum_t;
+
+
+#import "PLCrashAsyncThread_x86.h"
+#import "PLCrashAsyncThread_arm.h"
+
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
