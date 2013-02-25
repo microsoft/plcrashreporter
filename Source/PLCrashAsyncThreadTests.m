@@ -70,7 +70,7 @@
         plcrash_greg_t reg;
         
         plcrash_async_thread_state_set_reg(&ts, i, 5);
-        plcrash_async_thread_state_get_reg(&ts, i, &reg);
+        reg = plcrash_async_thread_state_get_reg(&ts, i);
         STAssertEquals(reg, (plcrash_greg_t)5, @"Unexpected register value");
     }
 }

@@ -53,15 +53,8 @@ plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum
     }
     
     /* Fetch from thread state */
-    plcrash_error_t err = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum, reg);
-    switch (err) {
-        case PLCRASH_ENOTSUP:
-            return PLFRAME_ENOTSUP;
-        case PLCRASH_ESUCCESS:
-            return PLFRAME_ESUCCESS;
-        default:
-            return PLFRAME_EUNKNOWN;
-    }
+    *reg = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum);
+    return PLFRAME_ESUCCESS;
 }
 
 // PLFrameWalker API

@@ -125,7 +125,7 @@ size_t plcrash_async_thread_state_get_reg_count (plcrash_async_thread_state_t *t
 /**
  * Get a register value.
  */
-plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg);
+plcrash_greg_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
 
 /**
  * Set a register value.

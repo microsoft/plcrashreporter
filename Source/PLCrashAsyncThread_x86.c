@@ -33,9 +33,8 @@
 #import <assert.h>
 #import <stdlib.h>
 
-#define RETGEN(name, type, ts, result) {\
-    *result = (ts->x86_state. type . __ ## name); \
-    return PLCRASH_ESUCCESS; \
+#define RETGEN(name, type, ts) {\
+    return (ts->x86_state. type . __ ## name); \
 }
 
 #define SETGEN(name, type, ts, value) {\
@@ -45,8 +44,8 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
-static plcrash_error_t plcrash_async_thread_state_get_reg_32 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
-static plcrash_error_t plcrash_async_thread_state_get_reg_64 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
+static plcrash_greg_t plcrash_async_thread_state_get_reg_32 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
+static plcrash_greg_t plcrash_async_thread_state_get_reg_64 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
 
 static void plcrash_async_thread_state_set_reg_32 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t reg);
 static void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t reg);
@@ -55,11 +54,11 @@ static const char *plcrash_async_thread_state_get_regname_32 (plcrash_regnum_t r
 static const char *plcrash_async_thread_state_get_regname_64 (plcrash_regnum_t regnum);
 
 // PLCrashAsyncThread API
-plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+plcrash_greg_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
     if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
-        return plcrash_async_thread_state_get_reg_32(thread_state, regnum, reg);
+        return plcrash_async_thread_state_get_reg_32(thread_state, regnum);
     } else {
-        return plcrash_async_thread_state_get_reg_64(thread_state, regnum, reg);
+        return plcrash_async_thread_state_get_reg_64(thread_state, regnum);
     }
 }
 
@@ -95,139 +94,140 @@ size_t plcrash_async_thread_state_get_reg_count (plcrash_async_thread_state_t *t
  * @internal
  * 32-bit implementation of plcrash_async_thread_state_get_reg()
  */
-static plcrash_error_t plcrash_async_thread_state_get_reg_32 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+static plcrash_greg_t plcrash_async_thread_state_get_reg_32 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
     plcrash_async_thread_state_t *ts = thread_state;
 
     /* All word-sized registers */
     switch (regnum) {
         case PLCRASH_X86_EAX:
-            RETGEN(eax, thread.uts.ts32, ts, reg);
+            RETGEN(eax, thread.uts.ts32, ts);
             
         case PLCRASH_X86_EDX:
-            RETGEN(edx, thread.uts.ts32, ts, reg);
+            RETGEN(edx, thread.uts.ts32, ts);
             
         case PLCRASH_X86_ECX:
-            RETGEN(ecx, thread.uts.ts32, ts, reg);
+            RETGEN(ecx, thread.uts.ts32, ts);
             
         case PLCRASH_X86_EBX:
-            RETGEN(ebx, thread.uts.ts32, ts, reg);
+            RETGEN(ebx, thread.uts.ts32, ts);
             
         case PLCRASH_X86_EBP:
-            RETGEN(ebp, thread.uts.ts32, ts, reg);
+            RETGEN(ebp, thread.uts.ts32, ts);
             
         case PLCRASH_X86_ESI:
-            RETGEN(esi, thread.uts.ts32, ts, reg);
+            RETGEN(esi, thread.uts.ts32, ts);
             
         case PLCRASH_X86_EDI:
-            RETGEN(edi, thread.uts.ts32, ts, reg);
+            RETGEN(edi, thread.uts.ts32, ts);
             
         case PLCRASH_X86_ESP:
-            RETGEN(esp, thread.uts.ts32, ts, reg);
+            RETGEN(esp, thread.uts.ts32, ts);
             
         case PLCRASH_X86_EIP:
-            RETGEN(eip, thread.uts.ts32, ts, reg);
+            RETGEN(eip, thread.uts.ts32, ts);
             
         case PLCRASH_X86_EFLAGS:
-            RETGEN(eflags, thread.uts.ts32, ts, reg);
+            RETGEN(eflags, thread.uts.ts32, ts);
             
         case PLCRASH_X86_TRAPNO:
-            RETGEN(trapno, exception.ues.es32, ts, reg);
+            RETGEN(trapno, exception.ues.es32, ts);
             
         case PLCRASH_X86_CS:
-            RETGEN(cs, thread.uts.ts32, ts, reg);
+            RETGEN(cs, thread.uts.ts32, ts);
             
         case PLCRASH_X86_DS:
-            RETGEN(ds, thread.uts.ts32, ts, reg);
+            RETGEN(ds, thread.uts.ts32, ts);
             
         case PLCRASH_X86_ES:
-            RETGEN(es, thread.uts.ts32, ts, reg);
+            RETGEN(es, thread.uts.ts32, ts);
             
         case PLCRASH_X86_FS:
-            RETGEN(fs, thread.uts.ts32, ts, reg);
+            RETGEN(fs, thread.uts.ts32, ts);
             
         case PLCRASH_X86_GS:
-            RETGEN(gs, thread.uts.ts32, ts, reg);
+            RETGEN(gs, thread.uts.ts32, ts);
             
         default:
             // Unsupported register
-            return PLCRASH_ENOTSUP;
+            __builtin_trap();
     }
     
     /* Shouldn't be reachable */
-    return PLCRASH_EUNKNOWN;
+    return 0;
 }
 
 /**
  * @internal
  * 64-bit implementation of plcrash_async_thread_state_get_reg()
  */
-plcrash_error_t plcrash_async_thread_state_get_reg_64 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+static plcrash_greg_t plcrash_async_thread_state_get_reg_64 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
     plcrash_async_thread_state_t *ts = thread_state;
 
     switch (regnum) {
         case PLCRASH_X86_64_RAX:
-            RETGEN(rax, thread.uts.ts64, ts, reg);
+            RETGEN(rax, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RBX:
-            RETGEN(rbx, thread.uts.ts64, ts, reg);
+            RETGEN(rbx, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RCX:
-            RETGEN(rcx, thread.uts.ts64, ts, reg);
+            RETGEN(rcx, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RDX:
-            RETGEN(rdx, thread.uts.ts64, ts, reg);
+            RETGEN(rdx, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RDI:
-            RETGEN(rdi, thread.uts.ts64, ts, reg);
+            RETGEN(rdi, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RSI:
-            RETGEN(rsi, thread.uts.ts64, ts, reg);
+            RETGEN(rsi, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RBP:
-            RETGEN(rbp, thread.uts.ts64, ts, reg);
+            RETGEN(rbp, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RSP:
-            RETGEN(rsp, thread.uts.ts64, ts, reg);
+            RETGEN(rsp, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R10:
-            RETGEN(r10, thread.uts.ts64, ts, reg);
+            RETGEN(r10, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R11:
-            RETGEN(r11, thread.uts.ts64, ts, reg);
+            RETGEN(r11, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R12:
-            RETGEN(r12, thread.uts.ts64, ts, reg);
+            RETGEN(r12, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R13:
-            RETGEN(r13, thread.uts.ts64, ts, reg);
+            RETGEN(r13, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R14:
-            RETGEN(r14, thread.uts.ts64, ts, reg);
+            RETGEN(r14, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R15:
-            RETGEN(r15, thread.uts.ts64, ts, reg);
+            RETGEN(r15, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RIP:
-            RETGEN(rip, thread.uts.ts64, ts, reg);
+            RETGEN(rip, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_RFLAGS:
-            RETGEN(rflags, thread.uts.ts64, ts, reg);
+            RETGEN(rflags, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_CS:
-            RETGEN(cs, thread.uts.ts64, ts, reg);
+            RETGEN(cs, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_FS:
-            RETGEN(fs, thread.uts.ts64, ts, reg);
+            RETGEN(fs, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_GS:
-            RETGEN(gs, thread.uts.ts64, ts, reg);
+            RETGEN(gs, thread.uts.ts64, ts);
             
         default:
             // Unsupported register
-            return PLCRASH_ENOTSUP;
+            __builtin_trap();
     }
-    
-    return PLCRASH_EUNKNOWN;
+
+    /* Should not be reachable */
+    return 0;
 }
 
 /**

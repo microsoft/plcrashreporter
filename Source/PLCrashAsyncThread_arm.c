@@ -35,9 +35,8 @@
 
 #ifdef __arm__
 
-#define RETGEN(name, type, ts, result) {\
-    *result = (ts->arm_state. type . __ ## name); \
-    return PLCRASH_ESUCCESS; \
+#define RETGEN(name, type, ts) {\
+    return (ts->arm_state. type . __ ## name); \
 }
 
 #define SETGEN(name, type, ts, value) {\
@@ -46,64 +45,65 @@
 }
 
 // PLCrashAsyncThread API
-plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+plcrash_greg_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
     switch (regnum) {
         case PLCRASH_ARM_R0:
-            RETGEN(r[0], thread, ts, reg);
+            RETGEN(r[0], thread, ts);
             
         case PLCRASH_ARM_R1:
-            RETGEN(r[1], thread, ts, reg);
+            RETGEN(r[1], thread, ts);
             
         case PLCRASH_ARM_R2:
-            RETGEN(r[2], thread, ts, reg);
+            RETGEN(r[2], thread, ts);
             
         case PLCRASH_ARM_R3:
-            RETGEN(r[3], thread, ts, reg);
+            RETGEN(r[3], thread, ts);
             
         case PLCRASH_ARM_R4:
-            RETGEN(r[4], thread, ts, reg);
+            RETGEN(r[4], thread, ts);
             
         case PLCRASH_ARM_R5:
-            RETGEN(r[5], thread, ts, reg);
+            RETGEN(r[5], thread, ts);
             
         case PLCRASH_ARM_R6:
-            RETGEN(r[6], thread, ts, reg);
+            RETGEN(r[6], thread, ts);
             
         case PLCRASH_ARM_R7:
-            RETGEN(r[7], thread, ts, reg);
+            RETGEN(r[7], thread, ts);
             
         case PLCRASH_ARM_R8:
-            RETGEN(r[8], thread, ts, reg);
+            RETGEN(r[8], thread, ts);
             
         case PLCRASH_ARM_R9:
-            RETGEN(r[9], thread, ts, reg);
+            RETGEN(r[9], thread, ts);
             
         case PLCRASH_ARM_R10:
-            RETGEN(r[10], thread, ts, reg);
+            RETGEN(r[10], thread, ts);
             
         case PLCRASH_ARM_R11:
-            RETGEN(r[11], thread, ts, reg);
+            RETGEN(r[11], thread, ts);
             
         case PLCRASH_ARM_R12:
-            RETGEN(r[12], thread, ts, reg);
+            RETGEN(r[12], thread, ts);
             
         case PLCRASH_ARM_SP:
-            RETGEN(sp, thread, ts, reg);
+            RETGEN(sp, thread, ts);
             
         case PLCRASH_ARM_LR:
-            RETGEN(lr, thread, ts, reg);
+            RETGEN(lr, thread, ts);
             
         case PLCRASH_ARM_PC:
-            RETGEN(pc, thread, ts, reg);
+            RETGEN(pc, thread, ts);
             
         case PLCRASH_ARM_CPSR:
-            RETGEN(cpsr, thread, ts, reg);
+            RETGEN(cpsr, thread, ts);
             
         default:
-            return PLCRASH_ENOTSUP;
+            __builtin_trap();
     }
-    
-    return PLCRASH_ENOTSUP;
+
+    /* Should not be reachable */
+    return 0;
 }
 
 // PLCrashAsyncThread API
