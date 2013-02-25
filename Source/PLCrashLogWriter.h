@@ -158,7 +158,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file,
                                           siginfo_t *siginfo,
-                                          plframe_thread_state_t *current_state);
+                                          plcrash_async_thread_state_t *current_state);
 
 plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer);
 void plcrash_log_writer_free (plcrash_log_writer_t *writer);

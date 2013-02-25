@@ -48,7 +48,7 @@ struct stack_frame {
  *
  * @todo Investigating lifting this out into a generic plframe_cursor_set_reg() API.
  */
-- (void) initializeThreadStackState: (plframe_thread_state_t *) thread_state framePointer: (uintptr_t) fp programCounter: (uintptr_t) pc {
+- (void) initializeThreadStackState: (plcrash_async_thread_state_t *) thread_state framePointer: (uintptr_t) fp programCounter: (uintptr_t) pc {
     memset(thread_state, 0, sizeof(*thread_state));
 
 #ifdef __arm__
@@ -96,14 +96,14 @@ struct stack_frame {
     frames[2].lr = 0x3;
 
     /* Test thread */
-    plframe_thread_state_t state;
+    plcrash_async_thread_state_t state;
     [self initializeThreadStackState: &state
                         framePointer: frames[frame_count-1].fp
                       programCounter: frames[frame_count-1].lr];
 
     /* Try walking the stack */
     plframe_cursor_t cursor;
-    plframe_greg_t reg;
+    plcrash_greg_t reg;
 
     plframe_cursor_init(&cursor, mach_task_self(), &state);
     
@@ -111,8 +111,8 @@ struct stack_frame {
         size_t idx = frame_count-i-1;
 
         STAssertEquals(plframe_cursor_next_fp(&cursor), PLFRAME_ESUCCESS, @"Failed to step cursor");
-        STAssertEquals(plframe_cursor_get_reg(&cursor, PLFRAME_REG_IP, &reg), PLFRAME_ESUCCESS, @"Failed to fetch IP");
-        STAssertEquals(reg, (plframe_greg_t)frames[idx].lr, @"Incorrect IP");
+        STAssertEquals(plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &reg), PLFRAME_ESUCCESS, @"Failed to fetch IP");
+        STAssertEquals(reg, (plcrash_greg_t)frames[idx].lr, @"Incorrect IP");
     }
     
     /* Ensure that the final frame's NULL fp triggers an ENOFRAME */

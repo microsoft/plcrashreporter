@@ -219,7 +219,7 @@
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
-    plframe_thread_state_t thread_state;
+    plcrash_async_thread_state_t thread_state;
     thread_t thread;
 
     /* Initialze faux crash data */
@@ -235,7 +235,7 @@
         /* Steal the test thread's stack for iteration */
         thread = pthread_mach_thread_np(_thr_args.thread);
         plframe_cursor_thread_init(&cursor, mach_task_self(), thread);
-        plframe_thread_state_thread_init(&thread_state, thread);
+        plcrash_async_thread_state_mach_thread_init(&thread_state, thread);
     }
 
     /* Open the output file */

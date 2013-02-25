@@ -44,7 +44,7 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *w
                                                          siginfo_t *siginfo,
                                                          _STRUCT_MCONTEXT *mctx)
 {
-    plframe_thread_state_t thread_state;
+    plcrash_async_thread_state_t thread_state;
     _STRUCT_UCONTEXT ctx;
 
     ctx.uc_onstack = 0;
@@ -62,7 +62,7 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *w
     memset(&mctx->__fs, 0, sizeof(mctx->__fs));
 
     /* Convert to standard thread state */
-    plframe_thread_state_ucontext_init(&thread_state, &ctx);
+    plcrash_async_thread_state_ucontext_init(&thread_state, &ctx);
 
     /* Write the report */
     return plcrash_log_writer_write(writer, mach_thread_self(), image_list, file, siginfo, &thread_state);

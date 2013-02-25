@@ -118,11 +118,11 @@ static PLCrashReporterCallbacks crashCallbacks = {
  */
 static void signal_handler_callback (int signal, siginfo_t *info, ucontext_t *uap, void *context) {
     plcrashreporter_handler_ctx_t *sigctx = context;
-    plframe_thread_state_t thread_state;
+    plcrash_async_thread_state_t thread_state;
     plcrash_async_file_t file;
 
     /* Extract the thread state */
-    plframe_thread_state_ucontext_init(&thread_state, uap);
+    plcrash_async_thread_state_ucontext_init(&thread_state, uap);
 
     /* Open the output file */
     int fd = open(sigctx->path, O_RDWR|O_CREAT|O_TRUNC, 0644);

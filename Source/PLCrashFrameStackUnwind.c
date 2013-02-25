@@ -47,10 +47,10 @@ plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor) {
     } else {
         if (cursor->fp[0] == NULL) {
             /* No frame data has been loaded, fetch it from register state */
-            plframe_greg_t nfp;
+            plcrash_greg_t nfp;
             plframe_error_t err;
             
-            if ((err = plframe_cursor_get_reg(cursor, PLFRAME_REG_FP, &nfp)) != PLFRAME_ESUCCESS) {
+            if ((err = plframe_cursor_get_reg(cursor, PLCRASH_REG_FP, &nfp)) != PLFRAME_ESUCCESS) {
                 /* This should never fail, as it is called only at the top of the stack, where thread state is
                  * available. */
                 PLCF_DEBUG("Unexpected error fetching frame pointer: %s", plframe_strerror(err));

@@ -28,54 +28,8 @@
 
 #ifdef __arm__
 
-// 32-bit
-typedef uintptr_t plframe_pdef_greg_t;
-typedef uintptr_t plframe_pdef_fpreg_t;
-
 // Data we'll read off the stack frame
 #define PLFRAME_PDEF_STACKFRAME_LEN 2
 
 #endif /* __arm__ */
-
-/**
- * @internal
- * Arm registers
- */
-typedef enum {
-    /*
-     * General
-     */
-
-    /** Program counter (r15) */
-    PLFRAME_ARM_PC = PLFRAME_REG_IP,
-
-    /** Frame pointer */
-    PLFRAME_ARM_R7 = PLFRAME_REG_FP,
-
-    PLFRAME_ARM_R0,
-    PLFRAME_ARM_R1,
-    PLFRAME_ARM_R2,
-    PLFRAME_ARM_R3,
-    PLFRAME_ARM_R4,
-    PLFRAME_ARM_R5,
-    PLFRAME_ARM_R6,
-    // R7 is defined above
-    PLFRAME_ARM_R8,
-    PLFRAME_ARM_R9,
-    PLFRAME_ARM_R10,
-    PLFRAME_ARM_R11,
-    PLFRAME_ARM_R12,
-
-    /* stack pointer (r13) */
-    PLFRAME_ARM_SP,
-
-    /* link register (r14) */
-    PLFRAME_ARM_LR,
-    
-    /** Current program status register */
-    PLFRAME_ARM_CPSR,
-
-    /** Last register */
-    PLFRAME_ARM_LAST_REG = PLFRAME_ARM_CPSR
-} plframe_arm_regnum_t;
 

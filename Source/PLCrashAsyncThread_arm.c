@@ -41,7 +41,7 @@
 }
 
 // PLCrashAsyncThread API
-plcrash_error_t plcrash_async_cursor_get_reg (plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
     switch (regnum) {
         case PLCRASH_ARM_R0:
             RETGEN(r[0], thread, ts, reg);

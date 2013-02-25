@@ -675,7 +675,7 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const char *regname, plframe_greg_t regval) {
+static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const char *regname, plcrash_greg_t regval) {
     uint64_t uint64val;
     size_t rv = 0;
 
@@ -705,7 +705,7 @@ static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file,
     
     /* Write out register messages */
     for (int i = 0; i < regCount; i++) {
-        plframe_greg_t regVal;
+        plcrash_greg_t regVal;
         const char *regname;
         uint32_t msgsize;
 
@@ -839,7 +839,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
                                            task_t task,
                                            thread_t thread,
                                            uint32_t thread_number,
-                                           plframe_thread_state_t *thread_ctx,
+                                           plcrash_async_thread_state_t *thread_ctx,
                                            plcrash_async_image_list_t *image_list,
                                            plcrash_async_symbol_cache_t *findContext,
                                            bool crashed)
@@ -891,8 +891,8 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
             }
 
             /* Fetch the PC value */
-            plframe_greg_t pc = 0;
-            if ((ferr = plframe_cursor_get_reg(&cursor, PLFRAME_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
+            plcrash_greg_t pc = 0;
+            if ((ferr = plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
                 PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(ferr));
                 break;
             }
@@ -1083,7 +1083,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file,
                                           siginfo_t *siginfo,
-                                          plframe_thread_state_t *current_state)
+                                          plcrash_async_thread_state_t *current_state)
 {
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
@@ -1196,7 +1196,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     uint32_t thread_number = 0;
     for (mach_msg_type_number_t i = 0; i < thread_count; i++) {
         thread_t thread = threads[i];
-        plframe_thread_state_t *thr_ctx = NULL;
+        plcrash_async_thread_state_t *thr_ctx = NULL;
         bool crashed = false;
         uint32_t size;
 
