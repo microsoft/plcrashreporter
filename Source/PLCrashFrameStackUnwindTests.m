@@ -32,7 +32,7 @@
 
 struct stack_frame {
     uintptr_t fp;
-    uintptr_t lr;
+    uintptr_t pc;
 } __attribute__((packed));
 
 @interface PLCrashFrameStackUnwindTests : SenTestCase @end
@@ -40,46 +40,22 @@ struct stack_frame {
 @implementation PLCrashFrameStackUnwindTests
 
 /**
- * Initialize @a thread_state with the given @a fp and @pc
- *
- * @param thread_state The thread state to be initialized.
- * @param fp The thread's initial frame pointer.
- * @param pc The thread's initial program counter.
- *
- * @todo Investigating lifting this out into a generic plframe_cursor_set_reg() API.
- */
-- (void) initializeThreadStackState: (plcrash_async_thread_state_t *) thread_state framePointer: (uintptr_t) fp programCounter: (uintptr_t) pc {
-    memset(thread_state, 0, sizeof(*thread_state));
-    plcrash_async_thread_state_set_reg(thread_state, PLCRASH_REG_FP, fp);
-    plcrash_async_thread_state_set_reg(thread_state, PLCRASH_REG_IP, pc);
-}
-
-/**
  * Verify that walking terminates with a NULL frame address.
  */
 - (void) testNULLFrame {
     /* Set up test stack */
     struct stack_frame frames[] = {
-        { .fp = 0x0,        .lr = 0x1 },
-        { .fp = &frames[0], .lr = 0x1 },
-        { .fp = &frames[1], .lr = 0x1 },
+        { .fp = 0x0,        .pc = 0x1 },
+        { .fp = &frames[0], .pc = 0x2 },
+        { .fp = &frames[1], .pc = 0x3 },
     };
     size_t frame_count = sizeof(frames) / sizeof(frames[0]);
 
-    frames[0].fp = 0x0;
-    frames[0].lr = 0x1;
-
-    frames[1].fp = &frames[0];
-    frames[1].lr = 0x2;
-    
-    frames[2].fp = &frames[1];
-    frames[2].lr = 0x3;
-
-    /* Test thread */
+    /* Configure thread state */
     plcrash_async_thread_state_t state;
-    [self initializeThreadStackState: &state
-                        framePointer: frames[frame_count-1].fp
-                      programCounter: frames[frame_count-1].lr];
+    memset(&state, 0, sizeof(state));
+    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[frame_count-1].fp);
+    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[frame_count-1].pc);
 
     /* Try walking the stack */
     plframe_cursor_t cursor;
@@ -92,7 +68,7 @@ struct stack_frame {
 
         STAssertEquals(plframe_cursor_next_fp(&cursor), PLFRAME_ESUCCESS, @"Failed to step cursor");
         STAssertEquals(plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &reg), PLFRAME_ESUCCESS, @"Failed to fetch IP");
-        STAssertEquals(reg, (plcrash_greg_t)frames[idx].lr, @"Incorrect IP");
+        STAssertEquals(reg, (plcrash_greg_t)frames[idx].pc, @"Incorrect IP");
     }
     
     /* Ensure that the final frame's NULL fp triggers an ENOFRAME */
