@@ -40,6 +40,11 @@
     return PLCRASH_ESUCCESS; \
 }
 
+#define SETGEN(name, type, ts, value) {\
+    (ts->arm_state. type . __ ## name) = value; \
+    break; \
+}
+
 // PLCrashAsyncThread API
 plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
     switch (regnum) {
@@ -102,8 +107,65 @@ plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t
 }
 
 // PLCrashAsyncThread API
-void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
-    // TODO
+void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
+    plcrash_async_thread_state_t *ts = thread_state;
+
+    switch (regnum) {
+        case PLCRASH_ARM_R0:
+            SETGEN(r[0], thread, ts, reg);
+            
+        case PLCRASH_ARM_R1:
+            SETGEN(r[1], thread, ts, reg);
+            
+        case PLCRASH_ARM_R2:
+            SETGEN(r[2], thread, ts, reg);
+            
+        case PLCRASH_ARM_R3:
+            SETGEN(r[3], thread, ts, reg);
+            
+        case PLCRASH_ARM_R4:
+            SETGEN(r[4], thread, ts, reg);
+            
+        case PLCRASH_ARM_R5:
+            SETGEN(r[5], thread, ts, reg);
+            
+        case PLCRASH_ARM_R6:
+            SETGEN(r[6], thread, ts, reg);
+            
+        case PLCRASH_ARM_R7:
+            SETGEN(r[7], thread, ts, reg);
+            
+        case PLCRASH_ARM_R8:
+            SETGEN(r[8], thread, ts, reg);
+            
+        case PLCRASH_ARM_R9:
+            SETGEN(r[9], thread, ts, reg);
+            
+        case PLCRASH_ARM_R10:
+            SETGEN(r[10], thread, ts, reg);
+            
+        case PLCRASH_ARM_R11:
+            SETGEN(r[11], thread, ts, reg);
+            
+        case PLCRASH_ARM_R12:
+            SETGEN(r[12], thread, ts, reg);
+            
+        case PLCRASH_ARM_SP:
+            SETGEN(sp, thread, ts, reg);
+            
+        case PLCRASH_ARM_LR:
+            SETGEN(lr, thread, ts, reg);
+            
+        case PLCRASH_ARM_PC:
+            SETGEN(pc, thread, ts, reg);
+            
+        case PLCRASH_ARM_CPSR:
+            SETGEN(cpsr, thread, ts, reg);
+            
+        default:
+            // Unsupported register
+            __builtin_trap();
+    }
 }
 
 // PLCrashAsyncThread API

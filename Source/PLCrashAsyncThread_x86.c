@@ -34,14 +34,23 @@
 #import <stdlib.h>
 
 #define RETGEN(name, type, ts, result) {\
-*result = (ts->x86_state. type . __ ## name); \
-return PLCRASH_ESUCCESS; \
+    *result = (ts->x86_state. type . __ ## name); \
+    return PLCRASH_ESUCCESS; \
+}
+
+#define SETGEN(name, type, ts, value) {\
+    (ts->x86_state. type . __ ## name) = value; \
+    break; \
 }
 
 #if defined(__i386__) || defined(__x86_64__)
 
 static plcrash_error_t plcrash_async_thread_state_get_reg_32 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
 static plcrash_error_t plcrash_async_thread_state_get_reg_64 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
+
+static void plcrash_async_thread_state_set_reg_32 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t reg);
+static void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_state_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t reg);
+
 static const char *plcrash_async_thread_state_get_regname_32 (plcrash_regnum_t regnum);
 static const char *plcrash_async_thread_state_get_regname_64 (plcrash_regnum_t regnum);
 
@@ -55,8 +64,12 @@ plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t
 }
 
 // PLCrashAsyncThread API
-void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
-    // TODO
+void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
+    if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
+        return plcrash_async_thread_state_set_reg_32(thread_state, regnum, reg);
+    } else {
+        return plcrash_async_thread_state_set_reg_64(thread_state, regnum, reg);
+    }
 }
 
 // PLCrashAsyncThread API
@@ -215,6 +228,140 @@ plcrash_error_t plcrash_async_thread_state_get_reg_64 (plcrash_async_thread_stat
     }
     
     return PLCRASH_EUNKNOWN;
+}
+
+/**
+ * @internal
+ * 32-bit implementation of plcrash_async_thread_state_set_reg()
+ */
+static void plcrash_async_thread_state_set_reg_32 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
+    plcrash_async_thread_state_t *ts = thread_state;
+    
+    /* All word-sized registers */
+    switch (regnum) {
+        case PLCRASH_X86_EAX:
+            SETGEN(eax, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_EDX:
+            SETGEN(edx, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_ECX:
+            SETGEN(ecx, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_EBX:
+            SETGEN(ebx, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_EBP:
+            SETGEN(ebp, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_ESI:
+            SETGEN(esi, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_EDI:
+            SETGEN(edi, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_ESP:
+            SETGEN(esp, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_EIP:
+            SETGEN(eip, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_EFLAGS:
+            SETGEN(eflags, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_TRAPNO:
+            SETGEN(trapno, exception.ues.es32, ts, reg);
+            
+        case PLCRASH_X86_CS:
+            SETGEN(cs, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_DS:
+            SETGEN(ds, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_ES:
+            SETGEN(es, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_FS:
+            SETGEN(fs, thread.uts.ts32, ts, reg);
+            
+        case PLCRASH_X86_GS:
+            SETGEN(gs, thread.uts.ts32, ts, reg);
+            
+        default:
+            // Unsupported register
+            __builtin_trap();
+    }
+}
+
+/**
+ * @internal
+ * 64-bit implementation of plcrash_async_thread_state_set_reg()
+ */
+static void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
+    plcrash_async_thread_state_t *ts = thread_state;
+    
+    switch (regnum) {
+        case PLCRASH_X86_64_RAX:
+            SETGEN(rax, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RBX:
+            SETGEN(rbx, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RCX:
+            SETGEN(rcx, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RDX:
+            SETGEN(rdx, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RDI:
+            SETGEN(rdi, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RSI:
+            SETGEN(rsi, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RBP:
+            SETGEN(rbp, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RSP:
+            SETGEN(rsp, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_R10:
+            SETGEN(r10, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_R11:
+            SETGEN(r11, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_R12:
+            SETGEN(r12, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_R13:
+            SETGEN(r13, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_R14:
+            SETGEN(r14, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_R15:
+            SETGEN(r15, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RIP:
+            SETGEN(rip, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_RFLAGS:
+            SETGEN(rflags, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_CS:
+            SETGEN(cs, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_FS:
+            SETGEN(fs, thread.uts.ts64, ts, reg);
+            
+        case PLCRASH_X86_64_GS:
+            SETGEN(gs, thread.uts.ts64, ts, reg);
+            
+        default:
+            // Unsupported register
+            __builtin_trap();
+    }    
 }
 
 /**

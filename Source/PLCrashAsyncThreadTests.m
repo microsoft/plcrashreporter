@@ -62,6 +62,19 @@
     }
 }
 
+- (void) testGetSetRegister {
+    plcrash_async_thread_state_t ts;
+    plcrash_async_thread_state_mach_thread_init(&ts, pthread_mach_thread_np(_thr_args.thread));
+    
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
+        plcrash_greg_t reg;
+        
+        plcrash_async_thread_state_set_reg(&ts, i, 5);
+        plcrash_async_thread_state_get_reg(&ts, i, &reg);
+        STAssertEquals(reg, (plcrash_greg_t)5, @"Unexpected register value");
+    }
+}
+
 /* Test plcrash_async_thread_state_ucontext_init() */
 - (void) testThreadStateContextInit {
     plcrash_async_thread_state_t thr_state;

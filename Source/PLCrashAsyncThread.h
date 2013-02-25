@@ -130,7 +130,7 @@ plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t
 /**
  * Set a register value.
  */
-void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg);
+void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg);
 
 /**
  * @}
