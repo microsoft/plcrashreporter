@@ -50,28 +50,8 @@ struct stack_frame {
  */
 - (void) initializeThreadStackState: (plcrash_async_thread_state_t *) thread_state framePointer: (uintptr_t) fp programCounter: (uintptr_t) pc {
     memset(thread_state, 0, sizeof(*thread_state));
-
-#ifdef __arm__
-    arm_thread_state_t *arm = &thread_state->arm_state.thread;
-    arm->__r[7] = fp;
-    arm->__pc = pc;
-#elif defined(__x86_64__)
-    thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE64;
-    thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE64_COUNT;
-
-    x86_thread_state64_t *x64 = &thread_state->x86_state.thread.uts.ts64;
-    x64->__rbp = fp;
-    x64->__rip = pc;
-#elif defined(__i386__)
-    thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE32;
-    thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE32_COUNT;
-
-    x86_thread_state32_t *x32 = &thread_state->x86_state.thread.uts.ts32;
-    x32->__ebp = fp;
-    x32->__eip = pc;
-#else
-#error Add platform support
-#endif /* __arm__ */
+    plcrash_async_thread_state_set_reg(thread_state, PLCRASH_REG_FP, fp);
+    plcrash_async_thread_state_set_reg(thread_state, PLCRASH_REG_IP, pc);
 }
 
 /**
