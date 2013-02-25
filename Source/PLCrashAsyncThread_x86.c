@@ -54,12 +54,13 @@ plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t
     }
 }
 
+// PLCrashAsyncThread API
 void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
     // TODO
 }
 
 // PLCrashAsyncThread API
-char const *plcrash_async_thread_state_get_regname (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
+char const *plcrash_async_thread_state_get_reg_name (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
     if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
         return plcrash_async_thread_state_get_regname_32(regnum);
     } else {
@@ -68,7 +69,7 @@ char const *plcrash_async_thread_state_get_regname (plcrash_async_thread_state_t
 }
 
 // PLCrashAsyncThread API
-size_t plcrash_async_thread_state_get_regcount (plcrash_async_thread_state_t *thread_state) {
+size_t plcrash_async_thread_state_get_reg_count (plcrash_async_thread_state_t *thread_state) {
     /* Last is an index value, so increment to get the count */
     if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
         return PLCRASH_X86_LAST_REG+1;

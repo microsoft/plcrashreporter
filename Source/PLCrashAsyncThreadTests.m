@@ -35,11 +35,32 @@
 
 @interface PLCrashAsyncThreadTests : SenTestCase {
 @private
+    plcrash_test_thread_t _thr_args;
 }
 
 @end
 
 @implementation PLCrashAsyncThreadTests
+
+
+- (void) setUp {
+    plcrash_test_thread_spawn(&_thr_args);
+}
+
+- (void) tearDown {
+    plcrash_test_thread_stop(&_thr_args);
+}
+
+- (void) testGetRegName {
+    plcrash_async_thread_state_t ts;
+    plcrash_async_thread_state_mach_thread_init(&ts, pthread_mach_thread_np(_thr_args.thread));
+    
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
+        const char *name = plcrash_async_thread_state_get_reg_name(&ts, i);
+        STAssertNotNULL(name, @"Register name for %d is NULL", i);
+        STAssertNotEquals((size_t)0, strlen(name), @"Register name for %d is 0 length", i);
+    }
+}
 
 /* Test plcrash_async_thread_state_ucontext_init() */
 - (void) testThreadStateContextInit {
@@ -83,11 +104,9 @@
     thread_t thr;
     
     /* Spawn a test thread */
-    plcrash_test_thread_t test_thr;
-    plcrash_test_thread_spawn(&test_thr);
-    thr = pthread_mach_thread_np(test_thr.thread);
+    thr = pthread_mach_thread_np(_thr_args.thread);
     thread_suspend(thr);
-    
+
     /* Fetch the thread state */
     STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thr_state, thr), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
     
@@ -134,7 +153,6 @@
     
     /* Clean up */
     thread_resume(thr);
-    plcrash_test_thread_stop(&test_thr);
 }
 
 @end
