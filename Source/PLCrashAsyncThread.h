@@ -79,7 +79,7 @@ typedef union plcrash_async_thread_state {
 } plcrash_async_thread_state_t;
 
 /** Register number type */
-typedef int plframe_regnum_t;
+typedef int plcrash_regnum_t;
 
 /**
  * General pseudo-registers common across platforms.
@@ -100,8 +100,37 @@ typedef enum {
 #import "PLCrashAsyncThread_x86.h"
 #import "PLCrashAsyncThread_arm.h"
 
+
+/** Platform word type */
+typedef plcrash_pdef_greg_t plcrash_greg_t;
+
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
+
+
+/* Platform specific funtions */
+
+/**
+ * Get a register's name.
+ */
+char const *plcrash_async_thread_state_get_reg_name (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
+
+/**
+ * Get the total number of registers supported by the @a cursor's target thread.
+ *
+ * @param cursor The target cursor.
+ */
+size_t plcrash_async_thread_state_get_reg_count (plcrash_async_thread_state_t *thread_state);
+
+/**
+ * Get a register value.
+ */
+plcrash_error_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg);
+
+/**
+ * Set a register value.
+ */
+void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t *reg);
 
 /**
  * @}
