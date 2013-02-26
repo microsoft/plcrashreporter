@@ -82,7 +82,7 @@ plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor) {
     if (frame.fp == 0x0)
         return PLFRAME_ENOFRAME;
 
-    /* New frame fetched */
+    /* Save the newly fetched frame */
     cursor->prev_frame = cursor->frame;
     cursor->frame = frame;
     cursor->depth++;
