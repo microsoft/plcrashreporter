@@ -34,53 +34,58 @@
  *
  * @param cursor A cursor instance initialized with plframe_cursor_init();
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ *
+ * @todo The stack direction and interpretation of the frame data should be moved to the central platform configuration.
  */
 plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor) {
     kern_return_t kr;
-    void *prevfp = cursor->fp[0];
     
-    /* Fetch the next stack address */
-    if (cursor->init_frame) {
-        /* The first frame is already available, so there's nothing to do */
-        cursor->init_frame = false;
+    if (cursor->depth == 0) {
+        /* The first frame is already available via the thread state. */
+        cursor->frame.fp = plcrash_async_thread_state_get_reg(&cursor->thread_state, PLCRASH_REG_FP);
+        cursor->frame.pc = plcrash_async_thread_state_get_reg(&cursor->thread_state, PLCRASH_REG_IP);
+        cursor->depth++;
+
         return PLFRAME_ESUCCESS;
-    } else {
-        if (cursor->fp[0] == NULL) {
-            /* No frame data has been loaded, fetch it from register state */
-            plcrash_greg_t nfp;
-            plframe_error_t err;
-            
-            if ((err = plframe_cursor_get_reg(cursor, PLCRASH_REG_FP, &nfp)) != PLFRAME_ESUCCESS) {
-                /* This should never fail, as it is called only at the top of the stack, where thread state is
-                 * available. */
-                PLCF_DEBUG("Unexpected error fetching frame pointer: %s", plframe_strerror(err));
-                return PLFRAME_EUNKNOWN;
-            }
-            
-            kr = plcrash_async_read_addr(cursor->task, nfp, cursor->fp, sizeof(cursor->fp));
-        } else {
-            /* Frame data loaded, walk the stack */
-            kr = plcrash_async_read_addr(cursor->task, (pl_vm_address_t) cursor->fp[0], cursor->fp, sizeof(cursor->fp));
-        }
-    }
-    
-    /* Was the read successful? */
-    if (kr != KERN_SUCCESS)
-        return PLFRAME_EBADFRAME;
-    
-    /* Check for completion */
-    if (cursor->fp[0] == NULL)
-        return PLFRAME_ENOFRAME;
-    
-    // TODO - Extend the platform definition to handle this.
+    } else if (cursor->depth > 1) {
 #if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
-    /* Is the stack growing in the right direction? */
-    if (!cursor->init_frame && prevfp > cursor->fp[0])
+        /* Is the stack growing in the right direction? */
+        if (cursor->frame.fp < cursor->prev_frame.fp) {
+            PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
+            return PLFRAME_EBADFRAME;
+        }
+#else
+#error Define the direction this stack grows
+#endif
+    }
+
+    /* Read in the next frame. */
+    void *fdata[PLFRAME_STACKFRAME_LEN]; // TODO - this is not 32-bit/64-bit safe
+    kr = plcrash_async_read_addr(cursor->task, (pl_vm_address_t) cursor->frame.fp, fdata, sizeof(fdata));
+
+    /* Was the read successful? */
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to read frame: %d", kr);
         return PLFRAME_EBADFRAME;
+    }
+
+    /* Extract the frame data */
+    plframe_stackframe_t frame;
+#if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
+    frame.fp = fdata[0];
+    frame.pc = fdata[1];
 #else
 #error Add platform support
 #endif
-    
+
+    /* Check for completion */
+    if (frame.fp == 0x0)
+        return PLFRAME_ENOFRAME;
+
     /* New frame fetched */
+    cursor->prev_frame = cursor->frame;
+    cursor->frame = frame;
+    cursor->depth++;
+
     return PLFRAME_ESUCCESS;
 }

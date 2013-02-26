@@ -33,21 +33,20 @@
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
-    /* Fetch from the stack walker */
-    if (cursor->fp[0] != NULL) {
-        bool x64 = cursor->thread_state.x86_state.thread.tsh.flavor == x86_THREAD_STATE64;
-        
-        if ((x64 && regnum == PLCRASH_X86_64_RIP) || (!x64 && regnum == PLCRASH_X86_EIP)) {
-            *reg = (plcrash_greg_t) cursor->fp[1];
-            return PLFRAME_ESUCCESS;
-        }
-        
-        return PLFRAME_ENOTSUP;
+    /* Fetch from thread state */
+    if (cursor->depth == 1) {
+        *reg = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum);
+        return PLFRAME_ESUCCESS;
     }
 
-    /* Fetch from thread state */
-    *reg = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum);
-    return PLFRAME_ESUCCESS;
+    /* Fetch from the stack walker */
+    bool x64 = cursor->thread_state.x86_state.thread.tsh.flavor == x86_THREAD_STATE64;
+    if ((x64 && regnum == PLCRASH_X86_64_RIP) || (!x64 && regnum == PLCRASH_X86_EIP)) {
+        *reg = cursor->frame.pc;
+        return PLFRAME_ESUCCESS;
+    }
+
+    return PLFRAME_ENOTSUP;
 }
 
 // PLFrameWalker API

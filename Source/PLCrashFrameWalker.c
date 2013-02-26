@@ -109,8 +109,7 @@ void plframe_test_thread_stop (plcrash_test_thread_t *args) {
  * Shared initializer
  */
 static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task) {
-    cursor->init_frame = true;
-    cursor->fp[0] = NULL;
+    cursor->depth = 0;
     cursor->task = task;
     mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
 }

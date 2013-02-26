@@ -51,17 +51,17 @@ struct stack_frame {
 - (void) testNULLFrame {
     /* Set up test stack */
     struct stack_frame frames[] = {
-        { .fp = 0x0,        .pc = 0x1 },
-        { .fp = &frames[0], .pc = 0x2 },
-        { .fp = &frames[1], .pc = 0x3 },
+        { .fp = &frames[1], .pc = 0x1 },
+        { .fp = &frames[2], .pc = 0x2 },
+        { .fp = 0x0,        .pc = 0x3 },
     };
     size_t frame_count = sizeof(frames) / sizeof(frames[0]);
 
     /* Configure thread state */
     plcrash_async_thread_state_t state;
     memset(&state, 0, sizeof(state));
-    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[frame_count-1].fp);
-    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[frame_count-1].pc);
+    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[0].fp);
+    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[0].pc);
 
     /* Try walking the stack */
     plframe_cursor_t cursor;
@@ -70,11 +70,9 @@ struct stack_frame {
     plframe_cursor_init(&cursor, mach_task_self(), &state);
     
     for (size_t i = 0; i < frame_count-1; i++) {
-        size_t idx = frame_count-i-1;
-
         STAssertEquals(plframe_cursor_next_fp(&cursor), PLFRAME_ESUCCESS, @"Failed to step cursor");
         STAssertEquals(plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &reg), PLFRAME_ESUCCESS, @"Failed to fetch IP");
-        STAssertEquals(reg, (plcrash_greg_t)frames[idx].pc, @"Incorrect IP");
+        STAssertEquals(reg, (plcrash_greg_t)frames[i].pc, @"Incorrect IP");
     }
     
     /* Ensure that the final frame's NULL fp triggers an ENOFRAME */
@@ -96,8 +94,8 @@ struct stack_frame {
     /* Configure thread state */
     plcrash_async_thread_state_t state;
     memset(&state, 0, sizeof(state));
-    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[frame_count-1].fp);
-    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[frame_count-1].pc);
+    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[0].fp);
+    plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[0].pc);
     
     /* Try walking the stack */
     plframe_cursor_t cursor;
@@ -105,12 +103,10 @@ struct stack_frame {
     
     plframe_cursor_init(&cursor, mach_task_self(), &state);
     
-    for (size_t i = 0; i < frame_count; i++) {
-        size_t idx = frame_count-i-1;
-        
-        STAssertEquals(plframe_cursor_next_fp(&cursor), PLFRAME_ESUCCESS, @"Failed to step cursor");
+    for (size_t i = 0; i < frame_count-1; i++) {        
+        STAssertEquals(plframe_cursor_next_fp(&cursor), PLFRAME_ESUCCESS, @"Failed to step cursor for %d", (int)i);
         STAssertEquals(plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &reg), PLFRAME_ESUCCESS, @"Failed to fetch IP");
-        STAssertEquals(reg, (plcrash_greg_t)frames[idx].pc, @"Incorrect IP");
+        STAssertEquals(reg, (plcrash_greg_t)frames[i].pc, @"Incorrect IP");
     }
 
     /* Ensure that the final frame's bad fp triggers an EBADFRAME */

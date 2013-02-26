@@ -102,6 +102,15 @@ typedef enum  {
 /** Platform-specific length of stack to be read when iterating frames */
 #define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
 
+/** The current stack frame data */
+typedef struct plframe_stackframe {
+    /** The frame pointer for this frame. */
+    plcrash_greg_t fp;
+    
+    /** The PC for this frame. */
+    plcrash_greg_t pc;
+} plframe_stackframe_t;
+
 /**
  * @internal
  * Frame cursor context.
@@ -110,14 +119,18 @@ typedef struct plframe_cursor {
     /** The task in which the thread stack resides */
     task_t task;
 
-    /** true if this is the initial frame */
-    bool init_frame;
-
     /** Thread state */
     plcrash_async_thread_state_t thread_state;
+    
+    /** The current frame depth. If the depth is 0, the cursor has not been stepped, and the remainder of this
+     * structure should be considered uninitialized. */
+    uint32_t depth;
+    
+    /** The previous frame. This value is unitialized if no previous frame exists (eg, a depth of <= 1) */
+    plframe_stackframe_t prev_frame;
 
-    /** Stack frame data */
-    void *fp[PLFRAME_STACKFRAME_LEN];
+    /** The current stack frame data */
+    plframe_stackframe_t frame;
 } plframe_cursor_t;
 
 

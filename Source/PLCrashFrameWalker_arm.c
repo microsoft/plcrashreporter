@@ -42,19 +42,19 @@
 
 // PLFrameWalker API
 plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+    /* Fetch from thread state */
+    if (cursor->frame.depth == 1) {
+        *reg = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum);
+        return PLFRAME_ESUCCESS;
+    }
+
     /* Fetch from the stack walker */
-    if (cursor->fp[0] != NULL) {
-        if (regnum == PLCRASH_ARM_PC) {
-            *reg = (plcrash_greg_t) cursor->fp[1];
-            return PLFRAME_ESUCCESS;
-        }
-        
-        return PLFRAME_ENOTSUP;
+    if (regnum == PLCRASH_ARM_PC) {
+        *reg = cursor->frame.pc;
+        return PLFRAME_ESUCCESS;
     }
     
-    /* Fetch from thread state */
-    *reg = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum);
-    return PLFRAME_ESUCCESS;
+    return PLFRAME_ENOTSUP;
 }
 
 // PLFrameWalker API
