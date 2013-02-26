@@ -38,8 +38,6 @@
  * @todo The stack direction and interpretation of the frame data should be moved to the central platform configuration.
  */
 plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor) {
-    kern_return_t kr;
-    
     if (cursor->depth == 0) {
         /* The first frame is already available via the thread state. */
         cursor->frame.fp = plcrash_async_thread_state_get_reg(&cursor->thread_state, PLCRASH_REG_FP);
@@ -48,35 +46,25 @@ plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor) {
 
         return PLFRAME_ESUCCESS;
     } else if (cursor->depth > 1) {
-#if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
         /* Is the stack growing in the right direction? */
+#if PLFRAME_STACK_DIRECTION == PLFRAME_STACK_DIRECTION_DOWN
         if (cursor->frame.fp < cursor->prev_frame.fp) {
+#elif PLFRAME_STACK_DIRECTION == PLFRAME_STACK_DIRECTION_UP
+        if (cursor->frame.fp > cursor->prev_frame.fp) {
+#else
+#error Add support for unknown stack direction value
+#endif
             PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
             return PLFRAME_EBADFRAME;
         }
-#else
-#error Define the direction this stack grows
-#endif
     }
 
     /* Read in the next frame. */
-    void *fdata[PLFRAME_STACKFRAME_LEN]; // TODO - this is not 32-bit/64-bit safe
-    kr = plcrash_async_read_addr(cursor->task, (pl_vm_address_t) cursor->frame.fp, fdata, sizeof(fdata));
-
-    /* Was the read successful? */
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Failed to read frame: %d", kr);
-        return PLFRAME_EBADFRAME;
-    }
-
-    /* Extract the frame data */
     plframe_stackframe_t frame;
-#if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
-    frame.fp = fdata[0];
-    frame.pc = fdata[1];
-#else
-#error Add platform support
-#endif
+    plframe_error_t ferr;
+
+    if ((ferr = plframe_cursor_read_stackframe(cursor, &frame)) != PLFRAME_ESUCCESS)
+        return ferr;
 
     /* Check for completion */
     if (frame.fp == 0x0)

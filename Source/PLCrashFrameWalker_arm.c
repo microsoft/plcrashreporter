@@ -35,9 +35,23 @@
 
 #ifdef __arm__
 
-#define RETGEN(name, type, ts, result) {\
-    *result = (ts->arm_state. type . __ ## name); \
-    return PLFRAME_ESUCCESS; \
+// PLFrameWalker API
+plframe_error_t plframe_cursor_read_stackframe (plframe_cursor_t *cursor, plframe_stackframe_t *frame) {
+    uint32_t fdata[2];
+    kern_return_t kr;
+
+    /* Read the frame */
+    kr = plcrash_async_read_addr(cursor->task, (pl_vm_address_t) cursor->frame.fp, fdata, sizeof(fdata));
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to read frame: %d", kr);
+        return PLFRAME_EBADFRAME;
+    }
+    
+    /* Extract the data */
+    frame->fp = fdata[0];
+    frame->pc = fdata[1];
+    
+    return PLFRAME_ESUCCESS;
 }
 
 // PLFrameWalker API

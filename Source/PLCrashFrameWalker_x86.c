@@ -32,6 +32,43 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 // PLFrameWalker API
+plframe_error_t plframe_cursor_read_stackframe (plframe_cursor_t *cursor, plframe_stackframe_t *frame) {
+    /* Determine the appropriate type width for the target thread */
+    uint64_t f64[2];
+    uint32_t f32[2];
+    void *dest;
+    size_t len;
+
+    bool x64 = cursor->thread_state.x86_state.thread.tsh.flavor == x86_THREAD_STATE64;
+    if (x64) {
+        dest = f64;
+        len = sizeof(f64);
+    } else {
+        dest = f32;
+        len = sizeof(f32);
+    }
+
+    /* Read the frame */
+    kern_return_t kr;
+    kr = plcrash_async_read_addr(cursor->task, (pl_vm_address_t) cursor->frame.fp, dest, len);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to read frame: %d", kr);
+        return PLFRAME_EBADFRAME;
+    }
+
+    /* Extract the data */
+    if (x64) {
+        frame->fp = f64[0];
+        frame->pc = f64[1];
+    } else {
+        frame->fp = f32[0];
+        frame->pc = f32[1];
+    }
+
+    return PLFRAME_ESUCCESS;
+}
+
+// PLFrameWalker API
 plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
     /* Fetch from thread state */
     if (cursor->depth == 1) {

@@ -28,8 +28,7 @@
 
 #ifdef __arm__
 
-// Data we'll read off the stack frame
-#define PLFRAME_PDEF_STACKFRAME_LEN 2
+#define PLFRAME_PDEF_STACK_DIRECTION PLFRAME_STACK_DIRECTION_DOWN
 
 #endif /* __arm__ */
 

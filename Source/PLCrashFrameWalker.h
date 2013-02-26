@@ -99,6 +99,14 @@ typedef enum  {
 #import "PLCrashFrameWalker_x86.h"
 #import "PLCrashFrameWalker_arm.h"
 
+/* Supported stack direction constants. When testing PLFRAME_STACK_DIRECTION, implementors should
+ * trigger an #error on unknown constants, as to make adding of new stack direction types simpler */
+#define PLFRAME_STACK_DIRECTION_DOWN 1
+#define PLFRAME_STACK_DIRECTION_UP 2
+
+/* Platform-specific stack direction */
+#define PLFRAME_STACK_DIRECTION PLFRAME_PDEF_STACK_DIRECTION
+
 /** Platform-specific length of stack to be read when iterating frames */
 #define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
 
@@ -146,6 +154,14 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor);
 void plframe_cursor_free(plframe_cursor_t *cursor);
 
 /* Platform specific funtions */
+
+/**
+ * Using the cursor's currently configured stackframe, read the next stack frame.
+ *
+ * @param cursor The cursor from which the frame should be read.
+ * @param frame The destination frame instance.
+ */
+plframe_error_t plframe_cursor_read_stackframe (plframe_cursor_t *cursor, plframe_stackframe_t *frame);
 
 /**
  * Get a register's name.
