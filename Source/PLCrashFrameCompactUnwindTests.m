@@ -49,7 +49,15 @@
  *
  * This code tests compact frame unwinding.
  */
-@interface PLCrashFrameCompactUnwindTests : SenTestCase @end
+@interface PLCrashFrameCompactUnwindTests : SenTestCase {
+@private
+    /** A mapped Mach-O file */
+    plcrash_async_mobject_t _machoData;
+    
+    /** The parsed Mach-O file (this will be a subset of _imageData) */
+    plcrash_async_macho_t _macho;
+}
+@end
 
 @implementation PLCrashFrameCompactUnwindTests
 
@@ -83,6 +91,10 @@
     return result;
 }
 
+/**
+ * Search the Mach-O FAT binary mapped by @a mobj for a fat architecture that best matches the host architecture,
+ * and then return the architecture's image @a size and @a offset from the head of @a mobj;
+ */
 - (void) findBinary: (plcrash_async_mobject_t *) mobj offset: (uint32_t *) offset size: (uint32_t *) size {
     struct fat_header *fh = plcrash_async_mobject_remap_address(mobj, mobj->task_address, sizeof(struct fat_header));
     STAssertNotNULL(fh, @"Could not load fat header");
@@ -116,31 +128,31 @@
     *size = best_arch->size;
 }
 
-- (void) testSomething {
-    plcrash_async_mobject_t imageData;
+- (void) setUp {
     uint32_t offset, length;
-
+    
     /* Load the image into a memory object */
     NSData *mappedImage = [self dataForTestResource: TEST_BINARY];
-    plcrash_async_mobject_init(&imageData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length]);
+    plcrash_async_mobject_init(&_machoData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length]);
     /* Find a binary that matches the host */
-    [self findBinary: &imageData offset: &offset size: &length];
-    void *macho_ptr = plcrash_async_mobject_remap_address(&imageData, imageData.task_address + offset, length);
+    [self findBinary: &_machoData offset: &offset size: &length];
+    void *macho_ptr = plcrash_async_mobject_remap_address(&_machoData, _machoData.task_address + offset, length);
     STAssertNotNULL(macho_ptr, @"Discovered binary is not within the mapped memory range");
 
     /* Parse the image */
-    plcrash_async_macho_t image;
-    plcrash_async_mobject_t sect;
     plcrash_error_t err;
-
-    err = plcrash_nasync_macho_init(&image, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
+    
+    err = plcrash_nasync_macho_init(&_macho, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
+}
 
-    err = plcrash_async_macho_map_section(&image, SEG_TEXT, "__unwind_info", &sect);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
+- (void) tearDown {
+    plcrash_nasync_macho_free(&_macho);
+    plcrash_async_mobject_free(&_machoData);
+}
 
-    plcrash_async_mobject_free(&sect);
-    plcrash_async_mobject_free(&imageData);
+- (void) testSomething {
+    
 }
 
 @end
