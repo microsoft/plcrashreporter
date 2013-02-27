@@ -57,7 +57,7 @@ plframe_error_t plframe_cursor_read_stackframe (plframe_cursor_t *cursor, plfram
 // PLFrameWalker API
 plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
     /* Fetch from thread state */
-    if (cursor->frame.depth == 1) {
+    if (cursor->depth == 1) {
         *reg = plcrash_async_thread_state_get_reg(&cursor->thread_state, regnum);
         return PLFRAME_ESUCCESS;
     }
