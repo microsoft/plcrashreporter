@@ -412,6 +412,9 @@
 		05F3CD6916DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD6816DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m */; };
 		05F3CD6A16DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD6816DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m */; };
 		05F3CD6B16DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD6816DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m */; };
+		05F3CD6D16DE7625007911FB /* Tests in Resources */ = {isa = PBXBuildFile; fileRef = 05F3CD6C16DE7625007911FB /* Tests */; };
+		05F3CD6E16DE7625007911FB /* Tests in Resources */ = {isa = PBXBuildFile; fileRef = 05F3CD6C16DE7625007911FB /* Tests */; };
+		05F3CD6F16DE7625007911FB /* Tests in Resources */ = {isa = PBXBuildFile; fileRef = 05F3CD6C16DE7625007911FB /* Tests */; };
 		05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
 		05F40ACD0EF7379F008050CF /* PLCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40ACA0EF7379F008050CF /* PLCrashReporter.m */; };
@@ -899,6 +902,7 @@
 		05F3CD5F16DD6A3B007911FB /* PLCrashFrameCompactUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameCompactUnwind.c; sourceTree = "<group>"; };
 		05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameCompactUnwind.h; sourceTree = "<group>"; };
 		05F3CD6816DD6A7A007911FB /* PLCrashFrameCompactUnwindTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashFrameCompactUnwindTests.m; sourceTree = "<group>"; };
+		05F3CD6C16DE7625007911FB /* Tests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Tests; sourceTree = "<group>"; };
 		05F40ACA0EF7379F008050CF /* PLCrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporter.m; sourceTree = "<group>"; };
 		05F40ADD0EF73A39008050CF /* PLCrashReporterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReporterTests.m; sourceTree = "<group>"; };
 		05F40CE70EF7AB80008050CF /* DemoCrash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoCrash.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1569,6 +1573,7 @@
 				059670C70EEFAC3A008A0601 /* crash_report.proto */,
 				050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */,
 				0592C8E6169B899B00209116 /* crash_report_v2.proto */,
+				05F3CD6C16DE7625007911FB /* Tests */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -2113,6 +2118,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05F3CD6D16DE7625007911FB /* Tests in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2120,6 +2126,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05F3CD6E16DE7625007911FB /* Tests in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2128,6 +2135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				057CD98716CD5D7A0067E670 /* Default-568h@2x.png in Resources */,
+				05F3CD6F16DE7625007911FB /* Tests in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
