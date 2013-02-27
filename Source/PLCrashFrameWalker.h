@@ -107,9 +107,6 @@ typedef enum  {
 /* Platform-specific stack direction */
 #define PLFRAME_STACK_DIRECTION PLFRAME_PDEF_STACK_DIRECTION
 
-/** Platform-specific length of stack to be read when iterating frames */
-#define PLFRAME_STACKFRAME_LEN PLFRAME_PDEF_STACKFRAME_LEN
-
 /** The current stack frame data */
 typedef struct plframe_stackframe {
     /** The frame pointer for this frame. */
