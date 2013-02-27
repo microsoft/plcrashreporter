@@ -79,7 +79,7 @@ typedef struct plcrash_async_image_list {
 
 void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, mach_port_t task);
 void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list);
-void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, int64_t vmaddr_slide, const char *name);
+void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, const char *name);
 void plcrash_nasync_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header);
 
 void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, bool enable);

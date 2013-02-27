@@ -359,7 +359,7 @@ static uintptr_t getPC () {
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
     uint32_t image_count = _dyld_image_count();
     for (uint32_t i = 0; i < image_count; i++) {
-        plcrash_nasync_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i), _dyld_get_image_name(i));
+        plcrash_nasync_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
     }
 
     

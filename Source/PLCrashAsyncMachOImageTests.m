@@ -62,7 +62,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
 
-    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase, vmaddr_slide);
+    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
 
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -85,7 +85,7 @@
 
     plcrash_async_macho_t image;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-        plcrash_nasync_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));
+        plcrash_nasync_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i));
         struct load_command *cmd = NULL;
 
         for (uint32_t ncmd = 0; ncmd < image.ncmds; ncmd++) {

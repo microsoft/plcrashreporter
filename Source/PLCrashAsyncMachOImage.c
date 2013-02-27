@@ -78,7 +78,6 @@ static uint64_t macho_nswap64 (uint64_t input) {
  * @param image The image structure to be initialized.
  * @param name The file name or path for the Mach-O image.
  * @param header The task-local address of the image's Mach-O header.
- * @param vmaddr_slide The dyld-reported task-local vmaddr slide of this image.
  *
  * @return PLCRASH_ESUCCESS on success. PLCRASH_EINVAL will be returned in the Mach-O file can not be parsed,
  * or PLCRASH_EINTERNAL if an error occurs reading from the target task.
@@ -86,13 +85,12 @@ static uint64_t macho_nswap64 (uint64_t input) {
  * @warning This method is not async safe.
  * @note On error, pl_async_macho_free() must be called to free any resources still held by the @a image.
  */
-plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header, int64_t vmaddr_slide) {
+plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header) {
     /* This must be done first, as our free() function will always decrement the port's reference count. */
     mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
     image->task = task;
 
     image->header_addr = header;
-    image->vmaddr_slide = vmaddr_slide;
     image->name = strdup(name);
 
     /* Read in the Mach-O header */
@@ -166,6 +164,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     void *cmdptr = NULL;
     image->text_size = 0x0;
     bool found_text_seg = false;
+    pl_vm_address_t text_vmaddr;
     while ((cmdptr = plcrash_async_macho_next_command_type(image, cmdptr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
         if (image->m64) {
             struct segment_command_64 *segment = cmdptr;
@@ -176,8 +175,9 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             
             if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
                 continue;
-            
+
             image->text_size = image->swap64(segment->vmsize);
+            text_vmaddr = image->swap64(segment->vmaddr);
             found_text_seg = true;
             break;
         } else {
@@ -191,6 +191,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
                 continue;
             
             image->text_size = image->swap32(segment->vmsize);
+            text_vmaddr = image->swap32(segment->vmaddr);
             found_text_seg = true;
             break;
         }
@@ -201,6 +202,12 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
         return PLCRASH_EINVAL;
     }
 
+    /* Compute the vmaddr slide */
+    if (text_vmaddr < header)
+        image->vmaddr_slide = header - text_vmaddr;
+    else
+        image->vmaddr_slide = text_vmaddr - header;
+    
     return PLCRASH_ESUCCESS;
 }
 

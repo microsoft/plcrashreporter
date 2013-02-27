@@ -95,12 +95,12 @@ void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
  *
  * @warning This method is not async safe.
  */
-void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, int64_t vmaddr_slide, const char *name) {
+void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, const char *name) {
     plcrash_error_t ret;
 
     /* Initialize the new entry. */
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
-    if ((ret = plcrash_nasync_macho_init(&new->macho_image, list->task, name, header, vmaddr_slide)) != PLCRASH_ESUCCESS) {
+    if ((ret = plcrash_nasync_macho_init(&new->macho_image, list->task, name, header)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Unexpected failure initializing Mach-O structure for %s: %d", name, ret);
         
         plcrash_nasync_macho_free(&new->macho_image);
