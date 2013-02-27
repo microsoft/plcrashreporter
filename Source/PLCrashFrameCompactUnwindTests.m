@@ -31,6 +31,9 @@
 
 #import <TargetConditionals.h>
 
+#import <mach-o/fat.h>
+#import <mach-o/arch.h>
+
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
 #define TEST_BINARY @"test.macosx"
 #elif TARGET_OS_SIMULATOR
@@ -74,32 +77,70 @@
 - (NSData *) dataForTestResource: (NSString *) resourceName {
     NSError *error;
     NSString *path = [self pathForTestResource: resourceName];
-    NSData *result = [NSData dataWithContentsOfFile: path options: NSDataReadingMappedIfSafe error: &error];
+    NSData *result = [NSData dataWithContentsOfFile: path options: NSDataReadingUncached error: &error];
     NSAssert(result != nil, @"Failed to load resource data: %@", error);
     
     return result;
 }
 
+- (void) findBinary: (plcrash_async_mobject_t *) mobj offset: (uint32_t *) offset size: (uint32_t *) size {
+    struct fat_header *fh = plcrash_async_mobject_remap_address(mobj, mobj->task_address, sizeof(struct fat_header));
+    STAssertNotNULL(fh, @"Could not load fat header");
+    
+    if (fh->magic != FAT_MAGIC && fh->magic != FAT_CIGAM)
+        STFail(@"Not a fat binary!");
+
+    /* Load all the fat architectures */
+    pl_vm_address_t base = mobj->task_address + sizeof(*fh);
+    uint32_t count = OSSwapBigToHostInt32(fh->nfat_arch);
+    struct fat_arch *archs = calloc(count, sizeof(*archs));
+    for (uint32_t i = 0; i < count; i++) {
+        struct fat_arch *fa = plcrash_async_mobject_remap_address(mobj, base+(i*sizeof(*fa)), sizeof(*fa));
+        archs[i].cputype = OSSwapBigToHostInt32(fa->cputype);
+        archs[i].cpusubtype = OSSwapBigToHostInt32(fa->cpusubtype);
+        archs[i].offset = OSSwapBigToHostInt32(fa->offset);
+        archs[i].size = OSSwapBigToHostInt32(fa->size);
+        archs[i].align = OSSwapBigToHostInt32(fa->align);
+    }
+
+    /* Find the right architecture */
+    const NXArchInfo *local_arch = NXGetLocalArchInfo();
+    const struct fat_arch *best_arch = NXFindBestFatArch(local_arch->cputype, local_arch->cpusubtype, archs, count);
+    STAssertNotNULL(best_arch, @"Could not find a matching entry for the host architecture");
+
+    /* Clean up */
+    free(archs);
+
+    /* Done! */
+    *offset = best_arch->offset;
+    *size = best_arch->size;
+}
+
 - (void) testSomething {
-#if 0
+    plcrash_async_mobject_t imageData;
+    uint32_t offset, length;
+
     /* Load the image into a memory object */
     NSData *mappedImage = [self dataForTestResource: TEST_BINARY];
-    plcrash_async_mobject_t imageData;
     plcrash_async_mobject_init(&imageData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length]);
+    /* Find a binary that matches the host */
+    [self findBinary: &imageData offset: &offset size: &length];
+    void *macho_ptr = plcrash_async_mobject_remap_address(&imageData, imageData.task_address + offset, length);
+    STAssertNotNULL(macho_ptr, @"Discovered binary is not within the mapped memory range");
 
     /* Parse the image */
     plcrash_async_macho_t image;
     plcrash_async_mobject_t sect;
     plcrash_error_t err;
 
-    err = plcrash_nasync_macho_init(&image, mach_task_self(), [TEST_BINARY UTF8String], imageData.address, 0);
+    err = plcrash_nasync_macho_init(&image, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
 
     err = plcrash_async_macho_map_section(&image, SEG_TEXT, "__unwind_info", &sect);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
 
     plcrash_async_mobject_free(&sect);
-#endif
+    plcrash_async_mobject_free(&imageData);
 }
 
 @end
