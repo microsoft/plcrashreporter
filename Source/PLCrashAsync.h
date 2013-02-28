@@ -193,6 +193,9 @@ typedef struct plcrash_async_byteorder {
 extern const plcrash_async_byteorder_t plcrash_async_byteorder_swapped;
 extern const plcrash_async_byteorder_t plcrash_async_byteorder_direct;
 
+extern const plcrash_async_byteorder_t *plcrash_async_byteorder_little_endian (void);
+extern const plcrash_async_byteorder_t *plcrash_async_byteorder_big_endian (void);
+
 /**
  * @internal
  * @ingroup plcrash_async_bufio

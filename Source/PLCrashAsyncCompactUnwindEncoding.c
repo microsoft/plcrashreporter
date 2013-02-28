@@ -45,15 +45,29 @@
  * @param reader The reader instance to initialize.
  * @param mobj The memory object containing CFE data at the start address. This instance must survive for the lifetime
  * of the reader.
+ * @param cpu_type The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
+ * architecture-specific, and Apple has not defined encodings for all supported architectures.
  */
-plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj) {
+plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype) {
     reader->mobj = mobj;
+    reader->cputype = cputype;
+
+    /* Determine the expected encoding */
+    switch (cputype) {
+        case CPU_TYPE_X86:
+        case CPU_TYPE_X86_64:
+            reader->byteorder = plcrash_async_byteorder_little_endian();
+            reader->byteorder = plcrash_async_byteorder_little_endian();
+            break;
+
+        default:
+            PLCF_DEBUG("Unsupported CPU type: %" PRIu32, cputype);
+            return PLCRASH_ENOTSUP;
+    }
 
     /* Fetch and verify the header */
     struct unwind_info_section_header *header = plcrash_async_mobject_remap_address(mobj, plcrash_async_mobject_base_address(mobj), sizeof(*header));
-    // TODO - byte order. CFE assumes host byte order
-    if (header->version != 1) {
-        // TODO
+    if (reader->byteorder->swap32(header->version) != 1) {
         PLCF_DEBUG("Unsupported CFE version: %" PRIu32, header->version);
         return PLCRASH_ENOTSUP;
     }

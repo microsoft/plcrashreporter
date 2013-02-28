@@ -88,6 +88,32 @@ const plcrash_async_byteorder_t plcrash_async_byteorder_direct = {
 };
 
 /**
+ * Return byte order functions that may be used to swap to/from little endian to host byte order.
+ */
+extern const plcrash_async_byteorder_t *plcrash_async_byteorder_little_endian (void) {
+#if defined(__LITTLE_ENDIAN__)
+    return &plcrash_async_byteorder_direct;
+#elif defined(__BIG_ENDIAN__)
+    return &plcrash_async_byteorder_swapped;
+#else
+#error Unknown byte order
+#endif
+}
+
+/**
+ * Return byte order functions that may be used to swap to/from big endian to host byte order.
+ */
+extern const plcrash_async_byteorder_t *plcrash_async_byteorder_big_endian (void) {
+#if defined(__LITTLE_ENDIAN__)
+    return &plcrash_async_byteorder_swapped;
+#elif defined(__BIG_ENDIAN__)
+    return &plcrash_async_byteorder_direct;
+#else
+#error Unknown byte order
+#endif
+}
+
+/**
  * Return an error description for the given plcrash_error_t.
  */
 const char *plcrash_async_strerror (plcrash_error_t error) {

@@ -56,7 +56,7 @@
     plcrash_async_mobject_t _machoData;
     
     /** The parsed Mach-O file (this will be a subset of _imageData) */
-    plcrash_async_macho_t _macho;
+    plcrash_async_macho_t _image;
 }
 @end
 
@@ -143,12 +143,12 @@
     /* Parse the image */
     plcrash_error_t err;
     
-    err = plcrash_nasync_macho_init(&_macho, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
+    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
 }
 
 - (void) tearDown {
-    plcrash_nasync_macho_free(&_macho);
+    plcrash_nasync_macho_free(&_image);
     plcrash_async_mobject_free(&_machoData);
 }
 
@@ -160,10 +160,11 @@
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
 
-    err = plcrash_async_macho_map_section(&_macho, SEG_TEXT, "__unwind_info", &mobj);
+    err = plcrash_async_macho_map_section(&_image, SEG_TEXT, "__unwind_info", &mobj);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
-
-    err = plcrash_async_cfe_reader_init(&reader, &mobj);
+    
+    cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
+    err = plcrash_async_cfe_reader_init(&reader, &mobj, cputype);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
 }
 

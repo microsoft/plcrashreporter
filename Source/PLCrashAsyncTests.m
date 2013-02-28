@@ -65,6 +65,18 @@
     [_outputFile release];
 }
 
+- (void) testByteOrderDetection {
+    if (OSHostByteOrder() == OSLittleEndian) {
+        STAssertEquals(plcrash_async_byteorder_little_endian(), &plcrash_async_byteorder_direct, @"Incorrect byte order");
+        STAssertEquals(plcrash_async_byteorder_big_endian(), &plcrash_async_byteorder_swapped, @"Incorrect byte order");
+    } else if (OSHostByteOrder() == OSBigEndian) {
+        STAssertEquals(plcrash_async_byteorder_big_endian(), &plcrash_async_byteorder_direct, @"Incorrect byte order");
+        STAssertEquals(plcrash_async_byteorder_little_endian(), &plcrash_async_byteorder_swapped, @"Incorrect byte order");
+    } else {
+        STFail(@"Unknown byte order");
+    }
+}
+
 - (void) test_readAddr {
     const char bytes[] = "Hello";
     char dest[sizeof(bytes)];
