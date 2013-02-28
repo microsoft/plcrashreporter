@@ -24,20 +24,4 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
-#import "GTMSenTestCase.h"
-#import "PLCrashFrameCompactUnwind.h"
-
-/**
- * @internal
- *
- * This code tests compact frame unwinding.
- */
-@interface PLCrashFrameCompactUnwindTests : SenTestCase {
-@private
-}
-@end
-
-@implementation PLCrashFrameCompactUnwindTests
-
-@end
+#import "PLCrashAsyncCompactUnwindEncoding.h"
