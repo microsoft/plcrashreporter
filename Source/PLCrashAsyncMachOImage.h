@@ -112,6 +112,7 @@ void *plcrash_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const 
 plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg);
 plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj);
 plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
+plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc);
 
 void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);
 

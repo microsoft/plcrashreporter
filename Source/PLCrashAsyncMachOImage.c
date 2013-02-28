@@ -529,6 +529,20 @@ static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image
     return true;
 }
 
+
+/**
+ * Attempt to locate a symbol address for @a symbol name within @a image.
+ *
+ * @param image The Mach-O image to search for @a symbol
+ * @param symbol The symbol name to search for.
+ * @param pc On success, will be set to the address of the symbol.
+ *
+ * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, the contents of @a pc are undefined.
+ */
+plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc) {
+    return PLCRASH_EUNKNOWN;
+}
+
 /**
  * Attempt to locate a symbol address and name for @a pc within @a image. This is performed using best-guess heuristics, and may
  * be incorrect.
