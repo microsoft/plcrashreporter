@@ -1,4 +1,7 @@
 /*
+ * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Gwynne Raskind <gwynne@darkrainfall.org>
+ *
  * Copyright (c) 2013 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
@@ -27,7 +30,6 @@
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 
 #include <inttypes.h>
-#include <mach-o/compact_unwind_encoding.h>
 
 /**
  * @internal
@@ -65,7 +67,6 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
     }
 
     /* Fetch and verify the header */
-    const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     pl_vm_address_t base_addr = plcrash_async_mobject_base_address(mobj);
     struct unwind_info_section_header *header = plcrash_async_mobject_remap_address(mobj, base_addr, sizeof(*header));
     if (header == NULL) {
@@ -74,19 +75,34 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
     }
 
     /* Verify the format version */
-    if (byteorder->swap32(header->version) != 1) {
-        PLCF_DEBUG("Unsupported CFE version: %" PRIu32, header->version);
+    uint32_t version = reader->byteorder->swap32(header->version);
+    if (version != 1) {
+        PLCF_DEBUG("Unsupported CFE version: %" PRIu32, version);
         return PLCRASH_ENOTSUP;
     }
 
+    reader->header = *header;
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * TODO
+ *
+ * @param reader The initialized CFE reader.
+ * @param ip The instruction pointer to search for within the CFE data.
+ */
+plcrash_error_t plcrash_async_cfe_reader_find_ip (plcrash_async_cfe_reader_t *reader, pl_vm_address_t ip) {
+    const plcrash_async_byteorder_t *byteorder = reader->byteorder;
+
     /* Find the index */
     struct unwind_info_section_header_index_entry *index_entry;
-    uint32_t index_off = byteorder->swap32(header->indexSectionOffset);
-    uint32_t index_count = byteorder->swap32(header->indexCount);
-
+    uint32_t index_off = byteorder->swap32(reader->header.indexSectionOffset);
+    uint32_t index_count = byteorder->swap32(reader->header.indexCount);
+    
     // TODO - binary search for the index entry
     // TODO - unbounded index_count could trigger overflow
-    index_entry = plcrash_async_mobject_remap_address(mobj, base_addr + index_off, index_count * sizeof(*index_entry));
+    pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
+    index_entry = plcrash_async_mobject_remap_address(reader->mobj, base_addr + index_off, index_count * sizeof(*index_entry));
     if (index_entry == NULL) {
         PLCF_DEBUG("Could not map the full unwind info section index");
         return PLCRASH_EINVAL;

@@ -30,6 +30,8 @@
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncImageList.h"
 
+#include <mach-o/compact_unwind_encoding.h>
+
 /**
  * @internal
  * @ingroup plcrash_async_cfe
@@ -46,11 +48,17 @@ typedef struct plcrash_async_cfe_reader {
     /** The target CPU type. */
     cpu_type_t cputype;
 
-    /** The byte order of the encoded data. */
+    /** The unwind info header. Note that the header values may require byte-swapping for the local process' use. */
+    struct unwind_info_section_header header;
+
+    /** The byte order of the encoded data (including the header). */
     const plcrash_async_byteorder_t *byteorder;
 } plcrash_async_cfe_reader_t;
 
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype);
+
+plcrash_error_t plcrash_async_cfe_reader_find_ip (plcrash_async_cfe_reader_t *reader, pl_vm_address_t ip);
+
 void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader);
 
 /**
