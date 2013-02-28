@@ -62,6 +62,23 @@
     plcrash_async_mobject_free(&mobj);
 }
 
+- (void) testBaseAddress {
+    size_t size = vm_page_size+1;
+    uint8_t template[size];
+    
+    /* Map the memory */
+    plcrash_async_mobject_t mobj;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size), @"Failed to initialize mapping");
+    STAssertEquals((pl_vm_address_t)template, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Incorrect slide value!");
+    
+    /* Test base address accessor */
+    STAssertEquals((pl_vm_address_t) &template, plcrash_async_mobject_base_address(&mobj), @"Incorrect base address");
+    
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
+
+}
+
 
 /**
  * Test mapped object pointer validation.
