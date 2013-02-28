@@ -24,7 +24,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashAsyncCompactUnwindEncoding.h"
+#include "PLCrashAsyncCompactUnwindEncoding.h"
+
+#include <inttypes.h>
+#include <mach-o/compact_unwind_encoding.h>
 
 /**
  * @internal
@@ -45,6 +48,16 @@
  */
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj) {
     reader->mobj = mobj;
+
+    /* Fetch and verify the header */
+    struct unwind_info_section_header *header = plcrash_async_mobject_remap_address(mobj, plcrash_async_mobject_base_address(mobj), sizeof(*header));
+    // TODO - byte order. CFE assumes host byte order
+    if (header->version != 1) {
+        // TODO
+        PLCF_DEBUG("Unsupported CFE version: %" PRIu32, header->version);
+        return PLCRASH_ENOTSUP;
+    }
+
     return PLCRASH_ESUCCESS;
 }
 
