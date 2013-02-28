@@ -37,6 +37,18 @@
  */
 
 /**
+ * Supported CFE formats. Interpreting CFE data is architecture-specific, and Apple has
+ * not defined encodings for all supported architectures.
+ */
+typedef enum {
+    /** x86(-32). */
+    PLCRASH_ASYNC_CFE_FORMAT_X86 = 1,
+
+    /** x86-64. */
+    PLCRASH_ASYNC_CFE_FORMAT_X86_64 = 2,
+} plcrash_async_cfe_format_t;
+
+/**
  * A CFE reader instance. Performs CFE data parsing from a backing memory object.
  */
 typedef struct plcrash_async_cfe_reader {
