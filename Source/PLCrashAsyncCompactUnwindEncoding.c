@@ -57,7 +57,6 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
         case CPU_TYPE_X86:
         case CPU_TYPE_X86_64:
             reader->byteorder = plcrash_async_byteorder_little_endian();
-            reader->byteorder = plcrash_async_byteorder_little_endian();
             break;
 
         default:
