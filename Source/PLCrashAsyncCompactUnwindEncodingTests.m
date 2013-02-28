@@ -26,7 +26,8 @@
 
 
 #import "GTMSenTestCase.h"
-#import "PLCrashFrameCompactUnwind.h"
+
+#import "PLCrashAsyncCompactUnwindEncoding.h"
 #import "PLCrashAsyncMachOImage.h"
 
 #import <TargetConditionals.h>
@@ -151,8 +152,19 @@
     plcrash_async_mobject_free(&_machoData);
 }
 
-- (void) testSomething {
-    
+/**
+ * Test reader initialization.
+ */
+- (void) testInitReader {
+    plcrash_async_cfe_reader_t reader;
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+
+    err = plcrash_async_macho_map_section(&_macho, SEG_TEXT, "__unwind_info", &mobj);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
+
+    err = plcrash_async_cfe_reader_init(&reader, &mobj);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
 }
 
 @end

@@ -25,3 +25,36 @@
  */
 
 #import "PLCrashAsyncCompactUnwindEncoding.h"
+
+/**
+ * @internal
+ * @ingroup plcrash_async
+ * @defgroup plcrash_async_cfe Compact Frame Encoding
+ *
+ * Implements async-safe parsing of compact frame unwind encodings.
+ * @{
+ */
+
+/**
+ * Initialize a new CFE reader using the provided memory object. Any resources held by a fully or partially initialized
+ * instance must be freed via plcrash_async_cfe_reader_free();
+ *
+ * @param reader The reader instance to initialize.
+ * @param mobj The memory object containing CFE data at the start address. This instance must survive for the lifetime
+ * of the reader.
+ */
+plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj) {
+    reader->mobj = mobj;
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Free all resources associated with @a reader.
+ */
+void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
+    // noop
+}
+
+/**
+ * @} plcrash_async_cfe
+ */

@@ -24,3 +24,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_ASYNC_COMPACT_UNWIND_ENCODING_H
+#define PLCRASH_ASYNC_COMPACT_UNWIND_ENCODING_H 1
+
+#include "PLCrashAsync.h"
+#include "PLCrashAsyncImageList.h"
+
+/**
+ * @internal
+ * @ingroup plcrash_async_cfe
+ * @{
+ */
+
+/**
+ * A CFE reader instance. Performs CFE data parsing from a backing memory object.
+ */
+typedef struct plcrash_async_cfe_reader {
+    /** A memory object containing the CFE data at the starting address. */
+    plcrash_async_mobject_t *mobj;
+} plcrash_async_cfe_reader_t;
+
+plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *cfe, plcrash_async_mobject_t *mobj);
+void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *cfe);
+
+/**
+ * @} plcrash_async_cfe
+ */
+
+#endif /* PLCRASH_ASYNC_COMPACT_UNWIND_ENCODING_H */
