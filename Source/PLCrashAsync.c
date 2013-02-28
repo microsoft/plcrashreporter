@@ -43,6 +43,50 @@
  * @{
  */
 
+
+/* Simple byteswap wrappers */
+static uint16_t plcr_swap16 (uint16_t input) {
+    return OSSwapInt16(input);
+}
+
+static uint16_t plcr_nswap16 (uint16_t input) {
+    return input;
+}
+
+static uint32_t plcr_swap32 (uint32_t input) {
+    return OSSwapInt32(input);
+}
+
+static uint32_t plcr_nswap32 (uint32_t input) {
+    return input;
+}
+
+static uint64_t plcr_swap64 (uint64_t input) {
+    return OSSwapInt64(input);
+}
+
+static uint64_t plcr_nswap64 (uint64_t input) {
+    return input;
+}
+
+/**
+ * Byte swap functions for a target using the reverse of the host's byte order.
+ */
+const plcrash_async_byteorder_t plcrash_async_byteorder_swapped = {
+    .swap16 = plcr_swap16,
+    .swap32 = plcr_swap32,
+    .swap64 = plcr_swap64
+};
+
+/**
+ * Byte swap functions for a target using the host's byte order. No swapping will be performed.
+ */
+const plcrash_async_byteorder_t plcrash_async_byteorder_direct = {
+    .swap16 = plcr_nswap16,
+    .swap32 = plcr_nswap32,
+    .swap64 = plcr_nswap64
+};
+
 /**
  * Return an error description for the given plcrash_error_t.
  */

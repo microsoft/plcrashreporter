@@ -112,8 +112,8 @@
 
     while ((cmd = plcrash_async_macho_next_command_type(&_image, cmd, LC_UUID)) != 0) {
         /* Validate the command type and size */
-        STAssertEquals(_image.swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
-        STAssertEquals((size_t)_image.swap32(cmd->cmdsize), sizeof(struct uuid_command), @"Incorrect load command size returned by iterator");
+        STAssertEquals(_image.byteorder->swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
+        STAssertEquals((size_t)_image.byteorder->swap32(cmd->cmdsize), sizeof(struct uuid_command), @"Incorrect load command size returned by iterator");
 
         STAssertFalse(found_uuid, @"Duplicate LC_UUID load commands iterated");
         found_uuid = true;
@@ -148,8 +148,8 @@
 - (void) testFindCommand {
     struct load_command *cmd = plcrash_async_macho_find_command(&_image, LC_UUID);
     STAssertNotNULL(cmd, @"Failed to find command");
-    STAssertEquals(_image.swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
-    STAssertEquals(_image.swap32(cmd->cmdsize), (uint32_t)sizeof(struct uuid_command), @"Incorrect load command size returned");
+    STAssertEquals(_image.byteorder->swap32(cmd->cmd), (uint32_t)LC_UUID, @"Incorrect load command returned");
+    STAssertEquals(_image.byteorder->swap32(cmd->cmdsize), (uint32_t)sizeof(struct uuid_command), @"Incorrect load command size returned");
     
     /* Test the case where there are no matches. LC_SUB_UMBRELLA should never be used in a unit tests binary. */
     cmd = plcrash_async_macho_find_command(&_image, LC_SUB_UMBRELLA);
@@ -177,15 +177,15 @@
     /* Fetch the segment command for further comparison */
     struct load_command *cmd = plcrash_async_macho_find_segment_cmd(&_image, "__LINKEDIT");
     STAssertNotNULL(data, @"Could not fetch segment command");
-    if (_image.swap32(cmd->cmd) == LC_SEGMENT) {
+    if (_image.byteorder->swap32(cmd->cmd) == LC_SEGMENT) {
         struct segment_command *segcmd = (struct segment_command *) cmd;
-        STAssertEquals(seg.fileoff, (uint64_t) _image.swap32(segcmd->fileoff), @"File offset does not match");
-        STAssertEquals(seg.filesize, (uint64_t) _image.swap32(segcmd->filesize), @"File size does not match");
+        STAssertEquals(seg.fileoff, (uint64_t) _image.byteorder->swap32(segcmd->fileoff), @"File offset does not match");
+        STAssertEquals(seg.filesize, (uint64_t) _image.byteorder->swap32(segcmd->filesize), @"File size does not match");
 
-    } else if (_image.swap32(cmd->cmd) == LC_SEGMENT_64) {
+    } else if (_image.byteorder->swap32(cmd->cmd) == LC_SEGMENT_64) {
         struct segment_command_64 *segcmd = (struct segment_command_64 *) cmd;
-        STAssertEquals(seg.fileoff, _image.swap64(segcmd->fileoff), @"File offset does not match");
-        STAssertEquals(seg.filesize, _image.swap64(segcmd->filesize), @"File size does not match");
+        STAssertEquals(seg.fileoff, _image.byteorder->swap64(segcmd->fileoff), @"File offset does not match");
+        STAssertEquals(seg.filesize, _image.byteorder->swap64(segcmd->filesize), @"File size does not match");
     } else {
         STFail(@"Unsupported command type!");
     }

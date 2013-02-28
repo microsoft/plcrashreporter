@@ -46,32 +46,6 @@
  * @{
  */
 
-/* Simple byteswap wrappers */
-static uint16_t macho_swap16 (uint16_t input) {
-    return OSSwapInt16(input);
-}
-
-static uint16_t macho_nswap16 (uint16_t input) {
-    return input;
-}
-
-static uint32_t macho_swap32 (uint32_t input) {
-    return OSSwapInt32(input);
-}
-
-static uint32_t macho_nswap32 (uint32_t input) {
-    return input;
-}
-
-static uint64_t macho_swap64 (uint64_t input) {
-    return OSSwapInt64(input);
-}
-
-static uint64_t macho_nswap64 (uint64_t input) {
-    return input;
-}
-
-
 /**
  * Initialize a new Mach-O binary image parser.
  *
@@ -102,18 +76,14 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
         return PLCRASH_EINTERNAL;
     }
     
-    /* Set the default swap implementations */
-    image->swap16 = macho_nswap16;
-    image->swap32 = macho_nswap32;
-    image->swap64 = macho_nswap64;
+    /* Set the default byte order*/
+    image->byteorder = &plcrash_async_byteorder_direct;
 
     /* Parse the Mach-O magic identifier. */
     switch (image->header.magic) {
         case MH_CIGAM:
             // Enable byte swapping
-            image->swap16 = macho_swap16;
-            image->swap32 = macho_swap32;
-            image->swap64 = macho_swap64;
+            image->byteorder = &plcrash_async_byteorder_swapped;
             // Fall-through
 
         case MH_MAGIC:
@@ -122,9 +92,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             
         case MH_CIGAM_64:
             // Enable byte swapping
-            image->swap16 = macho_swap16;
-            image->swap32 = macho_swap32;
-            image->swap64 = macho_swap64;
+            image->byteorder = &plcrash_async_byteorder_swapped;
             // Fall-through
             
         case MH_MAGIC_64:
@@ -151,9 +119,9 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     
     /* Map in load commands */
     /* Map in header + load commands */
-    pl_vm_size_t cmd_len = image->swap32(image->header.sizeofcmds);
+    pl_vm_size_t cmd_len = image->byteorder->swap32(image->header.sizeofcmds);
     pl_vm_size_t cmd_offset = image->header_addr + image->header_size;
-    image->ncmds = image->swap32(image->header.ncmds);
+    image->ncmds = image->byteorder->swap32(image->header.ncmds);
     plcrash_error_t ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len);
     if (ret != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to map Mach-O load commands in image %s", image->name);
@@ -176,8 +144,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
                 continue;
 
-            image->text_size = image->swap64(segment->vmsize);
-            text_vmaddr = image->swap64(segment->vmaddr);
+            image->text_size = image->byteorder->swap64(segment->vmsize);
+            text_vmaddr = image->byteorder->swap64(segment->vmaddr);
             found_text_seg = true;
             break;
         } else {
@@ -190,8 +158,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
                 continue;
             
-            image->text_size = image->swap32(segment->vmsize);
-            text_vmaddr = image->swap32(segment->vmaddr);
+            image->text_size = image->byteorder->swap32(segment->vmsize);
+            text_vmaddr = image->byteorder->swap32(segment->vmaddr);
             found_text_seg = true;
             break;
         }
@@ -228,7 +196,7 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
     /* On the first iteration, determine the LC_CMD offset from the Mach-O header. */
     if (previous == NULL) {
         /* Sanity check */
-        if (image->swap32(image->header.sizeofcmds) < sizeof(struct load_command)) {
+        if (image->byteorder->swap32(image->header.sizeofcmds) < sizeof(struct load_command)) {
             PLCF_DEBUG("Mach-O sizeofcmds is less than sizeof(struct load_command) in %s", image->name);
             return NULL;
         }
@@ -245,7 +213,7 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
     }
 
     /* Advance to the next command */
-    uint32_t cmdsize = image->swap32(cmd->cmdsize);
+    uint32_t cmdsize = image->byteorder->swap32(cmd->cmdsize);
     void *next = ((uint8_t *)previous) + cmdsize;
 
     /* Avoid walking off the end of the cmd buffer */
@@ -260,7 +228,7 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
 
     /* Verify the actual size. */
     cmd = next;
-    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, image->swap32(cmd->cmdsize))) {
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, image->byteorder->swap32(cmd->cmdsize))) {
         PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
         return NULL;
     }
@@ -286,7 +254,7 @@ void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void 
     /* Iterate commands until we either find a match, or reach the end */
     while ((cmd = plcrash_async_macho_next_command(image, cmd)) != NULL) {
         /* Return a match */
-        if (image->swap32(cmd->cmd) == expectedCommand) {
+        if (image->byteorder->swap32(cmd->cmd) == expectedCommand) {
             return cmd;
         }
     }
@@ -319,7 +287,7 @@ void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t e
         }
 
         /* Return a match */
-        if (image->swap32(cmd->cmd) == expectedCommand) {
+        if (image->byteorder->swap32(cmd->cmd) == expectedCommand) {
             return cmd;
         }
     }
@@ -385,17 +353,17 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
     pl_vm_address_t segaddr;
     pl_vm_size_t segsize;
     if (image->m64) {
-        segaddr = image->swap64(cmd_64->vmaddr) + image->vmaddr_slide;
-        segsize = image->swap64(cmd_64->vmsize);
+        segaddr = image->byteorder->swap64(cmd_64->vmaddr) + image->vmaddr_slide;
+        segsize = image->byteorder->swap64(cmd_64->vmsize);
 
-        seg->fileoff = image->swap64(cmd_64->fileoff);
-        seg->filesize = image->swap64(cmd_64->filesize);
+        seg->fileoff = image->byteorder->swap64(cmd_64->fileoff);
+        seg->filesize = image->byteorder->swap64(cmd_64->filesize);
     } else {
-        segaddr = image->swap32(cmd_32->vmaddr) + image->vmaddr_slide;
-        segsize = image->swap32(cmd_32->vmsize);
+        segaddr = image->byteorder->swap32(cmd_32->vmaddr) + image->vmaddr_slide;
+        segsize = image->byteorder->swap32(cmd_32->vmsize);
         
-        seg->fileoff = image->swap32(cmd_32->fileoff);
-        seg->filesize = image->swap32(cmd_32->filesize);
+        seg->fileoff = image->byteorder->swap32(cmd_32->fileoff);
+        seg->filesize = image->byteorder->swap32(cmd_32->filesize);
     }
 
     /* Perform and return the mapping */
@@ -465,11 +433,11 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
             pl_vm_address_t sectaddr;
             pl_vm_size_t sectsize;
             if (image->m64) {
-                sectaddr = image->swap64(sect_64->addr) + image->vmaddr_slide;
-                sectsize = image->swap32(sect_64->size);
+                sectaddr = image->byteorder->swap64(sect_64->addr) + image->vmaddr_slide;
+                sectsize = image->byteorder->swap32(sect_64->size);
             } else {
-                sectaddr = image->swap32(sect_32->addr) + image->vmaddr_slide;
-                sectsize = image->swap32(sect_32->size);
+                sectaddr = image->byteorder->swap32(sect_32->addr) + image->vmaddr_slide;
+                sectsize = image->byteorder->swap32(sect_32->size);
             }
             
             
@@ -530,7 +498,7 @@ static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image
 #undef pl_m_sizeof
     }
     
-#define pl_sym_value(nl) (image->m64 ? image->swap64((nl)->n64.n_value) : image->swap32((nl)->n32.n_value))
+#define pl_sym_value(nl) (image->m64 ? image->byteorder->swap64((nl)->n64.n_value) : image->byteorder->swap32((nl)->n32.n_value))
     
     /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
      * plcrash_async_mobject_remap_address() above. */
@@ -598,32 +566,32 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
     }
 
     /* Determine the string and symbol table sizes. */
-    uint32_t nsyms = image->swap32(symtab_cmd->nsyms);
+    uint32_t nsyms = image->byteorder->swap32(symtab_cmd->nsyms);
     size_t nlist_struct_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
     size_t nlist_table_size = nsyms * nlist_struct_size;
 
-    size_t string_size = image->swap32(symtab_cmd->strsize);
+    size_t string_size = image->byteorder->swap32(symtab_cmd->strsize);
 
     /* Fetch pointers to the symbol and string tables, and verify their size values */
     void *nlist_table;
     char *string_table;
 
     nlist_table = plcrash_async_mobject_remap_address(&linkedit_seg.mobj,
-                                                      linkedit_seg.mobj.task_address + (image->swap32(symtab_cmd->symoff) - linkedit_seg.fileoff),
+                                                      linkedit_seg.mobj.task_address + (image->byteorder->swap32(symtab_cmd->symoff) - linkedit_seg.fileoff),
                                                       nlist_table_size);
     if (nlist_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
-                   (uint64_t) linkedit_seg.mobj.address + image->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
+                   (uint64_t) linkedit_seg.mobj.address + image->byteorder->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
 
     string_table = plcrash_async_mobject_remap_address(&linkedit_seg.mobj,
-                                                       linkedit_seg.mobj.task_address + (image->swap32(symtab_cmd->stroff) - linkedit_seg.fileoff),
+                                                       linkedit_seg.mobj.task_address + (image->byteorder->swap32(symtab_cmd->stroff) - linkedit_seg.fileoff),
                                                        string_size);
     if (string_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
-                   (uint64_t) linkedit_seg.mobj.address + image->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
+                   (uint64_t) linkedit_seg.mobj.address + image->byteorder->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
         retval = PLCRASH_EINTERNAL;
         goto cleanup;
     }
@@ -635,11 +603,11 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
     if (dysymtab_cmd != NULL) {
         /* dysymtab is available; use it to constrain our symbol search to the global and local sections of the symbol table. */
 
-        uint32_t idx_syms_global = image->swap32(dysymtab_cmd->iextdefsym);
-        uint32_t idx_syms_local = image->swap32(dysymtab_cmd->ilocalsym);
+        uint32_t idx_syms_global = image->byteorder->swap32(dysymtab_cmd->iextdefsym);
+        uint32_t idx_syms_local = image->byteorder->swap32(dysymtab_cmd->ilocalsym);
         
-        uint32_t nsyms_global = image->swap32(dysymtab_cmd->nextdefsym);
-        uint32_t nsyms_local = image->swap32(dysymtab_cmd->nlocalsym);
+        uint32_t nsyms_global = image->byteorder->swap32(dysymtab_cmd->nextdefsym);
+        uint32_t nsyms_local = image->byteorder->swap32(dysymtab_cmd->nlocalsym);
 
         /* Sanity check the symbol offsets to ensure they're within our known-valid ranges */
         if (idx_syms_global + nsyms_global > nsyms || idx_syms_local + nsyms_local > nsyms) {
@@ -681,7 +649,7 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
      * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_verify_local_pointer(). We should
      * probably validate whole pages at a time instead.
      */
-    const char *sym_name = string_table + image->swap32(found_symbol->n32.n_un.n_strx);
+    const char *sym_name = string_table + image->byteorder->swap32(found_symbol->n32.n_un.n_strx);
     const char *p = sym_name;
     do {
         if (!plcrash_async_mobject_verify_local_pointer(&linkedit_seg.mobj, (uintptr_t) p, 1)) {
@@ -694,7 +662,7 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
 
     /* Determine the correct symbol address. We have to set the low-order bit ourselves for ARM THUMB functions. */
     vm_address_t sym_addr = 0x0;
-    if (image->swap16(found_symbol->n32.n_desc) & N_ARM_THUMB_DEF)
+    if (image->byteorder->swap16(found_symbol->n32.n_desc) & N_ARM_THUMB_DEF)
         sym_addr = (pl_sym_value(found_symbol)|1) + image->vmaddr_slide;
     else
         sym_addr = pl_sym_value(found_symbol) + image->vmaddr_slide;

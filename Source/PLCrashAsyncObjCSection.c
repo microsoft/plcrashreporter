@@ -324,7 +324,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
     plcrash_error_t err;
     
     /* Get the class's name. */
-    pl_vm_address_t namePtr = image->swap32(class->name);
+    pl_vm_address_t namePtr = image->byteorder->swap32(class->name);
     bool classNameInitialized = false;
     plcrash_async_macho_string_t className;
     err = plcrash_async_macho_string_init(&className, image, namePtr);
@@ -338,12 +338,12 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
      * a single method_list structure, OR a pointer to an array
      * of pointers to method_list structures, depending on the
      * flag in the .info field. Argh. */
-    pl_vm_address_t methodListPtr = image->swap32(class->methods);
+    pl_vm_address_t methodListPtr = image->byteorder->swap32(class->methods);
     
     /* If CLS_NO_METHOD_ARRAY is set, then methodListPtr points to
      * one method_list. If it's not set, then it points to an
      * array of pointers to method lists. */
-    bool hasMultipleMethodLists = (image->swap32(class->info) & CLS_NO_METHOD_ARRAY) == 0;
+    bool hasMultipleMethodLists = (image->byteorder->swap32(class->info) & CLS_NO_METHOD_ARRAY) == 0;
     pl_vm_address_t methodListCursor = methodListPtr;
     
     while (true) {
@@ -361,7 +361,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
                 goto cleanup;
             }
             
-            thisListPtr = image->swap32(ptr);
+            thisListPtr = image->byteorder->swap32(ptr);
             /* The end of the list is indicated with NULL or
              * END_OF_METHODS_LIST (the ObjC runtime source checks both). */
             if (thisListPtr == 0 || thisListPtr == END_OF_METHODS_LIST)
@@ -387,7 +387,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
         }
         
         /* Find out how many methods are in the list, and iterate. */
-        uint32_t count = image->swap32(methodList.count);
+        uint32_t count = image->byteorder->swap32(methodList.count);
         for (uint32_t i = 0; i < count; i++) {
             /* Method structures are laid out directly following the
              * method_list structure. */
@@ -400,7 +400,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             }
             
             /* Load the method name from the .name field pointer. */
-            pl_vm_address_t methodNamePtr = image->swap32(method.name);
+            pl_vm_address_t methodNamePtr = image->byteorder->swap32(method.name);
             plcrash_async_macho_string_t methodName;
             err = plcrash_async_macho_string_init(&methodName, image, methodNamePtr);
             if (err != PLCRASH_ESUCCESS) {
@@ -409,7 +409,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             }
             
             /* Grab the method's IMP as well. */
-            pl_vm_address_t imp = image->swap32(method.imp);
+            pl_vm_address_t imp = image->byteorder->swap32(method.imp);
             
             /* Callback! */
             callback(isMetaClass, &className, &methodName, imp, ctx);
@@ -469,7 +469,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
     /* Read successive module structs from the section until we run out of data. */
     for (unsigned moduleIndex = 0; moduleIndex < moduleMobj.length / sizeof(*moduleData); moduleIndex++) {
         /* Grab the pointer to the symtab for this module struct. */
-        pl_vm_address_t symtabPtr = image->swap32(moduleData[moduleIndex].symtab);
+        pl_vm_address_t symtabPtr = image->byteorder->swap32(moduleData[moduleIndex].symtab);
         if (symtabPtr == 0)
             continue;
         
@@ -482,7 +482,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
         }
         
         /* Iterate over the classes in the symtab. */
-        uint16_t classCount = image->swap16(symtab.cls_def_count);
+        uint16_t classCount = image->byteorder->swap16(symtab.cls_def_count);
         for (unsigned i = 0; i < classCount; i++) {
             /* Classes are indicated by pointers laid out sequentially after the
              * symtab structure. */
@@ -493,7 +493,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
                 PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
                 goto cleanup;
             }
-            classPtr = image->swap32(classPtr);
+            classPtr = image->byteorder->swap32(classPtr);
             
             /* Read a class structure from the class pointer. */
             struct pl_objc1_class class;
@@ -510,7 +510,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
             }
             
             /* Read a class structure for the metaclass. */
-            pl_vm_address_t isa = image->swap32(class.isa);
+            pl_vm_address_t isa = image->byteorder->swap32(class.isa);
             struct pl_objc1_class metaclass;
             err = plcrash_async_read_addr(image->task, isa, &metaclass, sizeof(metaclass));
             if (err != PLCRASH_ESUCCESS) {
@@ -557,8 +557,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
     /* Grab the class's data_rw pointer. This needs masking because it also
      * can contain flags. */
     pl_vm_address_t dataPtr = (image->m64
-                               ? image->swap64(class_64->data_rw)
-                               : image->swap32(class_32->data_rw));
+                               ? image->byteorder->swap64(class_64->data_rw)
+                               : image->byteorder->swap32(class_32->data_rw));
     dataPtr &= ~(pl_vm_address_t)3;
     
     
@@ -604,8 +604,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
         /* Grab the data_ro pointer. The RO data (read-only) contains the class name
          * and method list. */
         cached_data_ro_addr = (image->m64
-                     ? image->swap64(classDataRW_64.data_ro)
-                     : image->swap32(classDataRW_32.data_ro));
+                     ? image->byteorder->swap64(classDataRW_64.data_ro)
+                     : image->byteorder->swap32(classDataRW_32.data_ro));
         
         /* Validate the data pointer. It will either be heap allocated (RW_COPIED_RO), or found within the
          * __objc_const section */
@@ -647,8 +647,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
     
     /* Fetch the pointer to the class name, and make the string. */
     pl_vm_address_t classNamePtr = (image->m64
-                                    ? image->swap64(classDataRO_64->name)
-                                    : image->swap32(classDataRO_32->name));
+                                    ? image->byteorder->swap64(classDataRO_64->name)
+                                    : image->byteorder->swap32(classDataRO_32->name));
     err = plcrash_async_macho_string_init(&className, image, classNamePtr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)classNamePtr, err);
@@ -658,8 +658,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
     
     /* Fetch the pointer to the method list. */
     pl_vm_address_t methodsPtr = (image->m64
-                                  ? image->swap64(classDataRO_64->baseMethods)
-                                  : image->swap32(classDataRO_32->baseMethods));
+                                  ? image->byteorder->swap64(classDataRO_64->baseMethods)
+                                  : image->byteorder->swap32(classDataRO_32->baseMethods));
     if (methodsPtr == 0)
         goto cleanup;
     
@@ -672,8 +672,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
     }
     
     /* Extract the entry size and count from the list header. */
-    uint32_t entsize = image->swap32(header->entsize) & ~(uint32_t)3;
-    uint32_t count = image->swap32(header->count);
+    uint32_t entsize = image->byteorder->swap32(header->entsize) & ~(uint32_t)3;
+    uint32_t count = image->byteorder->swap32(header->count);
     
     /* Compute the method list start position and length. */
     pl_vm_address_t methodListStart = methodsPtr + sizeof(*header);
@@ -694,8 +694,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
         
         /* Extract the method name pointer. */
         pl_vm_address_t methodNamePtr = (image->m64
-                                         ? image->swap64(method_64->name)
-                                         : image->swap32(method_32->name));
+                                         ? image->byteorder->swap64(method_64->name)
+                                         : image->byteorder->swap32(method_32->name));
         
         /* Read the method name. */
         plcrash_async_macho_string_t methodName;
@@ -707,8 +707,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
         
         /* Extract the method IMP. */
         pl_vm_address_t imp = (image->m64
-                               ? image->swap64(method_64->imp)
-                               : image->swap32(method_32->imp));
+                               ? image->byteorder->swap64(method_64->imp)
+                               : image->byteorder->swap32(method_32->imp));
         
         /* Call the callback. */
         callback(isMetaClass, &className, &methodName, imp, ctx);
@@ -769,8 +769,8 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     for(unsigned i = 0; i < classCount; i++) {
         /* Read a class pointer at the current index from the appropriate pointer. */
         pl_vm_address_t ptr = (image->m64
-                               ? image->swap64(classPtrs_64[i])
-                               : image->swap32(classPtrs_32[i]));
+                               ? image->byteorder->swap64(classPtrs_64[i])
+                               : image->byteorder->swap32(classPtrs_32[i]));
         
         /* Read an architecture-appropriate class structure. */
         struct pl_objc2_class_32 *class_32;
@@ -793,8 +793,8 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         
         /* Read an architecture-appropriate class structure for the metaclass. */
         pl_vm_address_t isa = (image->m64
-                               ? image->swap64(class_64->isa)
-                               : image->swap32(class_32->isa));
+                               ? image->byteorder->swap64(class_64->isa)
+                               : image->byteorder->swap32(class_32->isa));
         struct pl_objc2_class_32 *metaclass_32;
         struct pl_objc2_class_64 *metaclass_64;
         void *metaclassPtr = plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, image->m64 ? sizeof(*class_64) : sizeof(*class_32));

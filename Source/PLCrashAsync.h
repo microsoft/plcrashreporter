@@ -174,6 +174,26 @@ void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
 ssize_t plcrash_async_writen (int fd, const void *data, size_t len);
 
 /**
+ * @ingroup plcrash_async
+ *
+ * Provides a set of byteswap functions that will swap from the target byte order to the host byte order.
+ * This is used to provide byte order neutral polymorphism when parsing Mach-O and other file formats.
+ */
+typedef struct plcrash_async_byteorder {
+    /** The byte-swap function to use for 16-bit values. */
+    uint16_t (*swap16)(uint16_t);
+    
+    /** The byte-swap function to use for 32-bit values. */
+    uint32_t (*swap32)(uint32_t);
+    
+    /** The byte-swap function to use for 64-bit values. */
+    uint64_t (*swap64)(uint64_t);
+} plcrash_async_byteorder_t;
+
+extern const plcrash_async_byteorder_t plcrash_async_byteorder_swapped;
+extern const plcrash_async_byteorder_t plcrash_async_byteorder_direct;
+
+/**
  * @internal
  * @ingroup plcrash_async_bufio
  *

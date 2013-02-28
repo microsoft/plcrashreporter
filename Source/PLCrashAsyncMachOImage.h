@@ -77,14 +77,8 @@ typedef struct plcrash_async_macho {
     /** If true, the image is 64-bit Mach-O. If false, it is a 32-bit Mach-O image. */
     bool m64;
 
-    /** The byte-swap function to use for 16-bit values. */
-    uint16_t (*swap16)(uint16_t);
-
-    /** The byte-swap function to use for 32-bit values. */
-    uint32_t (*swap32)(uint32_t);
-    
-    /** The byte-swap function to use for 64-bit values. */
-    uint64_t (*swap64)(uint64_t);
+    /** The byte order functions to use for this image */
+    const plcrash_async_byteorder_t *byteorder;
 } plcrash_async_macho_t;
 
 typedef struct plcrash_async_macho_mapped_segment_t {

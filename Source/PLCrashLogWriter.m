@@ -932,8 +932,8 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plc
 
     /* Fetch the CPU types. Note that the wire format represents these as 64-bit unsigned integers.
      * We explicitly cast to an equivalently sized unsigned type to prevent improper sign extension. */
-    uint64_t cpu_type = (uint32_t) image->swap32(image->header.cputype);
-    uint64_t cpu_subtype = (uint32_t) image->swap32(image->header.cpusubtype);
+    uint64_t cpu_type = (uint32_t) image->byteorder->swap32(image->header.cputype);
+    uint64_t cpu_subtype = (uint32_t) image->byteorder->swap32(image->header.cpusubtype);
 
     /* Text segment size */
     uint64_t mach_size = image->text_size;
