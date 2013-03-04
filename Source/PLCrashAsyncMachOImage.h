@@ -184,6 +184,7 @@ plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image
 
 plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_t *image);
 plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader, void *symtab, uint32_t index);
+const char *plcrash_async_macho_symtab_reader_symbol_name (plcrash_async_macho_symtab_reader_t *reader, uint32_t n_strx);
 void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t *reader);
 
 void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);

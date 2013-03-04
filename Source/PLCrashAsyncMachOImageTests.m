@@ -258,6 +258,9 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     cb_ctx->name = strdup(name);
 }
 
+/**
+ * Test basic initialization of the symbol table reader.
+ */
 - (void) testInitSymtabReader {
     plcrash_async_macho_symtab_reader_t reader;
     plcrash_error_t ret = plcrash_async_macho_symtab_reader_init(&reader, &_image);
@@ -270,14 +273,61 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     
     /* Try iterating the tables. If we don't crash, we're doing well. */
     plcrash_async_macho_symtab_entry_t entry;
-    for (uint32_t i = 0; i <reader.nsyms; i++)
+    for (uint32_t i = 0; i <reader.nsyms; i++) {
         entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab, i);
-    
+        
+        /* If the symbol is not within a section, or a debugging symbol, skip the remaining tests */
+        if ((entry.n_type & N_TYPE) != N_SECT || ((entry.n_type & N_STAB) != 0))
+            continue;
+
+        const char *sym = plcrash_async_macho_symtab_reader_symbol_name(&reader, entry.n_strx);
+        STAssertNotNULL(sym, @"Symbol name read failed");
+    }
+
     for (uint32_t i = 0; i <reader.nsyms_global; i++)
         entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab_global, i);
     
     for (uint32_t i = 0; i <reader.nsyms_local; i++)
         entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab_local, i);
+
+    plcrash_async_macho_symtab_reader_free(&reader);
+}
+
+/**
+ * Test symbol name reading.
+ */
+- (void) testReadSymbolName {
+    /* Fetch the our IMP address and symbolicate it using dladdr(). */
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
+    Dl_info dli;
+    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
+    STAssertNotNULL(dli.dli_sname, @"Symbol name was stripped!");
+    
+    /* Now walk the Mach-O table ourselves */
+    plcrash_async_macho_symtab_reader_t reader;
+    plcrash_error_t ret = plcrash_async_macho_symtab_reader_init(&reader, &_image);
+    STAssertEquals(ret, PLCRASH_ESUCCESS, @"Failed to initializer reader");
+
+    /* Find the symbol entry and extract the name name */
+    const char *sym = NULL;
+    plcrash_async_macho_symtab_entry_t entry;
+    for (uint32_t i = 0; i < reader.nsyms; i++) {
+        entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab, i);
+        /* Skip non-matching symbols */
+        if (entry.normalized_address != (pl_vm_address_t) dli.dli_saddr)
+            continue;
+        
+        /* If the symbol is not within a section, or a debugging symbol, skip the remaining tests */
+        if ((entry.n_type & N_TYPE) != N_SECT || ((entry.n_type & N_STAB) != 0))
+            continue;
+        
+        /* Verify the name */
+        sym = plcrash_async_macho_symtab_reader_symbol_name(&reader, entry.n_strx);
+    }
+    
+    STAssertNotNULL(sym, @"Symbol name read failed");
+    if (sym != NULL)
+        STAssertTrue(strcmp(sym, dli.dli_sname) == 0, @"Returned incorrect symbol name: %s != %s", sym, dli.dli_sname);
 
     plcrash_async_macho_symtab_reader_free(&reader);
 }
@@ -314,7 +364,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
  * Test lookup of symbols by name.
  */
 - (void) testFindSymbolByName {
-    /* Fetch our current symbol, to be used for symbol lookup */
+    /* Fetch our current symbol name, to be used for symbol lookup */
     void *callstack[1];
     char **symbols;
     int frames;

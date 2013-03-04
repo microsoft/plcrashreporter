@@ -664,6 +664,34 @@ plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcra
 }
 
 /**
+ * Given a string table offset for @a reader, returns the pointer to the validated NULL terminated string, or returns
+ * NULL if the string does not fall within the reader's mapped string table.
+ *
+ * @param reader The reader containing a mapped string table.
+ * @param n_strx The index within the @a reader string table to a symbol name.
+ */
+const char *plcrash_async_macho_symtab_reader_symbol_name (plcrash_async_macho_symtab_reader_t *reader, uint32_t n_strx) {
+    /* 
+     * It's possible, though unlikely, that the n_strx index value is invalid. To handle this,
+     * we walk the string until \0 is hit, verifying that it can be found in its entirety within
+     *
+     * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_verify_local_pointer(). We should
+     * probably validate whole pages at a time instead.
+     */
+    const char *sym_name = reader->string_table + n_strx;
+    const char *p = sym_name;
+    do {
+        if (!plcrash_async_mobject_verify_local_pointer(&reader->linkedit.mobj, (uintptr_t) p, 1)) {
+            PLCF_DEBUG("End of mobject reached while walking string\n");
+            return NULL;
+        }
+        p++;
+    } while (*p != '\0');
+
+    return sym_name;
+}
+
+/**
  * Free all mapped reader resources.
  *
  * @note Unlike most free() functions in this API, this function is async-safe.
@@ -763,24 +791,13 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
         goto cleanup;
     }
 
-    /* Symbol found!
-     *
-     * It's possible, though unlikely, that the n_strx index value is invalid. To handle this,
-     * we walk the string until \0 is hit, verifying that it can be found in its entirety within
-     *
-     * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_verify_local_pointer(). We should
-     * probably validate whole pages at a time instead.
-     */
-    const char *sym_name = reader.string_table + found_symbol.n_strx;
-    const char *p = sym_name;
-    do {
-        if (!plcrash_async_mobject_verify_local_pointer(&reader.linkedit.mobj, (uintptr_t) p, 1)) {
-            PLCF_DEBUG("End of mobject reached while walking string\n");
-            retval = PLCRASH_EINVAL;
-            goto cleanup;
-        }
-        p++;
-    } while (*p != '\0');
+    /* Symbol found! */
+    const char *sym_name = plcrash_async_macho_symtab_reader_symbol_name(&reader, found_symbol.n_strx);
+    if (sym_name == NULL) {
+        PLCF_DEBUG("Failed to read symbol name\n");
+        retval = PLCRASH_EINVAL;
+        goto cleanup;
+    }
 
     /* Inform our caller */
     symbol_cb(found_symbol.normalized_address, sym_name, context);
