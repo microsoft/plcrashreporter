@@ -166,6 +166,8 @@
     cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
     err = plcrash_async_cfe_reader_init(&reader, &mobj, cputype);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
+
+    plcrash_async_cfe_reader_free(&reader);
 }
 
 @end

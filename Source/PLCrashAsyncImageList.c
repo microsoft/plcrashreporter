@@ -102,10 +102,7 @@ void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_a
     plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
     if ((ret = plcrash_nasync_macho_init(&new->macho_image, list->task, name, header)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Unexpected failure initializing Mach-O structure for %s: %d", name, ret);
-        
-        plcrash_nasync_macho_free(&new->macho_image);
         free(new);
-
         return;
     }
 

@@ -56,15 +56,22 @@
  * or PLCRASH_EINTERNAL if an error occurs reading from the target task.
  *
  * @warning This method is not async safe.
- * @note On error, pl_async_macho_free() must be called to free any resources still held by the @a image.
  */
 plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header) {
-    /* This must be done first, as our free() function will always decrement the port's reference count. */
-    mach_port_mod_refs(mach_task_self(), task, MACH_PORT_RIGHT_SEND, 1);
-    image->task = task;
+    plcrash_error_t ret;
 
+    /* Defaults checked in the  error cleanup handler */
+    bool mobj_initialized = false;
+    bool task_initialized = false;
+    image->name = NULL;
+
+    /* Basic initialization */
+    image->task = task;
     image->header_addr = header;
     image->name = strdup(name);
+
+    mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, 1);
+    task_initialized = true;
 
     /* Read in the Mach-O header */
     kern_return_t kt;
@@ -72,7 +79,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
         /* NOTE: The image struct must be fully initialized before returning here, as otherwise our _free() function
          * will crash */
         PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, kern_error=%d", (uint64_t) image->header_addr, name, kt);
-        return PLCRASH_EINTERNAL;
+        ret = PLCRASH_EINTERNAL;
+        goto error;
     }
     
     /* Set the default byte order*/
@@ -116,15 +124,17 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
         image->header_size = sizeof(struct mach_header);
     }
     
-    /* Map in load commands */
     /* Map in header + load commands */
     pl_vm_size_t cmd_len = image->byteorder->swap32(image->header.sizeofcmds);
     pl_vm_size_t cmd_offset = image->header_addr + image->header_size;
     image->ncmds = image->byteorder->swap32(image->header.ncmds);
-    plcrash_error_t ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len);
+
+    ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len);
     if (ret != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to map Mach-O load commands in image %s", image->name);
-        return ret;
+        goto error;
+    } else {
+        mobj_initialized = true;
     }
 
     /* Now that the image has been sufficiently initialized, determine the __TEXT segment size */
@@ -137,7 +147,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             struct segment_command_64 *segment = cmdptr;
             if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
                 PLCF_DEBUG("LC_SEGMENT command was too short");
-                return PLCRASH_EINVAL;
+                ret = PLCRASH_EINVAL;
+                goto error;
             }
             
             if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
@@ -151,7 +162,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             struct segment_command *segment = cmdptr;
             if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
                 PLCF_DEBUG("LC_SEGMENT command was too short");
-                return PLCRASH_EINVAL;
+                ret = PLCRASH_EINVAL;
+                goto error;
             }
             
             if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
@@ -166,7 +178,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
 
     if (!found_text_seg) {
         PLCF_DEBUG("Could not find __TEXT segment!");
-        return PLCRASH_EINVAL;
+        ret = PLCRASH_EINVAL;
+        goto error;
     }
 
     /* Compute the vmaddr slide */
@@ -176,6 +189,18 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
         image->vmaddr_slide = text_vmaddr - header;
     
     return PLCRASH_ESUCCESS;
+    
+error:
+    if (mobj_initialized)
+        plcrash_async_mobject_free(&image->load_cmds);
+    
+    if (image->name != NULL)
+        free(image->name);
+    
+    if (task_initialized)
+        mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, -1);
+
+    return ret;
 }
 
 /**

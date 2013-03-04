@@ -51,22 +51,19 @@
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
  * mapping will be performed.
- *
- * @warn Callers must call plcrash_async_mobject_free() on @a mobj, even if plcrash_async_mobject_init() fails.
  */
 plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length) {
-    /* We must first initialize vm_address to 0x0. We'll check this in _free() to determine whether calling vm_deallocate() is required */
-    mobj->vm_address = 0x0;
-    
     kern_return_t kt;
-    
+    plcrash_error_t ret;
+
     /* Compute the total required page size. */
     pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - mach_vm_trunc_page(task_addr)));
     
     /* Remap the target pages into our process */
     vm_prot_t cur_prot;
     vm_prot_t max_prot;
-    
+
+    mobj->vm_address = 0x0;
 #ifdef PL_HAVE_MACH_VM
     kt = mach_vm_remap(mach_task_self(), &mobj->vm_address, page_size, 0x0, TRUE, task, task_addr, FALSE, &cur_prot, &max_prot, VM_INHERIT_COPY);
 #else
@@ -80,7 +77,8 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
     }
     
     if ((cur_prot & VM_PROT_READ) == 0) {
-        return PLCRASH_EACCESS;
+        ret = PLCRASH_EACCESS;
+        goto error;
     }
     
     /* Determine the offset to the actual data */
@@ -95,6 +93,12 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
     mobj->task_address = task_addr;
 
     return PLCRASH_ESUCCESS;
+
+error:
+    if ((kt = vm_deallocate(mach_task_self(), mobj->address, mobj->length)) != KERN_SUCCESS)
+        PLCF_DEBUG("vm_deallocate() failure: %d", kt);
+
+    return ret;
 }
 
 /**
@@ -159,9 +163,6 @@ void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_
  * @note Unlike most free() functions in this API, this function is async-safe.
  */
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
-    if (mobj->vm_address == 0x0)
-        return;
-    
     kern_return_t kt;
     if ((kt = vm_deallocate(mach_task_self(), mobj->address, mobj->length)) != KERN_SUCCESS)
         PLCF_DEBUG("vm_deallocate() failure: %d", kt);

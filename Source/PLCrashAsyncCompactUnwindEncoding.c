@@ -41,7 +41,7 @@
  */
 
 /**
- * Initialize a new CFE reader using the provided memory object. Any resources held by a fully or partially initialized
+ * Initialize a new CFE reader using the provided memory object. Any resources held by a successfully initialized
  * instance must be freed via plcrash_async_cfe_reader_free();
  *
  * @param reader The reader instance to initialize.
