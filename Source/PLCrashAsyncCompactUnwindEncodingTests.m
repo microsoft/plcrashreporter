@@ -167,6 +167,10 @@
     err = plcrash_async_cfe_reader_init(&reader, &mobj, cputype);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
 
+    pl_vm_address_t mainPC;
+    err = plcrash_async_macho_find_symbol_by_name(&_image, "_main", &mainPC);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate main symbol");
+
     plcrash_async_cfe_reader_free(&reader);
 }
 
