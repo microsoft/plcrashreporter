@@ -171,6 +171,9 @@
     err = plcrash_async_macho_find_symbol_by_name(&_image, "_main", &mainPC);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate main symbol");
 
+    err = plcrash_async_cfe_reader_find_ip(&reader, mainPC);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry for main");
+
     plcrash_async_cfe_reader_free(&reader);
 }
 
