@@ -97,7 +97,7 @@ typedef struct plcrash_async_macho_mapped_segment_t {
 } pl_async_macho_mapped_segment_t;
 
 /**
- * A 32-bit/64-bit neutral symbol table entry.
+ * A 32-bit/64-bit neutral symbol table entry. The values will be returned in host byte order.
  */
 typedef struct plcrash_async_macho_symtab_entry {
     /* Index into the string table */
@@ -134,14 +134,14 @@ typedef struct plcrash_async_macho_symtab_reader {
     uint32_t nsyms;
     
     /** Pointer to the global symbol table, if available. May be NULL. The validity of this pointer (and the length of
-     * data available) is gauranteed. */
+     * data available) is gauranteed. If non-NULL, symtab_local must also be non-NULL. */
     void *symtab_global;
 
     /** Total number of elements in the global symtab. */
     uint32_t nsyms_global;
 
     /** Pointer to the local symbol table, if available. May be NULL. The validity of this pointer (and the length of
-     * data available) is gauranteed. */
+     * data available) is gauranteed. If non-NULL, symtab_global must also be non-NULL. */
     void *symtab_local;
 
     /** Total number of elements in the local symtab. */
@@ -178,8 +178,7 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
 plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc);
 
 plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_t *image);
-plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader,
-                                                                           plcrash_async_macho_symtab_entry_t *symtab, uint32_t index);
+plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader, void *symtab, uint32_t index);
 void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t *reader);
 
 void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);

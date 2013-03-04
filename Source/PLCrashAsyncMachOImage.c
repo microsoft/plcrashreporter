@@ -482,78 +482,6 @@ typedef union {
     struct nlist n32;
 } pl_nlist_common;
 
-
-/*
- * Locate a symtab entry for @a slide_pc within @a symbtab. This is performed using best-guess heuristics, and may
- * be incorrect.
- *
- * @param image The Mach-O image to search for @a pc
- * @param slide_pc The PC value within the target process for which symbol information should be found. The VM slide
- * address should have already been applied to this value.
- * @param symtab The symtab to search.
- * @param nsyms The number of nlist entries available via @a symtab.
- * @param found_symbol A reference to the previous best match symbol. The referenced value should be initialized
- * to NULL before calling this function for the first time. Future invocations will reference this value to determine
- * whether a closer match has been found.
- *
- * @return Returns true if a symbol was found, false otherwise.
- *
- * @warning This function implements no validation of the symbol table pointer. It is the caller's responsibility
- * to verify that the referenced symtab is valid and mapped PROT_READ.
- */
-static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image, pl_vm_address_t slide_pc, pl_nlist_common *symtab,
-                                               uint32_t nsyms, pl_nlist_common **found_symbol)
-{
-    /* nlist_64 and nlist are identical other than the trailing address field, so we use
-     * a union to share a common implementation of symbol lookup. The following asserts
-     * provide a sanity-check of that assumption, in the case where this code is moved
-     * to a new platform ABI. */
-    {
-#define pl_m_sizeof(type, field) sizeof(((type *)NULL)->field)
-        
-        PLCF_ASSERT(__offsetof(struct nlist_64, n_type) == __offsetof(struct nlist, n_type));
-        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_type) == pl_m_sizeof(struct nlist, n_type));
-        
-        PLCF_ASSERT(__offsetof(struct nlist_64, n_un.n_strx) == __offsetof(struct nlist, n_un.n_strx));
-        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_un.n_strx) == pl_m_sizeof(struct nlist, n_un.n_strx));
-        
-        PLCF_ASSERT(__offsetof(struct nlist_64, n_value) == __offsetof(struct nlist, n_value));
-        
-#undef pl_m_sizeof
-    }
-    
-#define pl_sym_value(image, nl) (image->m64 ? image->byteorder->swap64((nl)->n64.n_value) : image->byteorder->swap32((nl)->n32.n_value))
-    
-    /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
-     * plcrash_async_mobject_remap_address() above. */
-    for (uint32_t i = 0; i < nsyms; i++) {
-        /* Perform 32-bit/64-bit dependent aliased pointer math. */
-        pl_nlist_common *symbol;
-        if (image->m64) {
-            symbol = (pl_nlist_common *) &(((struct nlist_64 *) symtab)[i]);
-        } else {
-            symbol = (pl_nlist_common *) &(((struct nlist *) symtab)[i]);
-        }
-        
-        /* Symbol must be within a section, and must not be a debugging entry. */
-        if ((symbol->n32.n_type & N_TYPE) != N_SECT || ((symbol->n32.n_type & N_STAB) != 0))
-            continue;
-        
-        /* Search for the best match. We're looking for the closest symbol occuring before PC. */
-        if (pl_sym_value(image, symbol) <= slide_pc && (*found_symbol == NULL || pl_sym_value(image, *found_symbol) < pl_sym_value(image, symbol))) {
-            *found_symbol = symbol;
-        }
-    }
-    
-    /* If no symbol was found (unlikely!), return not found */
-    if (*found_symbol == NULL) {
-        return false;
-    }
-
-    return true;
-}
-
-
 /**
  * Attempt to locate a symbol address for @a symbol name within @a image.
  *
@@ -683,7 +611,9 @@ cleanup:
  * @warning The implementation implements no bounds checking on @a index, and it is the caller's responsibility to ensure
  * that they do not read an invalid entry.
  */
-plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_symtab_entry_t *symtab, uint32_t index) {
+plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader, void *symtab, uint32_t index) {
+    const plcrash_async_byteorder_t *byteorder = reader->image->byteorder;
+
     /* nlist_64 and nlist are identical other than the trailing address field, so we use
      * a union to share a common implementation of symbol lookup. The following asserts
      * provide a sanity-check of that assumption, in the case where this code is moved
@@ -701,7 +631,8 @@ plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcra
         
 #undef pl_m_sizeof
     }
-    
+
+#define pl_sym_value(image, nl) (image->m64 ? image->byteorder->swap64((nl)->n64.n_value) : image->byteorder->swap32((nl)->n32.n_value))
 
     /* Perform 32-bit/64-bit dependent aliased pointer math. */
     pl_nlist_common *symbol;
@@ -712,12 +643,14 @@ plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcra
     }
     
     plcrash_async_macho_symtab_entry_t entry = {
-        .n_strx = symbol->n32.n_un.n_strx,
+        .n_strx = byteorder->swap32(symbol->n32.n_un.n_strx),
         .n_type = symbol->n32.n_type,
         .n_sect = symbol->n32.n_sect,
-        .n_desc = symbol->n32.n_desc,
+        .n_desc = byteorder->swap16(symbol->n32.n_desc),
         .n_value = pl_sym_value(reader->image, symbol)
     };
+    
+#undef pl_sym_value
     
     return entry;
 }
@@ -729,6 +662,55 @@ plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcra
  */
 void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t *reader) {
     plcrash_async_macho_mapped_segment_free(&reader->linkedit);
+}
+
+/*
+ * Locate a symtab entry for @a slide_pc within @a symbtab. This is performed using best-guess heuristics, and may
+ * be incorrect.
+ *
+ * @param reader The Mach-O symbol table reader to search for @a pc
+ * @param slide_pc The PC value within the target process for which symbol information should be found. The VM slide
+ * address should have already been applied to this value.
+ * @param symtab The symtab to search.
+ * @param nsyms The number of nlist entries available via @a symtab.
+ * @param found_symbol On success, will be set to the discovered symbol value.
+ * @param prev_symbol A reference to the previous best match symbol.
+ * @param did_find_symbol On success, will be set to true. This value must be passed to
+ * the next call in which @a found_symbol is used.
+ *
+ * @return Returns true if a symbol was found, false otherwise.
+ */
+static void plcrash_async_macho_find_best_symbol (plcrash_async_macho_symtab_reader_t *reader,
+                                                  pl_vm_address_t slide_pc,
+                                                  pl_nlist_common *symtab, uint32_t nsyms,
+                                                  plcrash_async_macho_symtab_entry_t *found_symbol,
+                                                  plcrash_async_macho_symtab_entry_t *prev_symbol,
+                                                  bool *did_find_symbol)
+{
+    plcrash_async_macho_symtab_entry_t new_entry;
+    
+    /* Set did_find_symbol to false by default */
+    if (prev_symbol == NULL)
+        *did_find_symbol = false;
+
+    /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
+     * plcrash_async_mobject_remap_address() above. */
+    for (uint32_t i = 0; i < nsyms; i++) {
+        new_entry = plcrash_async_macho_symtab_reader_read(reader, symtab, i);
+        
+        /* Symbol must be within a section, and must not be a debugging entry. */
+        if ((new_entry.n_type & N_TYPE) != N_SECT || ((new_entry.n_type & N_STAB) != 0))
+            continue;
+
+        /* Search for the best match. We're looking for the closest symbol occuring before PC. */
+        if (new_entry.n_value <= slide_pc && (!*did_find_symbol || prev_symbol->n_value < new_entry.n_value)) {
+            *found_symbol = new_entry;
+
+            /* The newly found symbol is now the symbol to be matched against */
+            prev_symbol = found_symbol;
+            *did_find_symbol = true;
+        }
+    }
 }
 
 /**
@@ -745,100 +727,30 @@ void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t
 plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
     plcrash_error_t retval;
     
+    /* Initialize a symbol table reader */
+    plcrash_async_macho_symtab_reader_t reader;
+    retval = plcrash_async_macho_symtab_reader_init(&reader, image);
+    if (retval != PLCRASH_ESUCCESS)
+        return retval;
+
     /* Compute the actual in-core PC. */
     pl_vm_address_t slide_pc = pc - image->vmaddr_slide;
 
-    /* Fetch the symtab commands, if available. */
-    struct symtab_command *symtab_cmd = plcrash_async_macho_find_command(image, LC_SYMTAB);
-    struct dysymtab_command *dysymtab_cmd = plcrash_async_macho_find_command(image, LC_DYSYMTAB);
+    /* Walk the symbol table. */
+    plcrash_async_macho_symtab_entry_t found_symbol;
+    bool did_find_symbol;
 
-
-    /* The symtab command is required */
-    if (symtab_cmd == NULL) {
-        PLCF_DEBUG("could not find LC_SYMTAB load command");
-        return PLCRASH_ENOTFOUND;
-    }
-
-    /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
-    pl_async_macho_mapped_segment_t linkedit_seg;
-    plcrash_error_t err = plcrash_async_macho_map_segment(image, "__LINKEDIT", &linkedit_seg);
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
-        return PLCRASH_EINTERNAL;
-    }
-
-    /* Determine the string and symbol table sizes. */
-    uint32_t nsyms = image->byteorder->swap32(symtab_cmd->nsyms);
-    size_t nlist_struct_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
-    size_t nlist_table_size = nsyms * nlist_struct_size;
-
-    size_t string_size = image->byteorder->swap32(symtab_cmd->strsize);
-
-    /* Fetch pointers to the symbol and string tables, and verify their size values */
-    void *nlist_table;
-    char *string_table;
-
-    nlist_table = plcrash_async_mobject_remap_address(&linkedit_seg.mobj,
-                                                      linkedit_seg.mobj.task_address + (image->byteorder->swap32(symtab_cmd->symoff) - linkedit_seg.fileoff),
-                                                      nlist_table_size);
-    if (nlist_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
-                   (uint64_t) linkedit_seg.mobj.address + image->byteorder->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
-        retval = PLCRASH_EINTERNAL;
-        goto cleanup;
-    }
-
-    string_table = plcrash_async_mobject_remap_address(&linkedit_seg.mobj,
-                                                       linkedit_seg.mobj.task_address + (image->byteorder->swap32(symtab_cmd->stroff) - linkedit_seg.fileoff),
-                                                       string_size);
-    if (string_table == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
-                   (uint64_t) linkedit_seg.mobj.address + image->byteorder->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
-        retval = PLCRASH_EINTERNAL;
-        goto cleanup;
-    }
-            
-    /* Walk the symbol table. We know that the full range of symbols[nsyms-1] is valid, since we fetched a pointer+len
-     * based on the value using plcrash_async_mobject_remap_address() above. */
-    pl_nlist_common *found_symbol = NULL;
-
-    if (dysymtab_cmd != NULL) {
+    if (reader.symtab_global != NULL && reader.symtab_local != NULL) {
         /* dysymtab is available; use it to constrain our symbol search to the global and local sections of the symbol table. */
-
-        uint32_t idx_syms_global = image->byteorder->swap32(dysymtab_cmd->iextdefsym);
-        uint32_t idx_syms_local = image->byteorder->swap32(dysymtab_cmd->ilocalsym);
-        
-        uint32_t nsyms_global = image->byteorder->swap32(dysymtab_cmd->nextdefsym);
-        uint32_t nsyms_local = image->byteorder->swap32(dysymtab_cmd->nlocalsym);
-
-        /* Sanity check the symbol offsets to ensure they're within our known-valid ranges */
-        if (idx_syms_global + nsyms_global > nsyms || idx_syms_local + nsyms_local > nsyms) {
-            PLCF_DEBUG("iextdefsym=%" PRIx32 ", ilocalsym=%" PRIx32 " out of range nsym=%" PRIx32, idx_syms_global+nsyms_global, idx_syms_local+nsyms_local, nsyms);
-            retval = PLCRASH_EINVAL;
-            goto cleanup;
-        }
-
-        pl_nlist_common *global_nlist;
-        pl_nlist_common *local_nlist;
-        if (image->m64) {
-            struct nlist_64 *n64 = nlist_table;
-            global_nlist = (pl_nlist_common *) (n64 + idx_syms_global);
-            local_nlist = (pl_nlist_common *) (n64 + idx_syms_local);
-        } else {
-            struct nlist *n32 = nlist_table;
-            global_nlist = (pl_nlist_common *) (n32 + idx_syms_global);
-            local_nlist = (pl_nlist_common *) (n32 + idx_syms_local);
-        }
-
-        plcrash_async_macho_find_symtab_symbol(image, slide_pc, global_nlist, nsyms_global, &found_symbol);
-        plcrash_async_macho_find_symtab_symbol(image, slide_pc, local_nlist, nsyms_local, &found_symbol);
+        plcrash_async_macho_find_best_symbol(&reader, slide_pc, reader.symtab_global, reader.nsyms_global, &found_symbol, NULL, &did_find_symbol);
+        plcrash_async_macho_find_best_symbol(&reader, slide_pc, reader.symtab_local, reader.nsyms_local, &found_symbol, &found_symbol, &did_find_symbol);
     } else {
         /* If dysymtab is not available, search all symbols */
-        plcrash_async_macho_find_symtab_symbol(image, slide_pc, nlist_table, nsyms, &found_symbol);
+        plcrash_async_macho_find_best_symbol(&reader, slide_pc, reader.symtab, reader.nsyms, &found_symbol, NULL, &did_find_symbol);
     }
 
     /* No symbol found. */
-    if (found_symbol == NULL) {
+    if (!did_find_symbol) {
         retval = PLCRASH_ENOTFOUND;
         goto cleanup;
     }
@@ -851,10 +763,10 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
      * TODO: Evaluate effeciency of per-byte calling of plcrash_async_mobject_verify_local_pointer(). We should
      * probably validate whole pages at a time instead.
      */
-    const char *sym_name = string_table + image->byteorder->swap32(found_symbol->n32.n_un.n_strx);
+    const char *sym_name = reader.string_table + found_symbol.n_strx;
     const char *p = sym_name;
     do {
-        if (!plcrash_async_mobject_verify_local_pointer(&linkedit_seg.mobj, (uintptr_t) p, 1)) {
+        if (!plcrash_async_mobject_verify_local_pointer(&reader.linkedit.mobj, (uintptr_t) p, 1)) {
             PLCF_DEBUG("End of mobject reached while walking string\n");
             retval = PLCRASH_EINVAL;
             goto cleanup;
@@ -864,10 +776,10 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
 
     /* Determine the correct symbol address. We have to set the low-order bit ourselves for ARM THUMB functions. */
     vm_address_t sym_addr = 0x0;
-    if (image->byteorder->swap16(found_symbol->n32.n_desc) & N_ARM_THUMB_DEF)
-        sym_addr = (pl_sym_value(image, found_symbol)|1) + image->vmaddr_slide;
+    if (found_symbol.n_desc & N_ARM_THUMB_DEF)
+        sym_addr = (found_symbol.n_value|1) + image->vmaddr_slide;
     else
-        sym_addr = pl_sym_value(image, found_symbol) + image->vmaddr_slide;
+        sym_addr = found_symbol.n_value + image->vmaddr_slide;
 
     /* Inform our caller */
     symbol_cb(sym_addr, sym_name, context);
@@ -876,7 +788,7 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
     retval = PLCRASH_ESUCCESS;
 
 cleanup:
-    plcrash_async_macho_mapped_segment_free(&linkedit_seg);
+    plcrash_async_macho_symtab_reader_free(&reader);
     return retval;
 }
 
