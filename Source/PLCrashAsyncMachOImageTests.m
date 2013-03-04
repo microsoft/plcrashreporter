@@ -343,7 +343,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     /* Perform our symbol lookup */
     struct testFindSymbol_cb_ctx ctx;
-    plcrash_error_t res = plcrash_async_macho_find_symbol(&_image, (pl_vm_address_t) callstack[0], testFindSymbol_cb, &ctx);
+    plcrash_error_t res = plcrash_async_macho_find_symbol_by_addr(&_image, (pl_vm_address_t) callstack[0], testFindSymbol_cb, &ctx);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol");
     
     /* The following tests will crash if the above did not succeed */
@@ -376,7 +376,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     /* Perform our symbol lookup */
     pl_vm_address_t pc;
-    plcrash_error_t res = plcrash_async_macho_find_symbol_pc(&_image, (pl_vm_address_t) symbols[0], &pc);
+    plcrash_error_t res = plcrash_async_macho_find_symbol_by_name(&_image, (pl_vm_address_t) symbols[0], &pc);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol");
     
     /* The following tests will crash if the above did not succeed */

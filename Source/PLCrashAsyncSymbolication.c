@@ -88,7 +88,7 @@ plcrash_error_t plcrash_async_find_symbol (plcrash_async_macho_t *image, plcrash
 
     /* Perform lookups; our callbacks will only update the lookup_ctx if they find a better match than the
      * previously run callbacks */
-    machoErr = plcrash_async_macho_find_symbol(image, pc, macho_symbol_callback, &lookup_ctx);
+    machoErr = plcrash_async_macho_find_symbol_by_addr(image, pc, macho_symbol_callback, &lookup_ctx);
     objcErr = plcrash_async_objc_find_method(image, &cache->objc_cache, pc, objc_symbol_callback, &lookup_ctx);
 
     if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {

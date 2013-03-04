@@ -491,7 +491,7 @@ typedef union {
  *
  * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, the contents of @a pc are undefined.
  */
-plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc) {
+plcrash_error_t plcrash_async_macho_find_symbol_by_name (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc) {
     return PLCRASH_EUNKNOWN;
 }
 
@@ -760,7 +760,7 @@ static void plcrash_async_macho_find_best_symbol (plcrash_async_macho_symtab_rea
  *
  * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, @a found_symbol will not be called.
  */
-plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
+plcrash_error_t plcrash_async_macho_find_symbol_by_addr (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context) {
     plcrash_error_t retval;
     
     /* Initialize a symbol table reader */
