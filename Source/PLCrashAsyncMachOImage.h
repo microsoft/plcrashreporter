@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <mach/mach.h>
 #include <mach-o/loader.h>
+#include <mach-o/nlist.h>
 
 #include "PLCrashAsyncMObject.h"
 
@@ -81,6 +82,9 @@ typedef struct plcrash_async_macho {
     const plcrash_async_byteorder_t *byteorder;
 } plcrash_async_macho_t;
 
+/**
+ * A mapped Mach-O segment.
+ */
 typedef struct plcrash_async_macho_mapped_segment_t {
     /** The segment's mapped memory object */
     plcrash_async_mobject_t mobj;
@@ -91,6 +95,55 @@ typedef struct plcrash_async_macho_mapped_segment_t {
     /* File size of the segment. */
 	uint64_t	filesize;
 } pl_async_macho_mapped_segment_t;
+
+/**
+ * A 32-bit/64-bit neutral symbol table entry.
+ */
+typedef struct plcrash_async_macho_symtab_entry {
+    /* Index into the string table */
+    uint32_t n_strx;
+
+    /** Symbol type. */
+    uint8_t n_type;
+
+    /** Section number. */
+    uint8_t n_sect;
+
+    /** Description (see <mach-o/stab.h>). */
+    uint16_t n_desc;
+
+    /** Symbol value */
+    pl_vm_address_t n_value;
+} plcrash_async_macho_symtab_entry_t;
+
+/**
+ * A Mach-O symtab reader. Provides support for iterating the contents of a Mach-O symbol table.
+ */
+typedef struct plcrash_async_macho_symtab_reader {
+    /** The mapped LINKEDIT segment. */
+    pl_async_macho_mapped_segment_t linkedit;
+
+    /** Pointer to the symtab table within the mapped linkedit segment. The validity of this pointer (and the length of
+     * data available) is gauranteed. */
+    void *symtab;
+    
+    /** Total number of elements in the symtab. */
+    uint32_t nsyms;
+    
+    /** Pointer to the global symbol table, if available. May be NULL. The validity of this pointer (and the length of
+     * data available) is gauranteed. */
+    void *symtab_global;
+
+    /** Total number of elements in the global symtab. */
+    uint32_t nsyms_global;
+
+    /** Pointer to the local symbol table, if available. May be NULL. The validity of this pointer (and the length of
+     * data available) is gauranteed. */
+    void *symtab_local;
+
+    /** Total number of elements in the local symtab. */
+    uint32_t nsyms_local;
+} plcrash_async_macho_symtab_reader_t;
 
 /**
  * Prototype of a callback function used to execute user code with async-safely fetched symbol.
@@ -113,6 +166,9 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
 plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj);
 plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, pl_vm_address_t pc, pl_async_macho_found_symbol_cb symbol_cb, void *context);
 plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc);
+
+plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_t *image);
+void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t *reader);
 
 void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);
 

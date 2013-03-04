@@ -34,7 +34,6 @@
 #include <assert.h>
 
 #include <mach-o/fat.h>
-#include <mach-o/nlist.h>
 
 /**
  * @internal
@@ -541,6 +540,118 @@ static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image
  */
 plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc) {
     return PLCRASH_EUNKNOWN;
+}
+
+/**
+ * Initialize a new symbol table reader, mapping the LINKEDIT segment from @a image into the current process.
+ *
+ * @param reader The reader to be initialized.
+ * @param image The image from which the symbol table will be mapped.
+ *
+ * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
+ * mapping will be performed.
+ */
+plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_t *image) {
+    plcrash_error_t retval;
+
+    /* Fetch the symtab commands, if available. */
+    struct symtab_command *symtab_cmd = plcrash_async_macho_find_command(image, LC_SYMTAB);
+    struct dysymtab_command *dysymtab_cmd = plcrash_async_macho_find_command(image, LC_DYSYMTAB);
+
+    /* The symtab command is required */
+    if (symtab_cmd == NULL) {
+        PLCF_DEBUG("could not find LC_SYMTAB load command");
+        return PLCRASH_ENOTFOUND;
+    }
+    
+    /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
+    plcrash_error_t err = plcrash_async_macho_map_segment(image, "__LINKEDIT", &reader->linkedit);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
+        return PLCRASH_EINTERNAL;
+    }
+    
+    /* Determine the string and symbol table sizes. */
+    uint32_t nsyms = image->byteorder->swap32(symtab_cmd->nsyms);
+    size_t nlist_struct_size = image->m64 ? sizeof(struct nlist_64) : sizeof(struct nlist);
+    size_t nlist_table_size = nsyms * nlist_struct_size;
+    
+    size_t string_size = image->byteorder->swap32(symtab_cmd->strsize);
+    
+    /* Fetch pointers to the symbol and string tables, and verify their size values */
+    void *nlist_table;
+    char *string_table;
+    
+    nlist_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj,
+                                                      reader->linkedit.mobj.task_address + (image->byteorder->swap32(symtab_cmd->symoff) - reader->linkedit.fileoff),
+                                                      nlist_table_size);
+    if (nlist_table == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
+                   (uint64_t) reader->linkedit.mobj.address + image->byteorder->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
+        retval = PLCRASH_EINTERNAL;
+        goto cleanup;
+    }
+    
+    string_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj,
+                                                       reader->linkedit.mobj.task_address + (image->byteorder->swap32(symtab_cmd->stroff) - reader->linkedit.fileoff),
+                                                       string_size);
+    if (string_table == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
+                   (uint64_t) reader->linkedit.mobj.address + image->byteorder->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
+        retval = PLCRASH_EINTERNAL;
+        goto cleanup;
+    }
+
+    /* Save the table reference */
+    reader->symtab = nlist_table;
+    reader->nsyms = nsyms;
+
+    /* Initialize the local/global table pointers, if available */
+    if (dysymtab_cmd != NULL) {
+        /* dysymtab is available; use it to constrain our symbol search to the global and local sections of the symbol table. */
+        
+        uint32_t idx_syms_global = image->byteorder->swap32(dysymtab_cmd->iextdefsym);
+        uint32_t idx_syms_local = image->byteorder->swap32(dysymtab_cmd->ilocalsym);
+        
+        uint32_t nsyms_global = image->byteorder->swap32(dysymtab_cmd->nextdefsym);
+        uint32_t nsyms_local = image->byteorder->swap32(dysymtab_cmd->nlocalsym);
+        
+        /* Sanity check the symbol offsets to ensure they're within our known-valid ranges */
+        if (idx_syms_global + nsyms_global > nsyms || idx_syms_local + nsyms_local > nsyms) {
+            PLCF_DEBUG("iextdefsym=%" PRIx32 ", ilocalsym=%" PRIx32 " out of range nsym=%" PRIx32, idx_syms_global+nsyms_global, idx_syms_local+nsyms_local, nsyms);
+            retval = PLCRASH_EINVAL;
+            goto cleanup;
+        }
+
+        /* Initialize reader state */
+        reader->nsyms_global = nsyms_global;
+        reader->nsyms_local = nsyms_local;
+
+        if (image->m64) {
+            struct nlist_64 *n64 = nlist_table;
+            reader->symtab_global = (pl_nlist_common *) (n64 + idx_syms_global);
+            reader->symtab_local = (pl_nlist_common *) (n64 + idx_syms_local);
+        } else {
+            struct nlist *n32 = nlist_table;
+            reader->symtab_global = (pl_nlist_common *) (n32 + idx_syms_global);
+            reader->symtab_local = (pl_nlist_common *) (n32 + idx_syms_local);
+        }        
+    }
+
+    return PLCRASH_ESUCCESS;
+    
+cleanup:
+    plcrash_async_macho_mapped_segment_free(&reader->linkedit);
+    return retval;
+}
+
+/**
+ * Free all mapped reader resources.
+ *
+ * @note Unlike most free() functions in this API, this function is async-safe.
+ */
+void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t *reader) {
+    plcrash_async_macho_mapped_segment_free(&reader->linkedit);
 }
 
 /**

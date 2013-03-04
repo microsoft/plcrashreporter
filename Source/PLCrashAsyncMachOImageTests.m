@@ -258,6 +258,18 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     cb_ctx->name = strdup(name);
 }
 
+- (void) testInitSymtabReader {
+    plcrash_async_macho_symtab_reader_t reader;
+    plcrash_error_t ret = plcrash_async_macho_symtab_reader_init(&reader, &_image);
+    STAssertEquals(ret, PLCRASH_ESUCCESS, @"Failed to initializer reader");
+    
+    STAssertNotNULL(reader.symtab, @"Failed to map symtab");
+    STAssertNotNULL(reader.symtab_global, @"Failed to map global symtab");
+    STAssertNotNULL(reader.symtab_local, @"Failed to map global symtab");
+
+    plcrash_async_macho_symtab_reader_free(&reader);
+}
+
 /**
  * Test symbol lookup.
  */
