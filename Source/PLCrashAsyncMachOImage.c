@@ -497,7 +497,7 @@ static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image
 #undef pl_m_sizeof
     }
     
-#define pl_sym_value(nl) (image->m64 ? image->byteorder->swap64((nl)->n64.n_value) : image->byteorder->swap32((nl)->n32.n_value))
+#define pl_sym_value(image, nl) (image->m64 ? image->byteorder->swap64((nl)->n64.n_value) : image->byteorder->swap32((nl)->n32.n_value))
     
     /* Walk the symbol table. We know that symbols[i] is valid, since we fetched a pointer+len based on the value using
      * plcrash_async_mobject_remap_address() above. */
@@ -515,7 +515,7 @@ static bool plcrash_async_macho_find_symtab_symbol (plcrash_async_macho_t *image
             continue;
         
         /* Search for the best match. We're looking for the closest symbol occuring before PC. */
-        if (pl_sym_value(symbol) <= slide_pc && (*found_symbol == NULL || pl_sym_value(*found_symbol) < pl_sym_value(symbol))) {
+        if (pl_sym_value(image, symbol) <= slide_pc && (*found_symbol == NULL || pl_sym_value(image, *found_symbol) < pl_sym_value(image, symbol))) {
             *found_symbol = symbol;
         }
     }
@@ -603,6 +603,7 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
     }
 
     /* Initialize common elements. */
+    reader->image = image;
     reader->string_table = string_table;
     reader->string_table_size = string_size;
     reader->symtab = nlist_table;
@@ -645,6 +646,55 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
 cleanup:
     plcrash_async_macho_mapped_segment_free(&reader->linkedit);
     return retval;
+}
+
+/**
+ * Fetch the entry corresponding to @a index.
+ *
+ * @param reader The reader from which @a table was mapped.
+ * @param symtab The symbol table to read.
+ * @param index The index of the entry to return.
+ *
+ * @warning The implementation implements no bounds checking on @a index, and it is the caller's responsibility to ensure
+ * that they do not read an invalid entry.
+ */
+plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_symtab_entry_t *symtab, uint32_t index) {
+    /* nlist_64 and nlist are identical other than the trailing address field, so we use
+     * a union to share a common implementation of symbol lookup. The following asserts
+     * provide a sanity-check of that assumption, in the case where this code is moved
+     * to a new platform ABI. */
+    {
+#define pl_m_sizeof(type, field) sizeof(((type *)NULL)->field)
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_type) == __offsetof(struct nlist, n_type));
+        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_type) == pl_m_sizeof(struct nlist, n_type));
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_un.n_strx) == __offsetof(struct nlist, n_un.n_strx));
+        PLCF_ASSERT(pl_m_sizeof(struct nlist_64, n_un.n_strx) == pl_m_sizeof(struct nlist, n_un.n_strx));
+        
+        PLCF_ASSERT(__offsetof(struct nlist_64, n_value) == __offsetof(struct nlist, n_value));
+        
+#undef pl_m_sizeof
+    }
+    
+
+    /* Perform 32-bit/64-bit dependent aliased pointer math. */
+    pl_nlist_common *symbol;
+    if (reader->image->m64) {
+        symbol = (pl_nlist_common *) &(((struct nlist_64 *) symtab)[index]);
+    } else {
+        symbol = (pl_nlist_common *) &(((struct nlist *) symtab)[index]);
+    }
+    
+    plcrash_async_macho_symtab_entry_t entry = {
+        .n_strx = symbol->n32.n_un.n_strx,
+        .n_type = symbol->n32.n_type,
+        .n_sect = symbol->n32.n_sect,
+        .n_desc = symbol->n32.n_desc,
+        .n_value = pl_sym_value(reader->image, symbol)
+    };
+    
+    return entry;
 }
 
 /**
@@ -790,9 +840,9 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
     /* Determine the correct symbol address. We have to set the low-order bit ourselves for ARM THUMB functions. */
     vm_address_t sym_addr = 0x0;
     if (image->byteorder->swap16(found_symbol->n32.n_desc) & N_ARM_THUMB_DEF)
-        sym_addr = (pl_sym_value(found_symbol)|1) + image->vmaddr_slide;
+        sym_addr = (pl_sym_value(image, found_symbol)|1) + image->vmaddr_slide;
     else
-        sym_addr = pl_sym_value(found_symbol) + image->vmaddr_slide;
+        sym_addr = pl_sym_value(image, found_symbol) + image->vmaddr_slide;
 
     /* Inform our caller */
     symbol_cb(sym_addr, sym_name, context);

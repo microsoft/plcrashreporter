@@ -120,6 +120,9 @@ typedef struct plcrash_async_macho_symtab_entry {
  * A Mach-O symtab reader. Provides support for iterating the contents of a Mach-O symbol table.
  */
 typedef struct plcrash_async_macho_symtab_reader {
+    /** The image from which the symbol table has been mapped. */
+    plcrash_async_macho_t *image;
+
     /** The mapped LINKEDIT segment. */
     pl_async_macho_mapped_segment_t linkedit;
 
@@ -175,6 +178,8 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
 plcrash_error_t plcrash_async_macho_find_symbol_pc (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc);
 
 plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symtab_reader_t *reader, plcrash_async_macho_t *image);
+plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcrash_async_macho_symtab_reader_t *reader,
+                                                                           plcrash_async_macho_symtab_entry_t *symtab, uint32_t index);
 void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t *reader);
 
 void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);

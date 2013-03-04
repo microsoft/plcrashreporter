@@ -267,6 +267,17 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     STAssertNotNULL(reader.symtab_global, @"Failed to map global symtab");
     STAssertNotNULL(reader.symtab_local, @"Failed to map global symtab");
     STAssertNotNULL(reader.string_table, @"Failed to map string table");
+    
+    /* Try iterating the tables. If we don't crash, we're doing well. */
+    plcrash_async_macho_symtab_entry_t entry;
+    for (uint32_t i = 0; i <reader.nsyms; i++)
+        entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab, i);
+    
+    for (uint32_t i = 0; i <reader.nsyms_global; i++)
+        entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab_global, i);
+    
+    for (uint32_t i = 0; i <reader.nsyms_local; i++)
+        entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab_local, i);
 
     plcrash_async_macho_symtab_reader_free(&reader);
 }
