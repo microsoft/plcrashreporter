@@ -365,27 +365,15 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
  */
 - (void) testFindSymbolByName {
     /* Fetch our current symbol name, to be used for symbol lookup */
-    void *callstack[1];
-    char **symbols;
-    int frames;
-    
-    frames = backtrace(callstack, 1);
-    STAssertEquals(1, frames, @"Could not fetch our PC");    
-    symbols = backtrace_symbols(callstack, frames);
-    STAssertNotNULL(symbols, @"Failed to symbolicate backtrace");
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
+    Dl_info dli;
+    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
 
     /* Perform our symbol lookup */
     pl_vm_address_t pc;
-    plcrash_error_t res = plcrash_async_macho_find_symbol_by_name(&_image, (pl_vm_address_t) symbols[0], &pc);
-    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol");
-    
-    /* The following tests will crash if the above did not succeed */
-    if (res != PLCRASH_ESUCCESS)
-        return;
-    
-    /* Fetch our IMP address for comparison. */
-    IMP localIMP = class_getMethodImplementation([self class], _cmd);
-    
+    plcrash_error_t res = plcrash_async_macho_find_symbol_by_name(&_image, (pl_vm_address_t) dli.dli_sname, &pc);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol %s", dli.dli_sname);
+
     /* Compare the results */
     STAssertEqualCStrings((pl_vm_address_t) localIMP, pc, @"Returned incorrect symbol address");
 }

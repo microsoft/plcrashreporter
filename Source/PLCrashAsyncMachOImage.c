@@ -489,9 +489,36 @@ typedef union {
  * @param symbol The symbol name to search for.
  * @param pc On success, will be set to the address of the symbol.
  *
- * @return Returns PLCRASH_ESUCCESS if the symbol is found. If the symbol is not found, the contents of @a pc are undefined.
+ * @return Returns PLCRASH_ESUCCESS if the symbol is found, or PLCRASH_EUNKNOWN if not found. If the symbol is not
+ * found, the contents of @a pc are undefined.
  */
 plcrash_error_t plcrash_async_macho_find_symbol_by_name (plcrash_async_macho_t *image, const char *symbol, pl_vm_address_t *pc) {
+    /* Now walk the Mach-O table ourselves */
+    plcrash_async_macho_symtab_reader_t reader;
+    plcrash_error_t ret;
+
+    /* Initialize the reader */
+    ret = plcrash_async_macho_symtab_reader_init(&reader, image);
+    if (ret != PLCRASH_ESUCCESS)
+        return ret;
+
+    /* Walk all symbol entries and return on the first name match */
+    const char *sym = NULL;
+    plcrash_async_macho_symtab_entry_t entry;
+    for (uint32_t i = 0; i < reader.nsyms; i++) {
+        entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab, i);
+        
+        /* Check the name */
+        sym = plcrash_async_macho_symtab_reader_symbol_name(&reader, entry.n_strx);
+        if (strcmp(sym, symbol) == 0) {
+            plcrash_async_macho_symtab_reader_free(&reader);
+
+            *pc = entry.normalized_address;
+            return PLCRASH_ESUCCESS;
+        }
+    }
+
+    plcrash_async_macho_symtab_reader_free(&reader);
     return PLCRASH_EUNKNOWN;
 }
 
