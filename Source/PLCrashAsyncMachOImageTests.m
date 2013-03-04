@@ -266,6 +266,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     STAssertNotNULL(reader.symtab, @"Failed to map symtab");
     STAssertNotNULL(reader.symtab_global, @"Failed to map global symtab");
     STAssertNotNULL(reader.symtab_local, @"Failed to map global symtab");
+    STAssertNotNULL(reader.string_table, @"Failed to map string table");
 
     plcrash_async_macho_symtab_reader_free(&reader);
 }

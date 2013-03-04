@@ -143,6 +143,13 @@ typedef struct plcrash_async_macho_symtab_reader {
 
     /** Total number of elements in the local symtab. */
     uint32_t nsyms_local;
+
+    /** The mapped string table. The validity of this pointer (and the length of
+     * data available) is gauranteed. */
+    char *string_table;
+
+    /** The string table's size, in bytes. */
+    size_t string_table_size;
 } plcrash_async_macho_symtab_reader_t;
 
 /**

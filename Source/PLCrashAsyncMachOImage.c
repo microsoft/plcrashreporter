@@ -602,7 +602,9 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
         goto cleanup;
     }
 
-    /* Save the table reference */
+    /* Initialize common elements. */
+    reader->string_table = string_table;
+    reader->string_table_size = string_size;
     reader->symtab = nlist_table;
     reader->nsyms = nsyms;
 
