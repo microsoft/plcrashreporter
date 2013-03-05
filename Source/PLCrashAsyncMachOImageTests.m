@@ -191,7 +191,7 @@
     }
 
     /* Compare the contents */
-    uint8_t *mapped_data = plcrash_async_mobject_remap_address(&seg.mobj, (pl_vm_address_t) data, segsize);
+    uint8_t *mapped_data = plcrash_async_mobject_remap_address(&seg.mobj, (pl_vm_address_t) data, 0, segsize);
     STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
 
     STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");
@@ -223,7 +223,7 @@
     STAssertEquals((pl_vm_size_t)sectsize, mobj.length, @"Sizes do not match");
     
     /* Compare the contents */
-    uint8_t *mapped_data = plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t) data, sectsize);
+    uint8_t *mapped_data = plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t) data, 0, sectsize);
     STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
     
     STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");

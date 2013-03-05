@@ -93,7 +93,7 @@
     STAssertEquals((pl_vm_address_t)template, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Incorrect slide value!");
     
     /* Test slide handling */
-    STAssertEquals((void*)mobj.address+1, plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t)template+1, 0), @"Mapped to incorrect address");
+    STAssertEquals((void*)mobj.address+1, plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t) template, 1, 0), @"Mapped to incorrect address");
     
     /* Clean up */
     plcrash_async_mobject_free(&mobj);
@@ -110,15 +110,19 @@
     plcrash_async_mobject_t mobj;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size), @"Failed to initialize mapping");
     
-    /* Test the address range validation */
-    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address-1, 10), @"Returned pointer for a range that starts before our memory object");
-    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address+mobj.length-1, 10), @"Returned pointer for a range that ends after our memory object");
-    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address-10, 5), @"Returned pointer for a range that is entirely outside our memory object");
-    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address+mobj.length, 1), @"Returned pointer for a range that starts the end of our memory object");
-    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, size+1), @"Returned pointer for a range that ends just past our memory object");
+    /* Test the address offset validation */
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, mobj.length-1, 2), @"Returned pointer for a range that ends after our memory object");
+    STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, mobj.length-1, 1), @"Failed to return pointer for a valid range at the tail of our memory object");
+
+    /* Test the address length validation */
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address - 1, 0, 10), @"Returned pointer for a range that starts before our memory object");
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address + mobj.length - 1, 0, 10), @"Returned pointer for a range that ends after our memory object");
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address - 10, 0, 5), @"Returned pointer for a range that is entirely outside our memory object");
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address + mobj.length, 0, 1), @"Returned pointer for a range that starts the end of our memory object");
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, 0, size + 1), @"Returned pointer for a range that ends just past our memory object");
     
-    STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, size), @"Returned false for a range that comprises our entire memory object");
-    STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, size-1), @"Returned false for a range entirely within our memory object");
+    STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, 0, size), @"Returned false for a range that comprises our entire memory object");
+    STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, 0, size - 1), @"Returned false for a range entirely within our memory object");
     
     /* Clean up */
     plcrash_async_mobject_free(&mobj);

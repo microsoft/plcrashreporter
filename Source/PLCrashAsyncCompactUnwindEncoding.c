@@ -68,7 +68,7 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
 
     /* Fetch and verify the header */
     pl_vm_address_t base_addr = plcrash_async_mobject_base_address(mobj);
-    struct unwind_info_section_header *header = plcrash_async_mobject_remap_address(mobj, base_addr, sizeof(*header));
+    struct unwind_info_section_header *header = plcrash_async_mobject_remap_address(mobj, base_addr, 0, sizeof(*header));
     if (header == NULL) {
         PLCF_DEBUG("Could not map the unwind info section header");
         return PLCRASH_EINVAL;
@@ -102,7 +102,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_ip (plcrash_async_cfe_reader_t *re
     // TODO - binary search for the index entry
     // TODO - unbounded index_count could trigger overflow
     pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
-    index_entry = plcrash_async_mobject_remap_address(reader->mobj, base_addr + index_off, index_count * sizeof(*index_entry));
+    index_entry = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_count * sizeof(*index_entry));
     if (index_entry == NULL) {
         PLCF_DEBUG("Could not map the full unwind info section index");
         return PLCRASH_EINVAL;

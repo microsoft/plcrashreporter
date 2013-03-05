@@ -97,18 +97,23 @@
  * and then return the architecture's image @a size and @a offset from the head of @a mobj;
  */
 - (void) findBinary: (plcrash_async_mobject_t *) mobj offset: (uint32_t *) offset size: (uint32_t *) size {
-    struct fat_header *fh = plcrash_async_mobject_remap_address(mobj, mobj->task_address, sizeof(struct fat_header));
+    struct fat_header *fh = plcrash_async_mobject_remap_address(mobj, mobj->task_address, 0, sizeof(struct fat_header));
     STAssertNotNULL(fh, @"Could not load fat header");
     
     if (fh->magic != FAT_MAGIC && fh->magic != FAT_CIGAM)
         STFail(@"Not a fat binary!");
     
     /* Load all the fat architectures */
-    pl_vm_address_t base = mobj->task_address + sizeof(*fh);
+    pl_vm_address_t header = plcrash_async_mobject_base_address(mobj);
+    struct fat_arch *base = plcrash_async_mobject_remap_address(mobj, header, sizeof(*fh), sizeof(*fh));
     uint32_t count = OSSwapBigToHostInt32(fh->nfat_arch);
     struct fat_arch *archs = calloc(count, sizeof(*archs));
     for (uint32_t i = 0; i < count; i++) {
-        struct fat_arch *fa = plcrash_async_mobject_remap_address(mobj, base+(i*sizeof(*fa)), sizeof(*fa));
+        struct fat_arch *fa = &base[i];
+        if (!plcrash_async_mobject_verify_local_pointer(mobj, fa, 0, sizeof(*fa))) {
+            STFail(@"Pointer outside of mapped range");
+        }
+        
         archs[i].cputype = OSSwapBigToHostInt32(fa->cputype);
         archs[i].cpusubtype = OSSwapBigToHostInt32(fa->cpusubtype);
         archs[i].offset = OSSwapBigToHostInt32(fa->offset);
@@ -137,7 +142,7 @@
     plcrash_async_mobject_init(&_machoData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length]);
     /* Find a binary that matches the host */
     [self findBinary: &_machoData offset: &offset size: &length];
-    void *macho_ptr = plcrash_async_mobject_remap_address(&_machoData, _machoData.task_address + offset, length);
+    void *macho_ptr = plcrash_async_mobject_remap_address(&_machoData, _machoData.task_address, offset, length);
     STAssertNotNULL(macho_ptr, @"Discovered binary is not within the mapped memory range");
     
     /* Parse the image */

@@ -145,7 +145,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     while ((cmdptr = plcrash_async_macho_next_command_type(image, cmdptr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
         if (image->m64) {
             struct segment_command_64 *segment = cmdptr;
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) segment, 0, sizeof(*segment))) {
                 PLCF_DEBUG("LC_SEGMENT command was too short");
                 ret = PLCRASH_EINVAL;
                 goto error;
@@ -160,7 +160,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             break;
         } else {
             struct segment_command *segment = cmdptr;
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)segment, sizeof(*segment))) {
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) segment, 0, sizeof(*segment))) {
                 PLCF_DEBUG("LC_SEGMENT command was too short");
                 ret = PLCRASH_EINVAL;
                 goto error;
@@ -225,13 +225,12 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
             return NULL;
         }
 
-        return plcrash_async_mobject_remap_address(&image->load_cmds, image->header_addr + image->header_size,
-                                                   sizeof(struct load_command));
+        return plcrash_async_mobject_remap_address(&image->load_cmds, image->header_addr, image->header_size, sizeof(struct load_command));
     }
 
     /* We need the size from the previous load command; first, verify the pointer. */
     cmd = previous;
-    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, sizeof(*cmd))) {
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, 0, sizeof(*cmd))) {
         PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
         return NULL;
     }
@@ -245,14 +244,14 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
         return NULL;
 
     /* Verify that it holds at least load_command */
-    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, sizeof(struct load_command))) {
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, 0, sizeof(struct load_command))) {
         PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
         return NULL;
     }
 
     /* Verify the actual size. */
     cmd = next;
-    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, image->byteorder->swap32(cmd->cmdsize))) {
+    if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) next, 0, image->byteorder->swap32(cmd->cmdsize))) {
         PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
         return NULL;
     }
@@ -305,7 +304,7 @@ void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t e
     /* Iterate commands until we either find a match, or reach the end */
     while ((cmd = plcrash_async_macho_next_command(image, cmd)) != NULL) {
         /* Read the load command type */
-        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, sizeof(*cmd))) {
+        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t) cmd, 0, sizeof(*cmd))) {
             PLCF_DEBUG("Failed to map LC_CMD at address %p in: %s", cmd, image->name);
             return NULL;
         }
@@ -434,7 +433,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
         struct section_64 *sect_64 = NULL;
        
         if (image->m64) {
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_64))) {
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, 0, sizeof(*sect_64))) {
                 PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
                 return PLCRASH_EINVAL;
             }
@@ -442,7 +441,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
             sect_64 = (void *) cursor;
             cursor += sizeof(*sect_64);
         } else {
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, sizeof(*sect_32))) {
+            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, 0, sizeof(*sect_32))) {
                 PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
                 return PLCRASH_EINVAL;
             }
@@ -562,9 +561,7 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
     void *nlist_table;
     char *string_table;
     
-    nlist_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj,
-                                                      reader->linkedit.mobj.task_address + (image->byteorder->swap32(symtab_cmd->symoff) - reader->linkedit.fileoff),
-                                                      nlist_table_size);
+    nlist_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj, reader->linkedit.mobj.task_address, (image->byteorder->swap32(symtab_cmd->symoff) - reader->linkedit.fileoff), nlist_table_size);
     if (nlist_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
                    (uint64_t) reader->linkedit.mobj.address + image->byteorder->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, image->name);
@@ -572,9 +569,7 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
         goto cleanup;
     }
     
-    string_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj,
-                                                       reader->linkedit.mobj.task_address + (image->byteorder->swap32(symtab_cmd->stroff) - reader->linkedit.fileoff),
-                                                       string_size);
+    string_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj, reader->linkedit.mobj.task_address, (image->byteorder->swap32(symtab_cmd->stroff) - reader->linkedit.fileoff), string_size);
     if (string_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
                    (uint64_t) reader->linkedit.mobj.address + image->byteorder->swap32(symtab_cmd->stroff), (uint64_t) string_size, image->name);
@@ -708,7 +703,7 @@ const char *plcrash_async_macho_symtab_reader_symbol_name (plcrash_async_macho_s
     const char *sym_name = reader->string_table + n_strx;
     const char *p = sym_name;
     do {
-        if (!plcrash_async_mobject_verify_local_pointer(&reader->linkedit.mobj, (uintptr_t) p, 1)) {
+        if (!plcrash_async_mobject_verify_local_pointer(&reader->linkedit.mobj, (uintptr_t) p, 0, 1)) {
             PLCF_DEBUG("End of mobject reached while walking string\n");
             return NULL;
         }

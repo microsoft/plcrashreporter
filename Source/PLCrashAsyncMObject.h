@@ -62,8 +62,8 @@ typedef struct plcrash_async_mobject {
 plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length);
 
 pl_vm_address_t plcrash_async_mobject_base_address (plcrash_async_mobject_t *mobj);
-bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, size_t length);
-void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, size_t length);
+bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, pl_vm_size_t offset, size_t length);
+void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_size_t offset, size_t length);
 
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj);
 
