@@ -71,7 +71,7 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
 #endif
     
     if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("vm_remap() failure: %d", kt);
+        PLCF_DEBUG("vm_remap() addr=%" PRIx64 " length=%" PRIu64 " failed: %d", (uint64_t) task_addr, (uint64_t) length, kt);
         // Should we use more descriptive errors?
         return PLCRASH_ENOMEM;
     }
