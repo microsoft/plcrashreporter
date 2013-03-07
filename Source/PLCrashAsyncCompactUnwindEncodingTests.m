@@ -140,6 +140,23 @@
 
 - (void) setUp {
     uint32_t offset, length;
+
+    /*
+     * Warning: This code assumes 1:1 correspondance between vmaddr/vmsize and foffset/fsize in the loaded binary.
+     * This is currently the case with our test binaries, but it could possibly change in the future. To handle this,
+     * one would either need to:
+     * - Implement 'real' segment loading, ala https://github.com/landonf/libevil_patch/blob/b80ebf4c0442f234c4f3f9ec180a2f873c5e2559/libevil/libevil.m#L253
+     * or
+     * - Add a 'file mode' to the Mach-O parser that causes it to use file offsets rather than VM offsets.
+     * or
+     * - Don't bother to load all the segments properly, just map the CFE data.
+     *
+     * I didn't implement the file mode for the Mach-O parser as I'd like to keep that code as simple as possible,
+     * given that it runs in a privileged crash time position, and 'file' mode is only required for unit tests.
+     *
+     * Performing segment loading or parsing the Mach-O binary isn't much work, so I'll probably just do that, and then
+     * this comment can go away.
+     */
     
     /* Load the image into a memory object */
     NSData *mappedImage = [self dataForTestResource: TEST_BINARY];
