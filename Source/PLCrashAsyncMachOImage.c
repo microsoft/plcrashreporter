@@ -515,7 +515,7 @@ plcrash_error_t plcrash_async_macho_find_symbol_by_name (plcrash_async_macho_t *
         if (strcmp(sym, symbol) == 0) {
             plcrash_async_macho_symtab_reader_free(&reader);
 
-            *pc = entry.normalized_address;
+            *pc = entry.normalized_value + image->vmaddr_slide;
             return PLCRASH_ESUCCESS;
         }
     }
@@ -675,13 +675,13 @@ plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcra
         .n_value = pl_sym_value(reader->image, symbol)
     };
     
-    entry.normalized_address = entry.n_value;
+    entry.normalized_value = entry.n_value;
     
     /* Normalize the symbol address. We have to set the low-order bit ourselves for ARM THUMB functions. */
     if (entry.n_desc & N_ARM_THUMB_DEF)
-        entry.normalized_address = (entry.n_value|1) + reader->image->vmaddr_slide;
+        entry.normalized_value = (entry.n_value|1);
     else
-        entry.normalized_address = entry.n_value + reader->image->vmaddr_slide;
+        entry.normalized_value = entry.n_value;
     
 #undef pl_sym_value
     
@@ -825,7 +825,7 @@ plcrash_error_t plcrash_async_macho_find_symbol_by_addr (plcrash_async_macho_t *
     }
 
     /* Inform our caller */
-    symbol_cb(found_symbol.normalized_address, sym_name, context);
+    symbol_cb(found_symbol.normalized_value + image->vmaddr_slide, sym_name, context);
 
     // fall through to cleanup
     retval = PLCRASH_ESUCCESS;

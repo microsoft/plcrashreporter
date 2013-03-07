@@ -114,11 +114,12 @@ typedef struct plcrash_async_macho_symtab_entry {
 
     /** Symbol value */
     pl_vm_address_t n_value;
-    
-    /** The normalized symbol address. This address is directly usable as an in-task symbol address. The
-     * address will directly correspond to the in-memory address as returned by functions such as dlsym() from
-     * within the target process. */
-    pl_vm_address_t normalized_address;
+
+    /**
+     * The normalized symbol address. This will include any required bit flags -- such as the ARM thumb high-order
+     * bit -- which are not included in the symbol table by default.
+     */
+    pl_vm_address_t normalized_value;
 } plcrash_async_macho_symtab_entry_t;
 
 /**

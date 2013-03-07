@@ -314,7 +314,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     for (uint32_t i = 0; i < reader.nsyms; i++) {
         entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab, i);
         /* Skip non-matching symbols */
-        if (entry.normalized_address != (pl_vm_address_t) dli.dli_saddr)
+        if (entry.normalized_value != (pl_vm_address_t) dli.dli_saddr - _image.vmaddr_slide)
             continue;
         
         /* If the symbol is not within a section, or a debugging symbol, skip the remaining tests */
