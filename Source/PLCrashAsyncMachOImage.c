@@ -183,11 +183,14 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     }
 
     /* Compute the vmaddr slide */
-    if (text_vmaddr < header)
+    if (text_vmaddr < header) {
         image->vmaddr_slide = header - text_vmaddr;
-    else
-        image->vmaddr_slide = text_vmaddr - header;
-    
+    } else if (text_vmaddr > header) {
+        image->vmaddr_slide = -((int64_t) (text_vmaddr - header));
+    } else {
+        image->vmaddr_slide = 0;
+    }
+
     return PLCRASH_ESUCCESS;
     
 error:
@@ -791,7 +794,7 @@ plcrash_error_t plcrash_async_macho_find_symbol_by_addr (plcrash_async_macho_t *
     if (retval != PLCRASH_ESUCCESS)
         return retval;
 
-    /* Compute the actual in-core PC. */
+    /* Compute the on-disk PC. */
     pl_vm_address_t slide_pc = pc - image->vmaddr_slide;
 
     /* Walk the symbol table. */
