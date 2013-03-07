@@ -105,6 +105,22 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
         return PLCRASH_EINVAL;
     }
 
+    if (index_count == 0) {
+        PLCF_DEBUG("CFE index contains no entries");
+        return PLCRASH_ENOTFOUND;
+    }
+    
+    /*
+     * NOTE: CFE includes an extra entry in the total count of second-level pages, ie, from ld64:
+     * const uint32_t indexCount = secondLevelPageCount+1;
+     *
+     * There's no explanation as to why, and tools appear to ignore the entry entirely. We do the same
+     * here.
+     */
+    PLCF_ASSERT(index_count != 0);
+    index_count--;
+
+    /* Load the index entries */
     size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
     struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj,
                                                                                                  plcrash_async_mobject_base_address(reader->mobj),
@@ -148,7 +164,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
     /* The final entry will always match remaining PC values */
     PLCF_ASSERT(first_level_entry != NULL);
-
+    
     uint32_t *second_level_kind = plcrash_async_mobject_remap_address(reader->mobj,
                                                                       plcrash_async_mobject_base_address(reader->mobj),
                                                                       byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset),
@@ -163,7 +179,9 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             break;
 
         default:
-            PLCF_DEBUG("Unsupported second-level CFE table kind: %" PRIx32, byteorder->swap32(*second_level_kind));
+            PLCF_DEBUG("Unsupported second-level CFE table kind: 0x%" PRIx32 " at 0x%" PRIx32,
+                       byteorder->swap32(*second_level_kind),
+                       byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset));
             return PLCRASH_EINVAL;
     }
 

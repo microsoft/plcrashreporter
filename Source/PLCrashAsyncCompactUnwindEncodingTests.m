@@ -195,11 +195,13 @@
 
     pl_vm_address_t mainPC;
     err = plcrash_async_macho_find_symbol_by_name(&_image, "_main", &mainPC);
+    mainPC -= _image.vmaddr_slide;
+
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate main symbol");
-#if 0
+
     err = plcrash_async_cfe_reader_find_pc(&reader, mainPC);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry for main");
-#endif
+
     plcrash_async_cfe_reader_free(&reader);
 }
 
