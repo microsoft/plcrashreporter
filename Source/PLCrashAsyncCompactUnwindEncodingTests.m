@@ -186,22 +186,30 @@
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
 
+    /* Map the unwind section */
     err = plcrash_async_macho_map_section(&_image, SEG_TEXT, "__unwind_info", &mobj);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
-    
+
+
+    /* Initialize the CFE reader */
     cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
     err = plcrash_async_cfe_reader_init(&reader, &mobj, cputype);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
 
+
+    /* Find the binary symbol address of the main symbol */
     pl_vm_address_t mainPC;
     err = plcrash_async_macho_find_symbol_by_name(&_image, "_main", &mainPC);
     mainPC -= _image.vmaddr_slide;
 
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate main symbol");
 
+
+    /* Perform a smoke test lookup */
     err = plcrash_async_cfe_reader_find_pc(&reader, mainPC);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry for main");
 
+    /* Clean up */
     plcrash_async_cfe_reader_free(&reader);
 }
 
