@@ -93,7 +93,8 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
  */
 plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
-    
+    const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
+
     /* Map the PC to its file offset */
 
     /* Find and map the index */
@@ -122,10 +123,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
     /* Load the index entries */
     size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
-    struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj,
-                                                                                                 plcrash_async_mobject_base_address(reader->mobj),
-                                                                                                 index_off,
-                                                                                                 index_len);
+    struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
     if (entries == NULL) {
         PLCF_DEBUG("The declared entries table lies outside the mapped CFE range");
         return PLCRASH_EINVAL;
@@ -133,55 +131,89 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
     /* Binary search for the first-level entry */
     struct unwind_info_section_header_index_entry *first_level_entry = NULL;
-    uint32_t min = 0;
-    uint32_t mid = 0;
-    uint32_t max = index_count - 1;
+    {
+        uint32_t min = 0;
+        uint32_t mid = 0;
+        uint32_t max = index_count - 1;
 
-    /* Search while entries[min:max] is not empty */
-    while (max >= min) {
-        /* Calculate midpoint */
-        mid = (min + max) / 2;
+        /* Search while entries[min:max] is not empty */
+        while (max >= min) {
+            /* Calculate midpoint */
+            mid = (min + max) / 2;
 
-        /* Determine which half of the array to search */
-        uint32_t mid_fun_offset = byteorder->swap32(entries[mid].functionOffset);
-        if (mid_fun_offset < pc) {
-            /* Check for inclusive equality */
-            if (mid == max || byteorder->swap32(entries[mid+1].functionOffset) > pc) {
+            /* Determine which half of the array to search */
+            uint32_t mid_fun_offset = byteorder->swap32(entries[mid].functionOffset);
+            if (mid_fun_offset < pc) {
+                /* Check for inclusive equality */
+                if (mid == max || byteorder->swap32(entries[mid+1].functionOffset) > pc) {
+                    first_level_entry = &entries[mid];
+                    break;
+                }
+
+                /* Base our search on the upper array */
+                min = mid + 1;
+            } else if (mid_fun_offset > pc) {
+                /* Base our search on the lower array */
+                max = mid - 1;
+            } else if (mid_fun_offset == pc) {
+                /* Direct match found */
                 first_level_entry = &entries[mid];
-                break;
             }
-
-            /* Base our search on the upper array */
-            min = mid + 1;
-        } else if (mid_fun_offset > pc) {
-            /* Base our search on the lower array */
-            max = mid - 1;
-        } else if (mid_fun_offset == pc) {
-            /* Direct match found */
-            first_level_entry = &entries[mid];
         }
     }
 
     /* The final entry will always match remaining PC values */
     PLCF_ASSERT(first_level_entry != NULL);
-    
-    uint32_t *second_level_kind = plcrash_async_mobject_remap_address(reader->mobj,
-                                                                      plcrash_async_mobject_base_address(reader->mobj),
-                                                                      byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset),
-                                                                      sizeof(uint32_t));
+
+    uint32_t second_level_offset = byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset);
+    uint32_t *second_level_kind = plcrash_async_mobject_remap_address(reader->mobj, base_addr, second_level_offset, sizeof(uint32_t));
     switch (byteorder->swap32(*second_level_kind)) {
-        case UNWIND_SECOND_LEVEL_REGULAR:
-            PLCF_DEBUG("Regular!");
-            break;
+        case UNWIND_SECOND_LEVEL_REGULAR: {
+            struct unwind_info_regular_second_level_page_header *header;
+            header = plcrash_async_mobject_remap_address(reader->mobj, base_addr, second_level_offset, sizeof(*header));
+            if (header == NULL) {
+                PLCF_DEBUG("The second-level page header lies outside the mapped CFE range");
+                return PLCRASH_EINVAL;
+            }
+
+            PLCF_DEBUG("Regular %p!", header);
             
-        case UNWIND_SECOND_LEVEL_COMPRESSED:
-            PLCF_DEBUG("Compressed!");
+            // TODO - unimplemented!
+            __builtin_trap();
             break;
+        }
+
+        case UNWIND_SECOND_LEVEL_COMPRESSED: {
+            struct unwind_info_compressed_second_level_page_header *header;
+            header = plcrash_async_mobject_remap_address(reader->mobj, base_addr, second_level_offset, sizeof(*header));
+            if (header == NULL) {
+                PLCF_DEBUG("The second-level page header lies outside the mapped CFE range");
+                return PLCRASH_EINVAL;
+            }
+
+            /* Find the entries array */
+            uint32_t entries_offset = byteorder->swap16(header->entryPageOffset);
+            uint32_t entries_count = byteorder->swap16(header->entryCount);
+            
+            if (SIZE_MAX / sizeof(uint32_t) < entries_count) {
+                PLCF_DEBUG("CFE second level entry count extends beyond the range of size_t");
+                return PLCRASH_EINVAL;
+            }
+            
+            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, entries_offset, entries_count * sizeof(uint32_t))) {
+                PLCF_DEBUG("CFE entries table lies outside the mapped CFE range");
+                
+            }
+
+            uint32_t *entries = (uint32_t *) (((uintptr_t)header) + entries_offset);
+            
+            
+            PLCF_DEBUG("Compressed %p %p!", header, entries);
+            break;
+        }
 
         default:
-            PLCF_DEBUG("Unsupported second-level CFE table kind: 0x%" PRIx32 " at 0x%" PRIx32,
-                       byteorder->swap32(*second_level_kind),
-                       byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset));
+            PLCF_DEBUG("Unsupported second-level CFE table kind: 0x%" PRIx32 " at 0x%" PRIx32, byteorder->swap32(*second_level_kind), second_level_offset);
             return PLCRASH_EINVAL;
     }
 
