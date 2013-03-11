@@ -50,12 +50,14 @@
     Dl_info info;
     STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
 
-    /* Look up the vmaddr slide for our image */
+    /* Look up the vmaddr and slide for our image */
+    uintptr_t text_vmaddr;
     int64_t vmaddr_slide = 0;
     bool found_image = false;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
         if (_dyld_get_image_header(i) == info.dli_fbase) {
             vmaddr_slide = _dyld_get_image_vmaddr_slide(i);
+            text_vmaddr = info.dli_fbase - vmaddr_slide;
             found_image = true;
             break;
         }
@@ -72,6 +74,7 @@
     unsigned long text_size;
     STAssertNotNULL(getsegmentdata(info.dli_fbase, SEG_TEXT, &text_size), @"Failed to find segment");
     STAssertEquals(_image.text_size, (pl_vm_size_t) text_size, @"Incorrect text segment size computed");
+    STAssertEquals(_image.text_vmaddr, (pl_vm_address_t) text_vmaddr, @"Incorrect text segment address computed");
 }
 
 - (void) tearDown {

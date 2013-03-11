@@ -141,7 +141,6 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     void *cmdptr = NULL;
     image->text_size = 0x0;
     bool found_text_seg = false;
-    pl_vm_address_t text_vmaddr;
     while ((cmdptr = plcrash_async_macho_next_command_type(image, cmdptr, image->m64 ? LC_SEGMENT_64 : LC_SEGMENT)) != 0) {
         if (image->m64) {
             struct segment_command_64 *segment = cmdptr;
@@ -155,7 +154,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
                 continue;
 
             image->text_size = image->byteorder->swap64(segment->vmsize);
-            text_vmaddr = image->byteorder->swap64(segment->vmaddr);
+            image->text_vmaddr = image->byteorder->swap64(segment->vmaddr);
             found_text_seg = true;
             break;
         } else {
@@ -170,7 +169,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
                 continue;
             
             image->text_size = image->byteorder->swap32(segment->vmsize);
-            text_vmaddr = image->byteorder->swap32(segment->vmaddr);
+            image->text_vmaddr = image->byteorder->swap32(segment->vmaddr);
             found_text_seg = true;
             break;
         }
@@ -183,10 +182,10 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     }
 
     /* Compute the vmaddr slide */
-    if (text_vmaddr < header) {
-        image->vmaddr_slide = header - text_vmaddr;
-    } else if (text_vmaddr > header) {
-        image->vmaddr_slide = -((int64_t) (text_vmaddr - header));
+    if (image->text_vmaddr < header) {
+        image->vmaddr_slide = header - image->text_vmaddr;
+    } else if (image->text_vmaddr > header) {
+        image->vmaddr_slide = -((int64_t) (image->text_vmaddr - header));
     } else {
         image->vmaddr_slide = 0;
     }

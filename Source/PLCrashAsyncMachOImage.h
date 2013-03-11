@@ -72,7 +72,10 @@ typedef struct plcrash_async_macho {
     /** Mapped Mach-O load commands */
     plcrash_async_mobject_t load_cmds;
 
-    /** Total size, in bytes, of the Mach-O image's __TEXT segment. */
+    /** The Mach-O image's __TEXT segment, as defined by the LC_SEGMENT/LC_SEGMENT_64 load command. */
+    pl_vm_address_t text_vmaddr;
+
+    /** Total size, in bytes, of the Mach-O image's __TEXT segment, as defined by the LC_SEGMENT/LC_SEGMENT_64 load command. */
     pl_vm_size_t text_size;
 
     /** If true, the image is 64-bit Mach-O. If false, it is a 32-bit Mach-O image. */
