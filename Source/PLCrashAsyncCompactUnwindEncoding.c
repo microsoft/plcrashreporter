@@ -158,6 +158,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             } else if (mid_fun_offset == pc) {
                 /* Direct match found */
                 first_level_entry = &entries[mid];
+                break;
             }
         }
     }
@@ -190,6 +191,9 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 PLCF_DEBUG("The second-level page header lies outside the mapped CFE range");
                 return PLCRASH_EINVAL;
             }
+            
+            /* Record the base offset */
+            uint32_t base_foffset = byteorder->swap32(first_level_entry->functionOffset);
 
             /* Find the entries array */
             uint32_t entries_offset = byteorder->swap16(header->entryPageOffset);
@@ -202,13 +206,51 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             
             if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, entries_offset, entries_count * sizeof(uint32_t))) {
                 PLCF_DEBUG("CFE entries table lies outside the mapped CFE range");
-                
+                return PLCRASH_EINVAL;
             }
 
-            uint32_t *entries = (uint32_t *) (((uintptr_t)header) + entries_offset);
-            
-            
-            PLCF_DEBUG("Compressed %p %p!", header, entries);
+            PLCF_DEBUG("Searching for %" PRIx64, pc);
+            uint32_t *compressed_entries = (uint32_t *) (((uintptr_t)header) + entries_offset);
+            {
+                uint32_t min = 0;
+                uint32_t mid = 0;
+                uint32_t max = byteorder->swap16(header->entryCount) - 1;
+                
+                /* Search while entries[min:max] is not empty */
+                uint32_t *c_entry = NULL;
+                while (max >= min) {
+                    /* Calculate midpoint */
+                    mid = (min + max) / 2;
+                    
+                    uint32_t swp = byteorder->swap32(compressed_entries[mid]);
+                    PLCF_DEBUG("Compressed hdr=%p table=%p func_offset=%" PRIx32 " idx = %" PRIx32, header, compressed_entries, UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(swp) + base_foffset, UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(swp));
+
+                    
+                    /* Determine which half of the array to search */
+                    uint32_t mid_fun_offset = base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(compressed_entries[mid]));
+                    if (mid_fun_offset < pc) {
+                        /* Check for inclusive equality */
+                        if (mid == max || base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(compressed_entries[mid+1])) > pc) {
+                            c_entry = &compressed_entries[mid];
+                            break;
+                        }
+                        
+                        /* Base our search on the upper array */
+                        min = mid + 1;
+                    } else if (mid_fun_offset > pc) {
+                        /* Base our search on the lower array */
+                        max = mid - 1;
+                    } else if (mid_fun_offset == pc) {
+                        /* Direct match found */
+                        c_entry = &compressed_entries[mid];
+                        break;
+                    }
+                }
+                
+                uint32_t swp = byteorder->swap32(*c_entry);
+                PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(swp), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(swp));
+            }
+
             break;
         }
 
