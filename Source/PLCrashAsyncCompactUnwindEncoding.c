@@ -86,6 +86,48 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
 }
 
 /**
+ * @internal
+ *
+ * Binary search in macro form. Pass the table, count, and result
+ * pointers.
+ *
+ * CFE_FUN_BINARY_SEARCH_ENTVAL must also be defined, and it must
+ * return the integer value to be compared.
+ */
+#define CFE_FUN_BINARY_SEARCH(_table, _count, _result) do { \
+    uint32_t min = 0; \
+    uint32_t mid = 0; \
+    uint32_t max = _count - 1; \
+\
+    /* Search while _table[min:max] is not empty */ \
+    while (max >= min) { \
+        /* Calculate midpoint */ \
+        mid = (min + max) / 2; \
+\
+        /* Determine which half of the array to search */ \
+        uint32_t mid_fun_offset = CFE_FUN_BINARY_SEARCH_ENTVAL(_table[mid]); \
+        if (mid_fun_offset < pc) { \
+            /* Check for inclusive equality */ \
+            if (mid == max || CFE_FUN_BINARY_SEARCH_ENTVAL(_table[mid+1]) > pc) { \
+                _result = &_table[mid]; \
+                break; \
+            } \
+\
+\
+            /* Base our search on the upper array */ \
+            min = mid + 1; \
+        } else if (mid_fun_offset > pc) { \
+            /* Base our search on the lower array */ \
+            max = mid - 1; \
+        } else if (mid_fun_offset == pc) { \
+            /* Direct match found */ \
+            _result = &_table[mid]; \
+            break; \
+        } \
+    } \
+} while (0);
+
+/**
  * TODO
  *
  * @param reader The initialized CFE reader.
@@ -131,37 +173,9 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
     /* Binary search for the first-level entry */
     struct unwind_info_section_header_index_entry *first_level_entry = NULL;
-    {
-        uint32_t min = 0;
-        uint32_t mid = 0;
-        uint32_t max = index_count - 1;
-
-        /* Search while entries[min:max] is not empty */
-        while (max >= min) {
-            /* Calculate midpoint */
-            mid = (min + max) / 2;
-
-            /* Determine which half of the array to search */
-            uint32_t mid_fun_offset = byteorder->swap32(entries[mid].functionOffset);
-            if (mid_fun_offset < pc) {
-                /* Check for inclusive equality */
-                if (mid == max || byteorder->swap32(entries[mid+1].functionOffset) > pc) {
-                    first_level_entry = &entries[mid];
-                    break;
-                }
-
-                /* Base our search on the upper array */
-                min = mid + 1;
-            } else if (mid_fun_offset > pc) {
-                /* Base our search on the lower array */
-                max = mid - 1;
-            } else if (mid_fun_offset == pc) {
-                /* Direct match found */
-                first_level_entry = &entries[mid];
-                break;
-            }
-        }
-    }
+#define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
+    CFE_FUN_BINARY_SEARCH(entries, index_count, first_level_entry);
+#undef CFE_FUN_BINARY_SEARCH_ENTVAL
 
     /* The final entry will always match remaining PC values */
     PLCF_ASSERT(first_level_entry != NULL);
@@ -211,46 +225,16 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
             PLCF_DEBUG("Searching for %" PRIx64, pc);
             uint32_t *compressed_entries = (uint32_t *) (((uintptr_t)header) + entries_offset);
-            {
-                uint32_t min = 0;
-                uint32_t mid = 0;
-                uint32_t max = byteorder->swap16(header->entryCount) - 1;
-                
-                /* Search while entries[min:max] is not empty */
-                uint32_t *c_entry = NULL;
-                while (max >= min) {
-                    /* Calculate midpoint */
-                    mid = (min + max) / 2;
-                    
-                    uint32_t swp = byteorder->swap32(compressed_entries[mid]);
-                    PLCF_DEBUG("Compressed hdr=%p table=%p func_offset=%" PRIx32 " idx = %" PRIx32, header, compressed_entries, UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(swp) + base_foffset, UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(swp));
+            uint32_t *c_entry = NULL;
 
-                    
-                    /* Determine which half of the array to search */
-                    uint32_t mid_fun_offset = base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(compressed_entries[mid]));
-                    if (mid_fun_offset < pc) {
-                        /* Check for inclusive equality */
-                        if (mid == max || base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(compressed_entries[mid+1])) > pc) {
-                            c_entry = &compressed_entries[mid];
-                            break;
-                        }
-                        
-                        /* Base our search on the upper array */
-                        min = mid + 1;
-                    } else if (mid_fun_offset > pc) {
-                        /* Base our search on the lower array */
-                        max = mid - 1;
-                    } else if (mid_fun_offset == pc) {
-                        /* Direct match found */
-                        c_entry = &compressed_entries[mid];
-                        break;
-                    }
-                }
-                
-                uint32_t swp = byteorder->swap32(*c_entry);
-                PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(swp), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(swp));
-            }
-
+            /* Binary search for the target entry */
+#define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(_tval)))
+            CFE_FUN_BINARY_SEARCH(compressed_entries, byteorder->swap16(header->entryCount), c_entry);
+#undef CFE_FUN_BINARY_SEARCH_ENTVAL
+            
+            uint32_t swp = byteorder->swap32(*c_entry);
+            PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(swp), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(swp));
+            
             break;
         }
 
