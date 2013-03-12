@@ -131,7 +131,8 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
  * TODO
  *
  * @param reader The initialized CFE reader.
- * @param pc The PC value to search for within the CFE data.
+ * @param pc The PC value to search for within the CFE data. Note that this value must be relative to
+ * the target Mach-O image's __TEXT vmaddr.
  */
 plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
