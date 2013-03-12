@@ -46,6 +46,9 @@
 #error Unsupported target
 #endif
 
+/** The base PC value hard coded in our test CFE data */
+#define BASE_PC 1
+
 /**
  * @internal
  *
@@ -196,20 +199,8 @@
     err = plcrash_async_cfe_reader_init(&reader, &mobj, cputype);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
 
-
-    /* Find the binary symbol address of the main symbol */
-    pl_vm_address_t mainPC;
-    err = plcrash_async_macho_find_symbol_by_name(&_image, "_main", &mainPC);
-    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate main symbol");
-
-    // TODO - the address supplied must be relative to the base address of the on-disk
-    // LC_SEGMENT's vmaddr. We need to consider how to best express this cleanly via the
-    // API, but in the meantime, we can adjust it manually.
-    mainPC -= _image.vmaddr_slide;
-    mainPC -= _image.text_vmaddr;
-
     /* Perform a smoke test lookup */
-    err = plcrash_async_cfe_reader_find_pc(&reader, mainPC);
+    err = plcrash_async_cfe_reader_find_pc(&reader, BASE_PC);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry for main");
 
     /* Clean up */

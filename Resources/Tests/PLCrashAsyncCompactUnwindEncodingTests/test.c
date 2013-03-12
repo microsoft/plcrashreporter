@@ -15,7 +15,7 @@ struct unwind_sect_regular_page {
 
 struct unwind_sect {
     struct unwind_info_section_header hdr;
-    struct unwind_info_section_header_index_entry entries[2];
+    struct unwind_info_section_header_index_entry entries[3];
 
     struct unwind_sect_regular_page regular_page_1;
 
@@ -30,12 +30,16 @@ struct unwind_sect data __attribute__((section("__TEXT,__unwind_info"))) = {
         .personalityArraySectionOffset = 0,
         .personalityArrayCount = 0,
         .indexSectionOffset = offsetof(struct unwind_sect, entries),
-        .indexCount = 2 // all tools treat this as indexCount - 1
+        .indexCount = 3 // all tools treat this as indexCount - 1
     },
 
     .entries = { 
         {
             .functionOffset = 0,
+            .secondLevelPagesSectionOffset = offsetof(struct unwind_sect, regular_page_1)
+        },
+        {
+            .functionOffset = 1,
             .secondLevelPagesSectionOffset = offsetof(struct unwind_sect, compressed_page_1)
         },
         { } // empty/ignored entry

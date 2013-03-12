@@ -1,6 +1,7 @@
 DEVELOPER?=	$(shell xcode-select -print-path)
 PLATFORMS?=	$(DEVELOPER)/Platforms/
 CFLAGS?=	-Os -std=c99
+LDFLAGS?=	-dynamiclib
 
 DEVICE_SDK?=		iPhoneOS6.1
 DEVICE_PLATFORM?=	$(PLATFORMS)/iPhoneOS.platform
@@ -20,9 +21,9 @@ MAC_ROOT?=		$(MAC_PLATFORM)/Developer/SDKs/$(MAC_SDK).sdk
 MAC_CC?=		$(shell xcrun -sdk `echo ${MAC_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
 MAC_CFLAGS?=		-arch x86_64 -arch i386 -isysroot "$(MAC_ROOT)" -mmacosx-version-min=10.6 -gdwarf-2 $(CFLAGS)
 
-IOS_OBJS=		example-ios.o
-SIM_OBJS=		example-sim.o
-MAC_OBJS=		example-macosx.o
+IOS_OBJS=		test-ios.o
+SIM_OBJS=		test-sim.o
+MAC_OBJS=		test-macosx.o
 
 PRODUCTS=		$(IOS_PRODUCT) $(MAC_PRODUCT) $(SIM_PRODUCT)
 IOS_PRODUCT=		test.ios
@@ -31,23 +32,23 @@ MAC_PRODUCT=		test.macosx
 
 all: $(PRODUCTS)
 
-example-sim.o: example.S
+test-sim.o: test.c
 	$(SIM_CC) $(SIM_CFLAGS) -c $< -o $@
 
-example-ios.o: example.S
+test-ios.o: test.c
 	$(DEVICE_CC) $(DEVICE_CFLAGS) -c $< -o $@
 
-example-macosx.o: example.S
+test-macosx.o: test.c
 	$(MAC_CC) $(MAC_CFLAGS) -c $< -o $@
 
 $(MAC_PRODUCT): $(MAC_OBJS)
-	$(MAC_CC) $(MAC_CFLAGS) $+ -o $@
+	$(MAC_CC) $(LDFLAGS) $(MAC_CFLAGS) $+ -o $@
 
 $(IOS_PRODUCT): $(IOS_OBJS)
-	$(DEVICE_CC) $(DEVICE_CFLAGS) $+ -o $@
+	$(DEVICE_CC) $(LDFLAGS) $(DEVICE_CFLAGS) $+ -o $@
 
 $(SIM_PRODUCT): $(SIM_OBJS)
-	$(SIM_CC) $(SIM_CFLAGS) $+ -o $@
+	$(SIM_CC) $(LDFLAGS) $(SIM_CFLAGS) $+ -o $@
 
 clean-objs:
 	rm -f $(IOS_OBJS) $(MAC_OBJS) $(SIM_OBJS)
