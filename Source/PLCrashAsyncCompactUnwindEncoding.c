@@ -127,6 +127,10 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
     } \
 } while (0);
 
+/* Evaluates to true if the length of @a _ecount * @a sizof(_etype) can not be represented
+ * by size_t. */
+#define VERIFY_SIZE_T(_etype, _ecount) (SIZE_MAX / sizeof(_etype) < _ecount)
+
 /**
  * TODO
  *
@@ -138,44 +142,58 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
 
-    /* Map the PC to its file offset */
+    /* Find and map the common encodings table */
+    uint32_t common_enc_count = byteorder->swap32(reader->header.commonEncodingsArrayCount);
+    uint32_t *common_enc;
+    {
+        if (VERIFY_SIZE_T(uint32_t, common_enc_count)) {
+            PLCF_DEBUG("CFE common encoding count extends beyond the range of size_t");
+            return PLCRASH_EINVAL;
+        }
+
+        size_t common_enc_len = common_enc_count * sizeof(uint32_t);
+        uint32_t common_enc_off = byteorder->swap32(reader->header.commonEncodingsArraySectionOffset);
+        common_enc = plcrash_async_mobject_remap_address(reader->mobj, base_addr, common_enc_off, common_enc_len);
+    }
 
     /* Find and map the index */
-    uint32_t index_off = byteorder->swap32(reader->header.indexSectionOffset);
     uint32_t index_count = byteorder->swap32(reader->header.indexCount);
+    struct unwind_info_section_header_index_entry *index_entries;
+    {
+        uint32_t index_off = byteorder->swap32(reader->header.indexSectionOffset);
+        if (index_count == 0) {
+            PLCF_DEBUG("CFE index contains no entries");
+            return PLCRASH_ENOTFOUND;
+        }
+        
+        /*
+         * NOTE: CFE includes an extra entry in the total count of second-level pages, ie, from ld64:
+         * const uint32_t indexCount = secondLevelPageCount+1;
+         *
+         * There's no explanation as to why, and tools appear to ignore the entry entirely. We do the same
+         * here.
+         */
+        PLCF_ASSERT(index_count != 0);
+        index_count--;
 
-    if (SIZE_MAX / sizeof(struct unwind_info_section_header_index_entry) < index_count) {
-        PLCF_DEBUG("CFE index count extends beyond the range of size_t");
-        return PLCRASH_EINVAL;
-    }
+        /* Load the index entries */
+        if (VERIFY_SIZE_T(struct unwind_info_section_header_index_entry, index_count)) {
+            PLCF_DEBUG("CFE index count extends beyond the range of size_t");
+            return PLCRASH_EINVAL;
+        }
 
-    if (index_count == 0) {
-        PLCF_DEBUG("CFE index contains no entries");
-        return PLCRASH_ENOTFOUND;
+        size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
+        index_entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
+        if (index_entries == NULL) {
+            PLCF_DEBUG("The declared entries table lies outside the mapped CFE range");
+            return PLCRASH_EINVAL;
+        }
     }
     
-    /*
-     * NOTE: CFE includes an extra entry in the total count of second-level pages, ie, from ld64:
-     * const uint32_t indexCount = secondLevelPageCount+1;
-     *
-     * There's no explanation as to why, and tools appear to ignore the entry entirely. We do the same
-     * here.
-     */
-    PLCF_ASSERT(index_count != 0);
-    index_count--;
-
-    /* Load the index entries */
-    size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
-    struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
-    if (entries == NULL) {
-        PLCF_DEBUG("The declared entries table lies outside the mapped CFE range");
-        return PLCRASH_EINVAL;
-    }
-
     /* Binary search for the first-level entry */
     struct unwind_info_section_header_index_entry *first_level_entry = NULL;
 #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
-    CFE_FUN_BINARY_SEARCH(pc, entries, index_count, first_level_entry);
+    CFE_FUN_BINARY_SEARCH(pc, index_entries, index_count, first_level_entry);
 #undef CFE_FUN_BINARY_SEARCH_ENTVAL
 
     /* The final entry will always match remaining PC values */
