@@ -221,7 +221,7 @@
 }
 
 /**
- * Test reading of a PC, compressed, private encoding.
+ * Test reading of a PC, compressed, with a private encoding.
  */
 - (void) testReadCompressedEncoding {
     plcrash_error_t err;
