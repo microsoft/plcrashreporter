@@ -283,7 +283,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             uint32_t *c_entry_ptr = NULL;
 
 #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(_tval)))
-            CFE_FUN_BINARY_SEARCH(pc, compressed_entries, byteorder->swap16(header->entryCount), c_entry_ptr);
+            CFE_FUN_BINARY_SEARCH(pc, compressed_entries, entries_count, c_entry_ptr);
 #undef CFE_FUN_BINARY_SEARCH_ENTVAL
             
             if (c_entry_ptr == NULL) {
