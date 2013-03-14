@@ -94,7 +94,7 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
  * CFE_FUN_BINARY_SEARCH_ENTVAL must also be defined, and it must
  * return the integer value to be compared.
  */
-#define CFE_FUN_BINARY_SEARCH(_table, _count, _result) do { \
+#define CFE_FUN_BINARY_SEARCH(_pc, _table, _count, _result) do { \
     uint32_t min = 0; \
     uint32_t mid = 0; \
     uint32_t max = _count - 1; \
@@ -106,9 +106,9 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
 \
         /* Determine which half of the array to search */ \
         uint32_t mid_fun_offset = CFE_FUN_BINARY_SEARCH_ENTVAL(_table[mid]); \
-        if (mid_fun_offset < pc) { \
+        if (mid_fun_offset < _pc) { \
             /* Check for inclusive equality */ \
-            if (mid == max || CFE_FUN_BINARY_SEARCH_ENTVAL(_table[mid+1]) > pc) { \
+            if (mid == max || CFE_FUN_BINARY_SEARCH_ENTVAL(_table[mid+1]) > _pc) { \
                 _result = &_table[mid]; \
                 break; \
             } \
@@ -116,10 +116,10 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
 \
             /* Base our search on the upper array */ \
             min = mid + 1; \
-        } else if (mid_fun_offset > pc) { \
+        } else if (mid_fun_offset > _pc) { \
             /* Base our search on the lower array */ \
             max = mid - 1; \
-        } else if (mid_fun_offset == pc) { \
+        } else if (mid_fun_offset == _pc) { \
             /* Direct match found */ \
             _result = &_table[mid]; \
             break; \
@@ -131,15 +131,34 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
     PLCF_ASSERT(_result != NULL); \
 } while (0);
 
+/* Evaluates to true if the length of @a _ecount * @a sizof(_etype) can not be represented
+ * by size_t. */
+#define VERIFY_SIZE_T(_etype, _ecount) (SIZE_MAX / sizeof(_etype) < _ecount)
+
 /**
  * TODO
  *
  * @param reader The initialized CFE reader.
- * @param pc The PC value to search for within the CFE data.
+ * @param pc The PC value to search for within the CFE data. Note that this value must be relative to
+ * the target Mach-O image's __TEXT vmaddr.
  */
 plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
+
+    /* Find and map the common encodings table */
+    uint32_t common_enc_count = byteorder->swap32(reader->header.commonEncodingsArrayCount);
+    uint32_t *common_enc;
+    {
+        if (VERIFY_SIZE_T(uint32_t, common_enc_count)) {
+            PLCF_DEBUG("CFE common encoding count extends beyond the range of size_t");
+            return PLCRASH_EINVAL;
+        }
+
+        size_t common_enc_len = common_enc_count * sizeof(uint32_t);
+        uint32_t common_enc_off = byteorder->swap32(reader->header.commonEncodingsArraySectionOffset);
+        common_enc = plcrash_async_mobject_remap_address(reader->mobj, base_addr, common_enc_off, common_enc_len);
+    }
 
     /* Find and load the first level entry */
     struct unwind_info_section_header_index_entry *first_level_entry = NULL;
@@ -147,12 +166,12 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
         /* Find and map the index */
         uint32_t index_off = byteorder->swap32(reader->header.indexSectionOffset);
         uint32_t index_count = byteorder->swap32(reader->header.indexCount);
-
-        if (SIZE_MAX / sizeof(struct unwind_info_section_header_index_entry) < index_count) {
+        
+        if (VERIFY_SIZE_T(sizeof(struct unwind_info_section_header_index_entry), index_count)) {
             PLCF_DEBUG("CFE index count extends beyond the range of size_t");
             return PLCRASH_EINVAL;
         }
-
+        
         if (index_count == 0) {
             PLCF_DEBUG("CFE index contains no entries");
             return PLCRASH_ENOTFOUND;
@@ -167,21 +186,20 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
          */
         PLCF_ASSERT(index_count != 0);
         index_count--;
-
+        
         /* Load the index entries */
         size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
-        struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
-        if (entries == NULL) {
+        struct unwind_info_section_header_index_entry *index_entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
+        if (index_entries == NULL) {
             PLCF_DEBUG("The declared entries table lies outside the mapped CFE range");
             return PLCRASH_EINVAL;
         }
-
+        
         /* Binary search for the first-level entry */
-    #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
-        CFE_FUN_BINARY_SEARCH(entries, index_count, first_level_entry);
-    #undef CFE_FUN_BINARY_SEARCH_ENTVAL
+#define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
+        CFE_FUN_BINARY_SEARCH(pc, index_entries, index_count, first_level_entry);
+#undef CFE_FUN_BINARY_SEARCH_ENTVAL
     }
-
 
     /* Locate and decode the second-level entry */
     uint32_t second_level_offset = byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset);
@@ -233,7 +251,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
             /* Binary search for the target entry */
 #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(_tval)))
-            CFE_FUN_BINARY_SEARCH(compressed_entries, byteorder->swap16(header->entryCount), c_entry);
+            CFE_FUN_BINARY_SEARCH(pc, compressed_entries, byteorder->swap16(header->entryCount), c_entry);
 #undef CFE_FUN_BINARY_SEARCH_ENTVAL
             
             uint32_t swp = byteorder->swap32(*c_entry);
