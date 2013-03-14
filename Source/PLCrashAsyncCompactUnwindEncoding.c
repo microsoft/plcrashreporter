@@ -113,10 +113,14 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
                 break; \
             } \
 \
-\
             /* Base our search on the upper array */ \
             min = mid + 1; \
         } else if (mid_fun_offset > _pc) { \
+            /* Check for range exclusion; if we hit 0, then the range starts after our PC. */ \
+            if (mid == 0) { \
+                break; \
+            } \
+            \
             /* Base our search on the lower array */ \
             max = mid - 1; \
         } else if (mid_fun_offset == _pc) { \
@@ -125,11 +129,7 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
             break; \
         } \
     } \
-\
-\
-    /* The final entry must always match remaining PC values */ \
-    PLCF_ASSERT(_result != NULL); \
-} while (0);
+} while (0)
 
 /* Evaluates to true if the length of @a _ecount * @a sizof(_etype) can not be represented
  * by size_t. */
@@ -199,6 +199,11 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
         CFE_FUN_BINARY_SEARCH(pc, index_entries, index_count, first_level_entry);
 #undef CFE_FUN_BINARY_SEARCH_ENTVAL
+        
+        if (first_level_entry == NULL) {
+            PLCF_DEBUG("Could not find a first level CFE entry for pc=%" PRIx64, (uint64_t) pc);
+            return PLCRASH_ENOTFOUND;
+        }
     }
 
     /* Locate and decode the second-level entry */
@@ -252,12 +257,19 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(_tval)))
             CFE_FUN_BINARY_SEARCH(pc, compressed_entries, byteorder->swap16(header->entryCount), c_entry_ptr);
 #undef CFE_FUN_BINARY_SEARCH_ENTVAL
+            
+            if (c_entry_ptr == NULL) {
+                PLCF_DEBUG("Could not find a second level compressed CFE entry for pc=%" PRIx64, (uint64_t) pc);
+                return PLCRASH_ENOTFOUND;
+            }
 
             /* Find the actual encoding */
             uint32_t c_entry = byteorder->swap32(*c_entry_ptr);
             uint8_t c_encoding_idx = UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry);
             if (c_encoding_idx < common_enc_count) {
                 /* Found in the common table */
+
+            } else {
                 // TODO
                 __builtin_trap();
             }
