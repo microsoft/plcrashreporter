@@ -222,11 +222,35 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_EINVAL;
             }
 
-            PLCF_DEBUG("Regular %p!", header);
+            /* Find the entries array */
+            uint32_t entries_offset = byteorder->swap16(header->entryPageOffset);
+            uint32_t entries_count = byteorder->swap16(header->entryCount);
             
-            // TODO - unimplemented!
-            __builtin_trap();
-            break;
+            if (VERIFY_SIZE_T(sizeof(uint32_t), entries_count)) {
+                PLCF_DEBUG("CFE second level entry count extends beyond the range of size_t");
+                return PLCRASH_EINVAL;
+            }
+            
+            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, entries_offset, entries_count * sizeof(struct unwind_info_regular_second_level_entry))) {
+                PLCF_DEBUG("CFE entries table lies outside the mapped CFE range");
+                return PLCRASH_EINVAL;
+            }
+            
+            /* Binary search for the target entry */
+            struct unwind_info_regular_second_level_entry *entries = (struct unwind_info_regular_second_level_entry *) (((uintptr_t)header) + entries_offset);
+            struct unwind_info_regular_second_level_entry *entry = NULL;
+            
+#define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
+            CFE_FUN_BINARY_SEARCH(pc, entries, entries_count, entry);
+#undef CFE_FUN_BINARY_SEARCH_ENTVAL
+            
+            if (entry == NULL) {
+                PLCF_DEBUG("Could not find a second level regular CFE entry for pc=%" PRIx64, (uint64_t) pc);
+                return PLCRASH_ENOTFOUND;
+            }
+
+            *encoding = byteorder->swap32(entry->encoding);
+            return PLCRASH_ESUCCESS;
         }
 
         case UNWIND_SECOND_LEVEL_COMPRESSED: {
@@ -275,7 +299,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             if (c_encoding_idx < common_enc_count) {
                 /* Found in the common table. The offset is verified as being within the mapped memory range by
                  * the < common_enc_count check above. */
-                *encoding = common_enc[c_encoding_idx];
+                *encoding = byteorder->swap32(common_enc[c_encoding_idx]);
                 return PLCRASH_ESUCCESS;
             }
 
@@ -303,7 +327,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             }
 
             /* Extract the encoding */
-            *encoding = encodings[c_encoding_idx];
+            *encoding = byteorder->swap32(encodings[c_encoding_idx]);
             return PLCRASH_ESUCCESS;
         }
 

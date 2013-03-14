@@ -46,16 +46,20 @@
 #error Unsupported target
 #endif
 
-/** The base PC value hard coded in our test CFE data */
+/* The base PC value hard coded in our test CFE data */
 #define BASE_PC 0
 
-/** PC to use for the compact-common test */
+/* PC to use for the compact-common test */
 #define PC_COMPACT_COMMON (BASE_PC+1)
-#define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFF)
+#define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | PC_COMPACT_COMMON)
 
-/** PC to use for the compact-private test */
+/* PC to use for the compact-private test */
 #define PC_COMPACT_PRIVATE (BASE_PC+2)
-#define PC_COMPACT_PRIVATE_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFE)
+#define PC_COMPACT_PRIVATE_ENCODING (UNWIND_X86_64_MODE_DWARF | PC_COMPACT_PRIVATE)
+
+/* PC to use for the regular-common test */
+#define PC_REGULAR (BASE_PC+10)
+#define PC_REGULAR_ENCODING (UNWIND_X86_64_MODE_DWARF | PC_REGULAR)
 
 /**
  * @internal
@@ -230,6 +234,18 @@
     err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_PRIVATE, &encoding);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
     STAssertEquals(encoding, (uint32_t)PC_COMPACT_PRIVATE_ENCODING, @"Incorrect encoding returned");
+}
+
+/**
+ * Test reading of a PC, regular, with a common encoding.
+ */
+- (void) testReadRegularEncoding {
+    plcrash_error_t err;
+    
+    uint32_t encoding;
+    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_REGULAR, &encoding);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
+    STAssertEquals(encoding, (uint32_t)PC_REGULAR_ENCODING, @"Incorrect encoding returned");
 }
 
 @end

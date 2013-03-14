@@ -7,10 +7,13 @@
 #define PC_COMPACT_BASE (BASE_PC+1)
 
 #define PC_COMPACT_COMMON (PC_COMPACT_BASE+0)
-#define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFF)
+#define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | PC_COMPACT_COMMON)
 
 #define PC_COMPACT_PRIVATE (PC_COMPACT_BASE+1)
-#define PC_COMPACT_PRIVATE_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFE)
+#define PC_COMPACT_PRIVATE_ENCODING (UNWIND_X86_64_MODE_DWARF | PC_COMPACT_PRIVATE)
+
+#define PC_REGULAR (BASE_PC+10)
+#define PC_REGULAR_ENCODING (UNWIND_X86_64_MODE_DWARF | PC_REGULAR)
 
 struct unwind_sect_compressed_page {
         struct unwind_info_compressed_second_level_page_header header;
@@ -20,7 +23,7 @@ struct unwind_sect_compressed_page {
 
 struct unwind_sect_regular_page {
         struct unwind_info_regular_second_level_page_header header;
-        uint32_t entries[1];
+        struct unwind_info_regular_second_level_entry entries[1];
 };
 
 struct unwind_sect {
@@ -44,14 +47,14 @@ struct unwind_sect data __attribute__((section("__TEXT,__unwind_info"))) = {
         .indexCount = 3 // all tools treat this as indexCount - 1
     },
 
-    .entries = { 
-        {
-            .functionOffset = BASE_PC,
-            .secondLevelPagesSectionOffset = offsetof(struct unwind_sect, regular_page_1)
-        },
+    .entries = {
         {
             .functionOffset = PC_COMPACT_COMMON,
             .secondLevelPagesSectionOffset = offsetof(struct unwind_sect, compressed_page_1)
+        },
+        {
+            .functionOffset = PC_REGULAR,
+            .secondLevelPagesSectionOffset = offsetof(struct unwind_sect, regular_page_1)
         },
         { } // empty/ignored entry
     },
@@ -67,7 +70,10 @@ struct unwind_sect data __attribute__((section("__TEXT,__unwind_info"))) = {
             .entryCount = 1
         },
         .entries = {
-            0x0
+            {
+                .functionOffset = PC_REGULAR,
+                .encoding = PC_REGULAR_ENCODING
+            },
         }
     },
 
