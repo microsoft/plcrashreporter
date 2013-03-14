@@ -234,8 +234,8 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             /* Find the entries array */
             uint32_t entries_offset = byteorder->swap16(header->entryPageOffset);
             uint32_t entries_count = byteorder->swap16(header->entryCount);
-            
-            if (SIZE_MAX / sizeof(uint32_t) < entries_count) {
+
+            if (VERIFY_SIZE_T(sizeof(uint32_t), entries_count)) {
                 PLCF_DEBUG("CFE second level entry count extends beyond the range of size_t");
                 return PLCRASH_EINVAL;
             }
@@ -245,17 +245,25 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_EINVAL;
             }
 
-            PLCF_DEBUG("Searching for %" PRIx64, pc);
-            uint32_t *compressed_entries = (uint32_t *) (((uintptr_t)header) + entries_offset);
-            uint32_t *c_entry = NULL;
-
             /* Binary search for the target entry */
+            uint32_t *compressed_entries = (uint32_t *) (((uintptr_t)header) + entries_offset);
+            uint32_t *c_entry_ptr = NULL;
+
 #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(_tval)))
-            CFE_FUN_BINARY_SEARCH(pc, compressed_entries, byteorder->swap16(header->entryCount), c_entry);
+            CFE_FUN_BINARY_SEARCH(pc, compressed_entries, byteorder->swap16(header->entryCount), c_entry_ptr);
 #undef CFE_FUN_BINARY_SEARCH_ENTVAL
+
+            /* Find the actual encoding */
+            uint32_t c_entry = byteorder->swap32(*c_entry_ptr);
+            uint8_t c_encoding_idx = UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry);
+            if (c_encoding_idx < common_enc_count) {
+                /* Found in the common table */
+                // TODO
+                __builtin_trap();
+            }
             
-            uint32_t swp = byteorder->swap32(*c_entry);
-            PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(swp), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(swp));
+            
+            PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(c_entry), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry));
             
             break;
         }

@@ -47,7 +47,10 @@
 #endif
 
 /** The base PC value hard coded in our test CFE data */
-#define BASE_PC 1
+#define BASE_PC 0
+
+/** PC to use for the compact-common test */
+#define PC_COMPACT_COMMON 1
 
 /**
  * @internal
@@ -61,6 +64,12 @@
     
     /** The parsed Mach-O file (this will be a subset of _imageData) */
     plcrash_async_macho_t _image;
+    
+    /** The mapped unwind data */
+    plcrash_async_mobject_t _unwind_mobj;
+
+    /** The CFE reader */
+    plcrash_async_cfe_reader_t _reader;
 }
 @end
 
@@ -174,37 +183,34 @@
     
     err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
+    
+    /* Map the unwind section */
+    err = plcrash_async_macho_map_section(&_image, SEG_TEXT, "__unwind_info", &_unwind_mobj);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
+    
+    
+    /* Initialize the CFE reader */
+    cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
+    err = plcrash_async_cfe_reader_init(&_reader, &_unwind_mobj, cputype);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
+    
 }
 
 - (void) tearDown {
     plcrash_nasync_macho_free(&_image);
     plcrash_async_mobject_free(&_machoData);
+    plcrash_async_mobject_free(&_unwind_mobj);
+    plcrash_async_cfe_reader_free(&_reader);
 }
 
 /**
- * Test reader initialization.
+ * Test reading of a PC, compressed, with a common encoding.
  */
-- (void) testInitReader {
-    plcrash_async_cfe_reader_t reader;
-    plcrash_async_mobject_t mobj;
+- (void) testReadCompressedCommonEncoding {
     plcrash_error_t err;
 
-    /* Map the unwind section */
-    err = plcrash_async_macho_map_section(&_image, SEG_TEXT, "__unwind_info", &mobj);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map unwind info");
-
-
-    /* Initialize the CFE reader */
-    cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
-    err = plcrash_async_cfe_reader_init(&reader, &mobj, cputype);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CFE reader");
-
-    /* Perform a smoke test lookup */
-    err = plcrash_async_cfe_reader_find_pc(&reader, BASE_PC);
-    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry for main");
-
-    /* Clean up */
-    plcrash_async_cfe_reader_free(&reader);
+    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_COMMON);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
 }
 
 @end
