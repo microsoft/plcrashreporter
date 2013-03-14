@@ -226,7 +226,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             uint32_t entries_offset = byteorder->swap16(header->entryPageOffset);
             uint32_t entries_count = byteorder->swap16(header->entryCount);
             
-            if (VERIFY_SIZE_T(sizeof(uint32_t), entries_count)) {
+            if (VERIFY_SIZE_T(sizeof(struct unwind_info_regular_second_level_entry), entries_count)) {
                 PLCF_DEBUG("CFE second level entry count extends beyond the range of size_t");
                 return PLCRASH_EINVAL;
             }
