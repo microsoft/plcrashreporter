@@ -279,9 +279,31 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_ESUCCESS;
             }
 
-            // TODO
-            __builtin_trap();
-            PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(c_entry), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry));
+            /* Map in the encodings table */
+            uint32_t encodings_offset = byteorder->swap16(header->encodingsPageOffset);
+            uint32_t encodings_count = byteorder->swap16(header->encodingsCount);
+            
+            if (VERIFY_SIZE_T(sizeof(uint32_t), encodings_count)) {
+                PLCF_DEBUG("CFE second level entry count extends beyond the range of size_t");
+                return PLCRASH_EINVAL;
+            }
+
+            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, encodings_offset, encodings_count * sizeof(uint32_t))) {
+                PLCF_DEBUG("CFE compressed encodings table lies outside the mapped CFE range");
+                return PLCRASH_EINVAL;
+            }
+
+            uint32_t *encodings = (uint32_t *) (((uintptr_t)header) + encodings_offset);
+
+            /* Verify that the entry is within range */
+            c_encoding_idx -= common_enc_count;
+            if (c_encoding_idx >= encodings_count) {
+                PLCF_DEBUG("Encoding index lies outside the second level encoding table");
+                return PLCRASH_EINVAL;
+            }
+
+            /* Extract the encoding */
+            *encoding = encodings[c_encoding_idx];
             return PLCRASH_ESUCCESS;
         }
 

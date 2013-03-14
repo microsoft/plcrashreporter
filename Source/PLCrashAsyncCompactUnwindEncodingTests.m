@@ -53,6 +53,10 @@
 #define PC_COMPACT_COMMON (BASE_PC+1)
 #define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFF)
 
+/** PC to use for the compact-private test */
+#define PC_COMPACT_PRIVATE (BASE_PC+2)
+#define PC_COMPACT_PRIVATE_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFE)
+
 /**
  * @internal
  *
@@ -214,6 +218,18 @@
     err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_COMMON, &encoding);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
     STAssertEquals(encoding, (uint32_t)PC_COMPACT_COMMON_ENCODING, @"Incorrect encoding returned");
+}
+
+/**
+ * Test reading of a PC, compressed, private encoding.
+ */
+- (void) testReadCompressedEncoding {
+    plcrash_error_t err;
+    
+    uint32_t encoding;
+    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_PRIVATE, &encoding);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
+    STAssertEquals(encoding, (uint32_t)PC_COMPACT_PRIVATE_ENCODING, @"Incorrect encoding returned");
 }
 
 @end

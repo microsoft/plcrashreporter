@@ -3,13 +3,19 @@
 
 // Keep in sync with PLCrashAsyncCompactUnwindEncodingTests
 #define BASE_PC 0
-#define PC_COMPACT_COMMON (BASE_PC+1)
+
+#define PC_COMPACT_BASE (BASE_PC+1)
+
+#define PC_COMPACT_COMMON (PC_COMPACT_BASE+0)
 #define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFF)
 
+#define PC_COMPACT_PRIVATE (PC_COMPACT_BASE+1)
+#define PC_COMPACT_PRIVATE_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFE)
 
 struct unwind_sect_compressed_page {
         struct unwind_info_compressed_second_level_page_header header;
-        uint32_t entries[1];
+        uint32_t entries[2];
+        uint32_t encodings[1];
 };
 
 struct unwind_sect_regular_page {
@@ -65,18 +71,27 @@ struct unwind_sect data __attribute__((section("__TEXT,__unwind_info"))) = {
         }
     },
 
-#define COMPRESSED(foff, enc_index) ((foff & 0x00FFFFFF) | (enc_index << 24))
-
     .compressed_page_1 = {
         .header = {
             .kind = UNWIND_SECOND_LEVEL_COMPRESSED,
             .entryPageOffset = offsetof(struct unwind_sect_compressed_page, entries),
-            .entryCount = 1
+            .entryCount = 2,
+            .encodingsPageOffset = offsetof(struct unwind_sect_compressed_page, encodings),
+            .encodingsCount = 1
         },
         .entries = {
+            #define COMPRESSED(foff, enc_index) ((foff & 0x00FFFFFF) | (enc_index << 24))
+            
             /* Note that these are offsets from the first-level functionOffset */
-            COMPRESSED(0, 0)
+            COMPRESSED(0, 0),
+            COMPRESSED(1, 1)
+            
+            #undef COMPRESSED
         },
+        
+        .encodings = {
+            PC_COMPACT_PRIVATE_ENCODING
+        }
     },
 };
 
