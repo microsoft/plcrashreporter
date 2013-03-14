@@ -4,6 +4,7 @@
 // Keep in sync with PLCrashAsyncCompactUnwindEncodingTests
 #define BASE_PC 0
 #define PC_COMPACT_COMMON (BASE_PC+1)
+#define PC_COMPACT_COMMON_ENCODING (UNWIND_X86_64_MODE_DWARF | 0xFF)
 
 
 struct unwind_sect_compressed_page {
@@ -50,7 +51,7 @@ struct unwind_sect data __attribute__((section("__TEXT,__unwind_info"))) = {
     },
     
     .common_encodings = {
-        0x0, // PC_COMPACT_COMMON
+        PC_COMPACT_COMMON_ENCODING,
     },
 
     .regular_page_1 = {
@@ -73,6 +74,7 @@ struct unwind_sect data __attribute__((section("__TEXT,__unwind_info"))) = {
             .entryCount = 1
         },
         .entries = {
+            /* Note that these are offsets from the first-level functionOffset */
             COMPRESSED(0, 0)
         },
     },

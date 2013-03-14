@@ -136,13 +136,17 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
 #define VERIFY_SIZE_T(_etype, _ecount) (SIZE_MAX / sizeof(_etype) < _ecount)
 
 /**
- * TODO
+ * Return the compact frame encoding entry for @a pc via @a encoding, if available.
  *
- * @param reader The initialized CFE reader.
+ * @param reader The initialized CFE reader which will be searched for the entry.
  * @param pc The PC value to search for within the CFE data. Note that this value must be relative to
  * the target Mach-O image's __TEXT vmaddr.
+ * @param encoding On success, will be populated with the compact frame encoding entry.
+ *
+ * @return Returns PLFRAME_ESUCCCESS on success, or one of the remaining error codes if a CFE parsing error occurs. If
+ * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
  */
-plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc) {
+plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, uint32_t *encoding) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
 
@@ -266,18 +270,19 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             /* Find the actual encoding */
             uint32_t c_entry = byteorder->swap32(*c_entry_ptr);
             uint8_t c_encoding_idx = UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry);
+            
+            /* Handle common table entries */
             if (c_encoding_idx < common_enc_count) {
-                /* Found in the common table */
-
-            } else {
-                // TODO
-                __builtin_trap();
+                /* Found in the common table. The offset is verified as being within the mapped memory range by
+                 * the < common_enc_count check above. */
+                *encoding = common_enc[c_encoding_idx];
+                return PLCRASH_ESUCCESS;
             }
-            
-            
+
+            // TODO
+            __builtin_trap();
             PLCF_DEBUG("FOUND func_offset=%" PRIx32 " idx = %" PRIx32, base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(c_entry), UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry));
-            
-            break;
+            return PLCRASH_ESUCCESS;
         }
 
         default:
@@ -285,7 +290,9 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             return PLCRASH_EINVAL;
     }
 
-    return PLCRASH_ESUCCESS;
+    // Unreachable
+    __builtin_trap();
+    return PLCRASH_ENOTFOUND;
 }
 
 /**

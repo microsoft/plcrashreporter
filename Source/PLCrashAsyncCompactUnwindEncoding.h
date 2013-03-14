@@ -57,7 +57,7 @@ typedef struct plcrash_async_cfe_reader {
 
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype);
 
-plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc);
+plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, uint32_t *encoding);
 
 void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader);
 
