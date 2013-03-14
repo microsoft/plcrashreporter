@@ -1139,7 +1139,7 @@
 				059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */,
 				059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */,
 				05A533E116D6D8F300C5E2B3 /* Platforms */,
-				FCE4576E42A51370AD81A734 /* Unwind */,
+				FCE4576E42A51370AD81A734 /* Stack Frame Unwind */,
 				05F3CD5E16DD6A17007911FB /* Apple Compact Unwind */,
 			);
 			name = "Frame Walking";
@@ -1655,14 +1655,14 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
-		FCE4576E42A51370AD81A734 /* Unwind */ = {
+		FCE4576E42A51370AD81A734 /* Stack Frame Unwind */ = {
 			isa = PBXGroup;
 			children = (
 				FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */,
 				FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */,
 				05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */,
 			);
-			name = Unwind;
+			name = "Stack Frame Unwind";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
