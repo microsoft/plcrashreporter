@@ -50,7 +50,7 @@
 #define BASE_PC 0
 
 /** PC to use for the compact-common test */
-#define PC_COMPACT_COMMON 1
+#define PC_COMPACT_COMMON (BASE_PC+1)
 
 /**
  * @internal
