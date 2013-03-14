@@ -125,6 +125,10 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
             break; \
         } \
     } \
+\
+\
+    /* The final entry must always match remaining PC values */ \
+    PLCF_ASSERT(_result != NULL); \
 } while (0);
 
 /**
@@ -137,49 +141,49 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
 
-    /* Map the PC to its file offset */
-
-    /* Find and map the index */
-    uint32_t index_off = byteorder->swap32(reader->header.indexSectionOffset);
-    uint32_t index_count = byteorder->swap32(reader->header.indexCount);
-
-    if (SIZE_MAX / sizeof(struct unwind_info_section_header_index_entry) < index_count) {
-        PLCF_DEBUG("CFE index count extends beyond the range of size_t");
-        return PLCRASH_EINVAL;
-    }
-
-    if (index_count == 0) {
-        PLCF_DEBUG("CFE index contains no entries");
-        return PLCRASH_ENOTFOUND;
-    }
-    
-    /*
-     * NOTE: CFE includes an extra entry in the total count of second-level pages, ie, from ld64:
-     * const uint32_t indexCount = secondLevelPageCount+1;
-     *
-     * There's no explanation as to why, and tools appear to ignore the entry entirely. We do the same
-     * here.
-     */
-    PLCF_ASSERT(index_count != 0);
-    index_count--;
-
-    /* Load the index entries */
-    size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
-    struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
-    if (entries == NULL) {
-        PLCF_DEBUG("The declared entries table lies outside the mapped CFE range");
-        return PLCRASH_EINVAL;
-    }
-
-    /* Binary search for the first-level entry */
+    /* Find and load the first level entry */
     struct unwind_info_section_header_index_entry *first_level_entry = NULL;
-#define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
-    CFE_FUN_BINARY_SEARCH(entries, index_count, first_level_entry);
-#undef CFE_FUN_BINARY_SEARCH_ENTVAL
+    {
+        /* Find and map the index */
+        uint32_t index_off = byteorder->swap32(reader->header.indexSectionOffset);
+        uint32_t index_count = byteorder->swap32(reader->header.indexCount);
 
-    /* The final entry will always match remaining PC values */
-    PLCF_ASSERT(first_level_entry != NULL);
+        if (SIZE_MAX / sizeof(struct unwind_info_section_header_index_entry) < index_count) {
+            PLCF_DEBUG("CFE index count extends beyond the range of size_t");
+            return PLCRASH_EINVAL;
+        }
 
+        if (index_count == 0) {
+            PLCF_DEBUG("CFE index contains no entries");
+            return PLCRASH_ENOTFOUND;
+        }
+        
+        /*
+         * NOTE: CFE includes an extra entry in the total count of second-level pages, ie, from ld64:
+         * const uint32_t indexCount = secondLevelPageCount+1;
+         *
+         * There's no explanation as to why, and tools appear to explicitly ignore the entry entirely. We do the same
+         * here.
+         */
+        PLCF_ASSERT(index_count != 0);
+        index_count--;
+
+        /* Load the index entries */
+        size_t index_len = index_count * sizeof(struct unwind_info_section_header_index_entry);
+        struct unwind_info_section_header_index_entry *entries = plcrash_async_mobject_remap_address(reader->mobj, base_addr, index_off, index_len);
+        if (entries == NULL) {
+            PLCF_DEBUG("The declared entries table lies outside the mapped CFE range");
+            return PLCRASH_EINVAL;
+        }
+
+        /* Binary search for the first-level entry */
+    #define CFE_FUN_BINARY_SEARCH_ENTVAL(_tval) (byteorder->swap32(_tval.functionOffset))
+        CFE_FUN_BINARY_SEARCH(entries, index_count, first_level_entry);
+    #undef CFE_FUN_BINARY_SEARCH_ENTVAL
+    }
+
+
+    /* Locate and decode the second-level entry */
     uint32_t second_level_offset = byteorder->swap32(first_level_entry->secondLevelPagesSectionOffset);
     uint32_t *second_level_kind = plcrash_async_mobject_remap_address(reader->mobj, base_addr, second_level_offset, sizeof(uint32_t));
     switch (byteorder->swap32(*second_level_kind)) {
