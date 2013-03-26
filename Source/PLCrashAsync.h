@@ -37,6 +37,14 @@
 #include <TargetConditionals.h>
 #include <mach/mach.h>
 
+#if 1 /* TODO: TARGET_OS_IPHONE */
+
+/** If defined, the target architecture has a broken vm_remap() or mach_vm_remap() implementation that triggers
+ * kernel panics. */
+#define PL_HAVE_BROKEN_VM_REMAP 1
+
+#endif
+
 #if TARGET_OS_IPHONE
 
 /*

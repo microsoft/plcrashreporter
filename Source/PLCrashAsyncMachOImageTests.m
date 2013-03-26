@@ -194,7 +194,10 @@
     uint8_t *mapped_data = plcrash_async_mobject_remap_address(&seg.mobj, (pl_vm_address_t) data, segsize);
     STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
 
+#ifndef PL_HAVE_BROKEN_VM_REMAP
     STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");
+#endif
+    
     STAssertTrue(memcmp(data, mapped_data, segsize) == 0, @"The mapped data is not equal");
 
     /* Clean up */
@@ -225,8 +228,11 @@
     /* Compare the contents */
     uint8_t *mapped_data = plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t) data, sectsize);
     STAssertNotNULL(mapped_data, @"Could not get pointer for mapped data");
-    
+
+#ifndef PL_HAVE_BROKEN_VM_REMAP
     STAssertNotEquals(mapped_data, data, @"Should not be the same pointer!");
+#endif
+    
     STAssertTrue(memcmp(data, mapped_data, sectsize) == 0, @"The mapped data is not equal");
 
     /* Clean up */
