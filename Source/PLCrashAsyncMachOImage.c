@@ -586,7 +586,7 @@ plcrash_error_t plcrash_async_macho_find_symbol (plcrash_async_macho_t *image, p
     pl_async_macho_mapped_segment_t linkedit_seg;
     plcrash_error_t err = plcrash_async_macho_map_segment(image, "__LINKEDIT", &linkedit_seg);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
+        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d in %s", err, image->name);
         return PLCRASH_EINTERNAL;
     }
 
