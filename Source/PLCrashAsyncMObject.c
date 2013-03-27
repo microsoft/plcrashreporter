@@ -68,8 +68,6 @@ static plcrash_error_t plcrash_async_mobject_vm_regions_valid (pl_vm_address_t a
         natural_t nesting_depth = 0;
 
         region_base = start_address;
-
-        PLCF_DEBUG("Recursing vm region for address=0x%" PRIx64 " looking for terminator=0x%" PRIx64, (uint64_t) region_base, (uint64_t) (address+length));
         
 #ifdef PL_HAVE_MACH_VM
         vm_region_submap_info_data_64_t info;
@@ -94,9 +92,6 @@ static plcrash_error_t plcrash_async_mobject_vm_regions_valid (pl_vm_address_t a
                        (uint64_t) region_base, (uint64_t) (region_size), kt);
             return PLCRASH_EACCESS;
         }
-        
-        PLCF_DEBUG("Found vm region for address=0x%" PRIx64" length=0x%" PRIx64,
-                   (uint64_t) region_base, (uint64_t) (region_size));
 
         start_address = region_base + region_size;
     }
