@@ -41,12 +41,19 @@
 
 /**
  * @internal
- * If defined, the target architecture has a broken vm_remap() or mach_vm_remap() implementation that results in a
- * kernel panic. This appears to be the case on iOS 6.0 through 6.1.2, possibly fixed in 6.1.3. Note that no stable
- * release of PLCrashReporter shipped with the vm_remap() code.
  *
- * Investigation seems to show an over-release of the target vm_map and backing vm_object, leading to NULL dereference,
- * invalid memory references, and in some cases, deadlocks that result in watchdog timeouts.
+ * PLCrashReporter uses vm_remap() to atomically validate that a target memory range is valid, to ensure that it will
+ * remain valid throughought the report generation process, and to transparently support out-of-process execution by
+ * remapping pages from the target task. This replaced previous use of vm_read_overwrite(), which required a syscall
+ * and a copy for every memory read; the cost of which was unsuitable for any sufficiently large read operations, such
+ * as reading __LINKEDIT and the Objective-C metadata.
+ *
+ * If this macro is defined, the target architecture has a broken vm_remap() or mach_vm_remap() implementation that
+ * results in a kernel panic. This appears to be the case on iOS 6.0 through 6.1.2, possibly fixed in 6.1.3. Note that
+ * no stable release of PLCrashReporter shipped with the vm_remap() code.
+ *
+ * Investigation of the failure seems to show an over-release of the target vm_map and backing vm_object, leading to
+ * NULL dereference, invalid memory references, and in some cases, deadlocks that result in watchdog timeouts.
  *
  * In one example case, the crash occurs in update_first_free_ll() as a NULL dereference of the vm_map_entry_t parameter.
  * Analysis of the limited reports shows that this is called via vm_map_store_update_first_free(). No backtrace is
