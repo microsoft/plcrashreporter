@@ -39,8 +39,38 @@
 
 #if TARGET_OS_IPHONE
 
-/** If defined, the target architecture has a broken vm_remap() or mach_vm_remap() implementation that triggers
- * kernel panics. */
+/**
+ * @internal
+ * If defined, the target architecture has a broken vm_remap() or mach_vm_remap() implementation that results in a
+ * kernel panic. This appears to be the case on iOS 6.0 through 6.1.2, possibly fixed in 6.1.3. Note that no stable
+ * release of PLCrashReporter shipped with the vm_remap() code.
+ *
+ * Investigation seems to show an over-release of the target vm_map and backing vm_object, leading to NULL dereference,
+ * invalid memory references, and in some cases, deadlocks that result in watchdog timeouts.
+ *
+ * In one example case, the crash occurs in update_first_free_ll() as a NULL dereference of the vm_map_entry_t parameter.
+ * Analysis of the limited reports shows that this is called via vm_map_store_update_first_free(). No backtrace is
+ * available from the kernel panics, but analyzing the register state demonstrates:
+ * - A reference to vm_map_store_update_first_free() remains in the link register.
+ * - Of the following callers, one can be eliminated by register state:
+ *     - vm_map_enter - not possible, r3 should be equal to r0
+ *     - vm_map_clip_start - possible
+ *     - vm_map_clip_unnest - possible
+ *     - vm_map_clip_end - possible
+ *
+ * In the other panic seen in vm_object_reap_pages(), a value of 0x8008 is loaded and deferenced from the next pointer
+ * of an element within the vm_object's resident page queue (object->memq).
+ *
+ * Unfortunately, our ability to investigate has been extremely constrained by the following issues;
+ * - The panic is not easily or reliably reproducible
+ * - Apple's does not support iOS kernel debugging
+ * - There is no support for jailbreak kernel debugging against iOS 6.x devices at the time of writing.
+ *
+ * The work-around deployed here is to split the vm_remap() into distinct calls to mach_make_memory_entry_64() and
+ * vm_map(); this follows a largely distinct code path from vm_remap(). In testing by a large-scale user of PLCrashReporter,
+ * they were no longer able to reproduce the issue with this fix in place. Additionally, they've not been able to reproduce
+ * the issue on 6.1.3 devices, or had any reports of the issue occuring on 6.1.3 devices.
+ */
 #define PL_HAVE_BROKEN_VM_REMAP 1
 
 #endif /* TARGET_OS_IPHONE */
