@@ -59,6 +59,8 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
     /* Map in the page containing the string, +1 up to one additional page. */
     size_t page_count = 1;
     plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, PAGE_SIZE);
+    if (err != PLCRASH_ESUCCESS)
+        return err;
 
     char c;
     do {
