@@ -76,8 +76,13 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
         PLCF_DEBUG("mach_make_memory_entry_64() failed: %d", kt);
         return PLCRASH_ENOMEM;
     }
-    
+
+#ifdef PL_HAVE_MACH_VM
+    kt = mach_vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+#else
     kt = vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+#endif /* !PL_HAVE_MACH_VM */
+
     if (kt != KERN_SUCCESS) {
         PLCF_DEBUG("vm_map() failure: %d", kt);
         
