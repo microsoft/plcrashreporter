@@ -49,24 +49,27 @@
  * @param task The task from which the memory will be mapped.
  * @param task_address The task-relative address of the memory to be mapped. This is not required to fall on a page boundry.
  * @param length The total size of the mapping to create.
+ * @param require_full If false, short mappings will be permitted in the case where a memory object of the requested length
+ * does not exist at the target address. It is the caller's responsibility to validate the resulting length of the
+ * mapping, eg, using plcrash_async_mobject_remap_address() and similar. If true, and the entire requested page range is
+ * not valid, the mapping request will fail.
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
  * mapping will be performed.
  *
  * @warn Callers must call plcrash_async_mobject_free() on @a mobj, even if plcrash_async_mobject_init() fails.
  */
-plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length) {
+plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length, bool require_full) {
     /* We must first initialize vm_address to 0x0. We'll check this in _free() to determine whether calling vm_deallocate() is required */
     mobj->vm_address = 0x0;
     
     kern_return_t kt;
     
     /* Compute the total required page size. */
-    pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - mach_vm_trunc_page(task_addr)));
-    
+    pl_vm_address_t page_addr = mach_vm_trunc_page(task_addr);
+    pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - page_addr));
+
     /* Remap the target pages into our process */
-
-
 #ifdef PL_HAVE_BROKEN_VM_REMAP
     /* Memory object implementation */
     memory_object_size_t entry_length = page_size;
@@ -75,6 +78,21 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
     if (kt != KERN_SUCCESS) {
         PLCF_DEBUG("mach_make_memory_entry_64() failed: %d", kt);
         return PLCRASH_ENOMEM;
+    }
+
+    /*
+     * If short mappings are enabled, and the entry is smaller than the target mapping, use the memory entry's
+     * size rather than the originally requested size. Otherwise, a smaller entry will result in a vm_map() 
+     * error when the requested pages are unavailable.
+     */
+    if (!require_full && entry_length < page_size) {
+        /* Reset the page size to match the actual available memory ... */
+        page_size = entry_length;
+
+        /* The length represents the user's requested byte length, and is not required to be page aligned. Thus, it
+         * needs to be recomputed such that it fits within the smaller entry size here, while still accounting for the
+         * offset of the user's non-page-aligned start address. */
+        length = entry_length - (task_addr - page_addr);
     }
 
 #ifdef PL_HAVE_MACH_VM

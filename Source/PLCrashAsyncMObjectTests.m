@@ -47,7 +47,7 @@
     
     /* Map the memory */
     plcrash_async_mobject_t mobj;
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size), @"Failed to initialize mapping");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
     
     /* Verify the mapped data */
     STAssertTrue(memcmp((void *)mobj.address, template, size) == 0, @"Mapping appears to be incorrect");
@@ -72,7 +72,7 @@
     
     /* Map the memory */
     plcrash_async_mobject_t mobj;
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size), @"Failed to initialize mapping");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
     STAssertEquals((pl_vm_address_t)template, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Incorrect slide value!");
     
     /* Test slide handling */
@@ -91,7 +91,7 @@
     
     /* Map the memory */
     plcrash_async_mobject_t mobj;
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size), @"Failed to initialize mapping");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
     
     /* Test the address range validation */
     STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address-1, 10), @"Returned pointer for a range that starts before our memory object");
