@@ -75,7 +75,7 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
             if (err != PLCRASH_ESUCCESS)
                 return err;
             
-            p = plcrash_async_mobject_remap_address(&string->mobj, cursor, 1);
+            p = plcrash_async_mobject_remap_address(&string->mobj, cursor, 0, 1);
             if (p == NULL) {
                 PLCF_DEBUG("Failed to remap additional space ...");
                 return PLCRASH_EINVAL;

@@ -68,7 +68,7 @@
     
     /* Map the memory */
     plcrash_async_mobject_t mobj;
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size), @"Failed to initialize mapping");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
     STAssertEquals((pl_vm_address_t)template, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Incorrect slide value!");
     
     /* Test base address accessor */

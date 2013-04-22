@@ -181,7 +181,7 @@
     
     /* Load the image into a memory object */
     NSData *mappedImage = [self dataForTestResource: TEST_BINARY];
-    plcrash_async_mobject_init(&_machoData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length]);
+    plcrash_async_mobject_init(&_machoData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length], true);
     /* Find a binary that matches the host */
     [self findBinary: &_machoData offset: &offset size: &length];
     void *macho_ptr = plcrash_async_mobject_remap_address(&_machoData, _machoData.task_address, offset, length);
