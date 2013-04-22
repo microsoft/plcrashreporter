@@ -129,7 +129,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     pl_vm_size_t cmd_offset = image->header_addr + image->header_size;
     image->ncmds = image->byteorder->swap32(image->header.ncmds);
 
-    ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len);
+    ret = plcrash_async_mobject_init(&image->load_cmds, image->task, cmd_offset, cmd_len, true);
     if (ret != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to map Mach-O load commands in image %s", image->name);
         goto error;
@@ -361,6 +361,13 @@ void *plcrash_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const 
  * @param seg The segment data to be initialized. It is the caller's responsibility to dealloc @a seg after
  * a successful initialization.
  *
+ * @warning Due to bugs in the update_dyld_shared_cache(1), the segment vmsize defined in the Mach-O load commands may
+ * be invalid, and the declared size may be unmappable. As such, it is possible that this function will return a mapping
+ * that is less than the total requested size. All accesses to this mapping should be done (as is already the norm)
+ * through range-checked pointer validation. This bug appears to be caused by a bug in computing the correct vmsize
+ * when update_dyld_shared_cache(1) generates the single shared LINKEDIT segment, and has been reported to Apple
+ * as rdar://13707406.
+ *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
 plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, const char *segname, pl_async_macho_mapped_segment_t *seg) {
@@ -391,8 +398,8 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
         seg->filesize = image->byteorder->swap32(cmd_32->filesize);
     }
 
-    /* Perform and return the mapping */
-    return plcrash_async_mobject_init(&seg->mobj, image->task, segaddr, segsize);
+    /* Perform and return the mapping (permitting shorter mappings, as documented above). */
+    return plcrash_async_mobject_init(&seg->mobj, image->task, segaddr, segsize, false);
 }
 
 /**
@@ -467,7 +474,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
             
             
             /* Perform and return the mapping */
-            return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize);
+            return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize, true);
         }
     }
     
@@ -550,7 +557,7 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
     /* Map in the __LINKEDIT segment, which includes the symbol and string tables */
     plcrash_error_t err = plcrash_async_macho_map_segment(image, "__LINKEDIT", &reader->linkedit);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d", err);
+        PLCF_DEBUG("plcrash_async_mobject_init() failure: %d in %s", err, image->name);
         return PLCRASH_EINTERNAL;
     }
     

@@ -492,7 +492,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     /* Note that width specifiers are ignored for %@, but work for C strings.
      * UTF-8 is not correctly handled with %s (it depends on the system encoding), but
      * UTF-16 is supported via %S, so we use it here */
-    return [NSString stringWithFormat: @"%-4ld%-36S0x%0*" PRIx64 " %@\n",
+    return [NSString stringWithFormat: @"%-4ld%-35S 0x%0*" PRIx64 " %@\n",
             (long) frameIndex,
             (const uint16_t *)[imageName cStringUsingEncoding: NSUTF16StringEncoding],
             lp64 ? 16 : 8, frameInfo.instructionPointer,

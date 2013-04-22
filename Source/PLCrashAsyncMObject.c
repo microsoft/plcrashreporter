@@ -40,6 +40,7 @@
  * @{
  */
 
+
 /**
  * Initialize a new memory object reference, mapping @a task_addr from @a task into the current process. The mapping
  * will be copy-on-write, and will be checked to ensure a minimum protection value of VM_PROT_READ.
@@ -48,27 +49,82 @@
  * @param task The task from which the memory will be mapped.
  * @param task_address The task-relative address of the memory to be mapped. This is not required to fall on a page boundry.
  * @param length The total size of the mapping to create.
+ * @param require_full If false, short mappings will be permitted in the case where a memory object of the requested length
+ * does not exist at the target address. It is the caller's responsibility to validate the resulting length of the
+ * mapping, eg, using plcrash_async_mobject_remap_address() and similar. If true, and the entire requested page range is
+ * not valid, the mapping request will fail.
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
  * mapping will be performed.
  */
-plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length) {
+plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length, bool require_full) {
     kern_return_t kt;
     plcrash_error_t ret;
 
     /* Compute the total required page size. */
-    pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - mach_vm_trunc_page(task_addr)));
-    
+    pl_vm_address_t page_addr = mach_vm_trunc_page(task_addr);
+    pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - page_addr));
+
     /* Remap the target pages into our process */
+#ifdef PL_HAVE_BROKEN_VM_REMAP
+    /* Memory object implementation */
+    memory_object_size_t entry_length = page_size;
+    mach_port_t mem_handle;
+    kt = mach_make_memory_entry_64(task, &entry_length, task_addr, VM_PROT_READ, &mem_handle, MACH_PORT_NULL);
+    if (kt != KERN_SUCCESS) {
+        PLCF_DEBUG("mach_make_memory_entry_64() failed: %d", kt);
+        return PLCRASH_ENOMEM;
+    }
+
+    /*
+     * If short mappings are enabled, and the entry is smaller than the target mapping, use the memory entry's
+     * size rather than the originally requested size. Otherwise, a smaller entry will result in a vm_map() 
+     * error when the requested pages are unavailable.
+     */
+    if (!require_full && entry_length < page_size) {
+        /* Reset the page size to match the actual available memory ... */
+        page_size = entry_length;
+
+        /* The length represents the user's requested byte length, and is not required to be page aligned. Thus, it
+         * needs to be recomputed such that it fits within the smaller entry size here, while still accounting for the
+         * offset of the user's non-page-aligned start address. */
+        length = entry_length - (task_addr - page_addr);
+    }
+
+#ifdef PL_HAVE_MACH_VM
+    kt = mach_vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+#else
+    kt = vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+#endif /* !PL_HAVE_MACH_VM */
+
+    if (kt != KERN_SUCCESS) {
+        PLCF_DEBUG("vm_map() failure: %d", kt);
+        
+        kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
+        if (kt != KERN_SUCCESS) {
+            PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
+        }
+        
+        return PLCRASH_ENOMEM;
+    }
+    
+    kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
+    if (kt != KERN_SUCCESS) {
+        PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
+    }
+    
+#else
+    /* vm_remap() implementation */
     vm_prot_t cur_prot;
     vm_prot_t max_prot;
 
     mobj->vm_address = 0x0;
+
 #ifdef PL_HAVE_MACH_VM
     kt = mach_vm_remap(mach_task_self(), &mobj->vm_address, page_size, 0x0, TRUE, task, task_addr, FALSE, &cur_prot, &max_prot, VM_INHERIT_COPY);
 #else
     kt = vm_remap(mach_task_self(), &mobj->vm_address, page_size, 0x0, TRUE, task, task_addr, FALSE, &cur_prot, &max_prot, VM_INHERIT_COPY);
-#endif
+#endif /* !PL_HAVE_MACH_VM */
     
     if (kt != KERN_SUCCESS) {
         PLCF_DEBUG("vm_remap() addr=0x%" PRIx64 " length=%" PRIu64 " failed: %d", (uint64_t) task_addr, (uint64_t) length, kt);
@@ -80,6 +136,8 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
         ret = PLCRASH_EACCESS;
         goto error;
     }
+    
+#endif /* PL_HAVE_BROKEN_VM_REMAP */
     
     /* Determine the offset to the actual data */
     mobj->address = mobj->vm_address + (task_addr - mach_vm_trunc_page(task_addr));

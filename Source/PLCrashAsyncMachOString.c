@@ -56,9 +56,12 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
     
     pl_vm_address_t cursor = string->address;
 
-    /* Map in the page containing the string, +1 up to one additional page. */
+    /* Map in the page containing the string, +1 up to one additional page. Short reads are permitted, as the next page
+     * may not be readable. */
     size_t page_count = 1;
-    plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, PAGE_SIZE);
+    plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, PAGE_SIZE, false);
+    if (err != PLCRASH_ESUCCESS)
+        return err;
 
     char c;
     do {
@@ -68,9 +71,15 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
             PLCF_DEBUG("Mapped a string larger than one page! Remapping ...");
             page_count++;
             plcrash_async_mobject_free(&string->mobj);
-            err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, page_count*PAGE_SIZE);
+            err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, page_count*PAGE_SIZE, false);
             if (err != PLCRASH_ESUCCESS)
                 return err;
+            
+            p = plcrash_async_mobject_remap_address(&string->mobj, cursor, 1);
+            if (p == NULL) {
+                PLCF_DEBUG("Failed to remap additional space ...");
+                return PLCRASH_EINVAL;
+            }
         }
 
         c = *p;
