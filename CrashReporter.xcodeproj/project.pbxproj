@@ -2985,7 +2985,6 @@
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				TEST_AFTER_BUILD = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
@@ -3018,7 +3017,6 @@
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				TEST_AFTER_BUILD = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
