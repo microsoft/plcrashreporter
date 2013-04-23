@@ -56,21 +56,50 @@
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
  * mapping will be performed.
+ *
+ * @note
+ * This function previously used vm_remap() to perform atomic remapping of process memory. However, this appeared
+ * to trigger a kernel bug (and resulting panic) on iOS 6.0 through 6.1.2, possibly fixed in 6.1.3. Note that
+ * no stable release of PLCrashReporter shipped with the vm_remap() code.
+ *
+ * Investigation of the failure seems to show an over-release of the target vm_map and backing vm_object, leading to
+ * NULL dereference, invalid memory references, and in some cases, deadlocks that result in watchdog timeouts.
+ *
+ * In one example case, the crash occurs in update_first_free_ll() as a NULL dereference of the vm_map_entry_t parameter.
+ * Analysis of the limited reports shows that this is called via vm_map_store_update_first_free(). No backtrace is
+ * available from the kernel panics, but analyzing the register state demonstrates:
+ * - A reference to vm_map_store_update_first_free() remains in the link register.
+ * - Of the following callers, one can be eliminated by register state:
+ *     - vm_map_enter - not possible, r3 should be equal to r0
+ *     - vm_map_clip_start - possible
+ *     - vm_map_clip_unnest - possible
+ *     - vm_map_clip_end - possible
+ *
+ * In the other panic seen in vm_object_reap_pages(), a value of 0x8008 is loaded and deferenced from the next pointer
+ * of an element within the vm_object's resident page queue (object->memq).
+ *
+ * Unfortunately, our ability to investigate has been extremely constrained by the following issues;
+ * - The panic is not easily or reliably reproducible
+ * - Apple's does not support iOS kernel debugging
+ * - There is no support for jailbreak kernel debugging against iOS 6.x devices at the time of writing.
+ *
+ * The work-around used here is to split the vm_remap() into distinct calls to mach_make_memory_entry_64() and
+ * vm_map(); this follows a largely distinct code path from vm_remap(). In testing by a large-scale user of PLCrashReporter,
+ * they were no longer able to reproduce the issue with this fix in place. Additionally, they've not been able to reproduce
+ * the issue on 6.1.3 devices, or had any reports of the issue occuring on 6.1.3 devices.
  */
 plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length, bool require_full) {
     kern_return_t kt;
-    plcrash_error_t ret;
 
     /* Compute the total required page size. */
     pl_vm_address_t page_addr = mach_vm_trunc_page(task_addr);
     pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - page_addr));
 
-    /* Remap the target pages into our process */
-#ifdef PL_HAVE_BROKEN_VM_REMAP
-    /* Memory object implementation */
+
+    /* Create a reference to the target pages. The returned entry may be smaller than the requested length. */
     memory_object_size_t entry_length = page_size;
     mach_port_t mem_handle;
-    kt = mach_make_memory_entry_64(task, &entry_length, task_addr, VM_PROT_READ, &mem_handle, MACH_PORT_NULL);
+    kt = mach_make_memory_entry_64(task, &entry_length, page_addr, VM_PROT_READ, &mem_handle, MACH_PORT_NULL);
     if (kt != KERN_SUCCESS) {
         PLCF_DEBUG("mach_make_memory_entry_64() failed: %d", kt);
         return PLCRASH_ENOMEM;
@@ -91,6 +120,10 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
         length = entry_length - (task_addr - page_addr);
     }
 
+    /* Set initial start address for VM_FLAGS_ANYWHERE; vm_map() will search for the next unused region. */
+    mobj->vm_address = 0x0;
+
+    /* Map the pages into our local task */
 #ifdef PL_HAVE_MACH_VM
     kt = mach_vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
 #else
@@ -107,38 +140,13 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
         
         return PLCRASH_ENOMEM;
     }
-    
+
+    /* Clean up the now-unused reference */
     kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
     if (kt != KERN_SUCCESS) {
         PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
     }
-    
-#else
-    /* vm_remap() implementation */
-    vm_prot_t cur_prot;
-    vm_prot_t max_prot;
 
-    mobj->vm_address = 0x0;
-
-#ifdef PL_HAVE_MACH_VM
-    kt = mach_vm_remap(mach_task_self(), &mobj->vm_address, page_size, 0x0, TRUE, task, task_addr, FALSE, &cur_prot, &max_prot, VM_INHERIT_COPY);
-#else
-    kt = vm_remap(mach_task_self(), &mobj->vm_address, page_size, 0x0, TRUE, task, task_addr, FALSE, &cur_prot, &max_prot, VM_INHERIT_COPY);
-#endif /* !PL_HAVE_MACH_VM */
-    
-    if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("vm_remap() addr=0x%" PRIx64 " length=%" PRIu64 " failed: %d", (uint64_t) task_addr, (uint64_t) length, kt);
-        // Should we use more descriptive errors?
-        return PLCRASH_ENOMEM;
-    }
-
-    if ((cur_prot & VM_PROT_READ) == 0) {
-        ret = PLCRASH_EACCESS;
-        goto error;
-    }
-    
-#endif /* PL_HAVE_BROKEN_VM_REMAP */
-    
     /* Determine the offset to the actual data */
     mobj->address = mobj->vm_address + (task_addr - mach_vm_trunc_page(task_addr));
     mobj->length = length;
@@ -151,12 +159,6 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
     mobj->task_address = task_addr;
 
     return PLCRASH_ESUCCESS;
-
-error:
-    if ((kt = vm_deallocate(mach_task_self(), mobj->address, mobj->length)) != KERN_SUCCESS)
-        PLCF_DEBUG("vm_deallocate() failure: %d", kt);
-
-    return ret;
 }
 
 /**
