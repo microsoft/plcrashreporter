@@ -364,9 +364,9 @@ void *plcrash_async_macho_find_segment_cmd (plcrash_async_macho_t *image, const 
  * @warning Due to bugs in the update_dyld_shared_cache(1), the segment vmsize defined in the Mach-O load commands may
  * be invalid, and the declared size may be unmappable. As such, it is possible that this function will return a mapping
  * that is less than the total requested size. All accesses to this mapping should be done (as is already the norm)
- * through range-checked pointer validation. This bug appears to be caused by a bug in computing the correct vmsize
- * when update_dyld_shared_cache(1) generates the single shared LINKEDIT segment, and has been reported to Apple
- * as rdar://13707406.
+ * through range-checked pointer validation (eg, plcrash_async_mobject_remap_address()). This bug appears to be caused
+ * by a bug in computing the correct vmsize when update_dyld_shared_cache(1) generates the single shared LINKEDIT
+ * segment, and has been reported to Apple as rdar://13707406.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
  */
