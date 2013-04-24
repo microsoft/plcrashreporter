@@ -212,6 +212,44 @@
     plcrash_async_cfe_reader_free(&_reader);
 }
 
+#define EXTRACT_BITS(value, mask) ((value >> __builtin_ctz(mask)) & (((1 << __builtin_popcount(mask)))-1))
+#define INSERT_BITS(bits, mask) (bits << __builtin_ctz(mask))
+
+/**
+ * Decode an x86 EBP frame encoding.
+ */
+- (void) testX86DecodeFrame {
+    /* Create a frame encoding, with registers saved at ebp-1020 bytes */
+    const uint32_t encoded_reg_ebp_offset = 1020;
+    const uint32_t encoded_regs = UNWIND_X86_REG_ESI |
+        (UNWIND_X86_REG_EDX << 3) |
+        (UNWIND_X86_REG_ECX << 6);
+
+    uint32_t encoding = UNWIND_X86_MODE_EBP_FRAME |
+        INSERT_BITS(encoded_reg_ebp_offset/4, UNWIND_X86_EBP_FRAME_OFFSET) |
+        INSERT_BITS(encoded_regs, UNWIND_X86_EBP_FRAME_REGISTERS);
+
+    /* Try extracting it */
+    uint32 reg_ebp_offset = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_OFFSET) * 4;
+    uint32 regs = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_REGISTERS);
+    
+    STAssertEquals(reg_ebp_offset, encoded_reg_ebp_offset, @"Incorrect offset extracted");
+    STAssertEquals(regs, encoded_regs, @"Incorrect register list extracted");
+
+    /* Extract the registers. Up to 5 may be encoded */
+    uint32_t expected_reg[5] = {
+        UNWIND_X86_REG_ESI,
+        UNWIND_X86_REG_EDX,
+        UNWIND_X86_REG_ECX,
+        UNWIND_X86_REG_NONE,
+        UNWIND_X86_REG_NONE
+    };
+    for (uint32_t i = 0; i < 5; i++) {
+        uint32_t reg = (regs >> (3 * i)) & 0x7;
+        STAssertEquals(reg, expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+}
+
 /**
  * Test reading of a PC, compressed, with a common encoding.
  */
