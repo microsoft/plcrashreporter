@@ -213,7 +213,7 @@
 }
 
 #define EXTRACT_BITS(value, mask) ((value >> __builtin_ctz(mask)) & (((1 << __builtin_popcount(mask)))-1))
-#define INSERT_BITS(bits, mask) (bits << __builtin_ctz(mask))
+#define INSERT_BITS(bits, mask) ((bits << __builtin_ctz(mask)) & mask)
 
 /**
  * Decode an x86 EBP frame encoding.
@@ -237,18 +237,263 @@
     STAssertEquals(regs, encoded_regs, @"Incorrect register list extracted");
 
     /* Extract the registers. Up to 5 may be encoded */
-    uint32_t expected_reg[5] = {
+    uint32_t expected_reg[6] = {
         UNWIND_X86_REG_ESI,
         UNWIND_X86_REG_EDX,
         UNWIND_X86_REG_ECX,
         UNWIND_X86_REG_NONE,
         UNWIND_X86_REG_NONE
     };
-    for (uint32_t i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < sizeof(expected_reg) / expected_reg[0]; i++) {
         uint32_t reg = (regs >> (3 * i)) & 0x7;
         STAssertEquals(reg, expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
 }
+
+/**
+ * Encode a 10 bit ordered register list.
+ */
+static uint32_t reg_permute_encode(const uint32_t registers[6], uint32_t count) {
+    uint32_t swapped_registers[6] = {
+        registers[0],
+        registers[1],
+        registers[2],
+        registers[3],
+        registers[4],
+        registers[5]
+    };
+
+    uint32_t renumbered[6];
+    
+    for (int i = 6 - count; i < 6; i++) {
+        int countless = 0;
+        for (int j = 6 - count; j < i; j++) {
+            if (swapped_registers[j] < swapped_registers[i])
+                countless++;
+        }
+        
+        renumbered[i] = swapped_registers[i] - countless - 1;
+    }
+    
+    uint32_t permutation = 0;
+    switch (count) {
+        case 1:
+            permutation |= renumbered[5];
+            break;
+
+        case 2:
+            permutation |= (5*renumbered[4] + renumbered[5]);
+            break;
+
+        case 3:
+            permutation |= (20*renumbered[3] + 4*renumbered[4] + renumbered[5]);
+            break;
+            
+        case 4:
+            permutation |= (60*renumbered[2] + 12*renumbered[3] + 3*renumbered[4] + renumbered[5]);
+            break;
+            
+        case 5:
+            permutation |= (120*renumbered[1] + 24*renumbered[2] + 6*renumbered[3] + 2*renumbered[4] + renumbered[5]);
+            break;
+            
+        case 6:
+            permutation |= (120*renumbered[0] + 24*renumbered[1] + 6*renumbered[2] + 2*renumbered[3] + renumbered[4]);
+            break;
+    }
+    
+    return permutation;
+}
+
+/**
+ * Decode a 10 bit ordered register list.
+ */
+static void reg_permute_decode (uint32_t permutation, uint32_t registers[6], uint32_t count) {
+    PLCF_ASSERT(count <= 6);
+
+    /*
+     * Each register is encoded using a position-relative value within the 10 bit 'permutation' encoding. We extract
+     * each positional value here.
+     */
+	int permunreg[6];
+#define PERMUTE(pos, factor) do { \
+    permunreg[pos] = permutation/factor; \
+    permutation -= (permunreg[pos]*factor); \
+} while (0)
+    
+	switch (count) {
+		case 6:
+            PERMUTE(0, 120);
+            PERMUTE(1, 24);
+            PERMUTE(2, 6);
+            PERMUTE(3, 2);
+            PERMUTE(4, 1);
+            
+            // TODO - This matches the Apple implementation. Verify why this works.
+            permunreg[5] = 0;
+			break;
+		case 5:
+            PERMUTE(0, 120);
+            PERMUTE(1, 24);
+            PERMUTE(2, 6);
+            PERMUTE(3, 2);
+            PERMUTE(4, 1);
+			break;
+		case 4:
+            PERMUTE(0, 60);
+            PERMUTE(1, 12);
+            PERMUTE(2, 3);
+            PERMUTE(3, 1);
+			break;
+		case 3:
+            PERMUTE(0, 20);
+            PERMUTE(1, 4);
+            PERMUTE(2, 1);
+			break;
+		case 2:
+            PERMUTE(0, 5);
+            PERMUTE(1, 1);
+			break;
+		case 1:
+            PERMUTE(0, 1);
+			permunreg[0] = permutation;
+			break;
+	}
+#undef PERMUTE
+
+	/* Recompute the actual register values based on the position-relative values. */
+	bool position_used[7] = { 0 };
+
+	for (uint32_t i = 0; i < count; ++i) {
+		int renumbered = 0;
+		for (int u = 1; u < 7; u++) {
+			if (!position_used[u]) {
+				if (renumbered == permunreg[i]) {
+					registers[i] = u;
+					position_used[u] = true;
+					break;
+				}
+				renumbered++;
+			}
+		}
+	}
+}
+
+/**
+ * Decode an x86 frameless encoding.
+ */
+- (void) testX86DecodeFrameless {
+    // TODO
+#if 0
+    /* Create a frame encoding, with registers saved at ebp-1020 bytes */
+    const uint32_t encoded_stack_size = 1020;
+    const uint32_t encoded_regs[6] = {
+        UNWIND_X86_REG_ESI,
+        UNWIND_X86_REG_EDX,
+        UNWIND_X86_REG_ECX,
+    };
+    const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
+    const uint32_t encoded_reg_permutation = reg_permute_encode(encoded_regs, encoded_regs_count);
+    
+    uint32_t encoding = UNWIND_X86_MODE_STACK_IMMD |
+        INSERT_BITS(encoded_stack_size/4, UNWIND_X86_FRAMELESS_STACK_SIZE) |
+        INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
+        INSERT_BITS(encoded_reg_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+
+    /* Try extracting it */
+    uint32_t stack_size = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_SIZE) * 4;
+    uint32_t reg_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
+    uint32_t reg_permutation = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+
+    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
+    STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    STAssertEquals(reg_permutation, encoded_reg_permutation, @"Incorrect register permutation decoded");
+
+    /* Extract the registers. */
+    uint32_t regs[encoded_regs_count];
+    reg_permute_decode(reg_permutation, regs, reg_count);
+    for (uint32_t i = 0; i < reg_count; i++) {
+        fprintf(stderr, "got %d want %d\n", regs[i], encoded_regs[i]);
+    }
+    
+    
+    for (uint32_t i = 0; i < reg_count; i++) {
+        STAssertEquals(regs[i], encoded_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+#endif
+}
+
+/**
+ * Decode an x86-64 frameless encoding
+ */
+- (void) testX86_64_DecodeFrameless_Self {
+    // an example encoded by clang
+    // stack size=40, rbx,r12,r14,r15
+    const uint32_t encoded_regs_count = 4;
+    const uint32_t encoded_stack_size = 40;
+    const uint32_t encoded_regs[6] = {
+        UNWIND_X86_64_REG_RBX,
+        UNWIND_X86_64_REG_R12,
+        UNWIND_X86_64_REG_R14,
+        UNWIND_X86_64_REG_R15
+    };
+    const uint32_t encoded_regs_permutation = reg_permute_encode(encoded_regs, encoded_regs_count);
+    uint32_t encoded = UNWIND_X86_MODE_STACK_IMMD |
+        INSERT_BITS(encoded_stack_size/8, UNWIND_X86_FRAMELESS_STACK_SIZE) |
+        INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
+        INSERT_BITS(encoded_regs_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+
+    /* Extract the entry fields */
+    const uint32_t stack_size = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * 8;
+    const uint32_t regs_count = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
+    const uint32_t regs_permutation = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
+    
+    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
+    STAssertEquals(regs_count, encoded_regs_count, @"Incorrect register count decoded");
+    STAssertEquals(regs_permutation, encoded_regs_permutation, @"Incorrect register permutation decoded");
+    
+    /* Extract and verify the registers */
+    uint32_t regs[regs_count];
+    reg_permute_decode(regs_permutation, regs, regs_count);
+    for (uint32_t i = 0; i < regs_count; i++) {
+        STAssertEquals(regs[i], encoded_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+}
+
+/**
+ * Decode an x86-64 frameless encoding
+ */
+- (void) testX86_64_DecodeFrameless {
+    // an example encoded by clang
+    // stack size=40, rbx,r12,r14,r15
+    const uint32_t encoded = 0x02051004;
+    const uint32_t encoded_regs_count = 4;
+    const uint32_t encoded_stack_size = 40;
+    const uint32_t encoded_regs_permutation = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
+    const uint32_t encoded_regs[] = {
+        UNWIND_X86_64_REG_RBX,
+        UNWIND_X86_64_REG_R12,
+        UNWIND_X86_64_REG_R14,
+        UNWIND_X86_64_REG_R15
+    };
+
+    /* Extract the entry fields */
+    const uint32_t stack_size = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * 8;
+    const uint32_t regs_count = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
+    const uint32_t regs_permutation = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
+    
+    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
+    STAssertEquals(regs_count, encoded_regs_count, @"Incorrect register count decoded");
+    STAssertEquals(regs_permutation, encoded_regs_permutation, @"Incorrect register permutation decoded");
+
+    /* Extract and verify the registers */
+    uint32_t regs[regs_count];
+    reg_permute_decode(regs_permutation, regs, regs_count);
+    for (uint32_t i = 0; i < regs_count; i++) {
+        STAssertEquals(regs[i], encoded_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+}
+
 
 /**
  * Test reading of a PC, compressed, with a common encoding.
