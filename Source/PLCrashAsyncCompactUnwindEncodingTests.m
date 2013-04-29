@@ -429,8 +429,6 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
  * Decode an x86 frameless encoding.
  */
 - (void) testX86DecodeFrameless {
-    // TODO
-#if 0
     /* Create a frame encoding, with registers saved at ebp-1020 bytes */
     const uint32_t encoded_stack_size = 1020;
     const uint32_t encoded_regs[SAVED_REGISTER_MAX] = {
@@ -458,50 +456,8 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
     /* Extract the registers. */
     uint32_t regs[encoded_regs_count];
     reg_permute_decode(reg_permutation, regs, reg_count);
-    for (uint32_t i = 0; i < reg_count; i++) {
-        fprintf(stderr, "got %d want %d\n", regs[i], encoded_regs[i]);
-    }
-    
     
     for (uint32_t i = 0; i < reg_count; i++) {
-        STAssertEquals(regs[i], encoded_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
-    }
-#endif
-}
-
-/**
- * Decode an x86-64 frameless encoding
- */
-- (void) testX86_64_DecodeFrameless_Self {
-    // an example encoded by clang
-    // stack size=40, rbx,r12,r14,r15
-    const uint32_t encoded_regs_count = 4;
-    const uint32_t encoded_stack_size = 40;
-    const uint32_t encoded_regs[SAVED_REGISTER_MAX] = {
-        UNWIND_X86_64_REG_RBX,
-        UNWIND_X86_64_REG_R12,
-        UNWIND_X86_64_REG_R14,
-        UNWIND_X86_64_REG_R15
-    };
-    const uint32_t encoded_regs_permutation = reg_permute_encode(encoded_regs, encoded_regs_count);
-    uint32_t encoded = UNWIND_X86_MODE_STACK_IMMD |
-        INSERT_BITS(encoded_stack_size/8, UNWIND_X86_FRAMELESS_STACK_SIZE) |
-        INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
-        INSERT_BITS(encoded_regs_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
-
-    /* Extract the entry fields */
-    const uint32_t stack_size = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * 8;
-    const uint32_t regs_count = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
-    const uint32_t regs_permutation = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
-    
-    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
-    STAssertEquals(regs_count, encoded_regs_count, @"Incorrect register count decoded");
-    STAssertEquals(regs_permutation, encoded_regs_permutation, @"Incorrect register permutation decoded");
-    
-    /* Extract and verify the registers */
-    uint32_t regs[regs_count];
-    reg_permute_decode(regs_permutation, regs, regs_count);
-    for (uint32_t i = 0; i < regs_count; i++) {
         STAssertEquals(regs[i], encoded_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
 }
@@ -509,7 +465,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 /**
  * Decode an x86-64 frameless encoding
  */
-- (void) testX86_64_DecodeFrameless {
+- (void) testX86_64DecodeFrameless {
     // an example encoded by clang
     // stack size=40, rbx,r12,r14,r15
     const uint32_t encoded = 0x02051004;
@@ -522,6 +478,9 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
         UNWIND_X86_64_REG_R14,
         UNWIND_X86_64_REG_R15
     };
+    
+    /* Verify that our encoder generates the same result */
+    STAssertEquals(encoded_regs_permutation, reg_permute_encode(encoded_regs, encoded_regs_count), @"Incorrect internal encoding");
 
     /* Extract the entry fields */
     const uint32_t stack_size = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * 8;
