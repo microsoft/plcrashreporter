@@ -374,7 +374,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
             /*
              * There are 6 elements in the list, 6 possible values for each element, and values may not repeat. The
              * value of the last element can be derived from the values previously seen (and due to the positional
-             * renumbering performed, the value of the last element will *always* be 0.
+             * renumbering performed, the value of the last element will *always* be 0).
              */
             permunreg[5] = 0;
 			break;
