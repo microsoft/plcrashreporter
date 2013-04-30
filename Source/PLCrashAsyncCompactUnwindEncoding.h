@@ -73,7 +73,7 @@ typedef enum {
      * may be encoded in the CFE entry itself.
      *
      * The return address may be found at the provided ± offset from the stack pointer, followed all non-volatile
-     * registers that need to be restored. The actual direction of the offset epends on the stack growth direction of
+     * registers that need to be restored. The actual direction of the offset depends on the stack growth direction of
      * the target platform.
      */
     PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD = 2,
@@ -99,6 +99,10 @@ typedef enum {
     PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF = 4
 } plcrash_async_cfe_entry_type_t;
 
+
+/** Maximum number of saved non-volatile registers that may be represented in a CFE entry */
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX 6
+
 /**
  * A decoded CFE entry. The entry represents the data necessary to unwind the stack frame at a given PC, including
  * restoration of saved registers.
@@ -106,6 +110,36 @@ typedef enum {
 typedef struct plcrash_async_cfe_entry {
     /** The CFE entry type. */
     plcrash_async_cfe_entry_type_t type;
+
+    /**
+     * Encoded stack offset. Interpretation of this value depends on the CFE type:
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Unused.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD: The return address may be found at ± offset from the stack
+     *   pointer (eg, esp/rsp), and is followed all non-volatile registers that need to be restored.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT: The actual offset may be loaded from the target function's
+     *   instruction prologue. The offset given here must be added to the start address of the function to determine
+     *   the location of the actual stack size as encoded in the prologue.
+     *
+     *   The return address may be found at ± offset from the stack pointer (eg, esp/rsp), and is followed all
+     *   non-volatile registers that need to be restored.
+     *
+     *   TODO: Need a mechanism to define the actual size of the offset. For x86-32/x86-64, it is defined as being
+     *   encoded in a subl instruction.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF: Unused.
+     */
+    intptr_t stack_offset;
+
+    /**
+     * The number of non-volatile registers that need to be restored from the stack.
+     */
+    uint32_t register_count;
+
+    /**
+     * The list of register_count non-volatile registers that must be restored from the stack. These values are
+     * specific to the target platform, and are defined in the @a plcrash_async_thread API. @sa plcrash_x86_regnum_t
+     * and @sa plcrash_x86_64_regnum_t.
+     */
+    uint32_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
 } plcrash_async_cfe_entry_t;
 
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype);
