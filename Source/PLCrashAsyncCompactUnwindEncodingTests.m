@@ -230,10 +230,11 @@
         INSERT_BITS(encoded_reg_ebp_offset/4, UNWIND_X86_EBP_FRAME_OFFSET) |
         INSERT_BITS(encoded_regs, UNWIND_X86_EBP_FRAME_REGISTERS);
 
-    /* Try extracting it */
+    /* Try decoding it */
     plcrash_async_cfe_entry_t entry;
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
 
     uint32 reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
@@ -270,35 +271,79 @@
 }
 
 /**
- * Decode an x86 frameless encoding.
+ * Decode an x86 immediate 'frameless' encoding.
  */
-- (void) testX86DecodeFrameless {
+- (void) testX86DecodeFramelessImmediate {
     /* Create a frame encoding, with registers saved at ebp-1020 bytes */
     const uint32_t encoded_stack_size = 1020;
-    const uint32_t encoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
-        UNWIND_X86_REG_ESI,
-        UNWIND_X86_REG_EDX,
-        UNWIND_X86_REG_ECX,
-    };
-    const uint32_t encoded_regs_count = 3;
-    const uint32_t encoded_reg_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
-    
+    const uint32_t encoded_regs[] = { UNWIND_X86_REG_ESI, UNWIND_X86_REG_EDX, UNWIND_X86_REG_ECX };
+    const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
+    const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
+
     uint32_t encoding = UNWIND_X86_MODE_STACK_IMMD |
         INSERT_BITS(encoded_stack_size/4, UNWIND_X86_FRAMELESS_STACK_SIZE) |
         INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
-        INSERT_BITS(encoded_reg_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+        INSERT_BITS(encoded_regs_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
 
-    /* Try extracting it */
-    uint32_t stack_size = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_SIZE) * 4;
-    uint32_t reg_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
-    uint32_t reg_permutation = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+
+    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
 
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
-    STAssertEquals(reg_permutation, encoded_reg_permutation, @"Incorrect register permutation decoded");
 
-    /* Extract and verify the register encoding */
-    [self verifyFramelessRegDecode: encoded_reg_permutation count: encoded_regs_count expectedRegisters: encoded_regs];
+    /* Verify the register decoding */
+    uint32_t reg[reg_count];
+
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    
+    const uint32_t expected_regs[] = { PLCRASH_X86_ESI, PLCRASH_X86_EDX, PLCRASH_X86_ECX };
+    for (uint32_t i = 0; i < 3; i++) {
+        STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+}
+
+/**
+ * Decode an x86 indirect 'frameless' encoding.
+ */
+- (void) testX86DecodeFramelessIndirect {
+    /* Create a frame encoding, with registers saved at ebp-1020 bytes */
+    const uint32_t encoded_stack_size = 1020;
+    const uint32_t encoded_regs[] = { UNWIND_X86_REG_ESI, UNWIND_X86_REG_EDX, UNWIND_X86_REG_ECX };
+    const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
+    const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
+    
+    uint32_t encoding = UNWIND_X86_MODE_STACK_IND |
+    INSERT_BITS(encoded_stack_size/4, UNWIND_X86_FRAMELESS_STACK_SIZE) |
+    INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
+    INSERT_BITS(encoded_regs_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+    
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    
+    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
+    STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    
+    /* Verify the register decoding */
+    uint32_t reg[reg_count];
+    
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    
+    const uint32_t expected_regs[] = { PLCRASH_X86_ESI, PLCRASH_X86_EDX, PLCRASH_X86_ECX };
+    for (uint32_t i = 0; i < 3; i++) {
+        STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
 }
 
 /**

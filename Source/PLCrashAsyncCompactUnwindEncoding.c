@@ -366,7 +366,7 @@ void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
  * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
-uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX], uint32_t count) {
+uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count) {
     /*
      * Use a positional encoding to encode each integer in the list as an integer value
      * that is less than the previous greatest integer in the list. We know that each
@@ -469,7 +469,7 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[PLCRASH_ASY
  * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
-void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX]) {
+void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]) {
     PLCF_ASSERT(count <= PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX);
     
     /*
@@ -667,14 +667,32 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
             }
 
             case UNWIND_X86_MODE_STACK_IMMD:
-                // TODO
-                __builtin_trap();
-                break;
+            case UNWIND_X86_MODE_STACK_IND: {
+                /* These two types are identical except for the interpretation of the stack offset value */
+                if (mode == UNWIND_X86_MODE_STACK_IMMD)
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
+                else
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT;
 
-            case UNWIND_X86_MODE_STACK_IND:
-                // TODO
-                __builtin_trap();
-                break;
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_SIZE) * sizeof(uint32_t);
+                
+                /* Extract the register values */
+                entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
+                uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
+                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, entry->register_list);
+                
+                /* Map to the correct PLCrashReporter register names */
+                for (uint32_t i = 0; i < entry->register_count; i++) {
+                    ret = plcrash_async_map_register_name(entry->register_list[i], &entry->register_list[i], cpu_type);
+                    if (ret != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to map register value of %" PRIx32, entry->register_list[i]);
+                        return ret;
+                    }
+                }
+
+                return PLCRASH_ESUCCESS;
+            }
 
             case UNWIND_X86_MODE_DWARF:
                 // TODO
@@ -696,6 +714,15 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
 
     PLCF_DEBUG("Unsupported CPU type: %" PRIu32, cpu_type);
     return PLCRASH_ENOTSUP;
+}
+
+/**
+ * Return the CFE entry type.
+ *
+ * @param entry The entry for which the type should be returned.
+ */
+plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_entry_t *entry) {
+    return entry->type;
 }
 
 /**

@@ -158,12 +158,12 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
 plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_entry_t *entry);
 intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry);
 uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry);
-void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, uint32_t *register_list);
+void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, uint32_t register_list[]);
 
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 
-uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX], uint32_t count);
-void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX]);
+uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count);
+void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]);
 
 /**
  * @} plcrash_async_cfe
