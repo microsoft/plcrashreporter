@@ -40,6 +40,9 @@
  * @{
  */
 
+/* Extract @a mask bits from @a value. */
+#define EXTRACT_BITS(value, mask) ((value >> __builtin_ctz(mask)) & (((1 << __builtin_popcount(mask)))-1))
+
 #pragma mark CFE Reader
 
 /**
@@ -54,7 +57,7 @@
  */
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype) {
     reader->mobj = mobj;
-    reader->cputype = cputype;
+    reader->cpu_type = cputype;
 
     /* Determine the expected encoding */
     switch (cputype) {
@@ -543,16 +546,198 @@ permutation -= (permunreg[pos]*factor); \
 }
 
 /**
+ * @internal
+ *
+ * Map the @a orig_reg CFE register name to a PLCrashReporter PLCRASH_* register name constant.
+ *
+ * @param orig_reg Register name as decoded from a CFE entry.
+ * @param cpu_type The CPU type that should be used when interpreting @a orig_reg;
+ */
+static plcrash_error_t plcrash_async_map_register_name (uint32_t orig_reg, uint32_t *result, cpu_type_t cpu_type) {
+    if (cpu_type == CPU_TYPE_X86) {
+        switch (orig_reg) {
+            case UNWIND_X86_REG_EBX:
+                *result = PLCRASH_X86_EBX;
+                return PLCRASH_ESUCCESS;
+
+            case UNWIND_X86_REG_ECX:
+                *result = PLCRASH_X86_ECX;
+                return PLCRASH_ESUCCESS;
+                
+            case UNWIND_X86_REG_EDX:
+                *result = PLCRASH_X86_EDX;
+                return PLCRASH_ESUCCESS;
+                
+            case UNWIND_X86_REG_EDI:
+                *result = PLCRASH_X86_EDI;
+                return PLCRASH_ESUCCESS;
+                
+            case UNWIND_X86_REG_ESI:
+                *result = PLCRASH_X86_ESI;
+                return PLCRASH_ESUCCESS;
+                
+            case UNWIND_X86_REG_EBP:
+                *result = PLCRASH_X86_EBP;
+                return PLCRASH_ESUCCESS;
+            default:
+                PLCF_DEBUG("Requested register mapping for unknown register %" PRId32, orig_reg);
+                return PLCRASH_EINVAL;
+        }
+    } else if (cpu_type == CPU_TYPE_X86_64) {
+        switch (orig_reg) {
+            case UNWIND_X86_64_REG_RBX:
+                *result = PLCRASH_X86_64_RBX;
+                return PLCRASH_ESUCCESS;
+            case UNWIND_X86_64_REG_R12:
+                *result = PLCRASH_X86_64_R12;
+                return PLCRASH_ESUCCESS;
+            case UNWIND_X86_64_REG_R13:
+                *result = PLCRASH_X86_64_R13;
+                return PLCRASH_ESUCCESS;
+            case UNWIND_X86_64_REG_R14:
+                *result = PLCRASH_X86_64_R14;
+                return PLCRASH_ESUCCESS;
+            case UNWIND_X86_64_REG_R15:
+                *result = PLCRASH_X86_64_R15;
+                return PLCRASH_ESUCCESS;
+            case UNWIND_X86_64_REG_RBP:
+                *result = PLCRASH_X86_64_RBP;
+                return PLCRASH_ESUCCESS;
+            default:
+                PLCF_DEBUG("Requested register mapping for unknown register %" PRId32, orig_reg);
+                return PLCRASH_EINVAL;
+        }
+    } else {
+        PLCF_DEBUG("Requested register mapping for unknown cpu type %" PRIu32, cpu_type);
+        return PLCRASH_ENOTSUP;
+    }
+}
+
+/**
  * Initialize a new decoded CFE entry using the provided encoded CFE data. Any resources held by a successfully
  * initialized instance must be freed via plcrash_async_cfe_entry_free();
  *
  * @param entry The entry instance to initialize.
  * @param cpu_type The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
  * architecture-specific, and Apple has not defined encodings for all supported architectures.
- * @param encoding The CFE entry data.
+ * @param encoding The CFE entry data, in the hosts' native byte order.
  */
-void plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding) {
-    // TODO
+plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding) {
+    plcrash_error_t ret;
+    
+    /* Target-neutral initialization */
+    entry->cpu_type = cpu_type;
+
+    /* Perform target-specific decoding */
+    if (cpu_type == CPU_TYPE_X86) {
+        uint32_t mode = encoding & UNWIND_X86_MODE_MASK;
+        switch (mode) {
+            case UNWIND_X86_MODE_EBP_FRAME: {
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
+
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_OFFSET) * sizeof(uint32_t);
+
+                /*
+                 * Extract the register values. They're stored as a list of 3 bit values, where a value of
+                 * UNWIND_X86_REG_NONE signals termination of the list.
+                 *
+                 * TODO: Can the CFE register list be encoded sparsely?
+                 */
+                uint32_t regs = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_REGISTERS);
+                entry->register_count = 0;
+                for (uint32_t i = 0; i < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX; i++) {
+                    /* Extract each 3 bit register value (stopping if the end terminator is reached). */
+                    uint32_t reg = (regs >> (3 * i)) & 0x7;
+                    if (reg == UNWIND_X86_REG_NONE)
+                        break;
+
+                    /* Map to the correct PLCrashReporter register name */
+                    ret = plcrash_async_map_register_name(reg, &entry->register_list[i], cpu_type);
+                    if (ret != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to map register value of %" PRIx32, reg);
+                        return ret;
+                    }
+
+                    /* Update the register count */
+                    entry->register_count++;
+                }
+                
+                return PLCRASH_ESUCCESS;
+            }
+
+            case UNWIND_X86_MODE_STACK_IMMD:
+                // TODO
+                __builtin_trap();
+                break;
+
+            case UNWIND_X86_MODE_STACK_IND:
+                // TODO
+                __builtin_trap();
+                break;
+
+            case UNWIND_X86_MODE_DWARF:
+                // TODO
+                __builtin_trap();
+                break;
+                
+            default:
+                PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
+        }
+        
+        // TODO
+        return PLCRASH_EINTERNAL;
+
+    } else if (cpu_type == CPU_TYPE_X86_64) {
+        // TODO
+        __builtin_trap();
+        return PLCRASH_EINTERNAL;
+    }
+
+    PLCF_DEBUG("Unsupported CPU type: %" PRIu32, cpu_type);
+    return PLCRASH_ENOTSUP;
+}
+
+/**
+ * Return the stack offset value. Interpretation of this value depends on the CFE type:
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Unused.
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD: The return address may be found at ± offset from the stack
+ *   pointer (eg, esp/rsp), and is followed all non-volatile registers that need to be restored.
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT: The actual offset may be loaded from the target function's
+ *   instruction prologue. The offset given here must be added to the start address of the function to determine
+ *   the location of the actual stack size as encoded in the prologue.
+ *
+ *   The return address may be found at ± offset from the stack pointer (eg, esp/rsp), and is followed all
+ *   non-volatile registers that need to be restored.
+ *
+ *   TODO: Need a mechanism to define the actual size of the offset. For x86-32/x86-64, it is defined as being
+ *   encoded in a subl instruction.
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF: Unused.
+ *
+ * @param entry The entry from which the stack offset value will be fetched.
+ */
+intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry) {
+    return entry->stack_offset;
+}
+
+/**
+ * The number of non-volatile registers that need to be restored from the stack.
+ */
+uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry) {
+    return entry->register_count;
+}
+
+/**
+ * Copy the list of non-volatile registers that must be restored from the stack to @a register_list. These values are
+ * specific to the target platform, and are defined in the @a plcrash_async_thread API. @sa plcrash_x86_regnum_t
+ * and @sa plcrash_x86_64_regnum_t.
+ *
+ * @param entry The entry from which the register list should be copied.
+ * @param register_list An array to which the registers will be copied. plcrash_async_cfe_register_count() may be used
+ * to determine the number of registers to be copied.
+ */
+void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, uint32_t *register_list) {
+    memcpy(register_list, entry->register_list, sizeof(entry->register_list[0]) * entry->register_count);
 }
 
 /**

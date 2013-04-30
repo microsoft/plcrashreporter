@@ -29,6 +29,7 @@
 
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncImageList.h"
+#include "PLCrashAsyncThread.h"
 
 #include <mach-o/compact_unwind_encoding.h>
 
@@ -46,7 +47,7 @@ typedef struct plcrash_async_cfe_reader {
     plcrash_async_mobject_t *mobj;
 
     /** The target CPU type. */
-    cpu_type_t cputype;
+    cpu_type_t cpu_type;
 
     /** The unwind info header. Note that the header values may require byte-swapping for the local process' use. */
     struct unwind_info_section_header header;
@@ -111,6 +112,9 @@ typedef struct plcrash_async_cfe_entry {
     /** The CFE entry type. */
     plcrash_async_cfe_entry_type_t type;
 
+    /** The target CPU type. */
+    cpu_type_t cpu_type;
+
     /**
      * Encoded stack offset. Interpretation of this value depends on the CFE type:
      * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Unused.
@@ -148,7 +152,14 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
 void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader);
 
-void plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding);
+
+plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding);
+
+plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_entry_t *entry);
+intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry);
+uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry);
+void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, uint32_t *register_list);
+
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX], uint32_t count);

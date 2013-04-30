@@ -219,6 +219,7 @@
  * Decode an x86 EBP frame encoding.
  */
 - (void) testX86DecodeFrame {
+
     /* Create a frame encoding, with registers saved at ebp-1020 bytes */
     const uint32_t encoded_reg_ebp_offset = 1020;
     const uint32_t encoded_regs = UNWIND_X86_REG_ESI |
@@ -230,23 +231,26 @@
         INSERT_BITS(encoded_regs, UNWIND_X86_EBP_FRAME_REGISTERS);
 
     /* Try extracting it */
-    uint32 reg_ebp_offset = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_OFFSET) * 4;
-    uint32 regs = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_REGISTERS);
-    
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+
+    uint32 reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, encoded_reg_ebp_offset, @"Incorrect offset extracted");
-    STAssertEquals(regs, encoded_regs, @"Incorrect register list extracted");
+    STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
 
     /* Extract the registers. Up to 5 may be encoded */
-    uint32_t expected_reg[6] = {
-        UNWIND_X86_REG_ESI,
-        UNWIND_X86_REG_EDX,
-        UNWIND_X86_REG_ECX,
-        UNWIND_X86_REG_NONE,
-        UNWIND_X86_REG_NONE
+    uint32_t expected_reg[] = {
+        PLCRASH_X86_ESI,
+        PLCRASH_X86_EDX,
+        PLCRASH_X86_ECX
     };
-    for (uint32_t i = 0; i < sizeof(expected_reg) / expected_reg[0]; i++) {
-        uint32_t reg = (regs >> (3 * i)) & 0x7;
-        STAssertEquals(reg, expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    uint32_t reg[reg_count];
+
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    for (uint32_t i = 0; i < 3; i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
 }
 
