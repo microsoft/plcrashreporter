@@ -148,6 +148,9 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
 
 void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader);
 
+void plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding);
+void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
+
 /**
  * @} plcrash_async_cfe
  */

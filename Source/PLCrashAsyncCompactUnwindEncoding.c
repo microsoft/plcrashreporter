@@ -349,5 +349,25 @@ void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
 }
 
 /**
+ * Initialize a new decoded CFE entry using the provided encoded CFE data. Any resources held by a successfully
+ * initialized instance must be freed via plcrash_async_cfe_entry_free();
+ *
+ * @param entry The entry instance to initialize.
+ * @param cpu_type The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
+ * architecture-specific, and Apple has not defined encodings for all supported architectures.
+ * @param encoding The CFE entry data.
+ */
+plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding) {
+    // TODO
+}
+
+/**
+ * Free all resources associated with @a entry.
+ */
+void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry) {
+    // noop
+}
+
+/**
  * @} plcrash_async_cfe
  */
