@@ -40,6 +40,8 @@
  * @{
  */
 
+#pragma mark CFE Reader
+
 /**
  * Initialize a new CFE reader using the provided memory object. Any resources held by a successfully initialized
  * instance must be freed via plcrash_async_cfe_reader_free();
@@ -348,6 +350,198 @@ void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
     // noop
 }
 
+#pragma mark CFE Entry
+
+
+/**
+ * @internal
+ * Encode a ordered register list using the 10 bit register encoding as defined by the CFE format.
+ *
+ * @param registers The ordered list of registers to encode. These values must correspond to the CFE register values,
+ * <em>not</em> the register values as defined in the PLCrashReporter thread state APIs.
+ 
+ * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
+ * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
+ */
+uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX], uint32_t count) {
+    /*
+     * Use a positional encoding to encode each integer in the list as an integer value
+     * that is less than the previous greatest integer in the list. We know that each
+     * integer (numbered 1-6) may appear only once in the list.
+     *
+     * For example:
+     *   6 5 4 3 2 1 ->
+     *   5 4 3 2 1 0
+     *
+     *   6 3 5 2 1 ->
+     *   5 2 3 1 0
+     *
+     *   1 2 3 4 5 6 ->
+     *   0 0 0 0 0 0
+     */
+    uint32_t renumbered[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    for (int i = 0; i < count; ++i) {
+        unsigned countless = 0;
+        for (int j = 0; j < i; ++j)
+            if (registers[j] < registers[i])
+                countless++;
+        
+        renumbered[i] = registers[i] - countless - 1;
+    }
+    
+    uint32_t permutation = 0;
+    
+    /*
+     * Using the renumbered list, we map each element of the list (positionally) into a range large enough to represent
+     * the range of any valid element, as well as be subdivided to represent the range of later elements.
+     *
+     * For example, if we use a factor of 120 for the first position (encoding multiples, decoding divides), that
+     * provides us with a range of 0-719. There are 6 possible values that may be encoded in 0-719 (assuming later
+     * division by 120), the range is broken down as:
+     *
+     *   0   - 119: 0
+     *   120 - 239: 1
+     *   240 - 359: 2
+     *   360 - 479: 3
+     *   480 - 599: 4
+     *   600 - 719: 5
+     *
+     * Within that range, further positions may be encoded. Assuming a value of 1 in position 0, and a factor of
+     * 24 for position 1, the range breakdown would be as follows:
+     *   120 - 143: 0
+     *   144 - 167: 1
+     *   168 - 191: 2
+     *   192 - 215: 3
+     *   216 - 239: 4
+     *
+     * Note that due to the positional renumbering performed prior to this step, we know that each subsequent position
+     * in the list requires fewer elements; eg, position 0 may include 0-5, position 1 0-4, and position 2 0-3. This
+     * allows us to allocate smaller overall ranges to represent all possible elements.
+     */
+    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX == 6);
+    switch (count) {
+        case 1:
+            permutation |= renumbered[0];
+            break;
+            
+        case 2:
+            permutation |= (5*renumbered[0] + renumbered[1]);
+            break;
+            
+        case 3:
+            permutation |= (20*renumbered[0] + 4*renumbered[1] + renumbered[2]);
+            break;
+            
+        case 4:
+            permutation |= (60*renumbered[0] + 12*renumbered[1] + 3*renumbered[2] + renumbered[3]);
+            break;
+            
+        case 5:
+            permutation |= (120*renumbered[0] + 24*renumbered[1] + 6*renumbered[2] + 2*renumbered[3] + renumbered[4]);
+            break;
+            
+        case 6:
+            /*
+             * There are 6 elements in the list, 6 possible values for each element, and values may not repeat. The
+             * value of the last element can be derived from the values previously seen (and due to the positional
+             * renumbering performed above, the value of the last element will *always* be 0.
+             */
+            permutation |= (120*renumbered[0] + 24*renumbered[1] + 6*renumbered[2] + 2*renumbered[3] + renumbered[4]);
+            break;
+    }
+    
+    PLCF_ASSERT((permutation & 0x3FF) == permutation);
+    return permutation;
+}
+
+/**
+ * @internal
+ * Decode a ordered register list from the 10 bit register encoding as defined by the CFE format.
+ *
+ * @param permutation The 10-bit encoded register list.
+ * @param count The number of registers to decode from @a permutation.
+ * @param registers On return, the ordered list of decoded register values. These values must correspond to the CFE
+ * register values, <em>not</em> the register values as defined in the PLCrashReporter thread state APIs.
+ *
+ * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
+ * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
+ */
+void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX]) {
+    PLCF_ASSERT(count <= PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX);
+    
+    /*
+     * Each register is encoded by mapping the values to a 10-bit range, and then further sub-ranges within that range,
+     * with a subrange allocated to each position. See the encoding function for full documentation.
+     */
+	int permunreg[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+#define PERMUTE(pos, factor) do { \
+permunreg[pos] = permutation/factor; \
+permutation -= (permunreg[pos]*factor); \
+} while (0)
+    
+    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX == 6);
+	switch (count) {
+		case 6:
+            PERMUTE(0, 120);
+            PERMUTE(1, 24);
+            PERMUTE(2, 6);
+            PERMUTE(3, 2);
+            PERMUTE(4, 1);
+            
+            /*
+             * There are 6 elements in the list, 6 possible values for each element, and values may not repeat. The
+             * value of the last element can be derived from the values previously seen (and due to the positional
+             * renumbering performed, the value of the last element will *always* be 0).
+             */
+            permunreg[5] = 0;
+			break;
+		case 5:
+            PERMUTE(0, 120);
+            PERMUTE(1, 24);
+            PERMUTE(2, 6);
+            PERMUTE(3, 2);
+            PERMUTE(4, 1);
+			break;
+		case 4:
+            PERMUTE(0, 60);
+            PERMUTE(1, 12);
+            PERMUTE(2, 3);
+            PERMUTE(3, 1);
+			break;
+		case 3:
+            PERMUTE(0, 20);
+            PERMUTE(1, 4);
+            PERMUTE(2, 1);
+			break;
+		case 2:
+            PERMUTE(0, 5);
+            PERMUTE(1, 1);
+			break;
+		case 1:
+            PERMUTE(0, 1);
+			permunreg[0] = permutation;
+			break;
+	}
+#undef PERMUTE
+    
+	/* Recompute the actual register values based on the position-relative values. */
+	bool position_used[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX+1] = { 0 };
+    
+	for (uint32_t i = 0; i < count; ++i) {
+		int renumbered = 0;
+		for (int u = 1; u < 7; u++) {
+			if (!position_used[u]) {
+				if (renumbered == permunreg[i]) {
+					registers[i] = u;
+					position_used[u] = true;
+					break;
+				}
+				renumbered++;
+			}
+		}
+	}
+}
+
 /**
  * Initialize a new decoded CFE entry using the provided encoded CFE data. Any resources held by a successfully
  * initialized instance must be freed via plcrash_async_cfe_entry_free();
@@ -357,7 +551,7 @@ void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
  * architecture-specific, and Apple has not defined encodings for all supported architectures.
  * @param encoding The CFE entry data.
  */
-plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding) {
+void plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding) {
     // TODO
 }
 

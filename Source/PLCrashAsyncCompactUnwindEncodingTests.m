@@ -250,191 +250,16 @@
     }
 }
 
-#define SAVED_REGISTER_MAX 6
-
-/**
- * Encode a 10 bit ordered register list.
- */
-static uint32_t reg_permute_encode(const uint32_t registers[SAVED_REGISTER_MAX], uint32_t count) {
-    /*
-     * Use a positional encoding to encode each integer in the list as an integer value
-     * that is less than the previous greatest integer in the list. We know that each
-     * integer (numbered 1-6) may appear only once in the list.
-     *
-     * For example:
-     *   6 5 4 3 2 1 ->
-     *   5 4 3 2 1 0
-     *
-     *   6 3 5 2 1 ->
-     *   5 2 3 1 0
-     *
-     *   1 2 3 4 5 6 ->
-     *   0 0 0 0 0 0
-     */
-    uint32_t renumbered[SAVED_REGISTER_MAX];
-    for (int i = 0; i < count; ++i) {
-        unsigned countless = 0;
-        for (int j = 0; j < i; ++j)
-            if (registers[j] < registers[i])
-                countless++;
-
-        renumbered[i] = registers[i] - countless - 1;
-    }
-    
-    uint32_t permutation = 0;
-
-    /*
-     * Using the renumbered list, we map each element of the list (positionally) into a range large enough to represent
-     * the range of any valid element, as well as be subdivided to represent the range of later elements.
-     *
-     * For example, if we use a factor of 120 for the first position (encoding multiples, decoding divides), that
-     * provides us with a range of 0-719. There are 6 possible values that may be encoded in 0-719 (assuming later
-     * division by 120), the range is broken down as:
-     *
-     *   0   - 119: 0
-     *   120 - 239: 1
-     *   240 - 359: 2
-     *   360 - 479: 3
-     *   480 - 599: 4
-     *   600 - 719: 5
-     *
-     * Within that range, further positions may be encoded. Assuming a value of 1 in position 0, and a factor of
-     * 24 for position 1, the range breakdown would be as follows:
-     *   120 - 143: 0
-     *   144 - 167: 1
-     *   168 - 191: 2
-     *   192 - 215: 3
-     *   216 - 239: 4
-     *
-     * Note that due to the positional renumbering performed prior to this step, we know that each subsequent position
-     * in the list requires fewer elements; eg, position 0 may include 0-5, position 1 0-4, and position 2 0-3. This
-     * allows us to allocate smaller overall ranges to represent all possible elements.
-     */
-    PLCF_ASSERT(SAVED_REGISTER_MAX == 6);
-    switch (count) {
-        case 1:
-            permutation |= renumbered[0];
-            break;
-
-        case 2:
-            permutation |= (5*renumbered[0] + renumbered[1]);
-            break;
-
-        case 3:
-            permutation |= (20*renumbered[0] + 4*renumbered[1] + renumbered[2]);
-            break;
-            
-        case 4:
-            permutation |= (60*renumbered[0] + 12*renumbered[1] + 3*renumbered[2] + renumbered[3]);
-            break;
-            
-        case 5:
-            permutation |= (120*renumbered[0] + 24*renumbered[1] + 6*renumbered[2] + 2*renumbered[3] + renumbered[4]);
-            break;
-            
-        case 6:
-            /*
-             * There are 6 elements in the list, 6 possible values for each element, and values may not repeat. The
-             * value of the last element can be derived from the values previously seen (and due to the positional
-             * renumbering performed above, the value of the last element will *always* be 0.
-             */
-            permutation |= (120*renumbered[0] + 24*renumbered[1] + 6*renumbered[2] + 2*renumbered[3] + renumbered[4]);
-            break;
-    }
-    
-    PLCF_ASSERT((permutation & 0x3FF) == permutation);
-    return permutation;
-}
-
-/**
- * Decode a 10 bit ordered register list.
- */
-static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_REGISTER_MAX], uint32_t count) {
-    PLCF_ASSERT(count <= SAVED_REGISTER_MAX);
-
-    /*
-     * Each register is encoded by mapping the values to a 10-bit range, and then further sub-ranges within that range,
-     * with a subrange allocated to each position. See the encoding function for full documentation.
-     */
-	int permunreg[SAVED_REGISTER_MAX];
-#define PERMUTE(pos, factor) do { \
-    permunreg[pos] = permutation/factor; \
-    permutation -= (permunreg[pos]*factor); \
-} while (0)
-
-    PLCF_ASSERT(SAVED_REGISTER_MAX == 6);
-	switch (count) {
-		case 6:
-            PERMUTE(0, 120);
-            PERMUTE(1, 24);
-            PERMUTE(2, 6);
-            PERMUTE(3, 2);
-            PERMUTE(4, 1);
-            
-            /*
-             * There are 6 elements in the list, 6 possible values for each element, and values may not repeat. The
-             * value of the last element can be derived from the values previously seen (and due to the positional
-             * renumbering performed, the value of the last element will *always* be 0).
-             */
-            permunreg[5] = 0;
-			break;
-		case 5:
-            PERMUTE(0, 120);
-            PERMUTE(1, 24);
-            PERMUTE(2, 6);
-            PERMUTE(3, 2);
-            PERMUTE(4, 1);
-			break;
-		case 4:
-            PERMUTE(0, 60);
-            PERMUTE(1, 12);
-            PERMUTE(2, 3);
-            PERMUTE(3, 1);
-			break;
-		case 3:
-            PERMUTE(0, 20);
-            PERMUTE(1, 4);
-            PERMUTE(2, 1);
-			break;
-		case 2:
-            PERMUTE(0, 5);
-            PERMUTE(1, 1);
-			break;
-		case 1:
-            PERMUTE(0, 1);
-			permunreg[0] = permutation;
-			break;
-	}
-#undef PERMUTE
-
-	/* Recompute the actual register values based on the position-relative values. */
-	bool position_used[SAVED_REGISTER_MAX+1] = { 0 };
-
-	for (uint32_t i = 0; i < count; ++i) {
-		int renumbered = 0;
-		for (int u = 1; u < 7; u++) {
-			if (!position_used[u]) {
-				if (renumbered == permunreg[i]) {
-					registers[i] = u;
-					position_used[u] = true;
-					break;
-				}
-				renumbered++;
-			}
-		}
-	}
-}
-
 - (void) verifyFramelessRegDecode: (uint32_t) permutedRegisters
                             count: (uint32_t) count
-                expectedRegisters: (const uint32_t[SAVED_REGISTER_MAX]) expectedRegisters
+                expectedRegisters: (const uint32_t[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX]) expectedRegisters
 {
     /* Verify that our encoder generates the same result */
-    STAssertEquals(permutedRegisters, reg_permute_encode(expectedRegisters, count), @"Incorrect internal encoding for count %" PRId32, count);
-    
+    STAssertEquals(permutedRegisters, plcrash_async_cfe_register_encode(expectedRegisters, count), @"Incorrect internal encoding for count %" PRId32, count);
+
     /* Extract and verify the registers */
     uint32_t regs[count];
-    reg_permute_decode(permutedRegisters, regs, count);
+    plcrash_async_cfe_register_decode(permutedRegisters, count, regs);
     for (uint32_t i = 0; i < count; i++) {
         STAssertEquals(regs[i], expectedRegisters[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
@@ -446,13 +271,13 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 - (void) testX86DecodeFrameless {
     /* Create a frame encoding, with registers saved at ebp-1020 bytes */
     const uint32_t encoded_stack_size = 1020;
-    const uint32_t encoded_regs[SAVED_REGISTER_MAX] = {
+    const uint32_t encoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
         UNWIND_X86_REG_ESI,
         UNWIND_X86_REG_EDX,
         UNWIND_X86_REG_ECX,
     };
     const uint32_t encoded_regs_count = 3;
-    const uint32_t encoded_reg_permutation = reg_permute_encode(encoded_regs, encoded_regs_count);
+    const uint32_t encoded_reg_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
     
     uint32_t encoding = UNWIND_X86_MODE_STACK_IMMD |
         INSERT_BITS(encoded_stack_size/4, UNWIND_X86_FRAMELESS_STACK_SIZE) |
@@ -482,7 +307,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
     const uint32_t encoded_regs_count = 4;
     const uint32_t encoded_stack_size = 40;
     const uint32_t encoded_regs_permutation = EXTRACT_BITS(encoded, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
-    const uint32_t encoded_regs[SAVED_REGISTER_MAX] = {
+    const uint32_t encoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
         UNWIND_X86_64_REG_RBX,
         UNWIND_X86_64_REG_R12,
         UNWIND_X86_64_REG_R14,
@@ -510,13 +335,13 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 #define PL_EXBIT(v) EXTRACT_BITS(v, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION)
     /* 1 item */
     {
-        const uint32_t expected[SAVED_REGISTER_MAX] = { UNWIND_X86_64_REG_RBX };
+        const uint32_t expected[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = { UNWIND_X86_64_REG_RBX };
         [self verifyFramelessRegDecode: PL_EXBIT(0x02020400) count: 1 expectedRegisters: expected];
     }
 
     /* 2 items */
     {
-        const uint32_t expected[SAVED_REGISTER_MAX] = {
+        const uint32_t expected[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
             UNWIND_X86_64_REG_R15,
             UNWIND_X86_64_REG_R14
         };
@@ -525,7 +350,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 
     /* 3 items */
     {
-        const uint32_t expected[SAVED_REGISTER_MAX] = {
+        const uint32_t expected[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
             UNWIND_X86_64_REG_RBX,
             UNWIND_X86_64_REG_R14,
             UNWIND_X86_64_REG_R15
@@ -535,7 +360,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 
     /* 4 items */
     {
-        const uint32_t expected[SAVED_REGISTER_MAX] = {
+        const uint32_t expected[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
             UNWIND_X86_64_REG_RBX,
             UNWIND_X86_64_REG_R12,
             UNWIND_X86_64_REG_R14,
@@ -546,7 +371,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 
     /* 5 items */
     {
-        const uint32_t expected[SAVED_REGISTER_MAX] = {
+        const uint32_t expected[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
             UNWIND_X86_64_REG_RBX,
             UNWIND_X86_64_REG_R12,
             UNWIND_X86_64_REG_R13,
@@ -558,7 +383,7 @@ static void reg_permute_decode (uint32_t permutation, uint32_t registers[SAVED_R
 
     /* 6 items */
     {
-        const uint32_t expected[SAVED_REGISTER_MAX] = {
+        const uint32_t expected[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {
             UNWIND_X86_64_REG_RBX,
             UNWIND_X86_64_REG_R12,
             UNWIND_X86_64_REG_R13,
