@@ -347,6 +347,28 @@
 }
 
 /**
+ * Decode an x86 DWARF encoding.
+ */
+- (void) testX86DecodeDWARF {
+    /* Create a frame encoding, with registers saved at ebp-1020 bytes */
+    const uint32_t encoded_dwarf_offset = 1020;
+    uint32_t encoding = UNWIND_X86_MODE_DWARF |
+        INSERT_BITS(encoded_dwarf_offset, UNWIND_X86_DWARF_SECTION_OFFSET);
+
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    
+    STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
+    STAssertEquals(reg_count, (uint32_t)0, @"Incorrect register count decoded");
+}
+
+/**
  * Decode an x86-64 frameless encoding
  */
 - (void) testX86_64DecodeFrameless {

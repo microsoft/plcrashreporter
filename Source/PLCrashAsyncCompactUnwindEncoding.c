@@ -695,9 +695,13 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
             }
 
             case UNWIND_X86_MODE_DWARF:
-                // TODO
-                __builtin_trap();
-                break;
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF;
+
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_DWARF_SECTION_OFFSET);
+                entry->register_count = 0;
+
+                return PLCRASH_ESUCCESS;
                 
             default:
                 PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
