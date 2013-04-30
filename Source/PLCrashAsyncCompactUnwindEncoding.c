@@ -705,13 +705,93 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 
             default:
                 PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
+                return PLCRASH_ENOTSUP;
         }
         
-        // TODO
+        // Unreachable
+        __builtin_trap();
         return PLCRASH_EINTERNAL;
 
     } else if (cpu_type == CPU_TYPE_X86_64) {
-        // TODO
+        uint32_t mode = encoding & UNWIND_X86_64_MODE_MASK;
+        switch (mode) {
+            case UNWIND_X86_64_MODE_RBP_FRAME: {
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
+                
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_RBP_FRAME_OFFSET) * sizeof(uint64_t);
+
+                /*
+                 * Extract the register values. They're stored as a list of 3 bit values, where a value of
+                 * UNWIND_X86_64_REG_NONE signals termination of the list.
+                 *
+                 * TODO: Can the CFE register list be encoded sparsely?
+                 */
+                uint32_t regs = EXTRACT_BITS(encoding, UNWIND_X86_64_RBP_FRAME_REGISTERS);
+                entry->register_count = 0;
+                for (uint32_t i = 0; i < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX; i++) {
+                    /* Extract each 3 bit register value (stopping if the end terminator is reached). */
+                    uint32_t reg = (regs >> (3 * i)) & 0x7;
+                    if (reg == UNWIND_X86_64_REG_NONE)
+                        break;
+                    
+                    /* Map to the correct PLCrashReporter register name */
+                    ret = plcrash_async_map_register_name(reg, &entry->register_list[i], cpu_type);
+                    if (ret != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to map register value of %" PRIx32, reg);
+                        return ret;
+                    }
+                    
+                    /* Update the register count */
+                    entry->register_count++;
+                }
+                
+                return PLCRASH_ESUCCESS;
+            }
+    
+            case UNWIND_X86_64_MODE_STACK_IMMD:
+            case UNWIND_X86_64_MODE_STACK_IND: {
+                /* These two types are identical except for the interpretation of the stack offset value */
+                if (mode == UNWIND_X86_64_MODE_STACK_IMMD)
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
+                else
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT;
+                
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * sizeof(uint64_t);
+                
+                /* Extract the register values */
+                entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
+                uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
+                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, entry->register_list);
+                
+                /* Map to the correct PLCrashReporter register names */
+                for (uint32_t i = 0; i < entry->register_count; i++) {
+                    ret = plcrash_async_map_register_name(entry->register_list[i], &entry->register_list[i], cpu_type);
+                    if (ret != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to map register value of %" PRIx32, entry->register_list[i]);
+                        return ret;
+                    }
+                }
+                
+                return PLCRASH_ESUCCESS;
+            }
+                
+            case UNWIND_X86_64_MODE_DWARF:
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF;
+                
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_DWARF_SECTION_OFFSET);
+                entry->register_count = 0;
+                
+                return PLCRASH_ESUCCESS;
+                
+            default:
+                PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
+                return PLCRASH_ENOTSUP;
+        }
+        
+        // Unreachable
         __builtin_trap();
         return PLCRASH_EINTERNAL;
     }
