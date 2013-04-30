@@ -59,6 +59,7 @@
         const char *name = plcrash_async_thread_state_get_reg_name(&ts, i);
         STAssertNotNULL(name, @"Register name for %d is NULL", i);
         STAssertNotEquals((size_t)0, strlen(name), @"Register name for %d is 0 length", i);
+        STAssertNotEquals((uint32_t)PLCRASH_REG_INVALID, (uint32_t)i, @"Register name is assigned to invalid pseudo-register");
     }
 }
 

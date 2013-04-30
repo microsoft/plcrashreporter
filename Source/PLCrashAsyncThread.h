@@ -84,9 +84,9 @@ typedef int plcrash_regnum_t;
 /**
  * General pseudo-registers common across platforms.
  *
- * Platform registers must be allocated starting at a 0
- * index, with no breaks. The following pseudo-register
- * values must be valid, and unused by other registers.
+ * Platform registers must be allocated starting at a 0 index, with no breaks. The following pseudo-register
+ * values must be assigned to the corresponding platform register values (or in the case of the invalid register,
+ * the constant value must be left unused).
  */
 typedef enum {
     /** Instruction pointer */
@@ -94,7 +94,13 @@ typedef enum {
     
     /** Frame pointer */
     PLCRASH_REG_FP = 1,
+    
+    /**
+     * Invalid register. This value must not be assigned to a platform register.
+     */
+    PLCRASH_REG_INVALID = UINT32_MAX
 } plcrash_gen_regnum_t;
+
 
 
 #import "PLCrashAsyncThread_x86.h"
