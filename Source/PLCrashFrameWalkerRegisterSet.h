@@ -29,9 +29,17 @@
 #ifndef PLCRASH_FRAMEWALKER_REGISTERSET_H
 #define PLCRASH_FRAMEWALKER_REGISTERSET_H
 
+/**
+ * @internal
+ * @ingroup plcrash_backtrace_private
+ * @{
+ */
+
+
 #include <stdint.h>
 #include "PLCrashAsyncThread.h"
 
+/** A register set */
 typedef uint32_t plframe_regset_t;
 
 void plframe_regset_set (plframe_regset_t *set, plcrash_regnum_t regnum);
@@ -39,5 +47,9 @@ void plframe_regset_set_all (plframe_regset_t *set);
 bool plframe_regset_isset (plframe_regset_t set, plcrash_regnum_t regnum);
 void plframe_regset_unset (plframe_regset_t *set, plcrash_regnum_t regnum);
 void plframe_regset_zero (plframe_regset_t *set);
+
+/**
+ * @}
+ */
 
 #endif /* PLCRASH_FRAMEWALKER_REGISTERSET_H */

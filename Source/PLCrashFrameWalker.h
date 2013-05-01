@@ -68,6 +68,14 @@
  */
 
 /**
+ * @internal
+ * @defgroup plcrash_backtrace_private Internal API
+ * @ingroup plframe_backtrace
+ *
+ * API private to the frame walker implementation.
+ */
+
+/**
  * Error return codes.
  */
 typedef enum  {

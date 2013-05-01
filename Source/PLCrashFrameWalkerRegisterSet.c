@@ -28,6 +28,11 @@
 
 #include "PLCrashFrameWalkerRegisterSet.h"
 
+/**
+ * @internal
+ * @ingroup plcrash_backtrace_private
+ * @{
+ */
 
 /**
  * Set @a regnum in @a set.
@@ -79,3 +84,7 @@ void plframe_regset_unset (plframe_regset_t *set, plcrash_regnum_t regnum) {
 void plframe_regset_zero (plframe_regset_t *set) {
     *set = 0;
 }
+
+/**
+ * @}
+ */
