@@ -144,7 +144,7 @@ typedef struct plcrash_async_cfe_entry {
      * and @sa plcrash_x86_64_regnum_t. Note that the list may be sparse; some entries may be set to a value of
      * PLCRASH_REG_INVALID.
      */
-    uint32_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    plcrash_regnum_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
 } plcrash_async_cfe_entry_t;
 
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype);
@@ -159,7 +159,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
 plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_entry_t *entry);
 intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry);
 uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry);
-void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, uint32_t register_list[]);
+void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, plcrash_regnum_t register_list[]);
 
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 

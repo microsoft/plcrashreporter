@@ -553,7 +553,7 @@ permutation -= (permunreg[pos]*factor); \
  * @param orig_reg Register name as decoded from a CFE entry.
  * @param cpu_type The CPU type that should be used when interpreting @a orig_reg;
  */
-static plcrash_error_t plcrash_async_map_register_name (uint32_t orig_reg, uint32_t *result, cpu_type_t cpu_type) {
+static plcrash_error_t plcrash_async_map_register_name (uint32_t orig_reg, plcrash_regnum_t *result, cpu_type_t cpu_type) {
     if (cpu_type == CPU_TYPE_X86) {
         switch (orig_reg) {
             case UNWIND_X86_REG_NONE:
@@ -689,11 +689,13 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
-                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, entry->register_list);
+                uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+                
+                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
                 
                 /* Map to the correct PLCrashReporter register names */
                 for (uint32_t i = 0; i < entry->register_count; i++) {
-                    ret = plcrash_async_map_register_name(entry->register_list[i], &entry->register_list[i], cpu_type);
+                    ret = plcrash_async_map_register_name(decoded_regs[i], &entry->register_list[i], cpu_type);
                     if (ret != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to map register value of %" PRIx32, entry->register_list[i]);
                         return ret;
@@ -769,11 +771,13 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
-                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, entry->register_list);
+                uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+
+                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
                 
                 /* Map to the correct PLCrashReporter register names */
                 for (uint32_t i = 0; i < entry->register_count; i++) {
-                    ret = plcrash_async_map_register_name(entry->register_list[i], &entry->register_list[i], cpu_type);
+                    ret = plcrash_async_map_register_name(decoded_regs[i], &entry->register_list[i], cpu_type);
                     if (ret != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to map register value of %" PRIx32, entry->register_list[i]);
                         return ret;
@@ -855,7 +859,7 @@ uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entr
  * @param register_list An array to which the registers will be copied. plcrash_async_cfe_register_count() may be used
  * to determine the number of registers to be copied.
  */
-void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, uint32_t *register_list) {
+void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, plcrash_regnum_t *register_list) {
     memcpy(register_list, entry->register_list, sizeof(entry->register_list[0]) * entry->register_count);
 }
 

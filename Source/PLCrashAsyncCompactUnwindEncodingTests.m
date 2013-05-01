@@ -233,7 +233,7 @@
 
     
     /* Extract the registers. Up to 5 may be encoded */
-    uint32_t expected_reg[] = {
+    plcrash_regnum_t expected_reg[] = {
         PLCRASH_X86_ESI,
         PLCRASH_X86_EDX,
         PLCRASH_REG_INVALID,
@@ -243,7 +243,7 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_count, (uint32_t) (sizeof(expected_reg) / sizeof(expected_reg[0])), @"Incorrect register count extracted");
     
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
     plcrash_async_cfe_entry_register_list(&entry, reg);
     for (uint32_t i = 0; i < reg_count; i++) {
         STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
@@ -279,12 +279,12 @@
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
 
     /* Extract the registers. Up to 5 may be encoded */
-    uint32_t expected_reg[] = {
+    plcrash_regnum_t expected_reg[] = {
         PLCRASH_X86_ESI,
         PLCRASH_X86_EDX,
         PLCRASH_X86_ECX
     };
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
 
     plcrash_async_cfe_entry_register_list(&entry, reg);
     for (uint32_t i = 0; i < 3; i++) {
@@ -335,11 +335,11 @@
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
 
     /* Verify the register decoding */
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
 
     plcrash_async_cfe_entry_register_list(&entry, reg);
     
-    const uint32_t expected_regs[] = { PLCRASH_X86_ESI, PLCRASH_X86_EDX, PLCRASH_X86_ECX };
+    const plcrash_regnum_t expected_regs[] = { PLCRASH_X86_ESI, PLCRASH_X86_EDX, PLCRASH_X86_ECX };
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
@@ -373,11 +373,11 @@
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
     /* Verify the register decoding */
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
     
     plcrash_async_cfe_entry_register_list(&entry, reg);
     
-    const uint32_t expected_regs[] = { PLCRASH_X86_ESI, PLCRASH_X86_EDX, PLCRASH_X86_ECX };
+    const plcrash_regnum_t expected_regs[] = { PLCRASH_X86_ESI, PLCRASH_X86_EDX, PLCRASH_X86_ECX };
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
@@ -419,7 +419,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     
     /* Extract the registers. Up to 5 may be encoded */
-    uint32_t expected_reg[] = {
+    plcrash_regnum_t expected_reg[] = {
         PLCRASH_X86_64_RBX,
         PLCRASH_X86_64_R12,
         PLCRASH_REG_INVALID,
@@ -429,7 +429,7 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_count, (uint32_t) (sizeof(expected_reg) / sizeof(expected_reg[0])), @"Incorrect register count extracted");
     
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
     plcrash_async_cfe_entry_register_list(&entry, reg);
     for (uint32_t i = 0; i < reg_count; i++) {
         STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
@@ -464,12 +464,12 @@
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
 
     /* Extract the registers. Up to 5 may be encoded */
-    uint32_t expected_reg[] = {
+    plcrash_regnum_t expected_reg[] = {
         PLCRASH_X86_64_R12,
         PLCRASH_X86_64_R13,
         PLCRASH_X86_64_R14
     };
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
     
     plcrash_async_cfe_entry_register_list(&entry, reg);
     for (uint32_t i = 0; i < 3; i++) {
@@ -505,11 +505,11 @@
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
     /* Verify the register decoding */
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
     
     plcrash_async_cfe_entry_register_list(&entry, reg);
     
-    const uint32_t expected_regs[] = { PLCRASH_X86_64_R12, PLCRASH_X86_64_R13, PLCRASH_X86_64_R14 };
+    const plcrash_regnum_t expected_regs[] = { PLCRASH_X86_64_R12, PLCRASH_X86_64_R13, PLCRASH_X86_64_R14 };
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
@@ -543,11 +543,11 @@
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
     /* Verify the register decoding */
-    uint32_t reg[reg_count];
+    plcrash_regnum_t reg[reg_count];
     
     plcrash_async_cfe_entry_register_list(&entry, reg);
     
-    const uint32_t expected_regs[] = { PLCRASH_X86_64_R12, PLCRASH_X86_64_R13, PLCRASH_X86_64_R14 };
+    const plcrash_regnum_t expected_regs[] = { PLCRASH_X86_64_R12, PLCRASH_X86_64_R13, PLCRASH_X86_64_R14 };
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
