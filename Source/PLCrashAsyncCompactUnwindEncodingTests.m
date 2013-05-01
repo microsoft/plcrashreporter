@@ -216,6 +216,43 @@
 #define INSERT_BITS(bits, mask) ((bits << __builtin_ctz(mask)) & mask)
 
 /**
+ * Test handling of sparse register lists. These are only supported for the frame encodings; the 10-bit packed
+ * encoding format does not support sparse lists.
+ *
+ * It's unclear as to whether these actually ever occur in the wild.
+ */
+- (void) testX86SparseRegisterDecoding {
+    plcrash_async_cfe_entry_t entry;
+
+    /* x86 handling */
+    const uint32_t encoded_regs = UNWIND_X86_REG_ESI | (UNWIND_X86_REG_EDX << 3) | (UNWIND_X86_REG_ECX << 9);
+    uint32_t encoding = UNWIND_X86_MODE_EBP_FRAME | INSERT_BITS(encoded_regs, UNWIND_X86_EBP_FRAME_REGISTERS);
+    
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+
+    
+    /* Extract the registers. Up to 5 may be encoded */
+    uint32_t expected_reg[] = {
+        PLCRASH_X86_ESI,
+        PLCRASH_X86_EDX,
+        PLCRASH_REG_INVALID,
+        PLCRASH_X86_ECX
+    };
+    
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    STAssertEquals(reg_count, (uint32_t) (sizeof(expected_reg) / sizeof(expected_reg[0])), @"Incorrect register count extracted");
+    
+    uint32_t reg[reg_count];
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    for (uint32_t i = 0; i < reg_count; i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
  * Decode an x86 EBP frame encoding.
  */
 - (void) testX86DecodeFrame {
@@ -363,6 +400,42 @@
     
     uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);    
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
+}
+
+/**
+ * Test handling of sparse register lists. These are only supported for the frame encodings; the 10-bit packed
+ * encoding format does not support sparse lists.
+ *
+ * It's unclear as to whether these actually ever occur in the wild.
+ */
+- (void) testX86_64SparseRegisterDecoding {
+    plcrash_async_cfe_entry_t entry;
+    
+    /* x86 handling */
+    const uint32_t encoded_regs = UNWIND_X86_64_REG_RBX | (UNWIND_X86_64_REG_R12 << 3) | (UNWIND_X86_64_REG_R13 << 9);
+    uint32_t encoding = UNWIND_X86_64_MODE_RBP_FRAME | INSERT_BITS(encoded_regs, UNWIND_X86_64_RBP_FRAME_REGISTERS);
+    
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    
+    /* Extract the registers. Up to 5 may be encoded */
+    uint32_t expected_reg[] = {
+        PLCRASH_X86_64_RBX,
+        PLCRASH_X86_64_R12,
+        PLCRASH_REG_INVALID,
+        PLCRASH_X86_64_R13
+    };
+    
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    STAssertEquals(reg_count, (uint32_t) (sizeof(expected_reg) / sizeof(expected_reg[0])), @"Incorrect register count extracted");
+    
+    uint32_t reg[reg_count];
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    for (uint32_t i = 0; i < reg_count; i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**

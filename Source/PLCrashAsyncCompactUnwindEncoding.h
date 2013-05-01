@@ -139,9 +139,10 @@ typedef struct plcrash_async_cfe_entry {
     uint32_t register_count;
 
     /**
-     * The list of register_count non-volatile registers that must be restored from the stack. These values are
+     * The ordered list of register_count non-volatile registers that must be restored from the stack. These values are
      * specific to the target platform, and are defined in the @a plcrash_async_thread API. @sa plcrash_x86_regnum_t
-     * and @sa plcrash_x86_64_regnum_t.
+     * and @sa plcrash_x86_64_regnum_t. Note that the list may be sparse; some entries may be set to a value of
+     * PLCRASH_REG_INVALID.
      */
     uint32_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
 } plcrash_async_cfe_entry_t;

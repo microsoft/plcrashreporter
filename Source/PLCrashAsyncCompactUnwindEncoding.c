@@ -556,6 +556,10 @@ permutation -= (permunreg[pos]*factor); \
 static plcrash_error_t plcrash_async_map_register_name (uint32_t orig_reg, uint32_t *result, cpu_type_t cpu_type) {
     if (cpu_type == CPU_TYPE_X86) {
         switch (orig_reg) {
+            case UNWIND_X86_REG_NONE:
+                *result = PLCRASH_REG_INVALID;
+                return PLCRASH_ESUCCESS;
+    
             case UNWIND_X86_REG_EBX:
                 *result = PLCRASH_X86_EBX;
                 return PLCRASH_ESUCCESS;
@@ -585,6 +589,10 @@ static plcrash_error_t plcrash_async_map_register_name (uint32_t orig_reg, uint3
         }
     } else if (cpu_type == CPU_TYPE_X86_64) {
         switch (orig_reg) {
+            case UNWIND_X86_64_REG_NONE:
+                *result = PLCRASH_REG_INVALID;
+                return PLCRASH_ESUCCESS;
+    
             case UNWIND_X86_64_REG_RBX:
                 *result = PLCRASH_X86_64_RBX;
                 return PLCRASH_ESUCCESS;
@@ -621,6 +629,10 @@ static plcrash_error_t plcrash_async_map_register_name (uint32_t orig_reg, uint3
  * @param cpu_type The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
  * architecture-specific, and Apple has not defined encodings for all supported architectures.
  * @param encoding The CFE entry data, in the hosts' native byte order.
+ *
+ * @internal
+ * This code supports sparse register lists for the EBP_FRAME and RBP_FRAME modes. It's unclear as to whether these
+ * actually ever occur in the wild, but they are supported by Apple's unwinddump tool.
  */
 plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, cpu_type_t cpu_type, uint32_t encoding) {
     plcrash_error_t ret;
@@ -638,21 +650,18 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 /* Extract the register frame offset */
                 entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_OFFSET) * sizeof(uint32_t);
 
-                /*
-                 * Extract the register values. They're stored as a list of 3 bit values, where a value of
-                 * UNWIND_X86_REG_NONE signals termination of the list.
-                 *
-                 * TODO: Can the CFE register list be encoded sparsely?
-                 */
+                /* Extract the register values. They're stored as a bitfield of of 3 bit values. We support
+                 * sparse entries, but terminate the loop if no further entries remain. */
                 uint32_t regs = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_REGISTERS);
                 entry->register_count = 0;
                 for (uint32_t i = 0; i < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX; i++) {
-                    /* Extract each 3 bit register value (stopping if the end terminator is reached). */
-                    uint32_t reg = (regs >> (3 * i)) & 0x7;
-                    if (reg == UNWIND_X86_REG_NONE)
+                    /* Check for completion */
+                    uint32_t remaining = regs >> (3 * i);
+                    if (remaining == 0)
                         break;
 
                     /* Map to the correct PLCrashReporter register name */
+                    uint32_t reg = remaining & 0x7;
                     ret = plcrash_async_map_register_name(reg, &entry->register_list[i], cpu_type);
                     if (ret != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to map register value of %" PRIx32, reg);
@@ -721,21 +730,18 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 /* Extract the register frame offset */
                 entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_RBP_FRAME_OFFSET) * sizeof(uint64_t);
 
-                /*
-                 * Extract the register values. They're stored as a list of 3 bit values, where a value of
-                 * UNWIND_X86_64_REG_NONE signals termination of the list.
-                 *
-                 * TODO: Can the CFE register list be encoded sparsely?
-                 */
+                /* Extract the register values. They're stored as a bitfield of of 3 bit values. We support
+                 * sparse entries, but terminate the loop if no further entries remain. */
                 uint32_t regs = EXTRACT_BITS(encoding, UNWIND_X86_64_RBP_FRAME_REGISTERS);
                 entry->register_count = 0;
                 for (uint32_t i = 0; i < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX; i++) {
-                    /* Extract each 3 bit register value (stopping if the end terminator is reached). */
-                    uint32_t reg = (regs >> (3 * i)) & 0x7;
-                    if (reg == UNWIND_X86_64_REG_NONE)
+                    /* Check for completion */
+                    uint32_t remaining = regs >> (3 * i);
+                    if (remaining == 0)
                         break;
                     
                     /* Map to the correct PLCrashReporter register name */
+                    uint32_t reg = remaining & 0x7;
                     ret = plcrash_async_map_register_name(reg, &entry->register_list[i], cpu_type);
                     if (ret != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to map register value of %" PRIx32, reg);
@@ -839,9 +845,11 @@ uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entr
 }
 
 /**
- * Copy the list of non-volatile registers that must be restored from the stack to @a register_list. These values are
- * specific to the target platform, and are defined in the @a plcrash_async_thread API. @sa plcrash_x86_regnum_t
- * and @sa plcrash_x86_64_regnum_t.
+ * Copy the ordered list of non-volatile registers that must be restored from the stack to @a register_list. These
+ * values are specific to the target platform, and are defined in the @a plcrash_async_thread API.
+ * @sa plcrash_x86_regnum_t and @sa plcrash_x86_64_regnum_t.
+ *
+ * Note that the list may be sparse; some entries may be set to a value of PLCRASH_REG_INVALID.
  *
  * @param entry The entry from which the register list should be copied.
  * @param register_list An array to which the registers will be copied. plcrash_async_cfe_register_count() may be used
