@@ -290,6 +290,8 @@
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 - (void) verifyFramelessRegDecode: (uint32_t) permutedRegisters
@@ -343,6 +345,8 @@
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
@@ -381,6 +385,8 @@
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
@@ -400,6 +406,8 @@
     
     uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);    
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
@@ -475,6 +483,8 @@
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
@@ -513,6 +523,8 @@
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
@@ -551,6 +563,8 @@
     for (uint32_t i = 0; i < 3; i++) {
         STAssertEquals(reg[i], expected_regs[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
@@ -570,6 +584,8 @@
     
     uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);    
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
+    
+    plcrash_async_cfe_entry_free(&entry);
 }
 
 /**
