@@ -90,7 +90,7 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
     state_count = ARM_THREAD_STATE_COUNT;
     kr = thread_get_state(thread, ARM_THREAD_STATE, (thread_state_t) &thread_state->arm_state.thread, &state_count);
     if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Fetch of x86 thread state failed with Mach error: %d", kr);
+        PLCF_DEBUG("Fetch of ARM thread state failed with Mach error: %d", kr);
         return PLCRASH_EINTERNAL;
     }
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT)
