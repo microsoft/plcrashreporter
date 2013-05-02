@@ -44,13 +44,22 @@
  * @param uap The context to use for cursor initialization.
  */
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap) {
-    /* Copy in the ucontext's thread state */
+    /*
+     * Copy in the ucontext's thread state. Unlike the mach thread variants, ucontext_t may only represent
+     * the thread state of the host process, and we may assume that the compilation target matches the ucontext_t
+     * thread type.
+     */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
-    /* Sanity check. This should never be false */
+    /* Sanity check. */
     PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->arm_state.thread));
+
     plcrash_async_memcpy(&thread_state->arm_state.thread, &uap->uc_mcontext->__ss, sizeof(thread_state->arm_state.thread));
     
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT) && defined(__LP64__)
+    /* Sanity check. */
+    PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->x86_state.thread.uts.ts64));
+    PLCF_ASSERT(sizeof(uap->uc_mcontext->__es) == sizeof(thread_state->x86_state.exception.ues.es64));
+
     thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE64_COUNT;
     thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE64;
     plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts64, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts64));
@@ -60,6 +69,10 @@ void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thr
     plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es64, &uap->uc_mcontext->__es, sizeof(thread_state->x86_state.exception.ues.es64));
 
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT)
+    /* Sanity check. */
+    PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->x86_state.thread.uts.ts32));
+    PLCF_ASSERT(sizeof(uap->uc_mcontext->__es) == sizeof(thread_state->x86_state.exception.ues.es32));
+
     thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE32_COUNT;
     thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE32;
     plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts32, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts32));
