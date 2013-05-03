@@ -53,29 +53,46 @@
 #endif
 
 /**
- * Target-neutral thread-state union.
- *
- * Thread state union large enough to hold the thread state for any supported
- * architecture.
+ * Stack growth direction.
  */
-typedef union plcrash_async_thread_state {
-#ifdef PLCRASH_ASYNC_THREAD_ARM_SUPPORT
-    struct {
-        /** ARM thread state */
-        arm_thread_state_t thread;
-    } arm_state;
-#endif
+typedef enum {
+    /** The stack grows upwards on this platform. */
+    PLCRASH_ASYNC_THREAD_STACK_DIRECTION_UP = 1,
     
-#ifdef PLCRASH_ASYNC_THREAD_X86_SUPPORT
-    /** Combined x86 32/64 thread state */
-    struct {
-        /** Thread state */
-        x86_thread_state_t thread;
+    /** The stack grows downwards on this platform. */
+    PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN = 2
+} plcrash_async_thread_stack_direction_t;
+
+/**
+ * Target-neutral thread-state.
+ */
+typedef struct plcrash_async_thread_state {
+    /** Stack growth direction */
+    plcrash_async_thread_stack_direction_t stack_direction;
+    
+    /** General purpose register size, in bytes */
+    size_t greg_size;
+
+    /* Union used to hold thread state for any supported architecture */
+    union {
+    #ifdef PLCRASH_ASYNC_THREAD_ARM_SUPPORT
+        struct {
+            /** ARM thread state */
+            arm_thread_state_t thread;
+        } arm_state;
+    #endif
         
-        /** Exception state. */
-        x86_exception_state_t exception;
-    } x86_state;
-#endif
+    #ifdef PLCRASH_ASYNC_THREAD_X86_SUPPORT
+        /** Combined x86 32/64 thread state */
+        struct {
+            /** Thread state */
+            x86_thread_state_t thread;
+            
+            /** Exception state. */
+            x86_exception_state_t exception;
+        } x86_state;
+    #endif
+    };
 } plcrash_async_thread_state_t;
 
 /** Register number type */
@@ -101,8 +118,6 @@ typedef enum {
     PLCRASH_REG_INVALID = UINT32_MAX
 } plcrash_gen_regnum_t;
 
-
-
 #import "PLCrashAsyncThread_x86.h"
 #import "PLCrashAsyncThread_arm.h"
 
@@ -113,6 +128,9 @@ typedef plcrash_pdef_greg_t plcrash_greg_t;
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
+plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (plcrash_async_thread_state_t *thread_state);
+size_t plcrash_async_thread_state_get_greg_size (plcrash_async_thread_state_t *thread_state);
+
 
 /* Platform specific funtions */
 
@@ -122,9 +140,9 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
 char const *plcrash_async_thread_state_get_reg_name (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
 
 /**
- * Get the total number of registers supported by the @a cursor's target thread.
+ * Get the total number of registers supported by @a thread_state.
  *
- * @param cursor The target cursor.
+ * @param thread_state The target thread state.
  */
 size_t plcrash_async_thread_state_get_reg_count (plcrash_async_thread_state_t *thread_state);
 

@@ -123,7 +123,7 @@
 
     /* Fetch the thread state */
     STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thr_state, thr), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
-    
+
     /* Test the results */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     arm_thread_state_t local_thr_state;
@@ -165,6 +165,20 @@
 #error Add platform support
 #endif
     
+    /* Verify the platform metadata */
+#ifdef __LP64__
+    STAssertEquals(plcrash_async_thread_state_get_greg_size(&thr_state), (size_t)8, @"Incorrect greg size");
+#else
+    STAssertEquals(plcrash_async_thread_state_get_greg_size(&thr_state), (size_t)4, @"Incorrect greg size");
+#endif
+
+#if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
+    // This is true on just about every modern platform
+    STAssertEquals(plcrash_async_thread_state_get_stack_direction(&thr_state), PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN, @"Incorrect stack growth direction");
+#else
+#error Add platform support!
+#endif
+
     /* Clean up */
     thread_resume(thr);
 }

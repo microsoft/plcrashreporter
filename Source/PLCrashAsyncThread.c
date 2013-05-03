@@ -106,6 +106,10 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
         PLCF_DEBUG("Fetch of ARM thread state failed with Mach error: %d", kr);
         return PLCRASH_EINTERNAL;
     }
+    
+    /* Platform meta-data */
+    thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+    thread_state->greg_size = 4;
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT)
     /* Fetch the thread state */
     state_count = x86_THREAD_STATE_COUNT;
@@ -122,11 +126,39 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
         PLCF_DEBUG("Fetch of x86 exception state failed with Mach error: %d", kr);
         return PLCRASH_EINTERNAL;
     }
+    
+    /* Platform meta-data */
+    thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+    if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE64) {
+        thread_state->greg_size = 8;
+    } else {
+        thread_state->greg_size = 4;
+    }
+
 #else
 #error Add platform support
 #endif
     
     return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Return the direction used for stack growth by @a thread_state.
+ *
+ * @param thread_state The target thread state.
+ */
+plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (plcrash_async_thread_state_t *thread_state) {
+    return thread_state->stack_direction;
+}
+
+/**
+ * Return the size (in bytes) of @a thread_state's general purpose registers. This value will be used to determine the
+ * size of general purpose registers pushed/popped from the target thread's stack.
+ *
+ * @param thread_state The target thread state.
+ */
+size_t plcrash_async_thread_state_get_greg_size (plcrash_async_thread_state_t *thread_state) {
+    return thread_state->greg_size;
 }
 
 /**
