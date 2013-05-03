@@ -199,25 +199,6 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, &frame)) != PLCRASH_ESUCCESS)
         return ferr;
 
-    /* Check for completion */
-    if (!plframe_regset_isset(cursor->frame.valid_registers, PLCRASH_REG_FP) ||
-        plcrash_async_thread_state_get_reg(&cursor->frame.thread_state, PLCRASH_REG_FP) == 0x0)
-    {
-        return PLFRAME_ENOFRAME;
-    }
-    
-    /* Is the stack growing in the right direction? */
-    plcrash_async_thread_stack_direction_t stack_direction = plcrash_async_thread_state_get_stack_direction(&cursor->frame.thread_state);
-    plcrash_greg_t prev_fp = plcrash_async_thread_state_get_reg(&cursor->frame.thread_state, PLCRASH_REG_FP);
-    plcrash_greg_t fp = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_FP);
-
-    if ((stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN && fp > prev_fp) ||
-        (stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_UP && fp < prev_fp))
-    {
-        PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
-        return PLFRAME_EBADFRAME;
-    }
-
     /* Save the newly fetched frame */
     cursor->prev_frame = cursor->frame;
     cursor->frame = frame;
