@@ -292,11 +292,11 @@
     /* Validate the 'crashed' flag is on a thread with the expected PC. */
     uint64_t expectedPC;
 #if __x86_64__
-    expectedPC = cursor.thread_state.x86_state.thread.uts.ts64.__rip;
+    expectedPC = cursor.frame.thread_state.x86_state.thread.uts.ts64.__rip;
 #elif __i386__
-    expectedPC = cursor.thread_state.x86_state.thread.uts.ts32.__eip;
+    expectedPC = cursor.frame.thread_state.x86_state.thread.uts.ts32.__eip;
 #elif __arm__
-    expectedPC = cursor.thread_state.arm_state.thread.__pc;
+    expectedPC = cursor.frame.thread_state.arm_state.thread.__pc;
 #else
 #error Unsupported Platform
 #endif

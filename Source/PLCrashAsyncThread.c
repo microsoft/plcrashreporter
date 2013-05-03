@@ -147,7 +147,7 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
  *
  * @param thread_state The target thread state.
  */
-plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (plcrash_async_thread_state_t *thread_state) {
+plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (const plcrash_async_thread_state_t *thread_state) {
     return thread_state->stack_direction;
 }
 
@@ -157,7 +157,7 @@ plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_dire
  *
  * @param thread_state The target thread state.
  */
-size_t plcrash_async_thread_state_get_greg_size (plcrash_async_thread_state_t *thread_state) {
+size_t plcrash_async_thread_state_get_greg_size (const plcrash_async_thread_state_t *thread_state) {
     return thread_state->greg_size;
 }
 

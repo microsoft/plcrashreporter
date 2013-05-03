@@ -128,8 +128,10 @@ static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task)
  */
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state) {
     plframe_cursor_internal_init(cursor, task);
-    plcrash_async_memcpy(&cursor->thread_state, thread_state, sizeof(cursor->thread_state));
-    
+
+    plcrash_async_memcpy(&cursor->frame.thread_state, thread_state, sizeof(cursor->frame.thread_state));
+    plframe_regset_set_all(&cursor->frame.valid_registers);
+
     return PLFRAME_ESUCCESS;
 }
 
@@ -149,7 +151,8 @@ plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t tas
     /* Standard initialization */
     plframe_cursor_internal_init(cursor, task);
 
-    plcrash_async_thread_state_ucontext_init(&cursor->thread_state, uap);
+    plcrash_async_thread_state_ucontext_init(&cursor->frame.thread_state, uap);
+    plframe_regset_set_all(&cursor->frame.valid_registers);
 
     return PLFRAME_ESUCCESS;
 }
@@ -171,7 +174,8 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t tas
     /* Standard initialization */
     plframe_cursor_internal_init(cursor, task);
 
-    return plcrash_async_thread_state_mach_thread_init(&cursor->thread_state, thread);
+    plframe_regset_set_all(&cursor->frame.valid_registers);
+    return plcrash_async_thread_state_mach_thread_init(&cursor->frame.thread_state, thread);
 }
 
 
@@ -182,7 +186,81 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t tas
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
  */
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
-    return plframe_cursor_next_fp(cursor);
+    /* The first frame is already available via existing thread state. */
+    if (cursor->depth == 0) {
+        cursor->depth++;
+        return PLFRAME_ESUCCESS;
+    }
+
+    /* Read in the next frame. */
+    plframe_stackframe_t frame;
+    plframe_error_t ferr;
+    
+    if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, &frame)) != PLCRASH_ESUCCESS)
+        return ferr;
+
+    /* Check for completion */
+    if (!plframe_regset_isset(cursor->frame.valid_registers, PLCRASH_REG_FP) ||
+        plcrash_async_thread_state_get_reg(&cursor->frame.thread_state, PLCRASH_REG_FP) == 0x0)
+    {
+        return PLFRAME_ENOFRAME;
+    }
+    
+    /* Is the stack growing in the right direction? */
+    plcrash_async_thread_stack_direction_t stack_direction = plcrash_async_thread_state_get_stack_direction(&cursor->frame.thread_state);
+    plcrash_greg_t prev_fp = plcrash_async_thread_state_get_reg(&cursor->frame.thread_state, PLCRASH_REG_FP);
+    plcrash_greg_t fp = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_FP);
+
+    if ((stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN && fp > prev_fp) ||
+        (stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_UP && fp < prev_fp))
+    {
+        PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
+        return PLFRAME_EBADFRAME;
+    }
+
+    /* Save the newly fetched frame */
+    cursor->prev_frame = cursor->frame;
+    cursor->frame = frame;
+    cursor->depth++;
+    
+    return PLFRAME_ESUCCESS;
+}
+
+
+/**
+ * Get a register value. Returns PLFRAME_ENOTSUP if the given register is unavailable within the current frame.
+ *
+ * @param cursor A cursor instance representing a valid frame, as initialized by plframe_cursor_next().
+ * @param regnum The register to fetch from the current frame's state.
+ * @param reg On success, will be set to the register's value.
+ */
+plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
+    /* Verify that the register is available */
+    if (!plframe_regset_isset(cursor->frame.valid_registers, regnum))
+        return PLFRAME_ENOTSUP;
+
+    /* Fetch from thread state */
+    *reg = plcrash_async_thread_state_get_reg(&cursor->frame.thread_state, regnum);
+    return PLFRAME_ESUCCESS;
+}
+
+/**
+ * Get a register's name.
+ *
+ * @param cursor A cursor instance initialized with plframe_cursor_init();
+ * @param regnum The register number for which a name should be returned.
+ */
+char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plcrash_regnum_t regnum) {
+    return plcrash_async_thread_state_get_reg_name(&cursor->frame.thread_state, regnum);
+}
+
+/**
+ * Get the total number of registers supported by the @a cursor's target thread.
+ *
+ * @param cursor The target cursor.
+ */
+size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor) {
+    return plcrash_async_thread_state_get_reg_count(&cursor->frame.thread_state);
 }
 
 /**

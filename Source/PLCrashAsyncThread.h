@@ -128,8 +128,8 @@ typedef plcrash_pdef_greg_t plcrash_greg_t;
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
-plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (plcrash_async_thread_state_t *thread_state);
-size_t plcrash_async_thread_state_get_greg_size (plcrash_async_thread_state_t *thread_state);
+plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (const plcrash_async_thread_state_t *thread_state);
+size_t plcrash_async_thread_state_get_greg_size (const plcrash_async_thread_state_t *thread_state);
 
 
 /* Platform specific funtions */
@@ -137,19 +137,19 @@ size_t plcrash_async_thread_state_get_greg_size (plcrash_async_thread_state_t *t
 /**
  * Get a register's name.
  */
-char const *plcrash_async_thread_state_get_reg_name (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
+char const *plcrash_async_thread_state_get_reg_name (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
 
 /**
  * Get the total number of registers supported by @a thread_state.
  *
  * @param thread_state The target thread state.
  */
-size_t plcrash_async_thread_state_get_reg_count (plcrash_async_thread_state_t *thread_state);
+size_t plcrash_async_thread_state_get_reg_count (const plcrash_async_thread_state_t *thread_state);
 
 /**
  * Get a register value.
  */
-plcrash_greg_t plcrash_async_thread_state_get_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
+plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
 
 /**
  * Set a register value.

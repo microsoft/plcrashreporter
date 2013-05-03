@@ -38,7 +38,8 @@
 
 #import <mach/mach.h>
 
-#include "PLCrashASyncThread.h"
+#include "PLCrashAsyncThread.h"
+#include "PLCrashFrameWalkerRegisterSet.h"
 
 /* Configure supported targets based on the host build architecture. There's currently
  * no deployed architecture on which simultaneous support for different processor families
@@ -104,24 +105,13 @@ typedef enum  {
     PLFRAME_EBADREG
 } plframe_error_t;
 
-#import "PLCrashFrameWalker_x86.h"
-#import "PLCrashFrameWalker_arm.h"
-
-/* Supported stack direction constants. When testing PLFRAME_STACK_DIRECTION, implementors should
- * trigger an #error on unknown constants, as to make adding of new stack direction types simpler */
-#define PLFRAME_STACK_DIRECTION_DOWN 1
-#define PLFRAME_STACK_DIRECTION_UP 2
-
-/* Platform-specific stack direction */
-#define PLFRAME_STACK_DIRECTION PLFRAME_PDEF_STACK_DIRECTION
-
 /** The current stack frame data */
 typedef struct plframe_stackframe {
-    /** The frame pointer for this frame. */
-    plcrash_greg_t fp;
+    /** Thread state */
+    plcrash_async_thread_state_t thread_state;
     
-    /** The PC for this frame. */
-    plcrash_greg_t pc;
+    /** Registers available from thread_state. */
+    plframe_regset_t valid_registers;
 } plframe_stackframe_t;
 
 /**
@@ -131,9 +121,6 @@ typedef struct plframe_stackframe {
 typedef struct plframe_cursor {
     /** The task in which the thread stack resides */
     task_t task;
-
-    /** Thread state */
-    plcrash_async_thread_state_t thread_state;
     
     /** The current frame depth. If the depth is 0, the cursor has not been stepped, and the remainder of this
      * structure should be considered uninitialized. */
@@ -154,36 +141,13 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcr
 plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
 
+char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plcrash_regnum_t regnum);
+size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor);
+plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
+
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor);
 
 void plframe_cursor_free(plframe_cursor_t *cursor);
-
-/* Platform specific funtions */
-
-/**
- * Using the cursor's currently configured stackframe, read the next stack frame.
- *
- * @param cursor The cursor from which the frame should be read.
- * @param frame The destination frame instance.
- */
-plframe_error_t plframe_cursor_read_stackframe (plframe_cursor_t *cursor, plframe_stackframe_t *frame);
-
-/**
- * Get a register's name.
- */
-char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plcrash_regnum_t regnum);
-
-/**
- * Get the total number of registers supported by the @a cursor's target thread.
- *
- * @param cursor The target cursor.
- */
-size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor);
-
-/**
- * Get a register value.
- */
-plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
 
 /**
  * @} plcrash_framewalker

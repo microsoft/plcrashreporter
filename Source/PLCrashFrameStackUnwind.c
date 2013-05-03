@@ -30,50 +30,63 @@
 #include "PLCrashAsync.h"
 
 /**
- * Fetch the next frame.
+ * Fetch the next frame, assuming a valid frame pointer in @a cursor's current frame.
  *
  * @param cursor A cursor instance initialized with plframe_cursor_init();
- * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ * @param frame The new frame to be initialized.
  *
- * @todo The stack direction and interpretation of the frame data should be moved to the central platform configuration.
+ * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
  */
-plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor) {
-    if (cursor->depth == 0) {
-        /* The first frame is already available via the thread state. */
-        cursor->frame.fp = plcrash_async_thread_state_get_reg(&cursor->thread_state, PLCRASH_REG_FP);
-        cursor->frame.pc = plcrash_async_thread_state_get_reg(&cursor->thread_state, PLCRASH_REG_IP);
-        cursor->depth++;
+plframe_error_t plframe_cursor_read_frame_ptr (task_t task, const plframe_stackframe_t *current_frame, plframe_stackframe_t *next_frame) {
+    /* Determine the appropriate type width for the target thread */
+    union {
+        uint64_t greg64[2];
+        uint32_t greg32[2];
+    } regs;
+    void *dest;
+    size_t len;
 
-        return PLFRAME_ESUCCESS;
-    } else if (cursor->depth > 1) {
-        /* Is the stack growing in the right direction? */
-#if PLFRAME_STACK_DIRECTION == PLFRAME_STACK_DIRECTION_DOWN
-        if (cursor->frame.fp < cursor->prev_frame.fp) {
-#elif PLFRAME_STACK_DIRECTION == PLFRAME_STACK_DIRECTION_UP
-        if (cursor->frame.fp > cursor->prev_frame.fp) {
-#else
-#error Add support for unknown stack direction value
-#endif
-            PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
-            return PLFRAME_EBADFRAME;
-        }
+    bool x64 = plcrash_async_thread_state_get_greg_size(&current_frame->thread_state) == sizeof(uint64_t);
+    if (x64) {
+        dest = regs.greg64;
+        len = sizeof(regs.greg64);
+    } else {
+        dest = regs.greg32;
+        len = sizeof(regs.greg32);
     }
+    
+    /* Fetch and verify the current frame pointer. A frame pointer of 0 is a known missing frame. */
+    plcrash_greg_t fp;
 
-    /* Read in the next frame. */
-    plframe_stackframe_t frame;
-    plframe_error_t ferr;
-
-    if ((ferr = plframe_cursor_read_stackframe(cursor, &frame)) != PLFRAME_ESUCCESS)
-        return ferr;
-
-    /* Check for completion */
-    if (frame.fp == 0x0)
+    if (!plframe_regset_isset(current_frame->valid_registers, PLCRASH_REG_FP))
         return PLFRAME_ENOFRAME;
 
-    /* Save the newly fetched frame */
-    cursor->prev_frame = cursor->frame;
-    cursor->frame = frame;
-    cursor->depth++;
+    fp = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_FP);
+    if (fp == 0x0)
+        return PLFRAME_ENOFRAME;
+
+
+    /* Read the registers off the stack */
+    kern_return_t kr;
+    kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, len);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to read frame: %d", kr);
+        return PLFRAME_EBADFRAME;
+    }
+    
+    /* Initialize the new frame, deriving state from the previous frame. */
+    *next_frame = *current_frame;
+    plframe_regset_zero(&next_frame->valid_registers);
+    plframe_regset_set(&next_frame->valid_registers, PLCRASH_REG_FP);
+    plframe_regset_set(&next_frame->valid_registers, PLCRASH_REG_IP);
+
+    if (x64) {
+        plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_FP, regs.greg64[0]);
+        plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_IP, regs.greg64[1]);
+    } else {
+        plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_FP, regs.greg32[0]);
+        plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_IP, regs.greg32[1]);
+    }
 
     return PLFRAME_ESUCCESS;
 }

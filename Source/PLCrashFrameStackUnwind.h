@@ -31,6 +31,6 @@
 
 #include "PLCrashFrameWalker.h"
 
-plframe_error_t plframe_cursor_next_fp (plframe_cursor_t *cursor);
+plframe_error_t plframe_cursor_read_frame_ptr (task_t task, const plframe_stackframe_t *current_frame, plframe_stackframe_t *next_frame);
 
 #endif /* PLCRASH_FRAME_STACKUNWIND_H */
