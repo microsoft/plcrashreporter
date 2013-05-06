@@ -378,7 +378,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol %s", dli.dli_sname);
 
     /* Compare the results */
-    STAssertEqualCStrings((pl_vm_address_t) localIMP, pc, @"Returned incorrect symbol address");
+    STAssertEquals((pl_vm_address_t) localIMP, pc, @"Returned incorrect symbol address");
 }
 
 @end
