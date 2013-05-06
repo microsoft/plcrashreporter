@@ -273,7 +273,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
 
-    uint32 reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, encoded_reg_ebp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
@@ -466,7 +466,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    uint32 reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, encoded_reg_rbp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
