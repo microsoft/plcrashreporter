@@ -112,6 +112,9 @@ typedef enum {
     /** Frame pointer */
     PLCRASH_REG_FP = 1,
     
+    /** Stack pointer */
+    PLCRASH_REG_SP = 2,
+
     /**
      * Invalid register. This value must not be assigned to a platform register.
      */

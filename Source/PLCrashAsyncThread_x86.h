@@ -51,7 +51,10 @@ typedef enum {
     
     /** Stack frame pointer */
     PLCRASH_X86_EBP = PLCRASH_REG_FP,
-    
+
+    /** Stack pointer */
+    PLCRASH_X86_ESP = PLCRASH_REG_SP,
+
     /** Return value */
     PLCRASH_X86_EAX ,
     
@@ -68,11 +71,7 @@ typedef enum {
     PLCRASH_X86_ESI,
     
     /** Local register variable */
-    PLCRASH_X86_EDI,
-    
-    /** Stack pointer */
-    PLCRASH_X86_ESP,
-    
+    PLCRASH_X86_EDI,    
     
     /** Flags */
     PLCRASH_X86_EFLAGS,
@@ -117,7 +116,10 @@ typedef enum {
     
     /** Optional stack frame pointer. */
     PLCRASH_X86_64_RBP = PLCRASH_REG_FP,
-    
+
+    /** Stack pointer. */
+    PLCRASH_X86_64_RSP = PLCRASH_REG_SP,
+
     /** First return register. */
     PLCRASH_X86_64_RAX,
     
@@ -135,9 +137,6 @@ typedef enum {
     
     /** Second function argument. */
     PLCRASH_X86_64_RSI,
-    
-    /** Stack pointer. */
-    PLCRASH_X86_64_RSP,
     
     /** Temporary register. */
     PLCRASH_X86_64_R10,

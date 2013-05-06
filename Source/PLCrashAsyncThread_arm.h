@@ -52,6 +52,9 @@ typedef enum {
     /** Frame pointer */
     PLCRASH_ARM_R7 = PLCRASH_REG_FP,
     
+    /* stack pointer (r13) */
+    PLCRASH_ARM_SP = PLCRASH_REG_SP,
+
     PLCRASH_ARM_R0,
     PLCRASH_ARM_R1,
     PLCRASH_ARM_R2,
@@ -65,9 +68,6 @@ typedef enum {
     PLCRASH_ARM_R10,
     PLCRASH_ARM_R11,
     PLCRASH_ARM_R12,
-    
-    /* stack pointer (r13) */
-    PLCRASH_ARM_SP,
     
     /* link register (r14) */
     PLCRASH_ARM_LR,
