@@ -69,11 +69,17 @@ struct stack_frame {
     
     /* Try walking the stack */
     plframe_stackframe_t new_frame;
+    plframe_stackframe_t prev_frame;
     plframe_stackframe_t frame = cursor.frame;
     for (int i = 0; i < frame_count; i++) {
         if (i > 0) {
+            plframe_stackframe_t *has_prev_frame = NULL;
+            if (i >= 2) // the 1st frame doesn't have a previous frame
+                has_prev_frame = &prev_frame;
+
             /* Fetch the next frame */
-            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
+            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, has_prev_frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
+            prev_frame = frame;
             frame = new_frame;
         }
 
@@ -84,7 +90,7 @@ struct stack_frame {
     }
 
     /* Ensure that the final frame's NULL fp triggers an ENOFRAME */
-    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, &new_frame), PLFRAME_ENOFRAME, @"Expected to hit end of frames");
+    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, &prev_frame, &new_frame), PLFRAME_ENOFRAME, @"Expected to hit end of frames");
 }
 
 /**
@@ -111,12 +117,18 @@ struct stack_frame {
     
     /* Try walking the stack */
     plframe_stackframe_t new_frame;
+    plframe_stackframe_t prev_frame;
     plframe_stackframe_t frame = cursor.frame;
     
     for (size_t i = 0; i < frame_count; i++) {
         if (i > 0) {
+            plframe_stackframe_t *has_prev_frame = NULL;
+            if (i >= 2) // the 1st frame doesn't have a previous frame
+                has_prev_frame = &prev_frame;
+            
             /* Fetch the next frame */
-            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
+            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, has_prev_frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
+            prev_frame = frame;
             frame = new_frame;
         }
 
@@ -127,7 +139,7 @@ struct stack_frame {
     }
 
     /* Ensure that the final frame's bad fp triggers an EBADFRAME */
-    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, &new_frame), PLFRAME_EBADFRAME, @"Expected to hit end of frames");
+    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &frame, &prev_frame, &new_frame), PLFRAME_EBADFRAME, @"Expected to hit end of frames");
 }
 
 @end

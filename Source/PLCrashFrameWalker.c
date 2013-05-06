@@ -106,12 +106,16 @@ void plframe_test_thread_stop (plcrash_test_thread_t *args) {
 
 /**
  * @internal
- * Shared initializer
+ * Shared initializer. Assumes that the initial frame has all registers available.
  */
 static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task) {
     cursor->depth = 0;
     cursor->task = task;
     mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
+
+    /* Mark all current frame registers as available, and previous frame registers as non-available */
+    plframe_regset_set_all(&cursor->frame.valid_registers);
+    plframe_regset_zero(&cursor->prev_frame.valid_registers);
 }
 
 /**
@@ -130,7 +134,6 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcr
     plframe_cursor_internal_init(cursor, task);
 
     plcrash_async_memcpy(&cursor->frame.thread_state, thread_state, sizeof(cursor->frame.thread_state));
-    plframe_regset_set_all(&cursor->frame.valid_registers);
 
     return PLFRAME_ESUCCESS;
 }
@@ -152,7 +155,6 @@ plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t tas
     plframe_cursor_internal_init(cursor, task);
 
     plcrash_async_thread_state_ucontext_init(&cursor->frame.thread_state, uap);
-    plframe_regset_set_all(&cursor->frame.valid_registers);
 
     return PLFRAME_ESUCCESS;
 }
@@ -174,7 +176,6 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t tas
     /* Standard initialization */
     plframe_cursor_internal_init(cursor, task);
 
-    plframe_regset_set_all(&cursor->frame.valid_registers);
     return plcrash_async_thread_state_mach_thread_init(&cursor->frame.thread_state, thread);
 }
 
@@ -192,11 +193,16 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
         return PLFRAME_ESUCCESS;
     }
 
+    /* A previous frame is only available if we're on the second frame */
+    plframe_stackframe_t *prev_frame = NULL;
+    if (cursor->depth >= 2)
+        prev_frame = &cursor->prev_frame;
+
     /* Read in the next frame. */
     plframe_stackframe_t frame;
     plframe_error_t ferr;
-    
-    if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, &frame)) != PLCRASH_ESUCCESS)
+
+    if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, prev_frame, &frame)) != PLCRASH_ESUCCESS)
         return ferr;
 
     /* Save the newly fetched frame */

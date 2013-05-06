@@ -32,12 +32,17 @@
 /**
  * Fetch the next frame, assuming a valid frame pointer in @a cursor's current frame.
  *
- * @param cursor A cursor instance initialized with plframe_cursor_init();
- * @param frame The new frame to be initialized.
+ * @param current_frame The current stack frame.
+ * @param previous_frame The previous stack frame, or NULL if this is the first frame.
+ * @param next_frame The new frame to be initialized.
  *
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
  */
-plframe_error_t plframe_cursor_read_frame_ptr (task_t task, const plframe_stackframe_t *current_frame, plframe_stackframe_t *next_frame) {
+plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
+                                               const plframe_stackframe_t *current_frame,
+                                               const plframe_stackframe_t *previous_frame,
+                                               plframe_stackframe_t *next_frame)
+{
     /* Determine the appropriate type width for the target thread */
     bool x64 = plcrash_async_thread_state_get_greg_size(&current_frame->thread_state) == sizeof(uint64_t);
     union {
@@ -61,26 +66,32 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task, const plframe_stackf
         return PLFRAME_EBADFRAME;
     }
 
-#if 0
-    /* Verify that the stack is growing in the right direction. */
-    plcrash_async_thread_stack_direction_t stack_direction = plcrash_async_thread_state_get_stack_direction(&current_frame->thread_state);
-    if ((stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN && fp < prev_fp) ||
-        (stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_UP && fp > prev_fp))
-    {
-        PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
-        return PLFRAME_EBADFRAME;
-    }
-#endif
-
-    /* Read the registers off the stack via the frame pointer */
+    /* Fetch the current frame's frame pointer */
     plcrash_greg_t fp = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_FP);
-    plcrash_greg_t new_fp;
-    plcrash_greg_t new_pc;
-    kern_return_t kr;
     
     /* A NULL FP means a terminated frame */
     if (fp == 0x0)
         return PLFRAME_ENOFRAME;
+    
+    /* Verify that the stack is growing in the right direction. */
+    if (previous_frame != NULL && plframe_regset_isset(previous_frame->valid_registers, PLCRASH_REG_FP)) {
+        plcrash_greg_t prev_fp = plcrash_async_thread_state_get_reg(&previous_frame->thread_state, PLCRASH_REG_FP);
+
+        plcrash_async_thread_stack_direction_t stack_direction = plcrash_async_thread_state_get_stack_direction(&current_frame->thread_state);
+        if ((stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN && fp < prev_fp) ||
+            (stack_direction == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_UP && fp > prev_fp))
+        {
+            PLCF_DEBUG("Stack growing in wrong direction, terminating stack walk");
+            return PLFRAME_EBADFRAME;
+        }
+    }
+
+    /* Read the registers off the stack via the frame pointer */
+    plcrash_greg_t new_fp;
+    plcrash_greg_t new_pc;
+    kern_return_t kr;
+    
+
 
     kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, len);
     if (kr != KERN_SUCCESS) {
