@@ -1,6 +1,9 @@
 #include <mach-o/compact_unwind_encoding.h>
 #include <stddef.h>
 
+// This file contains platform-neutral hand-assembled unwind_info tables,
+// for use in testing handling of unwind info.
+//
 // Keep in sync with PLCrashAsyncCompactUnwindEncodingTests
 #define BASE_PC 0
 
