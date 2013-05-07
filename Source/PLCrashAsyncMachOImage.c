@@ -430,10 +430,10 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
     uintptr_t cursor = (uintptr_t) segment;
 
     if (image->m64) {
-        nsects = cmd_64->nsects;
+        nsects = image->byteorder->swap32(cmd_64->nsects);
         cursor += sizeof(*cmd_64);
     } else {
-        nsects = cmd_32->nsects;
+        nsects = image->byteorder->swap32(cmd_32->nsects);
         cursor += sizeof(*cmd_32);
     }
 
