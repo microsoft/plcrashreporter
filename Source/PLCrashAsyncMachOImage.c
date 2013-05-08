@@ -526,7 +526,7 @@ plcrash_error_t plcrash_async_macho_find_symbol_by_name (plcrash_async_macho_t *
 
         /* Check the name */
         sym = plcrash_async_macho_symtab_reader_symbol_name(&reader, entry.n_strx);
-        if (strcmp(sym, symbol) == 0) {
+        if (plcrash_async_strcmp(sym, symbol) == 0) {
             plcrash_async_macho_symtab_reader_free(&reader);
 
             *pc = entry.normalized_value + image->vmaddr_slide;
