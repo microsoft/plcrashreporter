@@ -495,7 +495,9 @@ typedef union {
  *
  * @param image The Mach-O image to search for @a symbol
  * @param symbol The symbol name to search for.
- * @param pc On success, will be set to the address of the symbol.
+ * @param pc On success, will be set to the address of the symbol. The address will be normalized, and
+ * will include any required bit flags -- such as the ARM thumb high-order bit -- which are not included in the symbol
+ * table by default.
  *
  * @return Returns PLCRASH_ESUCCESS if the symbol is found, or PLCRASH_EUNKNOWN if not found. If the symbol is not
  * found, the contents of @a pc are undefined.
@@ -517,7 +519,11 @@ plcrash_error_t plcrash_async_macho_find_symbol_by_name (plcrash_async_macho_t *
     plcrash_async_macho_symtab_entry_t entry;
     for (uint32_t i = 0; i < reader.nsyms; i++) {
         entry = plcrash_async_macho_symtab_reader_read(&reader, reader.symtab, i);
-        
+
+        /* Symbol must be within a section, and must not be a debugging entry. */
+        if ((entry.n_type & N_TYPE) != N_SECT || ((entry.n_type & N_STAB) != 0))
+            continue;
+
         /* Check the name */
         sym = plcrash_async_macho_symtab_reader_symbol_name(&reader, entry.n_strx);
         if (strcmp(sym, symbol) == 0) {
