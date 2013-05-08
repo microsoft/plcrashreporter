@@ -175,6 +175,25 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
  * @return Return an integer greater than, equal to, or less than 0, according as the string @a s1 is greater than,
  * equal to, or less than the string @a s2.
  */
+int plcrash_async_strcmp(const char *s1, const char *s2) {
+    while (*s1 == *s2++) {
+        if (*s1++ == 0)
+            return (0);
+    }
+    
+    return (*(const unsigned char *)s1 - *(const unsigned char *)(s2 - 1));
+}
+
+/**
+ * An intentionally naive async-safe implementation of strncmp(). strncmp() itself is not declared to be async-safe,
+ * though in reality, it is.
+ *
+ * @param s1 First string.
+ * @param s2 Second string.
+ * @param n No more than n characters will be compared.
+ * @return Return an integer greater than, equal to, or less than 0, according as the string @a s1 is greater than,
+ * equal to, or less than the string @a s2.
+ */
 int plcrash_async_strncmp(const char *s1, const char *s2, size_t n) {
     while (*s1 == *s2++ && n-- > 0) {
         if (*s1++ == 0)

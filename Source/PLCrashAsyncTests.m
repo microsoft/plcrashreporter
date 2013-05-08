@@ -90,6 +90,17 @@
 }
 
 - (void) testStrcmp {
+    STAssertEquals(0, plcrash_async_strcmp("s1", "s1"), @"Strings should be equal");
+    STAssertTrue(plcrash_async_strcmp("s1", "s2") < 0, @"Strings compared incorrectly");
+    STAssertTrue(plcrash_async_strcmp("s2", "s1") > 0, @"Strings compared incorrectly");
+    
+    /* If these don't crash, success. Of course, it these probably won't crash even if they do over-read; we should
+     * probably modify these to sit on the edge of a page boundary. */
+    STAssertTrue(plcrash_async_strcmp("longer", "s") != 0, @"");
+    STAssertTrue(plcrash_async_strcmp("s", "longer") != 0, @"");
+}
+
+- (void) testStrncmp {
     STAssertEquals(0, plcrash_async_strncmp("s1", "s1", 42), @"Strings should be equal");
     STAssertTrue(plcrash_async_strncmp("s1", "s2", 42) < 0, @"Strings compared incorrectly");
     STAssertTrue(plcrash_async_strncmp("s2", "s1", 42) > 0, @"Strings compared incorrectly");
