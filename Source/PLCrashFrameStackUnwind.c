@@ -32,6 +32,7 @@
 /**
  * Fetch the next frame, assuming a valid frame pointer in @a cursor's current frame.
  *
+ * @param task The task containing the target frame stack.
  * @param current_frame The current stack frame.
  * @param previous_frame The previous stack frame, or NULL if this is the first frame.
  * @param next_frame The new frame to be initialized.

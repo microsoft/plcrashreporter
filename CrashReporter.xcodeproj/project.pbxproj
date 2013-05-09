@@ -194,6 +194,7 @@
 		05A533DE16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
+		05A7E78F173C130200ACA689 /* PLCrashFrameCompactUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD5F16DD6A3B007911FB /* PLCrashFrameCompactUnwind.c */; };
 		05BB83CD1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
 		05BB83CE1364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
 		05BB83CF1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
@@ -1648,8 +1649,8 @@
 		FCE4576E42A51370AD81A734 /* Stack Frame Unwind */ = {
 			isa = PBXGroup;
 			children = (
-				FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */,
 				FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */,
+				FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */,
 				05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */,
 			);
 			name = "Stack Frame Unwind";
@@ -2446,6 +2447,7 @@
 				05F3CD8116DFC78D007911FB /* PLCrashAsyncCompactUnwindEncodingTests.m in Sources */,
 				0531D727173181740071BA64 /* PLCrashFrameWalkerRegisterSet.c in Sources */,
 				0531D72E1731874E0071BA64 /* PLCrashFrameWalkerRegisterSetTests.m in Sources */,
+				05A7E78F173C130200ACA689 /* PLCrashFrameCompactUnwind.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

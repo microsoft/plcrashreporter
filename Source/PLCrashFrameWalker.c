@@ -28,8 +28,10 @@
 
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsync.h"
-#include "PLCrashFrameStackUnwind.h"
 #include "PLCrashTestThread.h"
+
+#include "PLCrashFrameStackUnwind.h"
+#include "PLCrashFrameCompactUnwind.h"
 
 #pragma mark Error Handling
 
@@ -185,9 +187,12 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     /* Read in the next frame. */
     plframe_stackframe_t frame;
     plframe_error_t ferr;
-
-    if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, prev_frame, &frame)) != PLCRASH_ESUCCESS)
+    
+    if ((ferr = plframe_cursor_read_compact_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLCRASH_ESUCCESS) {
+        // Finished
+    } else if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, prev_frame, &frame)) != PLCRASH_ESUCCESS) {
         return ferr;
+    }
 
     /* Save the newly fetched frame */
     cursor->prev_frame = cursor->frame;
