@@ -117,6 +117,7 @@ void plframe_test_thread_stop (plcrash_test_thread_t *args) {
 static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task, plcrash_async_image_list_t *image_list) {
     cursor->depth = 0;
     cursor->task = task;
+    cursor->image_list = image_list;
     mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
 
     /* Mark all current frame registers as available, and previous frame registers as non-available */
