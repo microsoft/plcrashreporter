@@ -107,8 +107,12 @@ void plframe_test_thread_stop (plcrash_test_thread_t *args) {
 /**
  * @internal
  * Shared initializer. Assumes that the initial frame has all registers available.
+ *
+ * @param cursor Cursor record to be initialized.
+ * @param task The task from which @a uap was derived. All memory will be mapped from this task.
+ * @param image_list The task's current image list. This is a borrowed reference, and must remain valid for the lifetime of the cursor.
  */
-static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task) {
+static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task, plcrash_async_image_list_t *image_list) {
     cursor->depth = 0;
     cursor->task = task;
     mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
@@ -124,37 +128,17 @@ static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task)
  * @param cursor Cursor record to be initialized.
  * @param task The task from which @a uap was derived. All memory will be mapped from this task.
  * @param thread_state The thread state to use for cursor initialization.
+ * @param image_list The task's current image list. This is a borrowed reference, and must remain valid for the lifetime of the cursor.
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
  *
  * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
  * fails.
  */
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state) {
-    plframe_cursor_internal_init(cursor, task);
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state, plcrash_async_image_list_t *image_list) {
+    plframe_cursor_internal_init(cursor, task, image_list);
 
     plcrash_async_memcpy(&cursor->frame.thread_state, thread_state, sizeof(cursor->frame.thread_state));
-
-    return PLFRAME_ESUCCESS;
-}
-
-/**
- * Initialize the frame cursor using a signal-provided context;
- *
- * @param cursor Cursor record to be initialized.
- * @param task The task from which @a uap was derived. All memory will be mapped from this task.
- * @param uap The context to use for cursor initialization.
- *
- * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
- *
- * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
- * fails.
- */
-plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap) {
-    /* Standard initialization */
-    plframe_cursor_internal_init(cursor, task);
-
-    plcrash_async_thread_state_ucontext_init(&cursor->frame.thread_state, uap);
 
     return PLFRAME_ESUCCESS;
 }
@@ -166,19 +150,19 @@ plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t tas
  * @param cursor Cursor record to be initialized.
  * @param task The task in which @a thread is running. All memory will be mapped from this task.
  * @param thread The thread to use for cursor initialization.
+ * @param image_list The task's current image list. This is a borrowed reference, and must remain valid for the lifetime of the cursor.
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
  *
  * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
  * fails.
  */
-plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread) {
+plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread, plcrash_async_image_list_t *image_list) {
     /* Standard initialization */
-    plframe_cursor_internal_init(cursor, task);
-
+    plframe_cursor_internal_init(cursor, task, image_list);
+    
     return plcrash_async_thread_state_mach_thread_init(&cursor->frame.thread_state, thread);
 }
-
 
 /**
  * Fetch the next frame.

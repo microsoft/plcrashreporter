@@ -222,6 +222,9 @@
     plcrash_async_thread_state_t thread_state;
     thread_t thread;
 
+    /* Initialize the image list */
+    plcrash_nasync_image_list_init(&image_list, mach_task_self());
+
     /* Initialze faux crash data */
     {
         info.si_addr = (void *) 0x42;
@@ -234,7 +237,7 @@
         
         /* Steal the test thread's stack for iteration */
         thread = pthread_mach_thread_np(_thr_args.thread);
-        plframe_cursor_thread_init(&cursor, mach_task_self(), thread);
+        plframe_cursor_thread_init(&cursor, mach_task_self(), thread, &image_list);
         plcrash_async_thread_state_mach_thread_init(&thread_state, thread);
     }
 
@@ -244,9 +247,6 @@
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", false), @"Initialization failed");
-    
-    /* Initialize the image list */
-    plcrash_nasync_image_list_init(&image_list, mach_task_self());
 
     /* Set an exception with a valid return address call stack. */
     NSException *e;

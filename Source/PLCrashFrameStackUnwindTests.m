@@ -41,9 +41,22 @@ struct stack_frame {
  * This code tests stack-based frame unwinding. It currently assumes that the stack grows down (which is
  * true on the architectures we currently support, but TODO: this should be direction-neutral).
  */
-@interface PLCrashFrameStackUnwindTests : SenTestCase @end
+@interface PLCrashFrameStackUnwindTests : SenTestCase {
+@private
+    plcrash_async_image_list_t _image_list;
+}
+
+@end
 
 @implementation PLCrashFrameStackUnwindTests
+
+- (void) setUp {
+    plcrash_nasync_image_list_init(&_image_list, mach_task_self());
+}
+
+- (void) tearDown {
+    plcrash_nasync_image_list_free(&_image_list);
+}
 
 /**
  * Verify that walking terminates with a NULL frame address.
@@ -65,7 +78,7 @@ struct stack_frame {
 
     /* Let the plframe cursor API initialize our first frame */
     plframe_cursor_t cursor;
-    plframe_cursor_init(&cursor, mach_task_self(), &state);
+    plframe_cursor_init(&cursor, mach_task_self(), &state, &_image_list);
     
     /* Try walking the stack */
     plframe_stackframe_t new_frame;
@@ -113,7 +126,7 @@ struct stack_frame {
     
     /* Let the plframe cursor API initialize our first frame */
     plframe_cursor_t cursor;
-    plframe_cursor_init(&cursor, mach_task_self(), &state);
+    plframe_cursor_init(&cursor, mach_task_self(), &state, &_image_list);
     
     /* Try walking the stack */
     plframe_stackframe_t new_frame;

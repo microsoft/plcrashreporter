@@ -36,6 +36,7 @@
 @interface PLCrashFrameWalkerTests : SenTestCase {
 @private
     plcrash_test_thread_t _thr_args;
+    plcrash_async_image_list_t _image_list;
 }
 @end
 
@@ -43,15 +44,17 @@
     
 - (void) setUp {
     plcrash_test_thread_spawn(&_thr_args);
+    plcrash_nasync_image_list_init(&_image_list, mach_task_self());
 }
 
 - (void) tearDown {
     plcrash_test_thread_stop(&_thr_args);
+    plcrash_nasync_image_list_free(&_image_list);
 }
 
 - (void) testGetRegName {
     plframe_cursor_t cursor;
-    plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread));
+    plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), &_image_list);
 
     for (int i = 0; i < plframe_cursor_get_regcount(&cursor); i++) {
         const char *name = plframe_cursor_get_regname(&cursor, i);
@@ -160,7 +163,7 @@
     plframe_cursor_t cursor;
 
     /* Initialize the cursor */
-    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread)), @"Initialization failed");
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), &_image_list), @"Initialization failed");
 
     /* Try fetching the first frame */
     plframe_error_t ferr = plframe_cursor_next(&cursor);

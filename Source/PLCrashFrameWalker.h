@@ -39,6 +39,7 @@
 #import <mach/mach.h>
 
 #include "PLCrashAsyncThread.h"
+#include "PLCrashAsyncImageList.h"
 #include "PLCrashFrameWalkerRegisterSet.h"
 
 /* Configure supported targets based on the host build architecture. There's currently
@@ -122,6 +123,9 @@ typedef struct plframe_cursor {
     /** The task in which the thread stack resides */
     task_t task;
     
+    /** The task's current image list. This is a borrowed reference, and must remain valid for the lifetime of the cursor. */
+    plcrash_async_image_list_t *image_list;
+    
     /** The current frame depth. If the depth is 0, the cursor has not been stepped, and the remainder of this
      * structure should be considered uninitialized. */
     uint32_t depth;
@@ -137,9 +141,8 @@ typedef struct plframe_cursor {
 /* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
 
-plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state);
-plframe_error_t plframe_cursor_signal_init (plframe_cursor_t *cursor, task_t task, ucontext_t *uap);
-plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread);
+plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state, plcrash_async_image_list_t *image_list);
+plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread, plcrash_async_image_list_t *image_list);
 
 char const *plframe_cursor_get_regname (plframe_cursor_t *cursor, plcrash_regnum_t regnum);
 size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor);

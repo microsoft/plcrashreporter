@@ -865,15 +865,18 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
     /* Write out the stack frames. */
     {
         /* Set up the frame cursor. */
-        {
-            /* Use the ctx if available */
+        {            
+            /* Use the provided context if available, otherwise initialize a new thread context
+             * from the target thread's state. */
+            plcrash_async_thread_state_t cursor_thr_state;
             if (thread_ctx) {
-                ferr = plframe_cursor_init(&cursor, task, thread_ctx);
+                cursor_thr_state = *thread_ctx;
             } else {
-                ferr = plframe_cursor_thread_init(&cursor, task, thread);
+                plcrash_async_thread_state_mach_thread_init(&cursor_thr_state, thread);
             }
 
-            /* Did cursor initialization succeed? If not, it is impossible to proceed */
+            /* Initialize the cursor */
+            ferr = plframe_cursor_init(&cursor, task, &cursor_thr_state, image_list);
             if (ferr != PLFRAME_ESUCCESS) {
                 PLCF_DEBUG("An error occured initializing the frame cursor: %s", plframe_strerror(ferr));
                 return rv;
