@@ -50,8 +50,8 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     plcrash_error_t err;
 
     /* Fetch the IP. It should always be available */
-    if (!plframe_regset_isset(&current_frame->valid_registers, PLCRASH_REG_IP)) {
-        PLCF_DEBUG("Frame is missing a valid IP register!");
+    if (!plframe_regset_isset(current_frame->valid_registers, PLCRASH_REG_IP)) {
+        PLCF_DEBUG("Frame is missing a valid IP register, skipping compact unwind encoding");
         return PLFRAME_EBADFRAME;
     }
     plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
@@ -108,10 +108,14 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     result = PLFRAME_EUNKNOWN;
     uint32_t register_count = plcrash_async_cfe_entry_register_count(&entry);
     plcrash_regnum_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    
+    plcrash_async_cfe_entry_register_list(&entry, register_list);
     for (uint32_t i = 0; i < register_count; i++) {
         const char *name = plcrash_async_thread_state_get_reg_name(&current_frame->thread_state, register_list[i]);
         PLCF_DEBUG("Register name saved: %s", name);
     }
+    
+    plcrash_async_cfe_entry_free(&entry);
 
 cleanup:
     plcrash_async_image_list_set_reading(image_list, false);
