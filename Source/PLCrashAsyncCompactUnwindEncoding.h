@@ -97,7 +97,14 @@ typedef enum {
      *
      * An offset to the DWARF FDE in the __eh_frame section is be provided.
      */
-    PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF = 4
+    PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF = 4,
+    
+    
+    /**
+     * No unwind information is available for the target address. This value is only returned in the case where an
+     * unwind table entry exists for the given address, but the entry is empty.
+     */
+    PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE = 5
 } plcrash_async_cfe_entry_type_t;
 
 
@@ -129,7 +136,8 @@ typedef struct plcrash_async_cfe_entry {
      *
      *   TODO: Need a mechanism to define the actual size of the offset. For x86-32/x86-64, it is defined as being
      *   encoded in a subl instruction.
-     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF: Unused.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF: The offset to the DWARF FDE in the __eh_frame section.
+     * - PLCRASH_ASYNC_CFE_ENTRY_NONE: Unused.
      */
     intptr_t stack_offset;
 

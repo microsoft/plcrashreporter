@@ -221,6 +221,16 @@
 #define EXTRACT_BITS(value, mask) ((value >> __builtin_ctz(mask)) & (((1 << __builtin_popcount(mask)))-1))
 #define INSERT_BITS(bits, mask) ((bits << __builtin_ctz(mask)) & mask)
 
+
+/**
+ * Test handling of NULL encoding.
+ */
+- (void) testX86DecodeNULLEncoding {
+    plcrash_async_cfe_entry_t entry;
+    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, 0x0), PLCRASH_ESUCCESS, @"Should return NOTFOUND for NULL encoding");
+    STAssertEquals(plcrash_async_cfe_entry_type(&entry), PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE, @"Incorrect CFE type");
+}
+
 /**
  * Test handling of sparse register lists. These are only supported for the frame encodings; the 10-bit packed
  * encoding format does not support sparse lists.
@@ -414,6 +424,15 @@
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
     plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Test handling of NULL encoding.
+ */
+- (void) testX86_64DecodeNULLEncoding {
+    plcrash_async_cfe_entry_t entry;
+    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, 0x0), PLCRASH_ESUCCESS, @"Should return NOTFOUND for NULL encoding");
+    STAssertEquals(plcrash_async_cfe_entry_type(&entry), PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE, @"Incorrect CFE type");
 }
 
 /**

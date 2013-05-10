@@ -103,7 +103,15 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         result = PLFRAME_ENOTSUP;
         goto cleanup;
     }
-    
+
+    /* Handle the case where no unwind data is available from a valid entry */
+    plcrash_async_cfe_entry_type_t entry_type = plcrash_async_cfe_entry_type(&entry);
+    if (entry_type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE) {
+        result = PLFRAME_ENOTSUP;
+        goto cleanup;
+    }
+
+    /* Apply the frame delta */
     // TODO
     result = PLFRAME_EUNKNOWN;
     uint32_t register_count = plcrash_async_cfe_entry_register_count(&entry);

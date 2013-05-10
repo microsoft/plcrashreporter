@@ -713,6 +713,14 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->register_count = 0;
 
                 return PLCRASH_ESUCCESS;
+
+            case 0:
+                /* Handle a NULL encoding. This interpretation is derived from Apple's actual implementation; the correct interpretation of
+                 * a 0x0 value is not defined in what documentation exists. */
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE;
+                entry->stack_offset = 0;
+                entry->register_count = 0;
+                return PLCRASH_ESUCCESS;
                 
             default:
                 PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
@@ -794,6 +802,14 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_DWARF_SECTION_OFFSET);
                 entry->register_count = 0;
                 
+                return PLCRASH_ESUCCESS;
+            
+            case 0:
+                /* Handle a NULL encoding. This interpretation is derived from Apple's actual implementation; the correct interpretation of
+                 * a 0x0 value is not defined in what documentation exists. */
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE;
+                entry->stack_offset = 0;
+                entry->register_count = 0;
                 return PLCRASH_ESUCCESS;
                 
             default:
