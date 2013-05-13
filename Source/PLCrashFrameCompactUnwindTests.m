@@ -35,9 +35,42 @@
  */
 @interface PLCrashFrameCompactUnwindTests : SenTestCase {
 @private
+    plcrash_async_image_list_t _image_list;
 }
+
 @end
 
 @implementation PLCrashFrameCompactUnwindTests
+
+- (void) setUp {
+    plcrash_nasync_image_list_init(&_image_list, mach_task_self());
+}
+
+- (void) tearDown {
+    plcrash_nasync_image_list_free(&_image_list);
+}
+
+- (void) testMissingIP {
+    plframe_stackframe_t frame;
+    plframe_stackframe_t next;
+    plframe_error_t err;
+
+    plframe_regset_zero(&frame.valid_registers);
+    err = plframe_cursor_read_compact_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);
+    STAssertEquals(err, PLFRAME_EBADFRAME, @"Unexpected result for a frame missing a valid PC");
+}
+
+- (void) testMissingImage {
+    plframe_stackframe_t frame;
+    plframe_stackframe_t next;
+    plframe_error_t err;
+    
+    plframe_regset_zero(&frame.valid_registers);
+    plframe_regset_set(&frame.valid_registers, PLCRASH_REG_IP);
+    plcrash_async_thread_state_set_reg(&frame.thread_state, PLCRASH_REG_IP, NULL);
+    
+    err = plframe_cursor_read_compact_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);
+    STAssertEquals(err, PLFRAME_ENOTSUP, @"Unexpected result for a frame missing a valid image");
+}
 
 @end
