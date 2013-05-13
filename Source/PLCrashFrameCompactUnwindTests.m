@@ -55,7 +55,7 @@
     plframe_stackframe_t next;
     plframe_error_t err;
 
-    plframe_regset_zero(&frame.valid_registers);
+    plcrash_async_thread_state_clear_all_regs(&frame.thread_state);
     err = plframe_cursor_read_compact_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);
     STAssertEquals(err, PLFRAME_EBADFRAME, @"Unexpected result for a frame missing a valid PC");
 }
@@ -65,8 +65,7 @@
     plframe_stackframe_t next;
     plframe_error_t err;
     
-    plframe_regset_zero(&frame.valid_registers);
-    plframe_regset_set(&frame.valid_registers, PLCRASH_REG_IP);
+    plcrash_async_thread_state_clear_all_regs(&frame.thread_state);
     plcrash_async_thread_state_set_reg(&frame.thread_state, PLCRASH_REG_IP, NULL);
     
     err = plframe_cursor_read_compact_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);

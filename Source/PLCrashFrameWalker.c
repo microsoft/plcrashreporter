@@ -118,11 +118,7 @@ static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task,
     cursor->depth = 0;
     cursor->task = task;
     cursor->image_list = image_list;
-    mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);
-
-    /* Mark all current frame registers as available, and previous frame registers as non-available */
-    plframe_regset_set_all(&cursor->frame.valid_registers);
-    plframe_regset_zero(&cursor->prev_frame.valid_registers);
+    mach_port_mod_refs(mach_task_self(), cursor->task, MACH_PORT_RIGHT_SEND, 1);    
 }
 
 /**
@@ -213,7 +209,7 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
  */
 plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg) {
     /* Verify that the register is available */
-    if (!plframe_regset_isset(cursor->frame.valid_registers, regnum))
+    if (!plcrash_async_thread_state_has_reg(&cursor->frame.thread_state, regnum))
         return PLFRAME_ENOTSUP;
 
     /* Fetch from thread state */

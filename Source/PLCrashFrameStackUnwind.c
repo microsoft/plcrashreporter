@@ -62,7 +62,7 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
     }
 
     /* Verify that we have a frame pointer to work with */
-    if (!plframe_regset_isset(current_frame->valid_registers, PLCRASH_REG_FP)) {
+    if (!plcrash_async_thread_state_has_reg(&current_frame->thread_state, PLCRASH_REG_FP)) {
         PLCF_DEBUG("The frame pointer is unavailable, can't read saved register.")
         return PLFRAME_EBADFRAME;
     }
@@ -75,7 +75,7 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
         return PLFRAME_ENOFRAME;
     
     /* Verify that the stack is growing in the right direction. */
-    if (previous_frame != NULL && plframe_regset_isset(previous_frame->valid_registers, PLCRASH_REG_FP)) {
+    if (previous_frame != NULL && plcrash_async_thread_state_has_reg(&previous_frame->thread_state, PLCRASH_REG_FP)) {
         plcrash_greg_t prev_fp = plcrash_async_thread_state_get_reg(&previous_frame->thread_state, PLCRASH_REG_FP);
 
         plcrash_async_thread_stack_direction_t stack_direction = plcrash_async_thread_state_get_stack_direction(&current_frame->thread_state);
@@ -114,10 +114,8 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
 
     /* Initialize the new frame, deriving state from the previous frame. */
     *next_frame = *current_frame;
-    plframe_regset_zero(&next_frame->valid_registers);
-    plframe_regset_set(&next_frame->valid_registers, PLCRASH_REG_FP);
-    plframe_regset_set(&next_frame->valid_registers, PLCRASH_REG_IP);
 
+    plcrash_async_thread_state_clear_all_regs(&next_frame->thread_state);
     plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_FP, new_fp);
     plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_IP, new_pc);
 

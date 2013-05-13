@@ -50,7 +50,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     plcrash_error_t err;
 
     /* Fetch the IP. It should always be available */
-    if (!plframe_regset_isset(current_frame->valid_registers, PLCRASH_REG_IP)) {
+    if (!plcrash_async_thread_state_has_reg(&current_frame->thread_state, PLCRASH_REG_IP)) {
         PLCF_DEBUG("Frame is missing a valid IP register, skipping compact unwind encoding");
         return PLFRAME_EBADFRAME;
     }

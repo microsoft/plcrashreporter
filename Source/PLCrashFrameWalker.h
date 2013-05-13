@@ -40,7 +40,6 @@
 
 #include "PLCrashAsyncThread.h"
 #include "PLCrashAsyncImageList.h"
-#include "PLCrashFrameWalkerRegisterSet.h"
 
 /* Configure supported targets based on the host build architecture. There's currently
  * no deployed architecture on which simultaneous support for different processor families
@@ -110,9 +109,6 @@ typedef enum  {
 typedef struct plframe_stackframe {
     /** Thread state */
     plcrash_async_thread_state_t thread_state;
-    
-    /** Registers available from thread_state. */
-    plframe_regset_t valid_registers;
 } plframe_stackframe_t;
 
 /**

@@ -97,7 +97,7 @@ struct stack_frame {
         }
 
         /* Verify the frame's PC value */
-        STAssertTrue(plframe_regset_isset(frame.valid_registers, PLCRASH_REG_IP), @"Did not mark IP as readable");
+        STAssertTrue(plcrash_async_thread_state_has_reg(&frame.thread_state, PLCRASH_REG_IP), @"Did not mark IP as readable");
         plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_IP);
         STAssertEquals(pc, (plcrash_greg_t)frames[i].pc, @"Incorrect IP for index %d", i);
     }
@@ -146,7 +146,7 @@ struct stack_frame {
         }
 
         /* Verify the frame's PC value */
-        STAssertTrue(plframe_regset_isset(frame.valid_registers, PLCRASH_REG_IP), @"Did not mark IP as readable");
+        STAssertTrue(plcrash_async_thread_state_has_reg(&frame.thread_state, PLCRASH_REG_IP), @"Did not mark IP as readable");
         plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_IP);
         STAssertEquals(pc, (plcrash_greg_t)frames[i].pc, @"Incorrect IP for index %zd", i);
     }
