@@ -65,6 +65,10 @@ typedef enum {
 
 /**
  * Target-neutral thread-state.
+ *
+ * The thread state maintains a set of valid registers; this may be used to implement delta
+ * updates of threads' state, or otherwise express partial thread states, eg, when unwinding
+ * a stack and not all registers can be restored.
  */
 typedef struct plcrash_async_thread_state {
     /** Stack growth direction */
@@ -72,6 +76,9 @@ typedef struct plcrash_async_thread_state {
     
     /** General purpose register size, in bytes */
     size_t greg_size;
+    
+    /** The set of available registers. */
+    uint32_t valid_regs;
 
     /* Union used to hold thread state for any supported architecture */
     union {
@@ -134,6 +141,9 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
 plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (const plcrash_async_thread_state_t *thread_state);
 size_t plcrash_async_thread_state_get_greg_size (const plcrash_async_thread_state_t *thread_state);
 
+bool plcrash_async_thread_state_has_reg (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
+void plcrash_async_thread_state_clear_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum);
+void plcrash_async_thread_state_clear_all_regs (plcrash_async_thread_state_t *thread_state);
 
 /* Platform specific funtions */
 

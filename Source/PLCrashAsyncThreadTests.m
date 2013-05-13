@@ -66,13 +66,28 @@
 - (void) testGetSetRegister {
     plcrash_async_thread_state_t ts;
     plcrash_async_thread_state_mach_thread_init(&ts, pthread_mach_thread_np(_thr_args.thread));
-    
+    size_t regcount = plcrash_async_thread_state_get_reg_count(&ts);
+
+    /* Verify that all registers are marked as available */
+    STAssertTrue(__builtin_popcount(ts.valid_regs) >= regcount, @"Incorrect number of 1 bits");
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
+        STAssertTrue(plcrash_async_thread_state_has_reg(&ts, i), @"Register should be marked as set");
+    }
+
+    /* Clear all registers */
+    plcrash_async_thread_state_clear_all_regs(&ts);
+    STAssertEquals(ts.valid_regs, (uint32_t)0, @"Registers not marked as clear");
+
+    /* Now set+get each individually */
     for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
         plcrash_greg_t reg;
         
         plcrash_async_thread_state_set_reg(&ts, i, 5);
         reg = plcrash_async_thread_state_get_reg(&ts, i);
         STAssertEquals(reg, (plcrash_greg_t)5, @"Unexpected register value");
+        
+        STAssertTrue(plcrash_async_thread_state_has_reg(&ts, i), @"Register should be marked as set");
+        STAssertEquals(__builtin_popcount(ts.valid_regs), i+1, @"Incorrect number of 1 bits");
     }
 }
 
@@ -86,6 +101,13 @@
     uap.uc_mcontext = &mcontext_data;
     
     plcrash_async_thread_state_ucontext_init(&thr_state, &uap);
+    
+    /* Verify that all registers are marked as available */
+    size_t regcount = plcrash_async_thread_state_get_reg_count(&thr_state);
+    STAssertTrue(__builtin_popcount(thr_state.valid_regs) >= regcount, @"Incorrect number of 1 bits");
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&thr_state); i++) {
+        STAssertTrue(plcrash_async_thread_state_has_reg(&thr_state, i), @"Register should be marked as set");
+    }
     
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     STAssertTrue(memcmp(&thr_state.arm_state.thread, &uap.uc_mcontext->__ss, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
@@ -123,6 +145,13 @@
 
     /* Fetch the thread state */
     STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thr_state, thr), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    
+    /* Verify that all registers are marked as available */
+    size_t regcount = plcrash_async_thread_state_get_reg_count(&thr_state);
+    STAssertTrue(__builtin_popcount(thr_state.valid_regs) >= regcount, @"Incorrect number of 1 bits");
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&thr_state); i++) {
+        STAssertTrue(plcrash_async_thread_state_has_reg(&thr_state, i), @"Register should be marked as set");
+    }
 
     /* Test the results */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)

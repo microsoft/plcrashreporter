@@ -39,7 +39,8 @@
     return (ts->arm_state. type . __ ## name); \
 }
 
-#define SETGEN(name, type, ts, value) {\
+#define SETGEN(name, type, ts, regnum, value) {\
+    ts->valid_regs |= 1<<regnum; \
     (ts->arm_state. type . __ ## name) = value; \
     break; \
 }
@@ -112,55 +113,55 @@ void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_st
 
     switch (regnum) {
         case PLCRASH_ARM_R0:
-            SETGEN(r[0], thread, ts, reg);
+            SETGEN(r[0], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R1:
-            SETGEN(r[1], thread, ts, reg);
+            SETGEN(r[1], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R2:
-            SETGEN(r[2], thread, ts, reg);
+            SETGEN(r[2], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R3:
-            SETGEN(r[3], thread, ts, reg);
+            SETGEN(r[3], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R4:
-            SETGEN(r[4], thread, ts, reg);
+            SETGEN(r[4], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R5:
-            SETGEN(r[5], thread, ts, reg);
+            SETGEN(r[5], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R6:
-            SETGEN(r[6], thread, ts, reg);
+            SETGEN(r[6], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R7:
-            SETGEN(r[7], thread, ts, reg);
+            SETGEN(r[7], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R8:
-            SETGEN(r[8], thread, ts, reg);
+            SETGEN(r[8], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R9:
-            SETGEN(r[9], thread, ts, reg);
+            SETGEN(r[9], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R10:
-            SETGEN(r[10], thread, ts, reg);
+            SETGEN(r[10], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R11:
-            SETGEN(r[11], thread, ts, reg);
+            SETGEN(r[11], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_R12:
-            SETGEN(r[12], thread, ts, reg);
+            SETGEN(r[12], thread, ts, regnum, reg);
             
         case PLCRASH_ARM_SP:
-            SETGEN(sp, thread, ts, reg);
+            SETGEN(sp, thread, ts, regnum, reg);
             
         case PLCRASH_ARM_LR:
-            SETGEN(lr, thread, ts, reg);
+            SETGEN(lr, thread, ts, regnum, reg);
             
         case PLCRASH_ARM_PC:
-            SETGEN(pc, thread, ts, reg);
+            SETGEN(pc, thread, ts, regnum, reg);
             
         case PLCRASH_ARM_CPSR:
-            SETGEN(cpsr, thread, ts, reg);
+            SETGEN(cpsr, thread, ts, regnum, reg);
             
         default:
             // Unsupported register

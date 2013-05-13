@@ -42,6 +42,8 @@
  *
  * @param thread_state The thread state to be initialized.
  * @param uap The context to use for cursor initialization.
+ *
+ * All registers will be marked as available.
  */
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap) {
     /*
@@ -83,11 +85,16 @@ void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thr
 #else
 #error Add platform support
 #endif
+
+    /* Mark all registers as available */
+    memset(&thread_state->valid_regs, 0xFF, sizeof(thread_state->valid_regs));
 }
 
 /**
  * Initialize the @a thread_state using thread state fetched from the given mach @a thread. If the thread is not
  * suspended, the fetched state may be inconsistent.
+ *
+ * All registers will be marked as available.
  *
  * @param thread_state The thread state to be initialized.
  * @param thread The thread from which to fetch thread state.
@@ -138,8 +145,44 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
 #else
 #error Add platform support
 #endif
-    
+
+    /* Mark all registers as available */
+    memset(&thread_state->valid_regs, 0xFF, sizeof(thread_state->valid_regs));
+
     return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Return true if @a regnum is set in @a thread_state, false otherwise.
+ *
+ * @param thread_state The thread state to test.
+ * @param regnum The register number to test for.
+ */
+bool plcrash_async_thread_state_has_reg (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
+    if ((thread_state->valid_regs & (1<<regnum)) != 0)
+        return true;
+    
+    return false;
+}
+
+/**
+ * Clear @a regnum in @a thread_state.
+ *
+ * @param thread_state The thread state to modify.
+ * @param regnum The register to unset.
+ */
+void plcrash_async_thread_state_clear_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
+    thread_state->valid_regs &= ~(1<<regnum);
+}
+
+
+/**
+ * Clear all registers in @a thread_state.
+ *
+ * @param thread_state The thread state to modify.
+ */
+void plcrash_async_thread_state_clear_all_regs (plcrash_async_thread_state_t *thread_state) {
+    thread_state->valid_regs = 0x0;
 }
 
 /**
