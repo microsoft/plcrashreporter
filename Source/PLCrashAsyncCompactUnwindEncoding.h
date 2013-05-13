@@ -169,6 +169,11 @@ intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry)
 uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry);
 void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, plcrash_regnum_t register_list[]);
 
+plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
+                                               const plcrash_async_thread_state_t *thread_state,
+                                               plcrash_async_cfe_entry_t *entry,
+                                               plcrash_async_thread_state_t *new_thread_state);
+
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count);

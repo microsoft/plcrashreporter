@@ -718,4 +718,31 @@
     STAssertEquals(encoding, (uint32_t)PC_REGULAR_ENCODING, @"Incorrect encoding returned");
 }
 
+
+- (void) testApplyFramePTRState {
+    plcrash_async_cfe_entry_t entry;
+    plcrash_async_thread_state_t ts;
+    
+    /* Create a frame encoding, with registers saved at rbp-1020 bytes */
+    const uint32_t encoded_reg_rbp_offset = 1016;
+    const uint32_t encoded_regs = UNWIND_X86_64_REG_R12 |
+    (UNWIND_X86_64_REG_R13 << 3) |
+    (UNWIND_X86_64_REG_R14 << 6);
+    
+    uint32_t encoding = UNWIND_X86_64_MODE_RBP_FRAME |
+    INSERT_BITS(encoded_reg_rbp_offset/8, UNWIND_X86_64_RBP_FRAME_OFFSET) |
+    INSERT_BITS(encoded_regs, UNWIND_X86_64_RBP_FRAME_REGISTERS);
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), @"Failed to initialize CFE entry");
+    
+    /* Initialize default thread state */
+    plcrash_async_thread_state_mach_thread_init(&ts, mach_thread_self());
+    plcrash_async_thread_state_clear_all_regs(&ts);
+    
+    /* Apply! */
+    plcrash_async_thread_state_t nts;
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), &ts, &entry, &nts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
+}
+
 @end

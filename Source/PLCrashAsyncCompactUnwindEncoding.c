@@ -880,6 +880,48 @@ void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, pl
 }
 
 /**
+ * Apply the decoded @a entry to @a new_thread_state, fetching data from @a task, and populate @a new_state with
+ * the result.
+ *
+ * @param task The task containing any data referenced by @a thread_state.
+ * @param thread_state The current thread state corresponding to @a entry.
+ * @param entry A CFE unwind entry.
+ * @param new_thread_state The new thread state to be initialized.
+ *
+ * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ */
+plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
+                                               const plcrash_async_thread_state_t *thread_state,
+                                               plcrash_async_cfe_entry_t *entry,
+                                               plcrash_async_thread_state_t *new_thread_state)
+{
+    /* Initialize the new thread state */
+    *new_thread_state = *thread_state;
+    plcrash_async_thread_state_clear_all_regs(new_thread_state);
+    
+    switch (plcrash_async_cfe_entry_type(entry)) {
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR:
+            break;
+            
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD:
+            break;
+            
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT:
+            break;
+            
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF:
+            return PLCRASH_ENOTSUP;
+            
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE:
+            return PLCRASH_ENOTSUP;
+    }
+    
+    // Unreachable
+    __builtin_trap();
+    return PLCRASH_EUNKNOWN;
+}
+
+/**
  * Free all resources associated with @a entry.
  */
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry) {

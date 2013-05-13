@@ -30,11 +30,6 @@
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 
-plframe_error_t plframe_cursor_apply_compact_unwind (task_t task,
-                                                     const plcrash_async_thread_state_t *thread_state,
-                                                     plcrash_async_cfe_entry_t *entry,
-                                                     plcrash_async_thread_state_t *new_thread_state);
-
 plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
                                                     plcrash_async_image_list_t *image_list,
                                                     const plframe_stackframe_t *current_frame,
