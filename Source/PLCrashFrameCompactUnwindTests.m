@@ -72,4 +72,32 @@
     STAssertEquals(err, PLFRAME_ENOTSUP, @"Unexpected result for a frame missing a valid image");
 }
 
+#define INSERT_BITS(bits, mask) ((bits << __builtin_ctz(mask)) & mask)
+
+- (void) testApplyFramePTRState {
+    plcrash_async_cfe_entry_t entry;
+    plcrash_async_thread_state_t ts;
+    
+    /* Create a frame encoding, with registers saved at rbp-1020 bytes */
+    const uint32_t encoded_reg_rbp_offset = 1016;
+    const uint32_t encoded_regs = UNWIND_X86_64_REG_R12 |
+    (UNWIND_X86_64_REG_R13 << 3) |
+    (UNWIND_X86_64_REG_R14 << 6);
+    
+    uint32_t encoding = UNWIND_X86_64_MODE_RBP_FRAME |
+    INSERT_BITS(encoded_reg_rbp_offset/8, UNWIND_X86_64_RBP_FRAME_OFFSET) |
+    INSERT_BITS(encoded_regs, UNWIND_X86_64_RBP_FRAME_REGISTERS);
+
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), @"Failed to initialize CFE entry");
+
+    /* Initialize default thread state */
+    plcrash_async_thread_state_mach_thread_init(&ts, mach_thread_self());
+    plcrash_async_thread_state_clear_all_regs(&ts);
+    
+    /* Apply! */
+    plcrash_async_thread_state_t nts;
+    plframe_error_t err = plframe_cursor_apply_compact_unwind(mach_task_self(), &ts, &entry, &nts);
+    STAssertEquals(err, PLFRAME_ESUCCESS, @"Failed to apply state to thread");
+}
+
 @end
