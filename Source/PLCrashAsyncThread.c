@@ -38,6 +38,50 @@
  */
 
 /**
+ * Initialize an empty @a thread_state with the given @a cpu_type. Not all CPU types are supported, in which case
+ * PLCRASH_ENOTSUP will be returned.
+ *
+ * @param thread_state The thread state to be initialized.
+ * @param cpu_type The target thread CPU type.
+ */
+plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *thread_state, cpu_type_t cpu_type) {
+    memset(thread_state, 0, sizeof(*thread_state));
+
+    switch (cpu_type) {
+        case CPU_TYPE_X86:
+            thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE32_COUNT;
+            thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE32;
+            thread_state->x86_state.exception.esh.count = x86_EXCEPTION_STATE32_COUNT;
+            thread_state->x86_state.exception.esh.flavor = x86_EXCEPTION_STATE32;
+            
+            thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+            thread_state->greg_size = 4;
+            break;
+
+        case CPU_TYPE_X86_64:
+            thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE64_COUNT;
+            thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE64;            
+            thread_state->x86_state.exception.esh.count = x86_EXCEPTION_STATE64_COUNT;
+            thread_state->x86_state.exception.esh.flavor = x86_EXCEPTION_STATE64;
+            
+            thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+            thread_state->greg_size = 8;
+            break;
+
+        case CPU_TYPE_ARM:
+            thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+            thread_state->greg_size = 4;
+            break;
+
+        default:
+            return PLCRASH_ENOTSUP;
+    }
+
+    plcrash_async_thread_state_clear_all_regs(thread_state);
+    return PLCRASH_ESUCCESS;
+}
+
+/**
  * Initialize the @a thread_state using the provided context.
  *
  * @param thread_state The thread state to be initialized.
@@ -52,35 +96,31 @@ void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thr
      * thread type.
      */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
+    plcrash_async_thread_state_init(thread_state, CPU_TYPE_ARM);
+
     /* Sanity check. */
     PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->arm_state.thread));
 
     plcrash_async_memcpy(&thread_state->arm_state.thread, &uap->uc_mcontext->__ss, sizeof(thread_state->arm_state.thread));
     
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT) && defined(__LP64__)
+    plcrash_async_thread_state_init(thread_state, CPU_TYPE_X86_64);
+
     /* Sanity check. */
     PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->x86_state.thread.uts.ts64));
     PLCF_ASSERT(sizeof(uap->uc_mcontext->__es) == sizeof(thread_state->x86_state.exception.ues.es64));
-
-    thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE64_COUNT;
-    thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE64;
-    plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts64, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts64));
     
-    thread_state->x86_state.exception.esh.count = x86_EXCEPTION_STATE64_COUNT;
-    thread_state->x86_state.exception.esh.flavor = x86_EXCEPTION_STATE64;
+    plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts64, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts64));
     plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es64, &uap->uc_mcontext->__es, sizeof(thread_state->x86_state.exception.ues.es64));
 
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT)
+    plcrash_async_thread_state_init(thread_state, CPU_TYPE_X86);
+
     /* Sanity check. */
     PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->x86_state.thread.uts.ts32));
     PLCF_ASSERT(sizeof(uap->uc_mcontext->__es) == sizeof(thread_state->x86_state.exception.ues.es32));
 
-    thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE32_COUNT;
-    thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE32;
     plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts32, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts32));
-    
-    thread_state->x86_state.exception.esh.count = x86_EXCEPTION_STATE32_COUNT;
-    thread_state->x86_state.exception.esh.flavor = x86_EXCEPTION_STATE32;
     plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es32, &uap->uc_mcontext->__es, sizeof(thread_state->x86_state.exception.ues.es32));
 #else
 #error Add platform support
