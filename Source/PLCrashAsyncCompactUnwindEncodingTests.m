@@ -291,7 +291,7 @@
 
     uint32_t reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
-    STAssertEquals(reg_ebp_offset, encoded_reg_ebp_offset, @"Incorrect offset extracted");
+    STAssertEquals(reg_ebp_offset, -encoded_reg_ebp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
 
     /* Extract the registers. Up to 5 may be encoded */
@@ -493,7 +493,7 @@
     
     uint32_t reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
-    STAssertEquals(reg_ebp_offset, encoded_reg_rbp_offset, @"Incorrect offset extracted");
+    STAssertEquals(reg_ebp_offset, -encoded_reg_rbp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
 
     /* Extract the registers. Up to 5 may be encoded */
@@ -719,15 +719,36 @@
 }
 
 
-- (void) testApplyFramePTRState {
+/*
+ * CFE is only supported on x86/x86-64, and the iOS SDK does not provide the thread state APIs necessary
+ * to perform these tests on ARM
+ *
+ * TODO: Disabe the entire CFE subsystem on ARM, eg, via a configuration system for enabling/disabling
+ * functionality.
+ */
+#if PLCRASH_ASYNC_THREAD_X86_SUPPORT
+- (void) testx86_64_ApplyFramePTRState {
     plcrash_async_cfe_entry_t entry;
     plcrash_async_thread_state_t ts;
     
-    /* Create a frame encoding, with registers saved at rbp-1020 bytes */
-    const uint32_t encoded_reg_rbp_offset = 1016;
+    /* Set up a faux frame */
+    uint64_t stackframe[] = {
+        12, // r12
+        13, // r13
+        0,  // sparse slot
+        14, // r14
+
+        1,  // rbp
+        2,  // ret addr
+    };
+
+    /* Create a frame encoding, with registers saved at rbp-32 bytes. We insert
+     * a sparse slot to test the sparse handling */
+    const uint32_t encoded_reg_rbp_offset = 32;
     const uint32_t encoded_regs = UNWIND_X86_64_REG_R12 |
-    (UNWIND_X86_64_REG_R13 << 3) |
-    (UNWIND_X86_64_REG_R14 << 6);
+        (UNWIND_X86_64_REG_R13 << 3) |
+        0 << 6 /* SPARSE */ |
+        (UNWIND_X86_64_REG_R14 << 9);
     
     uint32_t encoding = UNWIND_X86_64_MODE_RBP_FRAME |
     INSERT_BITS(encoded_reg_rbp_offset/8, UNWIND_X86_64_RBP_FRAME_OFFSET) |
@@ -736,13 +757,95 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), @"Failed to initialize CFE entry");
     
     /* Initialize default thread state */
-    plcrash_async_thread_state_mach_thread_init(&ts, mach_thread_self());
+    plcrash_greg_t stack_addr = &stackframe[4]; // rbp
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
     plcrash_async_thread_state_clear_all_regs(&ts);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_FP, stack_addr);
+
+    /* Apply! */
+    plcrash_async_thread_state_t nts;
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), &ts, &entry, &nts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
+    
+    /* Verify! */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_RSP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_RBP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_RIP), @"Missing expected register");
+
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R12), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R13), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R14), @"Missing expected register");
+
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)stack_addr+(16), @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RBP), (plcrash_greg_t)1, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RIP), (plcrash_greg_t)2, @"Incorrect register value");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_R12), (plcrash_greg_t)12, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_R13), (plcrash_greg_t)13, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_R14), (plcrash_greg_t)14, @"Incorrect register value");
+}
+
+/* This test requires storing local pointers to the host's stack in 32-bit x86's thread state; it can only be run on a 32-bit host,
+ * as the 64-bit stack pointers may exceed the UINT32_MAX. */
+#ifndef __LP64__
+- (void) testx86_32_ApplyFramePTRState {
+    plcrash_async_cfe_entry_t entry;
+    plcrash_async_thread_state_t ts;
+    
+    /* Set up a faux frame */
+    uint32_t stackframe[] = {
+        12, // ebx
+        13, // ecx
+        0,  // sparse slot
+        14, // edi
+        
+        1,  // ebp
+        2,  // ret addr
+    };
+    
+    /* Create a frame encoding, with registers saved at ebp-16 bytes. We insert
+     * a sparse slot to test the sparse handling */
+    const uint32_t encoded_reg_ebp_offset = 16;
+    const uint32_t encoded_regs = UNWIND_X86_REG_EBX |
+                                    (UNWIND_X86_REG_ECX << 3) |
+                                    0 << 6 /* SPARSE */ |
+                                    (UNWIND_X86_REG_EDI << 9);
+    
+    uint32_t encoding = UNWIND_X86_MODE_EBP_FRAME |
+    INSERT_BITS(encoded_reg_ebp_offset/4, UNWIND_X86_EBP_FRAME_OFFSET) |
+    INSERT_BITS(encoded_regs, UNWIND_X86_EBP_FRAME_REGISTERS);
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding), @"Failed to initialize CFE entry");
+    
+    /* Initialize default thread state */
+    plcrash_greg_t stack_addr = &stackframe[4]; // ebp
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    plcrash_async_thread_state_clear_all_regs(&ts);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_FP, stack_addr);
     
     /* Apply! */
     plcrash_async_thread_state_t nts;
     plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), &ts, &entry, &nts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
+    
+    /* Verify! */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_ESP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_EBP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_EIP), @"Missing expected register");
+    
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_EBX), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_ECX), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_EDI), @"Missing expected register");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_ESP), (plcrash_greg_t)stack_addr+(8), @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_EBP), (plcrash_greg_t)1, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_EIP), (plcrash_greg_t)2, @"Incorrect register value");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_EBX), (plcrash_greg_t)12, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_ECX), (plcrash_greg_t)13, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_EDI), (plcrash_greg_t)14, @"Incorrect register value");
 }
+#endif /* !__LP64__ */
+#endif /* PLCRASH_ASYNC_THREAD_X86_SUPPORT */
 
 @end

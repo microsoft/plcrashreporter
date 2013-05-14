@@ -648,7 +648,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
 
                 /* Extract the register frame offset */
-                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_OFFSET) * sizeof(uint32_t);
+                entry->stack_offset = -(EXTRACT_BITS(encoding, UNWIND_X86_EBP_FRAME_OFFSET) * sizeof(uint32_t));
 
                 /* Extract the register values. They're stored as a bitfield of of 3 bit values. We support
                  * sparse entries, but terminate the loop if no further entries remain. */
@@ -738,7 +738,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
                 
                 /* Extract the register frame offset */
-                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_RBP_FRAME_OFFSET) * sizeof(uint64_t);
+                entry->stack_offset = -(EXTRACT_BITS(encoding, UNWIND_X86_64_RBP_FRAME_OFFSET) * sizeof(uint64_t));
 
                 /* Extract the register values. They're stored as a bitfield of of 3 bit values. We support
                  * sparse entries, but terminate the loop if no further entries remain. */
@@ -895,13 +895,72 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                                                plcrash_async_cfe_entry_t *entry,
                                                plcrash_async_thread_state_t *new_thread_state)
 {
+    /* Set up register load target */
+    size_t greg_size = plcrash_async_thread_state_get_greg_size(thread_state);
+    bool x64 = (greg_size == sizeof(uint64_t));
+    void *dest;
+    union {
+        /* Room for (frame pointer, return address) + saved registers */
+        uint64_t greg64[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+        uint32_t greg32[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    } regs;
+
+    if (x64)
+        dest = regs.greg64;
+    else
+        dest = regs.greg32;
+    
+    /* Sanity check: We'll use this buffer for popping the fp and pc, as well as restoring the saved registers. */
+    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 2);
+
+    /* Compute the offset to the apply to the stack pointer when popping values */
+    int32_t pop_offset;
+    if (plcrash_async_thread_state_get_stack_direction(thread_state) == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN) {
+        pop_offset = greg_size;
+    } else {
+        pop_offset = -greg_size;
+    }
+
     /* Initialize the new thread state */
     *new_thread_state = *thread_state;
     plcrash_async_thread_state_clear_all_regs(new_thread_state);
-    
+
+    pl_vm_address_t saved_reg_addr = 0x0;
     switch (plcrash_async_cfe_entry_type(entry)) {
-        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR:
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: {
+            /* Fetch the current frame pointer */
+            if (!plcrash_async_thread_state_has_reg(thread_state, PLCRASH_REG_FP)) {
+                PLCF_DEBUG("Can't apply FRAME_PTR unwind type without a valid frame pointer");
+                return PLCRASH_ENOTFOUND;
+            }
+
+            plcrash_greg_t fp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_FP);
+            
+            /* Address of saved registers */
+            saved_reg_addr = fp + entry->stack_offset;
+            
+            /* Restore the previous frame's stack pointer from the saved frame pointer. This is
+             * the FP + saved FP + return address. */
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp + (greg_size*2));
+
+            /* Read the previous frame's fp and retaddr */
+            kern_return_t kr;
+            kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, greg_size*2);
+            if (kr != KERN_SUCCESS) {
+                PLCF_DEBUG("Failed to read frame data at address 0x%" PRIx64 ": %d", (uint64_t) fp, kr);
+                return PLCRASH_EINVAL;
+            }
+
+            // XXX: This assumes downward stack growth.
+            if (x64) {
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_FP, regs.greg64[0]);
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg64[1]);
+            } else {
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_FP, regs.greg32[0]);
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[1]);
+            }
             break;
+        }
             
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD:
             break;
@@ -915,10 +974,33 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE:
             return PLCRASH_ENOTSUP;
     }
+
+    /* Extract the saved registers */
+    uint32_t register_count = plcrash_async_cfe_entry_register_count(entry);
+    plcrash_regnum_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    plcrash_async_cfe_entry_register_list(entry, register_list);
+    for (uint32_t i = 0; i < register_count; i++) {
+        /* The register list may be sparse */
+        if (register_list[i] == PLCRASH_REG_INVALID)
+            continue;
+
+        /* Fetch and save register data */
+        kern_return_t kr;
+        kr = plcrash_async_read_addr(task, (pl_vm_address_t) saved_reg_addr + (i*greg_size), dest, greg_size);
+        if (kr != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to read register data for index %s: %d", plcrash_async_thread_state_get_reg_name(thread_state, register_list[i]), kr);
+            return PLCRASH_EINVAL;
+        }
+
+        if (x64) {
+            plcrash_async_thread_state_set_reg(new_thread_state, register_list[i], regs.greg64[0]);
+        } else {
+            plcrash_async_thread_state_set_reg(new_thread_state, register_list[i], regs.greg32[0]);
+        }
+    }
     
-    // Unreachable
-    __builtin_trap();
-    return PLCRASH_EUNKNOWN;
+
+    return PLCRASH_ESUCCESS;
 }
 
 /**
