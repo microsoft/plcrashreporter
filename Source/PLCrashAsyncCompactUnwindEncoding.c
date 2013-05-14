@@ -963,10 +963,12 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
         }
             
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD:
-            break;
+            // TODO
+            return PLCRASH_ENOTSUP;
             
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT:
-            break;
+            // TODO
+            return PLCRASH_ENOTSUP;
             
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF:
             return PLCRASH_ENOTSUP;

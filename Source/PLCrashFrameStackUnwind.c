@@ -108,10 +108,6 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
         new_pc = regs.greg32[1];
     }
 
-    /* A NULL pc is a terminating frame */
-    if (new_pc == 0x0)
-        return PLFRAME_ENOFRAME;
-
     /* Initialize the new frame, deriving state from the previous frame. */
     *next_frame = *current_frame;
 

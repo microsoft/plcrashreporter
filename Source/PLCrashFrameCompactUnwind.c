@@ -104,25 +104,9 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         goto cleanup;
     }
 
-    /* Handle the case where no unwind data is available from a valid entry */
-    plcrash_async_cfe_entry_type_t entry_type = plcrash_async_cfe_entry_type(&entry);
-    if (entry_type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE) {
-        result = PLFRAME_ENOTSUP;
-        goto cleanup;
-    }
+    /* Apply the frame delta -- this may fail. */
+    result = plcrash_async_cfe_entry_apply(task, &current_frame->thread_state, &entry, &next_frame->thread_state) != PLCRASH_ESUCCESS;
 
-    /* Apply the frame delta */
-    // TODO
-    result = PLFRAME_EUNKNOWN;
-    uint32_t register_count = plcrash_async_cfe_entry_register_count(&entry);
-    plcrash_regnum_t register_list[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
-    
-    plcrash_async_cfe_entry_register_list(&entry, register_list);
-    for (uint32_t i = 0; i < register_count; i++) {
-        const char *name = plcrash_async_thread_state_get_reg_name(&current_frame->thread_state, register_list[i]);
-        PLCF_DEBUG("Register name saved: %s", name);
-    }
-    
     plcrash_async_cfe_entry_free(&entry);
 
 cleanup:

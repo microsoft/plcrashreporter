@@ -191,6 +191,17 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
         return ferr;
     }
 
+    /* Check for completion */
+    if (!plcrash_async_thread_state_has_reg(&frame.thread_state, PLCRASH_REG_IP)) {
+        PLCF_DEBUG("Missing expected IP value in successfully read frame");
+        return PLFRAME_ENOFRAME;
+    }
+
+    /* A NULL pc is a terminating frame */
+    plcrash_greg_t ip = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_IP);
+    if (ip == 0x0)
+        return PLFRAME_ENOFRAME;
+
     /* Save the newly fetched frame */
     cursor->prev_frame = cursor->frame;
     cursor->frame = frame;
