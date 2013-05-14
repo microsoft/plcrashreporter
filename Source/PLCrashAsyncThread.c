@@ -48,6 +48,7 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
     memset(thread_state, 0, sizeof(*thread_state));
 
     switch (cpu_type) {
+#if PLCRASH_ASYNC_THREAD_X86_SUPPORT
         case CPU_TYPE_X86:
             thread_state->x86_state.thread.tsh.count = x86_THREAD_STATE32_COUNT;
             thread_state->x86_state.thread.tsh.flavor = x86_THREAD_STATE32;
@@ -67,11 +68,14 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
             thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
             thread_state->greg_size = 8;
             break;
+#endif /* PLCRASH_ASYNC_THREAD_X86_SUPPORT */
 
+#if PLCRASH_ASYNC_THREAD_ARM_SUPPORT
         case CPU_TYPE_ARM:
             thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
             thread_state->greg_size = 4;
             break;
+#endif /* PLCRASH_ASYNC_THREAD_ARM_SUPPORT */
 
         default:
             return PLCRASH_ENOTSUP;

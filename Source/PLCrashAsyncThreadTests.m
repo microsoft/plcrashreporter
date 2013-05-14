@@ -94,7 +94,8 @@
 /* Test plcrash_async_thread_state_init() */
 - (void) testEmptyInit {
     plcrash_async_thread_state_t ts;
-    
+
+#if PLCRASH_ASYNC_THREAD_X86_SUPPORT
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
     STAssertEquals(ts.x86_state.thread.tsh.count, (int)x86_THREAD_STATE32_COUNT, @"Incorrect count");
     STAssertEquals(ts.x86_state.thread.tsh.flavor, x86_THREAD_STATE32, @"Incorrect flavor");
@@ -110,6 +111,7 @@
     STAssertEquals(ts.x86_state.exception.esh.flavor, x86_EXCEPTION_STATE64, @"Incorrect flavor");
     STAssertEquals(ts.stack_direction, PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN, @"Incorrect stack direction");
     STAssertEquals(ts.greg_size, (size_t)8, @"Incorrect gpreg size");
+#endif /* PLCRASH_ASYNC_THREAD_X86_SUPPORT */
 
 #if PLCRASH_ASYNC_THREAD_ARM_SUPPORT
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_ARM), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
