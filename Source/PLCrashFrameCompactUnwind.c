@@ -86,8 +86,9 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     }
 
     /* Find the encoding entry (if any) and free the reader */
+    pl_vm_address_t function_base;
     uint32_t encoding;
-    err = plcrash_async_cfe_reader_find_pc(&reader, pc, &encoding);
+    err = plcrash_async_cfe_reader_find_pc(&reader, pc, &function_base, &encoding);
     plcrash_async_cfe_reader_free(&reader);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Did not find CFE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
@@ -103,9 +104,18 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         result = PLFRAME_ENOTSUP;
         goto cleanup;
     }
+    
+    /* Compute the in-core function address */
+    pl_vm_address_t function_address;
+    if (PL_VM_ADDRESS_MAX - function_base < image->macho_image.header_addr) {
+        PLCF_DEBUG("The provided function base (0x%" PRIx64 ") plus header address (0x%" PRIx64 ") will overflow pl_vm_address_t",
+                   (uint64_t) function_base, (uint64_t) image->macho_image.header_addr);
+        return false;
+    }
+    function_address = function_base + image->macho_image.header_addr;
 
     /* Apply the frame delta -- this may fail. */
-    result = plcrash_async_cfe_entry_apply(task, &current_frame->thread_state, &entry, &next_frame->thread_state) != PLCRASH_ESUCCESS;
+    result = plcrash_async_cfe_entry_apply(task, function_address, &current_frame->thread_state, &entry, &next_frame->thread_state) != PLCRASH_ESUCCESS;
 
     plcrash_async_cfe_entry_free(&entry);
 

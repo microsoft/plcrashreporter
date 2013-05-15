@@ -157,7 +157,7 @@ typedef struct plcrash_async_cfe_entry {
 
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype);
 
-plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, uint32_t *encoding);
+plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, pl_vm_address_t *function_base, uint32_t *encoding);
 
 void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader);
 
@@ -170,6 +170,7 @@ uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entr
 void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, plcrash_regnum_t register_list[]);
 
 plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
+                                               pl_vm_address_t function_address,
                                                const plcrash_async_thread_state_t *thread_state,
                                                plcrash_async_cfe_entry_t *entry,
                                                plcrash_async_thread_state_t *new_thread_state);

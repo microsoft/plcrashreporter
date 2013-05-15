@@ -686,11 +686,13 @@
  * Test reading of a PC, compressed, with a common encoding.
  */
 - (void) testReadCompressedCommonEncoding {
+    pl_vm_address_t function_base;
     plcrash_error_t err;
 
     uint32_t encoding;
-    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_COMMON, &encoding);
+    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_COMMON, &function_base, &encoding);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
+    STAssertEquals(function_base, (pl_vm_address_t)PC_COMPACT_COMMON, @"Incorrect function base returned");
     STAssertEquals(encoding, (uint32_t)PC_COMPACT_COMMON_ENCODING, @"Incorrect encoding returned");
 }
 
@@ -698,11 +700,13 @@
  * Test reading of a PC, compressed, with a private encoding.
  */
 - (void) testReadCompressedEncoding {
+    pl_vm_address_t function_base;
     plcrash_error_t err;
     
     uint32_t encoding;
-    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_PRIVATE, &encoding);
+    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_COMPACT_PRIVATE, &function_base, &encoding);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
+    STAssertEquals(function_base, (pl_vm_address_t)PC_COMPACT_PRIVATE, @"Incorrect function base returned");
     STAssertEquals(encoding, (uint32_t)PC_COMPACT_PRIVATE_ENCODING, @"Incorrect encoding returned");
 }
 
@@ -710,11 +714,13 @@
  * Test reading of a PC, regular, with a common encoding.
  */
 - (void) testReadRegularEncoding {
+    pl_vm_address_t function_base;
     plcrash_error_t err;
     
     uint32_t encoding;
-    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_REGULAR, &encoding);
+    err = plcrash_async_cfe_reader_find_pc(&_reader, PC_REGULAR, &function_base, &encoding);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to locate CFE entry");
+    STAssertEquals(function_base, (pl_vm_address_t)PC_REGULAR, @"Incorrect function base returned");
     STAssertEquals(encoding, (uint32_t)PC_REGULAR_ENCODING, @"Incorrect encoding returned");
 }
 
@@ -763,7 +769,7 @@
 
     /* Apply! */
     plcrash_async_thread_state_t nts;
-    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), &ts, &entry, &nts);
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), 0x0, &ts, &entry, &nts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
     
     /* Verify! */
@@ -825,7 +831,7 @@
     
     /* Apply! */
     plcrash_async_thread_state_t nts;
-    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), &ts, &entry, &nts);
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), 0x0, &ts, &entry, &nts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
     
     /* Verify! */
@@ -886,7 +892,72 @@
 
     /* Apply */
     plcrash_async_thread_state_t nts;
-    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), &ts, &entry, &nts);
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), 0x0, &ts, &entry, &nts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
+    
+    /* Verify */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_RSP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_RIP), @"Missing expected register");
+    
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_RBP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R12), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R13), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R14), @"Missing expected register");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)stack_addr+8, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RIP), (plcrash_greg_t)2, @"Incorrect register value");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RBP), (plcrash_greg_t)10, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_R12), (plcrash_greg_t)12, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_R13), (plcrash_greg_t)13, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_R14), (plcrash_greg_t)14, @"Incorrect register value");
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Apply an x86-64 indirect 'frameless' encoding.
+ */
+- (void) testX86_64_ApplyFramePTRState_IND {
+    plcrash_async_cfe_entry_t entry;
+    plcrash_async_thread_state_t ts;
+
+    /* Set up a faux frame */
+    uint64_t stackframe[] = {
+        10, // rbp
+        12, // r12
+        13, // r13
+        14, // r14
+        
+        2,  // ret addr
+    };
+    
+
+    /* Create a frame encoding */
+    const uint32_t encoded_stack_size = 128;
+    const uint32_t encoded_regs[] = { UNWIND_X86_64_REG_RBP, UNWIND_X86_64_REG_R12, UNWIND_X86_64_REG_R13, UNWIND_X86_64_REG_R14 };
+    const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
+    const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
+    
+    /* Indirect address target */
+    uint32_t indirect_encoded_stack_size = 32;
+    pl_vm_address_t function_address = ((pl_vm_address_t) &indirect_encoded_stack_size) - encoded_stack_size;
+    
+    uint32_t encoding = UNWIND_X86_64_MODE_STACK_IND |
+    INSERT_BITS(encoded_stack_size/8, UNWIND_X86_64_FRAMELESS_STACK_SIZE) |
+    INSERT_BITS(encoded_regs_count, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT) |
+    INSERT_BITS(encoded_regs_permutation, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
+    
+    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), PLCRASH_ESUCCESS, @"Failed to decode entry");
+    
+    /* Initialize default thread state */
+    plcrash_greg_t stack_addr = &stackframe[4]; // return address
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, stack_addr - indirect_encoded_stack_size);
+    
+    /* Apply */
+    plcrash_async_thread_state_t nts;
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), function_address, &ts, &entry, &nts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
     
     /* Verify */

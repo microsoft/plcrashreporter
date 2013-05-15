@@ -146,12 +146,14 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
  * @param reader The initialized CFE reader which will be searched for the entry.
  * @param pc The PC value to search for within the CFE data. Note that this value must be relative to
  * the target Mach-O image's __TEXT vmaddr.
+ * @param function_base On success, will be populated with the base address of the function. This value is relative to
+ * the image's load address, rather than the in-memory address of the loaded image.
  * @param encoding On success, will be populated with the compact frame encoding entry.
  *
  * @return Returns PLFRAME_ESUCCCESS on success, or one of the remaining error codes if a CFE parsing error occurs. If
  * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
  */
-plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, uint32_t *encoding) {
+plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, pl_vm_address_t *function_base, uint32_t *encoding) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
 
@@ -255,6 +257,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             }
 
             *encoding = byteorder->swap32(entry->encoding);
+            *function_base = byteorder->swap32(entry->functionOffset);
             return PLCRASH_ESUCCESS;
         }
 
@@ -300,6 +303,9 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
             uint32_t c_entry = byteorder->swap32(*c_entry_ptr);
             uint8_t c_encoding_idx = UNWIND_INFO_COMPRESSED_ENTRY_ENCODING_INDEX(c_entry);
             
+            /* Save the function base */
+            *function_base = base_foffset + UNWIND_INFO_COMPRESSED_ENTRY_FUNC_OFFSET(byteorder->swap32(c_entry));
+            
             /* Handle common table entries */
             if (c_encoding_idx < common_enc_count) {
                 /* Found in the common table. The offset is verified as being within the mapped memory range by
@@ -331,7 +337,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_EINVAL;
             }
 
-            /* Extract the encoding */
+            /* Save the results */
             *encoding = byteorder->swap32(encodings[c_encoding_idx]);
             return PLCRASH_ESUCCESS;
         }
@@ -884,13 +890,18 @@ void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, pl
  * the result.
  *
  * @param task The task containing any data referenced by @a thread_state.
+ * @param function_address The task-relative in-memory address of the function containing @a entry. This may be computed
+ * by adding the function_base returned by plcrash_async_cfe_reader_find_pc() to the base address of the loaded image.
  * @param thread_state The current thread state corresponding to @a entry.
  * @param entry A CFE unwind entry.
  * @param new_thread_state The new thread state to be initialized.
  *
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ *
+ * @todo This implementation assumes downwards stack growth.
  */
 plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
+                                               pl_vm_address_t function_address,
                                                const plcrash_async_thread_state_t *thread_state,
                                                plcrash_async_cfe_entry_t *entry,
                                                plcrash_async_thread_state_t *new_thread_state)
@@ -926,8 +937,11 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
     plcrash_async_thread_state_clear_all_regs(new_thread_state);
 
     pl_vm_address_t saved_reg_addr = 0x0;
-    switch (plcrash_async_cfe_entry_type(entry)) {
+    plcrash_async_cfe_entry_type_t entry_type = plcrash_async_cfe_entry_type(entry);
+    switch (entry_type) {
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: {
+            plcrash_error_t err;
+
             /* Fetch the current frame pointer */
             if (!plcrash_async_thread_state_has_reg(thread_state, PLCRASH_REG_FP)) {
                 PLCF_DEBUG("Can't apply FRAME_PTR unwind type without a valid frame pointer");
@@ -941,14 +955,19 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             
             /* Restore the previous frame's stack pointer from the saved frame pointer. This is
              * the FP + saved FP + return address. */
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp + (greg_size*2));
+            pl_vm_address_t new_sp;
+            if (!plcrash_async_address_apply_offset(fp, greg_size * 2, &new_sp)) {
+                PLCF_DEBUG("Current frame pointer falls outside of addressable bounds");
+                return PLCRASH_EINVAL;
+            }
+    
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, new_sp);
 
             /* Read the saved fp and retaddr */
-            kern_return_t kr;
-            kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, greg_size*2);
-            if (kr != KERN_SUCCESS) {
-                PLCF_DEBUG("Failed to read frame data at address 0x%" PRIx64 ": %d", (uint64_t) fp, kr);
-                return PLCRASH_EINVAL;
+            err = plcrash_async_safe_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size * 2);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Failed to read frame data at address 0x%" PRIx64 ": %d", (uint64_t) fp, err);
+                return err;
             }
 
             // XXX: This assumes downward stack growth.
@@ -962,27 +981,49 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             break;
         }
             
-        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD:
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT:
+            // Fallthrough
+            
+        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD: {
+            plcrash_error_t err;
+
             /* Fetch the current stack pointer */
             if (!plcrash_async_thread_state_has_reg(thread_state, PLCRASH_REG_SP)) {
                 PLCF_DEBUG("Can't apply FRAME_IMMD unwind type without a valid stack pointer");
                 return PLCRASH_ENOTFOUND;
             }
 
+            /* Extract the stack size */
+            pl_vm_address_t stack_size = entry->stack_offset;
+            if (entry_type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT) {
+                /* Stack size is encoded as a 32-bit value within the target process' TEXT segment; the value
+                 * provided from the entry is used as an offset from the start of the function to the actual
+                 * stack size. */
+                uint32_t indirect;
+
+                err = plcrash_async_safe_memcpy(task, function_address, stack_size, &indirect, sizeof(indirect));
+                if (err != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to read indirect stack size from 0x%" PRIx64 " + 0x%" PRIx64 ": %d",
+                               (uint64_t) function_address, (uint64_t)stack_size, err);
+                    return err;
+                }
+
+                stack_size = indirect;
+            }
+
             /* Compute the address of the saved registers */
             plcrash_greg_t sp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
-            pl_vm_address_t fp = sp + entry->stack_offset;
+            pl_vm_address_t fp = sp + stack_size;
             saved_reg_addr = fp - (greg_size * entry->register_count); /* fp - [retval] - [saved registers] */
 
             /* Original SP is just before the return address */
             plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp+greg_pop_offset);
 
             /* Read the saved return address */
-            kern_return_t kr;
-            kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, greg_size);
-            if (kr != KERN_SUCCESS) {
-                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) fp, kr);
-                return PLCRASH_EINVAL;
+            err = plcrash_async_safe_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) fp, err);
+                return err;
             }
             
             if (x64) {
@@ -991,10 +1032,8 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                 plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[0]);
             }
             break;
+        }
 
-        case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT:
-            // TODO
-            return PLCRASH_ENOTSUP;
             
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF:
             return PLCRASH_ENOTSUP;
@@ -1013,11 +1052,11 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             continue;
 
         /* Fetch and save register data */
-        kern_return_t kr;
-        kr = plcrash_async_read_addr(task, (pl_vm_address_t) saved_reg_addr + (i*greg_size), dest, greg_size);
-        if (kr != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to read register data for index %s: %d", plcrash_async_thread_state_get_reg_name(thread_state, register_list[i]), kr);
-            return PLCRASH_EINVAL;
+        plcrash_error_t err;
+        err = plcrash_async_safe_memcpy(task, (pl_vm_address_t) saved_reg_addr, i*greg_size, dest, greg_size);
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("Failed to read register data for index %s: %d", plcrash_async_thread_state_get_reg_name(thread_state, register_list[i]), err);
+            return err;
         }
 
         if (x64) {
