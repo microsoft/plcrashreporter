@@ -914,11 +914,11 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
     PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 2);
 
     /* Compute the offset to the apply to the stack pointer when popping values */
-    int32_t pop_offset;
+    int32_t greg_pop_offset;
     if (plcrash_async_thread_state_get_stack_direction(thread_state) == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN) {
-        pop_offset = greg_size;
+        greg_pop_offset = greg_size;
     } else {
-        pop_offset = -greg_size;
+        greg_pop_offset = -greg_size;
     }
 
     /* Initialize the new thread state */
@@ -943,7 +943,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
              * the FP + saved FP + return address. */
             plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp + (greg_size*2));
 
-            /* Read the previous frame's fp and retaddr */
+            /* Read the saved fp and retaddr */
             kern_return_t kr;
             kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, greg_size*2);
             if (kr != KERN_SUCCESS) {
@@ -963,9 +963,35 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
         }
             
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD:
-            // TODO
-            return PLCRASH_ENOTSUP;
+            /* Fetch the current stack pointer */
+            if (!plcrash_async_thread_state_has_reg(thread_state, PLCRASH_REG_SP)) {
+                PLCF_DEBUG("Can't apply FRAME_IMMD unwind type without a valid stack pointer");
+                return PLCRASH_ENOTFOUND;
+            }
+
+            /* Compute the address of the saved registers */
+            plcrash_greg_t sp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
+            pl_vm_address_t fp = sp + entry->stack_offset;
+            saved_reg_addr = fp - greg_size - (greg_size * entry->register_count); /* fp - [retval] - [saved registers] */
+
+            /* SP is found at return address ± greg_size */
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp+greg_pop_offset);
+
+            /* Read the saved return address */
+            kern_return_t kr;
+            kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, greg_size);
+            if (kr != KERN_SUCCESS) {
+                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) fp, kr);
+                return PLCRASH_EINVAL;
+            }
             
+            if (x64) {
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg64[0]);
+            } else {
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[0]);
+            }
+            break;
+
         case PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT:
             // TODO
             return PLCRASH_ENOTSUP;

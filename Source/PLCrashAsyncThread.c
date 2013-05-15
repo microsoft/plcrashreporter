@@ -41,6 +41,8 @@
  * Initialize an empty @a thread_state with the given @a cpu_type. Not all CPU types are supported, in which case
  * PLCRASH_ENOTSUP will be returned.
  *
+ * All registers will be marked as unavailable.
+ *
  * @param thread_state The thread state to be initialized.
  * @param cpu_type The target thread CPU type.
  */
