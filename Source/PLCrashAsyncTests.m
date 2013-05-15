@@ -89,6 +89,21 @@
     STAssertNotEquals(KERN_SUCCESS, plcrash_async_read_addr(mach_task_self(), 0, dest, sizeof(bytes)), @"Bad read was performed");
 }
 
+- (void) test_safeMemcpyAddr {
+    const char bytes[] = "Hello";
+    char dest[sizeof(bytes)];
+    
+    // Verify that a good read succeeds
+    plcrash_async_safe_memcpy(mach_task_self(), (pl_vm_address_t) bytes, 1, dest, sizeof(dest));
+    STAssertTrue(strcmp(bytes+1, dest) == 0, @"Read was not performed");
+    
+    // Verify that reading off the page at 0x0 fails
+    STAssertNotEquals(PLCRASH_ESUCCESS, plcrash_async_safe_memcpy(mach_task_self(), 0, 0, dest, sizeof(bytes)), @"Bad read was performed");
+    
+    // Verify that overflow is safely handled
+    STAssertEquals(PLCRASH_ENOMEM, plcrash_async_safe_memcpy(mach_task_self(), PL_VM_ADDRESS_MAX, 1, dest, sizeof(bytes)), @"Bad read was performed");
+}
+
 - (void) testStrcmp {
     STAssertEquals(0, plcrash_async_strcmp("s1", "s1"), @"Strings should be equal");
     STAssertTrue(plcrash_async_strcmp("s1", "s2") < 0, @"Strings compared incorrectly");

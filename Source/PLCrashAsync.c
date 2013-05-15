@@ -154,7 +154,7 @@ const char *plcrash_async_strerror (plcrash_error_t error) {
  * will be returned. If the pages can not be read due to access restrictions, KERN_PROTECTION_FAILURE will be returned.
  *
  * @warning Unlike all other plcrash_* functions, plcrash_async_read_addr returns a kern_return_t value.
- * @todo Modify plcrash_async_read_addr and all API clients to use plcrash_error_t values.
+ * @deprecated New code should make use of plcrash_async_safe_memcpy().
  */
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len) {
 #ifdef PL_HAVE_MACH_VM
@@ -164,6 +164,54 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
     vm_size_t read_size = len;
     return vm_read_overwrite(task, source, len, (pointer_t) dest, &read_size);
 #endif
+}
+
+/**
+ * (Safely) copy len bytes from @a task, at @a address + @a offset, storing in @a dest.
+ *
+ * @param task The task from which data from address @a source will be read.
+ * @param address The base address within @a task from which the data will be read.
+ * @param offset The offset from @a address at which data will be read.
+ * @param dest The destination address to which copied data will be written.
+ * @param len The number of bytes to be read.
+ *
+ * @return On success, returns PLCRASH_ESUCCESS. If the pages containing @a source + len are unmapped, PLCRASH_ENOTFOUND
+ * will be returned. If the pages can not be read due to access restrictions, PLCRASH_EACCESS will be returned. If
+ * the proivded address + offset would overflow pl_vm_address_t, PLCRASH_ENOMEM is returned.
+ */
+plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_size_t offset, void *dest, pl_vm_size_t len) {
+    kern_return_t kt;
+
+    /* Check for overflow */
+    if (PL_VM_ADDRESS_MAX - offset < address) {
+        return PLCRASH_ENOMEM;
+    }
+    
+#ifdef PL_HAVE_MACH_VM
+    pl_vm_size_t read_size = len;
+    kt = mach_vm_read_overwrite(task, address+offset, len, (pointer_t) dest, &read_size);
+#else
+    vm_size_t read_size = len;
+    kt = vm_read_overwrite(task, address+offset, len, (pointer_t) dest, &read_size);
+#endif
+    
+    switch (kt) {
+        case KERN_SUCCESS:
+            return PLCRASH_ESUCCESS;
+
+        case KERN_INVALID_ADDRESS:
+            return PLCRASH_ENOTFOUND;
+            break;
+            
+        case KERN_PROTECTION_FAILURE:
+            return PLCRASH_EACCESS;
+            break;
+
+        default:
+            PLCF_DEBUG("Unexpected error from vm_read_overwrite: %d", kt);
+            return PLCRASH_EUNKNOWN;
+            break;
+    }
 }
 
 /**
