@@ -166,6 +166,26 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
 #endif
 }
 
+
+/**
+ * Safely add @a offset to @a base_address, returning the result in @a result. If an overflow would occur, false is returned.
+ *
+ * @param base_address The base address from which @a result will be computed.
+ * @param offset The offset to apply to @a base_address.
+ * @param result The location in which to store the result.
+ */
+bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_size_t offset, pl_vm_address_t *result) {
+    /* Check for overflow */
+    if (PL_VM_ADDRESS_MAX - offset < base_address) {
+        return false;
+    }
+    
+    if (result != NULL)
+        *result = base_address + offset;
+    
+    return true;
+}
+
 /**
  * (Safely) copy len bytes from @a task, at @a address + @a offset, storing in @a dest.
  *
@@ -180,19 +200,19 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
  * the proivded address + offset would overflow pl_vm_address_t, PLCRASH_ENOMEM is returned.
  */
 plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_size_t offset, void *dest, pl_vm_size_t len) {
+    pl_vm_address_t target;
     kern_return_t kt;
 
-    /* Check for overflow */
-    if (PL_VM_ADDRESS_MAX - offset < address) {
+    /* Compute the target address and check for overflow */
+    if (!plcrash_async_address_apply_offset(address, offset, &target))
         return PLCRASH_ENOMEM;
-    }
-    
+
 #ifdef PL_HAVE_MACH_VM
     pl_vm_size_t read_size = len;
-    kt = mach_vm_read_overwrite(task, address+offset, len, (pointer_t) dest, &read_size);
+    kt = mach_vm_read_overwrite(task, target, len, (pointer_t) dest, &read_size);
 #else
     vm_size_t read_size = len;
-    kt = vm_read_overwrite(task, address+offset, len, (pointer_t) dest, &read_size);
+    kt = vm_read_overwrite(task, target, len, (pointer_t) dest, &read_size);
 #endif
     
     switch (kt) {

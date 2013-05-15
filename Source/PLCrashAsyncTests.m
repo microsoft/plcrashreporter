@@ -89,7 +89,19 @@
     STAssertNotEquals(KERN_SUCCESS, plcrash_async_read_addr(mach_task_self(), 0, dest, sizeof(bytes)), @"Bad read was performed");
 }
 
-- (void) test_safeMemcpyAddr {
+
+- (void) testApplyAddress {
+    pl_vm_address_t result;
+    
+    /* Verify standard operation */
+    STAssertTrue(plcrash_async_address_apply_offset(1, 1, &result), @"Failed to apply offset");
+    STAssertEquals((pl_vm_address_t)2, result, @"Incorrect address returned");
+
+    /* Verify that overflow is safely handled */
+    STAssertFalse(plcrash_async_address_apply_offset(PL_VM_ADDRESS_MAX, 1, &result), @"Bad adddress was accepted");
+}
+
+- (void) testSafeMemcpyAddr {
     const char bytes[] = "Hello";
     char dest[sizeof(bytes)];
     
