@@ -972,9 +972,9 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             /* Compute the address of the saved registers */
             plcrash_greg_t sp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
             pl_vm_address_t fp = sp + entry->stack_offset;
-            saved_reg_addr = fp - greg_size - (greg_size * entry->register_count); /* fp - [retval] - [saved registers] */
+            saved_reg_addr = fp - (greg_size * entry->register_count); /* fp - [retval] - [saved registers] */
 
-            /* SP is found at return address ± greg_size */
+            /* Original SP is just before the return address */
             plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp+greg_pop_offset);
 
             /* Read the saved return address */

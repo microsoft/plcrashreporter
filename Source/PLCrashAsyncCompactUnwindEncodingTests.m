@@ -857,7 +857,7 @@
     plcrash_async_thread_state_t ts;
 
     /* Set up a faux frame */
-    uint32_t stackframe[] = {
+    uint64_t stackframe[] = {
         10, // rbp
         12, // r12
         13, // r13
