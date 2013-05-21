@@ -107,7 +107,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     
     /* Compute the in-core function address */
     pl_vm_address_t function_address;
-    if (!plcrash_async_address_apply_offset(image->macho_image.header_addr, function_address, &function_address)) {
+    if (!plcrash_async_address_apply_offset(image->macho_image.header_addr, function_base, &function_address)) {
         PLCF_DEBUG("The provided function base (0x%" PRIx64 ") plus header address (0x%" PRIx64 ") will overflow pl_vm_address_t",
                    (uint64_t) function_base, (uint64_t) image->macho_image.header_addr);
         return false;
