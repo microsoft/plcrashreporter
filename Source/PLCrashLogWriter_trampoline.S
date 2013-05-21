@@ -31,10 +31,8 @@
 
 /*
  *
- * plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_t *writer,
- *                                                     plcrash_async_image_list_t *image_list,
- *                                                     plcrash_async_file_t *file,
- *                                                     siginfo_t *siginfo);
+ * plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_write_curthread_callback callback,
+ *                                                     void *context);
  */
 
 #if __arm__
@@ -82,6 +80,7 @@ MOVQ    (r15,   136);
 movq    0x8(%rbp), %rcx
 movq    %rcx, 144(%rsp)
 
+/* Fetch the FLAGS state via the stack */
 pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
@@ -90,11 +89,8 @@ MOVQ    (cs, 160);
 MOVQ    (fs, 168);
 MOVQ    (gs, 176);
 
-/* Restore the 4th argument value */
-movq    32(%rsp), %rcx
-
-/* Move mctx to 5th argument of plcrash_log_writer_write_curthread_stub */
-movq    %rsp, %r8
+/* Move mctx to 3rd argument of plcrash_log_writer_write_curthread_stub */
+movq    %rsp, %rdx
 
 xorb	%al, %al
 callq    _plcrash_log_writer_write_curthread_stub
@@ -107,9 +103,10 @@ ret
 
 pushl   %ebp
 movl    %esp, %ebp
-subl    $632, %esp // Size of 600 for context + 12 bytes for required alignment + 20 bytes for call arguments
+subl    $616, %esp // Size of 600 for context + 4 bytes for required alignment + 12 bytes for call arguments
 
-#define OFF 32
+// OFF is the offset from the top of the stack to the mctx structure
+#define OFF 16
 #define MOVL(reg, offset) movl %##reg, OFF+offset(%esp)
 
 // These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
@@ -144,25 +141,20 @@ MOVL    (gs, 72);
 #undef MOVL
 
 /* Set up our argument stack: writer (arg0), image_list, file, siginfo, mctx */
-movl    8(%ebp), %eax   // arg0 - writer
+/* Set up our argument stack: callback (arg0), context, mctx */
+movl    8(%ebp), %eax   // arg0: callback
 movl    %eax,  (%esp)
 
-movl    12(%ebp), %eax   // arg1 - image_list
+movl    12(%ebp), %eax  // arg1: context
 movl    %eax, 4(%esp)
 
-movl    16(%ebp), %eax  // arg2 - file
-movl    %eax, 8(%esp)
-
-movl    20(%ebp), %eax  // arg3 - siginfo
-movl    %eax, 12(%esp)
-
-movl    %esp, %eax      // arg4 - mctx
+movl    %esp, %eax      // arg3: mctx
 addl    $OFF, %eax
-movl    %eax, 16(%esp)
+movl    %eax, 8(%esp)
 
 call    _plcrash_log_writer_write_curthread_stub
 
-addl    $632, %esp
+addl    $616, %esp
 popl    %ebp
 ret
 
@@ -171,16 +163,15 @@ ret
 
 push    {r7, lr}
 mov     r7, sp
-sub     sp, sp, #344 // Size of 340 for context + 4 bytes for call argument
+sub     sp, sp, #340 // Size of 340 for context
 
 // These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
 
-/* Save r0 before we stomp it. The destination address is our SP + 4 (call argument) + 12 (offset to r[] array) */
-str     r0, [sp, #16]
+/* Save r0 before we stomp it. The destination address is our SP + 12 (offset to r[] array) */
+str     r0, [sp, #12]
 
-/* Calculate the mcontext_t pointer and store it on the stack, in preparation for our call below */
-add     r0, sp, #4
-str     r0, [sp]
+/* Save the mcontext_t pointer */
+mov     r0, sp
 
 /* Write out GP registers. The offset is r[1]. */
 add     r0, r0, #16
@@ -192,7 +183,7 @@ ldr     r2, [r7]
 /* Overwrite r[7] with the caller's fp value */
 str     r2, [r0, #24]
 
-/* User the caller's SP value */
+/* Use the caller's SP value */
 add     r1, r7, #8    // account for the 2 byte push in prologue
 str     r1, [r0, #48] // 64 - 16 byte offset to r[1]
 
@@ -208,10 +199,12 @@ str     r1, [r0, #56] // 72 - 16 byte offset to r[1]
 mrs     r1, cpsr
 str     r1, [r0, #60] // 76 - 16 byte offset to r[1]
 
-/* Restore the r0-r2 argument values. The source address is our SP + 4 (call argument) + 12 (offset to r[] array). */
-ldr     r0, [sp, #16];
-ldr     r1, [sp, #20];
-ldr     r2, [sp, #24];
+/* Restore the r0-r1 argument values. The source address is our SP + 12 (offset to r[] array). */
+ldr     r0, [sp, #12];
+ldr     r1, [sp, #16];
+
+/* Provide arg 3 (mctx) */
+mov     r2, sp
 
 bl      _plcrash_log_writer_write_curthread_stub
 mov     sp, r7

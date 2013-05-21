@@ -54,6 +54,8 @@
 /* Begin PBXBuildFile section */
 		050DE25E0F61B93900152ED3 /* libCrashReporter-MacOSX-Static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */; };
 		050DE2A90F61BD8D00152ED3 /* fuzz-main.m in Sources */ = {isa = PBXBuildFile; fileRef = 050DE2A80F61BD8D00152ED3 /* fuzz-main.m */; };
+		0518E0A6174BF82300BB47DE /* PLCrashAsyncThread_x86.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF016DBD0AD00888448 /* PLCrashAsyncThread_x86.c */; };
+		0518E0A7174BF82500BB47DE /* PLCrashAsyncThread_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */; };
 		052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EB1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
@@ -2497,7 +2499,6 @@
 				05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */,
 				05A17DB916D7E36A00888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A7E7AF174284EE00ACA689 /* PLCrashFrameCompactUnwind.c in Sources */,
-				05A17DCA16D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DD416D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */,
 				05A17DD916D80B2A00888448 /* PLCrashTestThread.m in Sources */,
 				05A17DDF16D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */,
@@ -2505,6 +2506,9 @@
 				05F3CD7D16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05F3CD8216DFC78D007911FB /* PLCrashAsyncCompactUnwindEncodingTests.m in Sources */,
 				05659DF317456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.m in Sources */,
+				05A17DCA16D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
+				0518E0A7174BF82500BB47DE /* PLCrashAsyncThread_arm.c in Sources */,
+				0518E0A6174BF82300BB47DE /* PLCrashAsyncThread_x86.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

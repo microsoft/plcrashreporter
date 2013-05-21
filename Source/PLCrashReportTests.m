@@ -32,6 +32,7 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashAsyncImageList.h"
+#import "PLCrashTestThread.h"
 
 #import <fcntl.h>
 #import <dlfcn.h>
@@ -62,6 +63,17 @@
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
     [_logPath release];
+}
+
+struct plcr_live_report_context {
+    plcrash_log_writer_t *writer;
+    plcrash_async_file_t *file;
+    plcrash_async_image_list_t *images;
+    siginfo_t *info;
+};
+static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
+    struct plcr_live_report_context *plcr_ctx = ctx;
+    return plcrash_log_writer_write(plcr_ctx->writer, mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, state);
 }
 
 - (void) testWriteReport {
@@ -106,8 +118,14 @@
         plcrash_nasync_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
     }
 
-    /* Write the crash report */    
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write_curthread(&writer, &image_list, &file, &info), @"Writing crash log failed");
+    /* Write the crash report */
+    struct plcr_live_report_context ctx = {
+        .writer = &writer,
+        .file = &file,
+        .images = &image_list,
+        .info = &info
+    };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write_curthread(plcr_live_report_callback, &ctx), @"Writing crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);

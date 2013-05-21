@@ -38,10 +38,8 @@
  * Implements the interior function called by plcrash_log_writer_write_curthread()
  * after it has populated the mctx thread state.
  */
-plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *writer,
-                                                         plcrash_async_image_list_t *image_list,
-                                                         plcrash_async_file_t *file, 
-                                                         siginfo_t *siginfo,
+plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_write_curthread_callback callback,
+                                                         void *context,
                                                          _STRUCT_MCONTEXT *mctx)
 {
     plcrash_async_thread_state_t thread_state;
@@ -65,7 +63,7 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_t *w
     plcrash_async_thread_state_ucontext_init(&thread_state, &ctx);
 
     /* Write the report */
-    return plcrash_log_writer_write(writer, mach_thread_self(), image_list, file, siginfo, &thread_state);
+    return callback(&thread_state, context);
 }
 
 

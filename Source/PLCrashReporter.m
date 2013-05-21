@@ -366,6 +366,18 @@ static void uncaught_exception_handler (NSException *exception) {
 }
 
 
+/* State and callback used by -generateLiveReportWithThread */
+struct plcr_live_report_context {
+    plcrash_log_writer_t *writer;
+    plcrash_async_file_t *file;
+    siginfo_t *info;
+};
+static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
+    struct plcr_live_report_context *plcr_ctx = ctx;
+    return plcrash_log_writer_write(plcr_ctx->writer, mach_thread_self(), &shared_image_list, plcr_ctx->file, plcr_ctx->info, state);
+}
+
+
 /**
  * Generate a live crash report for a given @a thread, without triggering an actual crash condition.
  * This may be used to log current process state without actually crashing. The crash report data will be
@@ -379,11 +391,13 @@ static void uncaught_exception_handler (NSException *exception) {
  *
  * @return Returns nil if the crash report data could not be loaded.
  *
+ * @todo Implement in-memory, rather than requiring writing of the report to disk.
  */
 - (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
-    
+    plcrash_error_t err;
+
     /* Open the output file */
     NSString *templateStr = [NSTemporaryDirectory() stringByAppendingPathComponent: @"live_crash_report.XXXXXX"];
     char *path = strdup([templateStr fileSystemRepresentation]);
@@ -409,26 +423,42 @@ static void uncaught_exception_handler (NSException *exception) {
     
     /* Write the crash log using the already-initialized writer */
     if (thread == mach_thread_self()) {
-        plcrash_log_writer_write_curthread(&writer, &shared_image_list, &file, &info);
+        struct plcr_live_report_context ctx = {
+            .writer = &writer,
+            .file = &file,
+            .info = &info
+        };
+        err = plcrash_log_writer_write_curthread(plcr_live_report_callback, &ctx);
     } else {
-        plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &info, NULL);
+        err = plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &info, NULL);
     }
     plcrash_log_writer_close(&writer);
 
-    /* Finished -- clean up. */
+    /* Flush the data */
     plcrash_async_file_flush(&file);
     plcrash_async_file_close(&file);
-    
-    plcrash_log_writer_free(&writer);
-    
-    NSData *data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
+
+    /* Check for write failure */
+    NSData *data;
+    if (err != PLCRASH_ESUCCESS) {
+        NSLog(@"Write failed with error %s", plcrash_async_strerror(err));
+        plcrash_populate_error(outError, PLCrashReporterErrorUnknown, @"Failed to write the crash report to disk", nil);
+        data = nil;
+        goto cleanup;
+    }
+
+    data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
     if (data == nil) {
         /* This should only happen if our data is deleted out from under us */
         plcrash_populate_error(outError, PLCrashReporterErrorUnknown, NSLocalizedString(@"Unable to open live crash report for reading", nil), nil);
         free(path);
-        return nil;
+        goto cleanup;
     }
-    
+
+cleanup:
+    /* Finished -- clean up. */
+    plcrash_log_writer_free(&writer);
+
     if (unlink(path) != 0) {
         /* This shouldn't fail, but if it does, there's no use in returning nil */
         NSLog(@"Failure occured deleting live crash report: %s", strerror(errno));
