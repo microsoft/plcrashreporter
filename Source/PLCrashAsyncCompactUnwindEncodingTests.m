@@ -38,7 +38,7 @@
 
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
 #define TEST_BINARY @"test.macosx"
-#elif TARGET_OS_SIMULATOR
+#elif TARGET_IPHONE_SIMULATOR
 #define TEST_BINARY @"test.sim"
 #elif TARGET_OS_IPHONE
 #define TEST_BINARY @"test.ios"
@@ -122,9 +122,13 @@
     pl_vm_address_t header = plcrash_async_mobject_base_address(mobj);
     struct fat_header *fh = plcrash_async_mobject_remap_address(mobj, header, 0, sizeof(struct fat_header));
     STAssertNotNULL(fh, @"Could not load fat header");
-    
-    if (fh->magic != FAT_MAGIC && fh->magic != FAT_CIGAM)
-        STFail(@"Not a fat binary!");
+
+    /* Handle thin binaries directly */
+    if (fh->magic != FAT_MAGIC && fh->magic != FAT_CIGAM) {
+        *offset = 0x0;
+        *size = mobj->length;
+        return;
+    }
     
     /* Load all the fat architectures */
     struct fat_arch *base = plcrash_async_mobject_remap_address(mobj,
