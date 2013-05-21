@@ -275,7 +275,8 @@ int plcrash_async_strncmp(const char *s1, const char *s2, size_t n) {
 }
 
 /**
- * An intentionally naive async-safe implementation of memcpy(). memcpy() itself is not declared to be async-safe.
+ * An intentionally naive async-safe implementation of memcpy(). memcpy() itself is not declared to be async-safe,
+ * though in reality, it is.
  *
  * @param dest Destination.
  * @param source Source.
@@ -289,6 +290,23 @@ void *plcrash_async_memcpy (void *dest, const void *source, size_t n) {
         *d++ = *s++;
 
     return (void *) source;
+}
+
+/**
+ * An intentionally naive async-safe implementation of memset(). memset() itself is not declared to be async-safe,
+ * though in reality, it is.
+ *
+ * @param dest Destination.
+ * @param int Value to write to @a dest.
+ * @param n Number of bytes to copy.
+ */
+void *plcrash_async_memset(void *dest, uint8_t value, size_t n) {
+    uint8_t *d = (uint8_t *) dest;
+    
+    for (size_t count = 0; count < n; count++)
+        *d++ = value;
+
+    return (void *) dest;
 }
 
 /**

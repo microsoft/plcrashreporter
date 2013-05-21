@@ -174,6 +174,7 @@ plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t add
 int plcrash_async_strcmp(const char *s1, const char *s2);
 int plcrash_async_strncmp(const char *s1, const char *s2, size_t n);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
+void *plcrash_async_memset(void *dest, uint8_t value, size_t n);
 
 ssize_t plcrash_async_writen (int fd, const void *data, size_t len);
 

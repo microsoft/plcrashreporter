@@ -163,6 +163,23 @@
     STAssertTrue(dest[1024] == (uint8_t)0xB, @"Sentinal was overwritten (0x%" PRIX8 ")", dest[1024]);
 }
 
+- (void) testMemset {
+    size_t size = 1024;
+    uint8_t template[size];
+    uint8_t dest[size+1];
+    
+    /* Create our template. */
+    memset(template, 0xAB, size);
+    
+    /* Add mismatched sentinals to the destination; serves as a simple check for overrun on write. */
+    dest[1024] = 0xB;
+    
+    plcrash_async_memset(dest, template[0], size);
+    
+    STAssertTrue(memcmp(template, dest, size) == 0, @"The copied destination does not match the source");
+    STAssertTrue(dest[1024] == (uint8_t)0xB, @"Sentinal was overwritten (0x%" PRIX8 ")", dest[1024]);
+}
+
 - (void) testWriteLimits {
     plcrash_async_file_t file;
     uint32_t data = 1;
