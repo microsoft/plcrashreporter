@@ -199,6 +199,18 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
 }
 
 /**
+ * Copy thread state @a source to @a dest.
+ *
+ * @param dest The destination to which the thread state will be copied.
+ * @param source The thread state to be copied.
+ *
+ * @note If @a dest and @a source overlap, behavior is undefined.
+ */
+void plcrash_async_thread_state_copy (plcrash_async_thread_state_t *dest, const plcrash_async_thread_state_t *source) {
+    plcrash_async_memcpy(dest, source, sizeof(*dest));
+}
+
+/**
  * Return true if @a regnum is set in @a thread_state, false otherwise.
  *
  * @param thread_state The thread state to test.

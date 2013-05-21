@@ -241,4 +241,24 @@
     thread_resume(thr);
 }
 
+- (void) testThreadStateCopy {
+    plcrash_async_thread_state_t thr_state;
+    thread_t thr;
+    
+    /* Spawn a test thread */
+    thr = pthread_mach_thread_np(_thr_args.thread);
+    thread_suspend(thr);
+    
+    /* Fetch the thread state */
+    STAssertEquals(plcrash_async_thread_state_mach_thread_init(&thr_state, thr), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    
+    /* Try a copy */
+    plcrash_async_thread_state_t thr_copy;
+    plcrash_async_thread_state_copy(&thr_copy, &thr_state);
+    STAssertEquals(memcmp(&thr_copy, &thr_state, sizeof(thr_copy)), 0, @"Did not correctly copy thread state");
+    
+    /* Clean up */
+    thread_resume(thr);
+}
+
 @end

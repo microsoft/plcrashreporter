@@ -139,6 +139,8 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
 void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
+void plcrash_async_thread_state_copy (plcrash_async_thread_state_t *dest, const plcrash_async_thread_state_t *src);
+
 plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (const plcrash_async_thread_state_t *thread_state);
 size_t plcrash_async_thread_state_get_greg_size (const plcrash_async_thread_state_t *thread_state);
 
