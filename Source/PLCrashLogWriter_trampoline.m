@@ -43,8 +43,8 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_writ
                                                          _STRUCT_MCONTEXT *mctx)
 {
     /* Zero unsupported thread states */
-    memset(&mctx->__es, 0, sizeof(mctx->__es));
-    memset(&mctx->__fs, 0, sizeof(mctx->__fs));
+    plcrash_async_memset(&mctx->__es, 0, sizeof(mctx->__es));
+    plcrash_async_memset(&mctx->__fs, 0, sizeof(mctx->__fs));
 
     /* Convert to standard thread state */
     plcrash_async_thread_state_t thread_state;
