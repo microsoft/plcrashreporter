@@ -26,21 +26,19 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <mach/mach.h>
-#import <stddef.h>
+#include <mach/mach.h>
+#include <stddef.h>
 
-#import "PLCrashLogWriter.h"
-#import "PLCrashFrameWalker.h"
-#import "PLCrashLogWriter_trampoline_private.h"
-
+#include "PLCrashAsyncThread.h"
+#include "PLCrashAsyncThread_current_defs.h"
 
 /*
- * Implements the interior function called by plcrash_log_writer_write_curthread()
+ * Implements the interior function called by plcrash_async_thread_state_current()
  * after it has populated the mctx thread state.
  */
-plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_write_curthread_callback callback,
-                                                         void *context,
-                                                         _STRUCT_MCONTEXT *mctx)
+plcrash_error_t plcrash_async_thread_state_current_stub (plcrash_async_thread_state_current_callback callback,
+                                                        void *context,
+                                                        _STRUCT_MCONTEXT *mctx)
 {
     /* Zero unsupported thread states */
     plcrash_async_memset(&mctx->__es, 0, sizeof(mctx->__es));

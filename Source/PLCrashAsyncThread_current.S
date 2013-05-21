@@ -26,13 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashLogWriter_trampoline_private.h"
+#include "PLCrashAsyncThread_current_defs.h"
 
 
 /*
- *
- * plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_write_curthread_callback callback,
- *                                                     void *context);
+ * plcrash_error_t plcrash_async_thread_state_current (plcrash_async_thread_state_current_callback callback,
+ *                                                    void *context);
  */
 
 #if __arm__
@@ -41,8 +40,8 @@
 #endif
 
 .text
-.globl _plcrash_log_writer_write_curthread
-_plcrash_log_writer_write_curthread:
+.globl _plcrash_async_thread_state_current
+_plcrash_async_thread_state_current:
 
 #if __x86_64__
 
@@ -93,7 +92,7 @@ MOVQ    (gs, 176);
 movq    %rsp, %rdx
 
 xorb	%al, %al
-callq    _plcrash_log_writer_write_curthread_stub
+callq    _plcrash_async_thread_state_current_stub
 
 addq    $720, %rsp
 popq    %rbp
@@ -152,7 +151,7 @@ movl    %esp, %eax      // arg3: mctx
 addl    $OFF, %eax
 movl    %eax, 8(%esp)
 
-call    _plcrash_log_writer_write_curthread_stub
+call    _plcrash_async_thread_state_current_stub
 
 addl    $616, %esp
 popl    %ebp
@@ -206,7 +205,7 @@ ldr     r1, [sp, #16];
 /* Provide arg 3 (mctx) */
 mov     r2, sp
 
-bl      _plcrash_log_writer_write_curthread_stub
+bl      _plcrash_async_thread_state_current_stub
 mov     sp, r7
 pop     {r7, pc}
 

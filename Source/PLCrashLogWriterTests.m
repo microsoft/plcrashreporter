@@ -349,7 +349,7 @@ static plcrash_error_t write_current_thread_callback (plcrash_async_thread_state
 - (void) testFetchCurrentThreadState {
     /* Write the crash report */
     struct write_current_thread_callback_ctx ctx;
-    plcrash_error_t ret = plcrash_log_writer_write_curthread(write_current_thread_callback, &ctx);
+    plcrash_error_t ret = plcrash_async_thread_state_current(write_current_thread_callback, &ctx);
     uintptr_t expectedPC = getPC();
 
     STAssertEquals(PLCRASH_ESUCCESS, ret, @"Crash log failed");

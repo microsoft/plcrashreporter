@@ -125,7 +125,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         .images = &image_list,
         .info = &info
     };
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write_curthread(plcr_live_report_callback, &ctx), @"Writing crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_current(plcr_live_report_callback, &ctx), @"Writing crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);

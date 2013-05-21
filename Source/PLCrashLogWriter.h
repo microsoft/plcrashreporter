@@ -140,26 +140,6 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
-/**
- * Callback function called by plcrash_log_writer_write_curthread().
- *
- * @param state The thread state fetched by plcrash_log_writer_write_curthread().
- * @param context Caller-provided context value.
- */
-typedef plcrash_error_t (*plcrash_log_writer_write_curthread_callback)(plcrash_async_thread_state_t *state, void *context);
-
-/**
- * Fetch the calling thread's state and pass it to the given @a callback.
- *
- * @param callback Function to be called with the calling thread's state.
- * @param context Context value to be passed to @a callback.
- *
- * @internal
- * @note This is implemented with an assembly trampoline that fetches the current thread state. Solutions such
- * as getcontext() are not viable here, as returning from getcontext() mutates the state of the stack.
- */
-plcrash_error_t plcrash_log_writer_write_curthread (plcrash_log_writer_write_curthread_callback callback, void *context);
-
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,

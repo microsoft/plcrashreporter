@@ -428,7 +428,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
             .file = &file,
             .info = &info
         };
-        err = plcrash_log_writer_write_curthread(plcr_live_report_callback, &ctx);
+        err = plcrash_async_thread_state_current(plcr_live_report_callback, &ctx);
     } else {
         err = plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &info, NULL);
     }

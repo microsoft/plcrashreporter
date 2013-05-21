@@ -139,6 +139,25 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
 void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, mcontext_t mctx);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
+/**
+ * Callback function called by plcrash_log_writer_write_curthread().
+ *
+ * @param state The thread state fetched by plcrash_log_writer_write_curthread().
+ * @param context Caller-provided context value.
+ */
+typedef plcrash_error_t (*plcrash_async_thread_state_current_callback)(plcrash_async_thread_state_t *state, void *context);
+
+/**
+ * Fetch the calling thread's state and pass it to the given @a callback.
+ *
+ * @param callback Function to be called with the calling thread's state.
+ * @param context Context value to be passed to @a callback.
+ *
+ * @note This is implemented with an assembly trampoline that fetches the current thread state to be passed to the @a callback. Solutions such
+ * as getcontext() are not viable here, as returning from getcontext() mutates the state of the stack.
+ */
+plcrash_error_t plcrash_async_thread_state_current (plcrash_async_thread_state_current_callback callback, void *context);
+
 void plcrash_async_thread_state_copy (plcrash_async_thread_state_t *dest, const plcrash_async_thread_state_t *src);
 
 plcrash_async_thread_stack_direction_t plcrash_async_thread_state_get_stack_direction (const plcrash_async_thread_state_t *thread_state);
