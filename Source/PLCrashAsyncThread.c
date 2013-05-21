@@ -95,39 +95,39 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
  *
  * All registers will be marked as available.
  */
-void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap) {
+void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, mcontext_t mctx) {
     /*
-     * Copy in the ucontext's thread state. Unlike the mach thread variants, ucontext_t may only represent
-     * the thread state of the host process, and we may assume that the compilation target matches the ucontext_t
+     * Copy in the thread state. Unlike the mach thread variants, mcontext_t may only represent
+     * the thread state of the host process, and we may assume that the compilation target matches the mcontext_t
      * thread type.
      */
 #if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     plcrash_async_thread_state_init(thread_state, CPU_TYPE_ARM);
 
     /* Sanity check. */
-    PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->arm_state.thread));
+    PLCF_ASSERT(sizeof(mctx->__ss) == sizeof(thread_state->arm_state.thread));
 
-    plcrash_async_memcpy(&thread_state->arm_state.thread, &uap->uc_mcontext->__ss, sizeof(thread_state->arm_state.thread));
+    plcrash_async_memcpy(&thread_state->arm_state.thread, &mctx->__ss, sizeof(thread_state->arm_state.thread));
     
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT) && defined(__LP64__)
     plcrash_async_thread_state_init(thread_state, CPU_TYPE_X86_64);
 
     /* Sanity check. */
-    PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->x86_state.thread.uts.ts64));
-    PLCF_ASSERT(sizeof(uap->uc_mcontext->__es) == sizeof(thread_state->x86_state.exception.ues.es64));
+    PLCF_ASSERT(sizeof(mctx->__ss) == sizeof(thread_state->x86_state.thread.uts.ts64));
+    PLCF_ASSERT(sizeof(mctx->__es) == sizeof(thread_state->x86_state.exception.ues.es64));
     
-    plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts64, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts64));
-    plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es64, &uap->uc_mcontext->__es, sizeof(thread_state->x86_state.exception.ues.es64));
+    plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts64, &mctx->__ss, sizeof(thread_state->x86_state.thread.uts.ts64));
+    plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es64, &mctx->__es, sizeof(thread_state->x86_state.exception.ues.es64));
 
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT)
     plcrash_async_thread_state_init(thread_state, CPU_TYPE_X86);
 
     /* Sanity check. */
-    PLCF_ASSERT(sizeof(uap->uc_mcontext->__ss) == sizeof(thread_state->x86_state.thread.uts.ts32));
-    PLCF_ASSERT(sizeof(uap->uc_mcontext->__es) == sizeof(thread_state->x86_state.exception.ues.es32));
+    PLCF_ASSERT(sizeof(mctx->__ss) == sizeof(thread_state->x86_state.thread.uts.ts32));
+    PLCF_ASSERT(sizeof(mctx->__es) == sizeof(thread_state->x86_state.exception.ues.es32));
 
-    plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts32, &uap->uc_mcontext->__ss, sizeof(thread_state->x86_state.thread.uts.ts32));
-    plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es32, &uap->uc_mcontext->__es, sizeof(thread_state->x86_state.exception.ues.es32));
+    plcrash_async_memcpy(&thread_state->x86_state.thread.uts.ts32, &mctx->__ss, sizeof(thread_state->x86_state.thread.uts.ts32));
+    plcrash_async_memcpy(&thread_state->x86_state.exception.ues.es32, &mctx->__es, sizeof(thread_state->x86_state.exception.ues.es32));
 #else
 #error Add platform support
 #endif

@@ -136,7 +136,7 @@ typedef enum {
 typedef plcrash_pdef_greg_t plcrash_greg_t;
 
 plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *thread_state, cpu_type_t cpu_type);
-void plcrash_async_thread_state_ucontext_init (plcrash_async_thread_state_t *thread_state, ucontext_t *uap);
+void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, mcontext_t mctx);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
 void plcrash_async_thread_state_copy (plcrash_async_thread_state_t *dest, const plcrash_async_thread_state_t *src);

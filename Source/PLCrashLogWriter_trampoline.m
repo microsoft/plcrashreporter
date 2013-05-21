@@ -42,25 +42,13 @@ plcrash_error_t plcrash_log_writer_write_curthread_stub (plcrash_log_writer_writ
                                                          void *context,
                                                          _STRUCT_MCONTEXT *mctx)
 {
-    plcrash_async_thread_state_t thread_state;
-    _STRUCT_UCONTEXT ctx;
-
-    ctx.uc_onstack = 0;
-    ctx.uc_stack.ss_sp = pthread_get_stackaddr_np(pthread_self());
-    ctx.uc_stack.ss_flags = 0;
-    ctx.uc_stack.ss_size = pthread_get_stacksize_np(pthread_self());
-
-    sigprocmask(0, NULL, &ctx.uc_sigmask);
-
-    ctx.uc_mcsize = PL_MCONTEXT_SIZE;
-    ctx.uc_mcontext = mctx;
-
     /* Zero unsupported thread states */
     memset(&mctx->__es, 0, sizeof(mctx->__es));
     memset(&mctx->__fs, 0, sizeof(mctx->__fs));
 
     /* Convert to standard thread state */
-    plcrash_async_thread_state_ucontext_init(&thread_state, &ctx);
+    plcrash_async_thread_state_t thread_state;
+    plcrash_async_thread_state_mcontext_init(&thread_state, mctx);
 
     /* Write the report */
     return callback(&thread_state, context);
