@@ -25,7 +25,7 @@
  */
 
 
-#import "GTMSenTestCase.h"
+#import "PLCrashTestCase.h"
 
 #import "PLCrashAsyncCompactUnwindEncoding.h"
 #import "PLCrashAsyncMachOImage.h"
@@ -66,7 +66,7 @@
  *
  * This code tests compact frame unwinding.
  */
-@interface PLCrashAsyncCompactUnwindEncodingTests : SenTestCase {
+@interface PLCrashAsyncCompactUnwindEncodingTests : PLCrashTestCase {
 @private
     /** A mapped Mach-O file */
     plcrash_async_mobject_t _machoData;
@@ -83,36 +83,6 @@
 @end
 
 @implementation PLCrashAsyncCompactUnwindEncodingTests
-
-/**
- * Return the full path to the request test resource.
- *
- * @param resourceName Relative resource path.
- *
- * Test resources are located in Bundle/Resources/Tests/TestClass/ResourceName
- */
-- (NSString *) pathForTestResource: (NSString *) resourceName {
-    NSString *className = NSStringFromClass([self class]);
-    NSString *bundleResources = [[NSBundle bundleForClass: [self class]] resourcePath];
-    NSString *testResources = [bundleResources stringByAppendingPathComponent: @"Tests"];
-    NSString *testRoot = [testResources stringByAppendingPathComponent: className];
-    
-    return [testRoot stringByAppendingPathComponent: resourceName];
-}
-
-/**
- * Find the test resource with the given @a resourceName, and load the resource's data.
- *
- * @param resourceName Relative resource path.
- */
-- (NSData *) dataForTestResource: (NSString *) resourceName {
-    NSError *error;
-    NSString *path = [self pathForTestResource: resourceName];
-    NSData *result = [NSData dataWithContentsOfFile: path options: NSDataReadingUncached error: &error];
-    NSAssert(result != nil, @"Failed to load resource data: %@", error);
-    
-    return result;
-}
 
 /**
  * Search the Mach-O FAT binary mapped by @a mobj for a fat architecture that best matches the host architecture,

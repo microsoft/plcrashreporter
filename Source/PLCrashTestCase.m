@@ -26,14 +26,38 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfEncoding.h"
+@implementation PLCrashTestCase
 
-
-@interface PLCrashAsyncDwarfEncodingTests : SenTestCase {
+/**
+ * Return the full path to the request test resource.
+ *
+ * @param resourceName Relative resource path.
+ *
+ * Test resources are located in Bundle/Resources/Tests/TestClass/ResourceName
+ */
+- (NSString *) pathForTestResource: (NSString *) resourceName {
+    NSString *className = NSStringFromClass([self class]);
+    NSString *bundleResources = [[NSBundle bundleForClass: [self class]] resourcePath];
+    NSString *testResources = [bundleResources stringByAppendingPathComponent: @"Tests"];
+    NSString *testRoot = [testResources stringByAppendingPathComponent: className];
+    
+    return [testRoot stringByAppendingPathComponent: resourceName];
 }
-@end
 
-@implementation PLCrashAsyncDwarfEncodingTests
+/**
+ * Find the test resource with the given @a resourceName, and load the resource's data.
+ *
+ * @param resourceName Relative resource path.
+ */
+- (NSData *) dataForTestResource: (NSString *) resourceName {
+    NSError *error;
+    NSString *path = [self pathForTestResource: resourceName];
+    NSData *result = [NSData dataWithContentsOfFile: path options: NSDataReadingUncached error: &error];
+    NSAssert(result != nil, @"Failed to load resource data: %@", error);
+    
+    return result;
+}
+
 @end

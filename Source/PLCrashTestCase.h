@@ -26,14 +26,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#import <Foundation/Foundation.h>
 #import "GTMSenTestCase.h"
 
-#include "PLCrashAsyncDwarfEncoding.h"
-
-
-@interface PLCrashAsyncDwarfEncodingTests : SenTestCase {
+@interface PLCrashTestCase : SenTestCase {
 }
-@end
 
-@implementation PLCrashAsyncDwarfEncodingTests
+- (NSString *) pathForTestResource: (NSString *) resourceName;
+- (NSData *) dataForTestResource: (NSString *) resourceName;
+
 @end
