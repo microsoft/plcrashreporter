@@ -56,6 +56,9 @@
 		050DE2A90F61BD8D00152ED3 /* fuzz-main.m in Sources */ = {isa = PBXBuildFile; fileRef = 050DE2A80F61BD8D00152ED3 /* fuzz-main.m */; };
 		0518E0A6174BF82300BB47DE /* PLCrashAsyncThread_x86.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF016DBD0AD00888448 /* PLCrashAsyncThread_x86.c */; };
 		0518E0A7174BF82500BB47DE /* PLCrashAsyncThread_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */; };
+		0518E0A8174E8A0E00BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c */; };
+		0518E0A9174E8A1300BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c */; };
+		0518E0AA174E8A1F00BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c */; };
 		052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EB1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
@@ -2465,6 +2468,7 @@
 				05A7E78F173C130200ACA689 /* PLCrashFrameCompactUnwind.c in Sources */,
 				05659DF217456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.m in Sources */,
 				05659DF9174D2E1200D2EE21 /* PLCrashTestCase.m in Sources */,
+				0518E0AA174E8A1F00BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2526,6 +2530,7 @@
 				0518E0A7174BF82500BB47DE /* PLCrashAsyncThread_arm.c in Sources */,
 				0518E0A6174BF82300BB47DE /* PLCrashAsyncThread_x86.c in Sources */,
 				05659DFA174D2E1200D2EE21 /* PLCrashTestCase.m in Sources */,
+				0518E0A8174E8A0E00BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2587,6 +2592,7 @@
 				05F3CD8316DFC78D007911FB /* PLCrashAsyncCompactUnwindEncodingTests.m in Sources */,
 				05659DF417456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.m in Sources */,
 				05659DFB174D2E1200D2EE21 /* PLCrashTestCase.m in Sources */,
+				0518E0A9174E8A1300BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -41,15 +41,39 @@
 #endif
 
 @interface PLCrashAsyncDwarfEncodingTests : PLCrashTestCase {
+    /* Loaded test image */
     plcrash_async_macho_t _image;
+
+    /* Mapped __(PL)_DWARF sections */
     plcrash_async_mobject_t _eh_frame;
     plcrash_async_mobject_t _debug_frame;
+
+    /* Frame readers */
+    plcrash_async_dwarf_frame_reader_t _eh_reader;
+    plcrash_async_dwarf_frame_reader_t _debug_reader;
 }
 @end
 
 @implementation PLCrashAsyncDwarfEncodingTests
 
 - (void) setUp {
+    /*
+     * Warning: This code assumes 1:1 correspondance between vmaddr/vmsize and foffset/fsize in the loaded binary.
+     * This is currently the case with our test binaries, but it could possibly change in the future. To handle this,
+     * one would either need to:
+     * - Implement 'real' segment loading, ala https://github.com/landonf/libevil_patch/blob/b80ebf4c0442f234c4f3f9ec180a2f873c5e2559/libevil/libevil.m#L253
+     * or
+     * - Add a 'file mode' to the Mach-O parser that causes it to use file offsets rather than VM offsets.
+     * or
+     * - Don't bother to load all the segments properly, just map the CFE data.
+     *
+     * I didn't implement the file mode for the Mach-O parser as I'd like to keep that code as simple as possible,
+     * given that it runs in a privileged crash time position, and 'file' mode is only required for unit tests.
+     *
+     * Performing segment loading or parsing the Mach-O binary isn't much work, so I'll probably just do that, and then
+     * this comment can go away.
+     */
+
     NSError *error;
     plcrash_error_t err;
     
@@ -66,16 +90,30 @@
     
     err = plcrash_async_macho_map_section(&_image, "__PL_DWARF", "__debug_frame", &_debug_frame);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __debug_frame section");
+    
+    /* Initialize eh/debug readers */
+    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, plcrash_async_macho_cpu_type(&_image));
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
+    
+    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, plcrash_async_macho_cpu_type(&_image));
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 }
 
 - (void) tearDown {
+    plcrash_async_dwarf_frame_reader_free(&_eh_reader);
+    plcrash_async_dwarf_frame_reader_free(&_debug_reader);
+
     plcrash_async_mobject_free(&_eh_frame);
     plcrash_async_mobject_free(&_debug_frame);
+
     plcrash_nasync_macho_free(&_image);
 }
 
-- (void) testFindFrameDescriptorEntry {
- // TODO
+- (void) testFindEHFrameDescriptorEntry {
+    plcrash_error_t err;
+
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0 /* TODO */);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
 }
 
 /**
