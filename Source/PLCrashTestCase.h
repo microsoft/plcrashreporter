@@ -34,5 +34,6 @@
 
 - (NSString *) pathForTestResource: (NSString *) resourceName;
 - (NSData *) dataForTestResource: (NSString *) resourceName;
+- (NSData *) nativeBinaryFromTestResource: (NSString *) resourceName;
 
 @end

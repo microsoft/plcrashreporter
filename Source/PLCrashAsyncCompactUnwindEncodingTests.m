@@ -84,58 +84,8 @@
 
 @implementation PLCrashAsyncCompactUnwindEncodingTests
 
-/**
- * Search the Mach-O FAT binary mapped by @a mobj for a fat architecture that best matches the host architecture,
- * and then return the architecture's image @a size and @a offset from the head of @a mobj;
- */
-- (void) findBinary: (plcrash_async_mobject_t *) mobj offset: (uint32_t *) offset size: (uint32_t *) size {
-    pl_vm_address_t header = plcrash_async_mobject_base_address(mobj);
-    struct fat_header *fh = plcrash_async_mobject_remap_address(mobj, header, 0, sizeof(struct fat_header));
-    STAssertNotNULL(fh, @"Could not load fat header");
-
-    /* Handle thin binaries directly */
-    if (fh->magic != FAT_MAGIC && fh->magic != FAT_CIGAM) {
-        *offset = 0x0;
-        *size = mobj->length;
-        return;
-    }
-    
-    /* Load all the fat architectures */
-    struct fat_arch *base = plcrash_async_mobject_remap_address(mobj,
-                                                                header,
-                                                                sizeof(struct fat_header),
-                                                                sizeof(struct fat_arch));
-    uint32_t count = OSSwapBigToHostInt32(fh->nfat_arch);
-    struct fat_arch *archs = calloc(count, sizeof(struct fat_arch));
-    for (uint32_t i = 0; i < count; i++) {
-        struct fat_arch *fa = &base[i];
-        if (!plcrash_async_mobject_verify_local_pointer(mobj, fa, 0, sizeof(struct fat_arch))) {
-            STFail(@"Pointer outside of mapped range");
-        }
-        
-        archs[i].cputype = OSSwapBigToHostInt32(fa->cputype);
-        archs[i].cpusubtype = OSSwapBigToHostInt32(fa->cpusubtype);
-        archs[i].offset = OSSwapBigToHostInt32(fa->offset);
-        archs[i].size = OSSwapBigToHostInt32(fa->size);
-        archs[i].align = OSSwapBigToHostInt32(fa->align);
-    }
-    
-    /* Find the right architecture; we based this on the first loaded Mach-O image, as NXGetLocalArchInfo returns
-     * the incorrect i386 cpu type on x86-64. */
-    const struct mach_header *hdr = _dyld_get_image_header(0);
-    const struct fat_arch *best_arch = NXFindBestFatArch(hdr->cputype, hdr->cpusubtype, archs, count);
-
-    /* Clean up */
-    free(archs);
-    
-    /* Done! */
-    *offset = best_arch->offset;
-    *size = best_arch->size;
-}
 
 - (void) setUp {
-    uint32_t offset, length;
-
     /*
      * Warning: This code assumes 1:1 correspondance between vmaddr/vmsize and foffset/fsize in the loaded binary.
      * This is currently the case with our test binaries, but it could possibly change in the future. To handle this,
@@ -153,18 +103,11 @@
      * this comment can go away.
      */
     
-    /* Load the image into a memory object */
-    NSData *mappedImage = [self dataForTestResource: TEST_BINARY];
-    plcrash_async_mobject_init(&_machoData, mach_task_self(), (pl_vm_address_t) [mappedImage bytes], [mappedImage length], true);
-    /* Find a binary that matches the host */
-    [self findBinary: &_machoData offset: &offset size: &length];
-    void *macho_ptr = plcrash_async_mobject_remap_address(&_machoData, _machoData.task_address, offset, length);
-    STAssertNotNULL(macho_ptr, @"Discovered binary is not within the mapped memory range");
-    
-    /* Parse the image */
+    /* Load and parse the Mach-o image. */
     plcrash_error_t err;
+    NSData *mappedImage = [self nativeBinaryFromTestResource: TEST_BINARY];
     
-    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], macho_ptr);
+    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], [mappedImage bytes]);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
     
     /* Map the unwind section */
