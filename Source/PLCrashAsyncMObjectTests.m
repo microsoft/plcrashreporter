@@ -76,7 +76,22 @@
     
     /* Clean up */
     plcrash_async_mobject_free(&mobj);
+}
 
+- (void) testLength {
+    size_t size = vm_page_size+1;
+    uint8_t template[size];
+    
+    /* Map the memory */
+    plcrash_async_mobject_t mobj;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
+    STAssertEquals((pl_vm_address_t)template, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Incorrect slide value!");
+    
+    /* Test length accessor; this must be the user-requested length, not the page length. */
+    STAssertEquals((pl_vm_size_t)size, plcrash_async_mobject_length(&mobj), @"Incorrect mapping length");
+    
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
 }
 
 

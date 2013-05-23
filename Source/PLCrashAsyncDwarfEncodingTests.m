@@ -92,10 +92,10 @@
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __debug_frame section");
     
     /* Initialize eh/debug readers */
-    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, plcrash_async_macho_cpu_type(&_image));
+    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, plcrash_async_macho_byteorder(&_image));
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
     
-    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, plcrash_async_macho_cpu_type(&_image));
+    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, plcrash_async_macho_byteorder(&_image));
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 }
 
@@ -112,7 +112,7 @@
 - (void) testFindEHFrameDescriptorEntry {
     plcrash_error_t err;
 
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0 /* TODO */);
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, 0x0 /* TODO */);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
 }
 
@@ -161,11 +161,10 @@
         }
         
         /* Smoke test the FDE parser */
-        cpu_type_t cpu_type = plcrash_async_macho_cpu_type(&image);
         // TODO
         if (has_eh_frame) {
             plcrash_async_dwarf_frame_reader_t reader;
-            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, cpu_type);
+            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, plcrash_async_macho_byteorder(&_image));
         }
 
         if (has_debug_frame) {

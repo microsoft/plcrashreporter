@@ -43,10 +43,7 @@
 typedef struct plcrash_async_dwarf_frame_reader {
     /** A memory object containing the DWARF data at the starting address. */
     plcrash_async_mobject_t *mobj;
-    
-    /** The target CPU type. */
-    cpu_type_t cpu_type;
-    
+
     /** The byte order of the encoded data. */
     const plcrash_async_byteorder_t *byteorder;
 } plcrash_async_dwarf_frame_reader_t;
@@ -59,9 +56,9 @@ typedef struct plcrash_async_dwarf_fde {
 } plcrash_async_dwarf_fde_t;
 
 
-plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype);
+plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader, plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder);
 
-plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_address_t pc);
+plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_size_t offset, pl_vm_address_t pc);
 
 void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader);
 
