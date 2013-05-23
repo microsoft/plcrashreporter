@@ -82,6 +82,26 @@
 }
 
 /**
+ * Test byte order getter.
+ */
+- (void) testByteOrder {
+    STAssertEquals(_image.byteorder, plcrash_async_macho_byteorder(&_image), @"Returned incorrect byte order");
+}
+
+/**
+ * Test Mach header getters.
+ */
+- (void) testMachHeader {
+    STAssertEquals((const struct mach_header *)&_image.header, plcrash_async_macho_header(&_image), @"Returned incorrect header");
+
+    if (_image.m64) {
+        STAssertEquals((pl_vm_size_t)sizeof(struct mach_header_64), plcrash_async_macho_header_size(&_image), @"Incorrect header size");
+    } else {
+        STAssertEquals((pl_vm_size_t)sizeof(struct mach_header), plcrash_async_macho_header_size(&_image), @"Incorrect header size");
+    }
+}
+
+/**
  * Test iteration of Mach-O load commands.
  */
 - (void) testIterateCommand {

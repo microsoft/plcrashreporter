@@ -176,6 +176,10 @@ typedef void (*pl_async_macho_found_symbol_cb)(pl_vm_address_t address, const ch
 
 plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header);
 
+const plcrash_async_byteorder_t *plcrash_async_macho_byteorder (plcrash_async_macho_t *image);
+const struct mach_header *plcrash_async_macho_header (plcrash_async_macho_t *image);
+pl_vm_size_t plcrash_async_macho_header_size (plcrash_async_macho_t *image);
+
 void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *previous);
 void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void *previous, uint32_t expectedCommand);
 void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t cmd);

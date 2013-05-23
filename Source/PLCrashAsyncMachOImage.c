@@ -206,6 +206,38 @@ error:
 }
 
 /**
+ * Return a borrowed reference to the byte order functions to use when parsing data from
+ * @a image.
+ *
+ * @param image The image from which the byte order functions should be returned.
+ */
+const plcrash_async_byteorder_t *plcrash_async_macho_byteorder (plcrash_async_macho_t *image) {
+    return image->byteorder;
+}
+
+/**
+ * Return a borrowed reference to the image's Mach-O header. For our purposes, the 32-bit and 64-bit headers
+ * are identical. Note that the header values may require byte-swapping for the local process'
+ * use (@sa plcrash_async_macho_byteorder).
+ *
+ * @param image The image from which the mach header should be returned.
+ */
+const struct mach_header *plcrash_async_macho_header (plcrash_async_macho_t *image) {
+    return &image->header;
+}
+
+/**
+ * Return the total size, in bytes, of the image's in-memory Mach-O header. This may differ from the header
+ * field returned by plcrash_async_macho_header(), as the returned value does not include the full mach_header_64
+ * extensions to the mach_header.
+ *
+ * @param image The image from which the mach header should be returned.
+ */
+pl_vm_size_t plcrash_async_macho_header_size (plcrash_async_macho_t *image) {
+    return image->header_size;
+}
+
+/**
  * Iterate over the available Mach-O LC_CMD entries.
  *
  * @param image The image to iterate
