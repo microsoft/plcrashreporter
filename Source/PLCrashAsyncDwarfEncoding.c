@@ -26,4 +26,53 @@
 
 #include "PLCrashAsyncDwarfEncoding.h"
 
+/**
+ * @internal
+ * @ingroup plcrash_async
+ * @defgroup plcrash_async_dwarf DWARF
+ *
+ * Implements async-safe parsing of DWARF encodings.
+ * @{
+ */
 
+
+/**
+ * Initialize a new DWARF frame reader using the provided memory object. Any resources held by a successfully initialized
+ * instance must be freed via plcrash_async_dwarf_frame_reader_free();
+ *
+ * @param reader The reader instance to initialize.
+ * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address. This instance must
+ * survive for the lifetime of the reader.
+ * @param cpu_type The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
+ * architecture-specific, and Apple has not defined encodings for all supported architectures.
+ */
+plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype) {
+    // TODO
+    return PLCRASH_EUNKNOWN;
+}
+
+/**
+ * Locate the frame descriptor entry for @a pc, if available.
+ *
+ * @param reader The initialized frame reader which will be searched for the entry.
+ * @param pc The PC value to search for within the frame data. Note that this value must be relative to
+ * the target Mach-O image's __TEXT vmaddr.
+ *
+ * @return Returns PLFRAME_ESUCCCESS on success, or one of the remaining error codes if a DWARF parsing error occurs. If
+ * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
+ */
+plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_address_t pc) {
+    // TODO
+    return PLCRASH_EUNKNOWN;
+}
+
+/**
+ * Free all resources associated with @a reader.
+ */
+void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader) {
+    // noop
+}
+
+/**
+ * @}
+ */

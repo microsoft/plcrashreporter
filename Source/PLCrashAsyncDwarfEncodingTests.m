@@ -30,22 +30,61 @@
 
 #include "PLCrashAsyncDwarfEncoding.h"
 
+#if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
+#  define TEST_BINARY @"test.macosx"
+#elif TARGET_IPHONE_SIMULATOR
+#  define TEST_BINARY @"test.sim"
+#elif TARGET_OS_IPHONE
+#  define TEST_BINARY @"test.ios"
+#else
+#  error Unsupported target
+#endif
 
 @interface PLCrashAsyncDwarfEncodingTests : PLCrashTestCase {
+    plcrash_async_macho_t _image;
+    plcrash_async_mobject_t _eh_frame;
+    plcrash_async_mobject_t _debug_frame;
 }
 @end
 
 @implementation PLCrashAsyncDwarfEncodingTests
 
 - (void) setUp {
-
+    NSError *error;
+    plcrash_error_t err;
+    
+    /* Map and load the binary */
+    NSData *mappedImage = [self nativeBinaryFromTestResource: TEST_BINARY];
+    STAssertNotNil(mappedImage, @"Failed to map image: %@", error);
+    
+    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], [mappedImage bytes]);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
+    
+    /* Map the eh/debug frame sections. We use our own fake __PL_DWARF segment to avoid toolchain interference with our test data. */
+    err = plcrash_async_macho_map_section(&_image, "__PL_DWARF", "__eh_frame", &_eh_frame);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __eh_frame section");
+    
+    err = plcrash_async_macho_map_section(&_image, "__PL_DWARF", "__debug_frame", &_debug_frame);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __debug_frame section");
 }
 
 - (void) tearDown {
-    
+    plcrash_async_mobject_free(&_eh_frame);
+    plcrash_async_mobject_free(&_debug_frame);
+    plcrash_nasync_macho_free(&_image);
 }
 
-- (void) testSomething {
+- (void) testFindFrameDescriptorEntry {
+ // TODO
+}
+
+/**
+ * Execute the Apple unwind regression tests.
+ */
+- (void) testRegression {
+    // TODO;
+    return;
+
     NSError *error;
     plcrash_error_t err;
     
@@ -82,7 +121,19 @@
             STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __debug_frame section for %@", tcase);
             has_debug_frame = YES;
         }
+        
+        /* Smoke test the FDE parser */
+        cpu_type_t cpu_type = plcrash_async_macho_cpu_type(&image);
+        // TODO
+        if (has_eh_frame) {
+            plcrash_async_dwarf_frame_reader_t reader;
+            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, cpu_type);
+        }
 
+        if (has_debug_frame) {
+            
+        }
+        
         /* Clean up */
         if (has_eh_frame)
             plcrash_async_mobject_free(&eh_frame);

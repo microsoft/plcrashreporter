@@ -1,7 +1,8 @@
-These test cases where extracted from Apple's libunwind-35.1, where they
+The regression test cases were extracted from Apple's libunwind-35.1, where they
 are used to validate Apple's compact frame and dwarf unwinding implementation.
 
-A custom build script (build.sh) may be used to regenerate the test binaries.
+A custom build script (build-regression-tests.sh) may be used to regenerate
+the test binaries.
 
 The test cases themselves are licensed under libunwind's license:
 

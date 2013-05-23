@@ -31,7 +31,7 @@ process() {
 	local opts=`echo $2`
 	local count=$3
 
-	eval cc -o bins/tbin.$file.${count} ${file} ${opts}
+	eval cc -o regression-bins/tbin.$file.${count} ${file} ${opts}
 }
 
 main() {
@@ -41,7 +41,7 @@ main() {
 
 	IFS=$ifs_nl
 	local count="1"
-	for opt in `grep -H "TEST-OPTIONS:" *.s`; do
+	for opt in `grep -H "TEST-OPTIONS:" regression/*.s`; do
 		IFS=$ifs_back
 		local fname=`echo "${opt}" | awk -F : '{print $1}'`
 		local opts=`echo "${opt}" | cut -d ' ' -f 3-`
