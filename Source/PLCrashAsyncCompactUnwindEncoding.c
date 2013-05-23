@@ -169,6 +169,10 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
         size_t common_enc_len = common_enc_count * sizeof(uint32_t);
         uint32_t common_enc_off = byteorder->swap32(reader->header.commonEncodingsArraySectionOffset);
         common_enc = plcrash_async_mobject_remap_address(reader->mobj, base_addr, common_enc_off, common_enc_len);
+        if (common_enc == NULL) {
+            PLCF_DEBUG("The declared common table lies outside the mapped CFE range");
+            return PLCRASH_EINVAL;
+        }
     }
 
     /* Find and load the first level entry */
