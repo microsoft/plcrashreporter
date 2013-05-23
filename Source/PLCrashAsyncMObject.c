@@ -170,6 +170,17 @@ pl_vm_address_t plcrash_async_mobject_base_address (plcrash_async_mobject_t *mob
     return mobj->task_address;
 }
 
+
+/**
+ * Return the length of this mapping.
+ *
+ * @param mobj An initialized memory object.
+ */
+pl_vm_address_t plcrash_async_mobject_length (plcrash_async_mobject_t *mobj) {
+    return mobj->length;
+}
+
+
 /**
  * Verify that @a length bytes starting at local @a address is within @a mobj's mapped range.
  *
