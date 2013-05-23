@@ -67,7 +67,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
  * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
  */
 plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_size_t offset, pl_vm_address_t pc) {
-    //const plcrash_async_byteorder_t *byteorder = reader->byteorder;
+    const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
     const pl_vm_address_t end_addr = base_addr + plcrash_async_mobject_length(reader->mobj);
 
@@ -85,40 +85,98 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
 
     /* Iterate over table entries */
     while (cfi_entry < end_addr) {
-        /* Fetch the entry length */
+        /* Fetch the entry length (and determine wether it's 64-bit or 32-bit) */
         uint64_t length;
-        uint32_t *length32 = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, 0x0, sizeof(uint32_t));
-        if (length32 == NULL) {
-            PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) cfi_entry);
-            return PLCRASH_EINVAL;
-        }
-        
-        if (*length32 == 0xffffffff) {
-            uint64_t *length64 = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, 4, sizeof(uint64_t));
-            if (length64 == NULL) {
+        pl_vm_size_t length_size;
+        bool m64;
+
+        {
+            uint32_t *length32 = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, 0x0, sizeof(uint32_t));
+            if (length32 == NULL) {
                 PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) cfi_entry);
                 return PLCRASH_EINVAL;
             }
+            
+            if (byteorder->swap32(*length32) == UINT32_MAX) {
+                uint64_t *length64 = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, sizeof(uint32_t), sizeof(uint64_t));
+                if (length64 == NULL) {
+                    PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) cfi_entry);
+                    return PLCRASH_EINVAL;
+                }
 
-            length = *length64;
-        } else {
-            length = *length32;
+                length = byteorder->swap64(*length64);
+                length_size = sizeof(uint64_t) + sizeof(uint32_t);
+                m64 = true;
+            } else {
+                length = byteorder->swap32(*length32);
+                length_size = sizeof(uint32_t);
+                m64 = false;
+            }
         }
 
-        /* Check for end marker */
+        /*
+         * APPLE EXTENSION
+         * Check for end marker, as per Apple's libunwind-35.1. It's unclear if this is defined by the DWARF 3 or 4 specifications; I could not
+         * find a reference to it.
+         
+         * Section 7.2.2 defines 0xfffffff0 - 0xffffffff as being reserved for extensions to the length
+         * field relative to the DWARF 2 standard. There is no explicit reference to the use of an 0 value.
+         *
+         * In section 7.2.1, the value of 0 is defined as being reserved as an error value in the encodings for
+         * "attribute names, attribute forms, base type encodings, location operations, languages, line number program
+         * opcodes, macro information entries and tag names to represent an error condition or unknown value."
+         *
+         * Section 7.2.2 doesn't justify the usage of 0x0 as a termination marker, but given that Apple's code relies on it,
+         * we will also do so here.
+         */
         if (length == 0x0)
             return PLCRASH_ENOTFOUND;
         
-        /* Skip over entry */
-        if (!plcrash_async_address_apply_offset(cfi_entry, length, &cfi_entry)) {
-            PLCF_DEBUG("Entry length overflows the CFI address");
+        /* Calculate the next entry address; the length_size addition is known-safe, as we were able to successfully read the length from *cfi_entry */
+        pl_vm_address_t next_cfi_entry;
+        if (!plcrash_async_address_apply_offset(cfi_entry+length_size, length_size, &next_cfi_entry)) {
+            PLCF_DEBUG("Entry length size overflows the CFI address");
             return PLCRASH_EINVAL;
         }
+        
+        /* Fetch the entry id */
+        uint64_t cie_id;
+        if (m64) {
+            uint64_t *cie_id_ptr = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, length_size, sizeof(uint64_t));
+            if (cie_id_ptr == NULL) {
+                PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
+                return PLCRASH_EINVAL;
+            }
+            cie_id = byteorder->swap64(*cie_id_ptr);
+        } else {
+            uint32_t *cie_id_ptr = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, length_size, sizeof(uint32_t));
+            if (cie_id_ptr == NULL) {
+                PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
+                return PLCRASH_EINVAL;
+            }
+            cie_id = byteorder->swap32(*cie_id_ptr);
+        }
+
+
+        /* eh_frame uses a type of 0x0 for CIE entries, whereas debug_frame uses UINT?_MAX. If neither, it's a FDE. */
+        if (cie_id == 0x0 || cie_id == m64 ? UINT64_MAX : UINT32_MAX) {
+            /* Not a FDE -- skip */
+            cfi_entry = next_cfi_entry;
+            continue;
+        }
+
+        /* Decode the FDE */
+        // TODO
+
+        /* Skip to the next entry */
+        cfi_entry = next_cfi_entry;
     }
 
     // TODO
     return PLCRASH_ESUCCESS;
 }
+
+
 
 /**
  * Free all resources associated with @a reader.

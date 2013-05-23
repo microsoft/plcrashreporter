@@ -116,6 +116,13 @@
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
 }
 
+- (void) testFindDebugFrameDescriptorEntry {
+    plcrash_error_t err;
+    
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, 0x0 /* TODO */);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
+}
+
 /**
  * Execute the Apple unwind regression tests.
  */
