@@ -238,6 +238,25 @@ pl_vm_size_t plcrash_async_macho_header_size (plcrash_async_macho_t *image) {
 }
 
 /**
+ * Return the Mach CPU type of @a image.
+ *
+ * @param image The image from which the CPU type should be returned.
+ */
+cpu_type_t plcrash_async_macho_cpu_type (plcrash_async_macho_t *image) {
+    return image->byteorder->swap32(image->header.cputype);
+}
+
+/**
+ * Return the Mach CPU subtype of @a image.
+ *
+ * @param image The image from which the CPU subtype should be returned.
+ */
+cpu_subtype_t plcrash_async_macho_cpu_subtype (plcrash_async_macho_t *image) {
+    return image->byteorder->swap32(image->header.cpusubtype);
+}
+
+
+/**
  * Iterate over the available Mach-O LC_CMD entries.
  *
  * @param image The image to iterate

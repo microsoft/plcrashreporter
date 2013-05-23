@@ -180,6 +180,9 @@ const plcrash_async_byteorder_t *plcrash_async_macho_byteorder (plcrash_async_ma
 const struct mach_header *plcrash_async_macho_header (plcrash_async_macho_t *image);
 pl_vm_size_t plcrash_async_macho_header_size (plcrash_async_macho_t *image);
 
+cpu_type_t plcrash_async_macho_cpu_type (plcrash_async_macho_t *image);
+cpu_subtype_t plcrash_async_macho_cpu_subtype (plcrash_async_macho_t *image);
+
 void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *previous);
 void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void *previous, uint32_t expectedCommand);
 void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t cmd);

@@ -102,6 +102,20 @@
 }
 
 /**
+ * Test CPU type/subtype getters.
+ */
+- (void) testCPUType {
+    /* Modify the image to enable byte order handling */
+    _image.byteorder = &plcrash_async_byteorder_swapped;
+    _image.header.cputype = plcrash_async_byteorder_swapped.swap32(CPU_TYPE_X86);
+    _image.header.cpusubtype = plcrash_async_byteorder_swapped.swap32(CPU_SUBTYPE_586);
+
+    /* Verify the result */
+    STAssertEquals(CPU_TYPE_X86, plcrash_async_macho_cpu_type(&_image), @"Incorrect CPU type");
+    STAssertEquals(CPU_SUBTYPE_586, plcrash_async_macho_cpu_subtype(&_image), @"Incorrect CPU subtype");
+}
+
+/**
  * Test iteration of Mach-O load commands.
  */
 - (void) testIterateCommand {
