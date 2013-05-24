@@ -36,7 +36,6 @@
  * @{
  */
 
-
 /**
  * Initialize a new DWARF frame reader using the provided memory object. Any resources held by a successfully initialized
  * instance must be freed via plcrash_async_dwarf_frame_reader_free();
@@ -50,6 +49,24 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
     reader->mobj = mobj;
     reader->byteorder = byteorder;
 
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Decode FDE info at target-relative @a address within @a mobj, using the given @a byteorder.
+ *
+ * @param info The FDE record to be initialized.
+ * @param mobj The memory object containing FDE data.
+ * @param byteorder The byte order of the target data.
+ * @param address The target-relative address within @a mobj containing the FDE data to be decoded. This should not include
+ * the length prefix of the FDE.
+ * @param length The length of the FDE element.
+ */
+static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info, plcrash_async_mobject_t *mobj,
+                                                       const plcrash_async_byteorder_t *byteorder, pl_vm_address_t address, pl_vm_address_t length)
+{
+    info->fde_length = length;
+    
     return PLCRASH_ESUCCESS;
 }
 
@@ -166,6 +183,8 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         }
 
         /* Decode the FDE */
+        plcrash_async_dwarf_fde_info_t fde_info;
+        plcrash_async_dwarf_decode_fde(&fde_info, reader->mobj, byteorder, cfi_entry + length_size, length);
         // TODO
 
         /* Skip to the next entry */
