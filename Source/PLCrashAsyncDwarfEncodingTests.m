@@ -30,6 +30,8 @@
 
 #include "PLCrashAsyncDwarfEncoding.h"
 
+#include "dwarf_encoding_test.h"
+
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
 #  define TEST_BINARY @"test.macosx"
 #elif TARGET_IPHONE_SIMULATOR
@@ -92,10 +94,10 @@
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __debug_frame section");
     
     /* Initialize eh/debug readers */
-    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, plcrash_async_macho_byteorder(&_image));
+    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, plcrash_async_macho_byteorder(&_image), false);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
-    
-    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, plcrash_async_macho_byteorder(&_image));
+
+    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, plcrash_async_macho_byteorder(&_image), true);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 }
 
@@ -109,18 +111,39 @@
     plcrash_nasync_macho_free(&_image);
 }
 
+
+#define TEST_CFE_ENTRY_SIZE 16
+
 - (void) testFindEHFrameDescriptorEntry {
     plcrash_error_t err;
+    plcrash_async_dwarf_fde_info_t fde_info;
 
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, 0x0 /* TODO */);
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, 0x0 /* TODO */, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
+    
+    /* Should be the second entry in the table, plus the 12 byte length initial length field. */
+    STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + 12, @"Incorrect offset");
+
+    STAssertEquals(fde_info.fde_length, (pl_vm_size_t)PL_CFI_LEN_64, @"Incorrect length");
+    STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
+
+    plcrash_async_dwarf_fde_info_free(&fde_info);
 }
 
 - (void) testFindDebugFrameDescriptorEntry {
     plcrash_error_t err;
-    
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, 0x0 /* TODO */);
+    plcrash_async_dwarf_fde_info_t fde_info;
+
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, 0x0 /* TODO */, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
+    
+    /* Should be the second entry in the table, plus the 12 byte length initial length field. */
+    STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + 12, @"Incorrect offset");
+
+    STAssertEquals(fde_info.fde_length, (pl_vm_size_t)PL_CFI_LEN_64, @"Incorrect length");
+    STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
+    
+    plcrash_async_dwarf_fde_info_free(&fde_info);
 }
 
 /**
@@ -171,7 +194,7 @@
         // TODO
         if (has_eh_frame) {
             plcrash_async_dwarf_frame_reader_t reader;
-            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, plcrash_async_macho_byteorder(&_image));
+            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, plcrash_async_macho_byteorder(&_image), false);
         }
 
         if (has_debug_frame) {

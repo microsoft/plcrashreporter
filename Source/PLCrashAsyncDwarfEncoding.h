@@ -46,6 +46,9 @@ typedef struct plcrash_async_dwarf_frame_reader {
 
     /** The byte order of the encoded data. */
     const plcrash_async_byteorder_t *byteorder;
+    
+    /** True if this is a debug_frame section */
+    bool debug_frame;
 } plcrash_async_dwarf_frame_reader_t;
 
 
@@ -53,14 +56,15 @@ typedef struct plcrash_async_dwarf_frame_reader {
  * DWARF Frame Descriptor Entry.
  */
 typedef struct plcrash_async_dwarf_fde_info {
-    /** The starting address of the FDE entry, relative to the eh_frame/debug_frame section based. */
-    pl_vm_size_t fde_offset;
+    /** The starting address of the FDE entry (not including the initial length field),
+     * relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t fde_offset;
 
-    /** The FDE entry length */
+    /** The FDE entry length, not including the initial length field. */
     pl_vm_size_t fde_length;
 
-    /** The address of the FDE instructions, relative to the eh_frame/debug_frame section based. */
-    pl_vm_size_t fde_instruction_offset;
+    /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t fde_instruction_offset;
 
     /** The start of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
      * the in-memory PC address of a loaded images. */
@@ -71,11 +75,19 @@ typedef struct plcrash_async_dwarf_fde_info {
     pl_vm_address_t pc_end;
 } plcrash_async_dwarf_fde_info_t;
 
-plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader, plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder);
+plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
+                                                       plcrash_async_mobject_t *mobj,
+                                                       const plcrash_async_byteorder_t *byteorder,
+                                                       bool debug_frame);
 
-plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_size_t offset, pl_vm_address_t pc);
+plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader,
+                                                           pl_vm_off_t offset,
+                                                           pl_vm_address_t pc,
+                                                           plcrash_async_dwarf_fde_info_t *fde_info);
 
 void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader);
+
+void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info);
 
 
 /**

@@ -25,6 +25,7 @@
  */
 
 #include "PLCrashAsyncDwarfEncoding.h"
+
 #include <inttypes.h>
 
 /**
@@ -36,6 +37,16 @@
  * @{
  */
 
+
+static bool pl_mobj_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest);
+
+static bool pl_mobj_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest);
+
+static bool pl_mobj_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                     pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest);
+
 /**
  * Initialize a new DWARF frame reader using the provided memory object. Any resources held by a successfully initialized
  * instance must be freed via plcrash_async_dwarf_frame_reader_free();
@@ -44,29 +55,104 @@
  * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address. This instance must
  * survive for the lifetime of the reader.
  * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
+ * frame reader will assume eh_frame data.
  */
-plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader, plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder) {
+plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
+                                                       plcrash_async_mobject_t *mobj,
+                                                       const plcrash_async_byteorder_t *byteorder,
+                                                       bool debug_frame)
+{
     reader->mobj = mobj;
     reader->byteorder = byteorder;
+    reader->debug_frame = debug_frame;
 
     return PLCRASH_ESUCCESS;
 }
+
 
 /**
  * Decode FDE info at target-relative @a address within @a mobj, using the given @a byteorder.
  *
  * @param info The FDE record to be initialized.
- * @param mobj The memory object containing FDE data.
- * @param byteorder The byte order of the target data.
- * @param address The target-relative address within @a mobj containing the FDE data to be decoded. This should not include
- * the length prefix of the FDE.
- * @param length The length of the FDE element.
+ * @param reader The frame reader.
+ * @param address The target-relative address containing the FDE data to be decoded. This must include
+ * the length field of the FDE.
+ * @param length The length of the FDE element (not including the entry's variable 'initial length' field)
+ * @param m64 If true, the FDE will be parsed as a 64-bit entry. If false, will be parsed as a 32-bit entry.
  */
-static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info, plcrash_async_mobject_t *mobj,
-                                                       const plcrash_async_byteorder_t *byteorder, pl_vm_address_t address, pl_vm_address_t length)
+static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info,
+                                                       plcrash_async_dwarf_frame_reader_t *reader,
+                                                       pl_vm_address_t fde_address)
 {
-    info->fde_length = length;
+    const plcrash_async_byteorder_t *byteorder = reader->byteorder;
+    const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
+
+    /* Extract and save the FDE length */
+    bool m64;
+    pl_vm_size_t length_size;
+    {
+        uint32_t length32;
+
+        if (!pl_mobj_read_u32(reader->mobj, byteorder, fde_address, 0x0, &length32)) {
+            PLCF_DEBUG("The current FDE entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) fde_address);
+            return PLCRASH_EINVAL;
+        }
+        
+        if (length32 == UINT32_MAX) {
+            pl_mobj_read_vm_address(reader->mobj, byteorder, fde_address, sizeof(uint32_t), true, &info->fde_length);
+            length_size = sizeof(uint64_t) + sizeof(uint32_t);
+            m64 = true;
+        } else {
+            info->fde_length = length32;
+            length_size = sizeof(uint32_t);
+            m64 = false;
+        }
+    }
     
+    /* Save the FDE offset; this is the FDE address, relative to the mobj base address, not including
+     * the FDE initial length. */
+    info->fde_offset = (fde_address - base_addr) + length_size;
+
+    /*
+     * Calculate the instruction base and offset (eg, the offset to the CIE entry)
+     */
+    pl_vm_address_t fde_instruction_base;
+    pl_vm_off_t fde_instruction_offset;
+    {
+        pl_vm_address_t raw_offset;
+        if (!pl_mobj_read_vm_address(reader->mobj, byteorder, fde_address, length_size, m64, &raw_offset)) {
+            PLCF_DEBUG("FDE instruction offset falls outside the mapped range");
+            return PLCRASH_EINVAL;
+        }
+
+        if (reader->debug_frame) {
+            /* In a .debug_frame, the CIE offset is relative to the start of the section. */
+            fde_instruction_base = base_addr;
+            fde_instruction_offset = raw_offset;
+        } else {
+            /* In a .eh_frame, the CIE offset is negative, relative to the current offset of the the FDE. */
+            fde_instruction_base = fde_address;
+            fde_instruction_offset = -raw_offset;
+        }
+    }
+
+    /* Apply the offset */
+    {
+        /* Compute the task-relative address */
+        pl_vm_address_t absolute_addr;
+        if (!plcrash_async_address_apply_offset(fde_instruction_base, fde_instruction_offset, &absolute_addr)) {
+            PLCF_DEBUG("FDE instruction offset overflows the base address");
+            return PLCRASH_EINVAL;
+        }
+        
+        /* Convert to a section-relative address */
+        if (!plcrash_async_address_apply_offset(absolute_addr, -base_addr, &info->fde_instruction_offset)) {
+            PLCF_DEBUG("FDE instruction offset overflows the base address");
+            return PLCRASH_EINVAL;
+        }
+    }
+
     return PLCRASH_ESUCCESS;
 }
 
@@ -79,14 +165,18 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
  * to begin searching at the beginning of the unwind data.
  * @param pc The PC value to search for within the frame data. Note that this value must be relative to
  * the target Mach-O image's __TEXT vmaddr.
+ * @param fde_info If the FDE is found, PLFRAME_ESUCCESS will be returned and @a fde_info will be initialized with the
+ * FDE data. The caller is responsible for freeing the returned FDE record via plcrash_async_dwarf_fde_info_free().
  *
  * @return Returns PLFRAME_ESUCCCESS on success, or one of the remaining error codes if a DWARF parsing error occurs. If
  * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
  */
-plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_size_t offset, pl_vm_address_t pc) {
+plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_off_t offset, pl_vm_address_t pc, plcrash_async_dwarf_fde_info_t *fde_info) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
     const pl_vm_address_t end_addr = base_addr + plcrash_async_mobject_length(reader->mobj);
+
+    plcrash_error_t err;
 
     /* Apply the FDE offset */
     pl_vm_address_t cfi_entry = base_addr;
@@ -151,41 +241,45 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         
         /* Calculate the next entry address; the length_size addition is known-safe, as we were able to successfully read the length from *cfi_entry */
         pl_vm_address_t next_cfi_entry;
-        if (!plcrash_async_address_apply_offset(cfi_entry+length_size, length_size, &next_cfi_entry)) {
+        if (!plcrash_async_address_apply_offset(cfi_entry+length_size, length, &next_cfi_entry)) {
             PLCF_DEBUG("Entry length size overflows the CFI address");
             return PLCRASH_EINVAL;
         }
         
         /* Fetch the entry id */
-        uint64_t cie_id;
-        if (m64) {
-            uint64_t *cie_id_ptr = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, length_size, sizeof(uint64_t));
-            if (cie_id_ptr == NULL) {
-                PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
-                return PLCRASH_EINVAL;
-            }
-            cie_id = byteorder->swap64(*cie_id_ptr);
-        } else {
-            uint32_t *cie_id_ptr = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, length_size, sizeof(uint32_t));
-            if (cie_id_ptr == NULL) {
-                PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
-                return PLCRASH_EINVAL;
-            }
-            cie_id = byteorder->swap32(*cie_id_ptr);
+        pl_vm_address_t cie_id;
+        if (!pl_mobj_read_vm_address(reader->mobj, byteorder, cfi_entry, length_size, m64, &cie_id)) {
+            PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
+            return PLCRASH_EINVAL;
         }
 
+        /* Check for (and skip) CIE entries. */
+        {
+            bool is_cie = false;
+    
+            /* debug_frame uses UINT?_MAX to denote CIE entries. */
+            if (reader->debug_frame && ((m64 && cie_id == UINT64_MAX) || (!m64 && cie_id == UINT32_MAX)))
+                is_cie = true;
+            
+            /* eh_frame uses a type of 0x0 to denote CIE entries. */
+            if (!reader->debug_frame && cie_id == 0x0)
+                is_cie = true;
 
-        /* eh_frame uses a type of 0x0 for CIE entries, whereas debug_frame uses UINT?_MAX. If neither, it's a FDE. */
-        if (cie_id == 0x0 || cie_id == m64 ? UINT64_MAX : UINT32_MAX) {
-            /* Not a FDE -- skip */
-            cfi_entry = next_cfi_entry;
-            continue;
+            /* If not a FDE, skip */
+            if (is_cie) {
+                /* Not a FDE -- skip */
+                cfi_entry = next_cfi_entry;
+                continue;
+            }
         }
 
         /* Decode the FDE */
-        plcrash_async_dwarf_fde_info_t fde_info;
-        plcrash_async_dwarf_decode_fde(&fde_info, reader->mobj, byteorder, cfi_entry + length_size, length);
+        err = plcrash_async_dwarf_decode_fde(fde_info, reader, cfi_entry);
+        if (err != PLCRASH_ESUCCESS)
+            return err;
+
         // TODO
+        return PLCRASH_ESUCCESS;
 
         /* Skip to the next entry */
         cfi_entry = next_cfi_entry;
@@ -202,6 +296,88 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
  */
 void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader) {
     // noop
+}
+
+/**
+ * Free all resources associated with @a fde_info.
+ */
+void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info) {
+    // noop
+}
+
+/**
+ * @internal
+ *
+ * Read a 32-bit value.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
+ * @param offset An offset to be applied to base_addr.
+ * @param dest The destination value.
+ */
+static bool pl_mobj_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest)
+{
+    uint32_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint32_t));
+    if (input == NULL)
+        return false;
+
+    *dest = byteorder->swap32(*input);
+    return true;
+}
+
+/**
+ * @internal
+ *
+ * Read a 64-bit value.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
+ * @param offset An offset to be applied to base_addr.
+ * @param dest The destination value.
+ */
+static bool pl_mobj_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest)
+{
+    uint64_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint64_t));
+    if (input == NULL)
+        return false;
+    
+    *dest = byteorder->swap64(*input);
+    return true;
+}
+
+/**
+ * @internal
+ *
+ * Read a VM address value.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
+ * @param offset An offset to be applied to base_addr.
+ * @param m64 If true, a 64-bit value will be read. If false, a 32-bit value will be read.
+ * @param dest The destination value.
+ */
+static bool pl_mobj_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                     pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest)
+{
+    if (m64) {
+        uint64_t r64;
+        if (!pl_mobj_read_u64(mobj, byteorder, base_addr, offset, &r64))
+            return false;
+        
+        *dest = r64;
+        return true;
+    } else {
+        uint32_t r32;
+        if (!pl_mobj_read_u32(mobj, byteorder, base_addr, offset, &r32))
+            return false;
+        *dest = r32;
+        return true;
+    }
 }
 
 /**
