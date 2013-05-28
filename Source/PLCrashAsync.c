@@ -174,9 +174,11 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
  * @param offset The offset to apply to @a base_address.
  * @param result The location in which to store the result.
  */
-bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_size_t offset, pl_vm_address_t *result) {
+bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off_t offset, pl_vm_address_t *result) {
     /* Check for overflow */
-    if (PL_VM_ADDRESS_MAX - offset < base_address) {
+    if (offset > 0 && PL_VM_ADDRESS_MAX - offset < base_address) {
+        return false;
+    } else if (offset < 0 && (offset * -1) > base_address) {
         return false;
     }
     
@@ -199,7 +201,7 @@ bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_siz
  * will be returned. If the pages can not be read due to access restrictions, PLCRASH_EACCESS will be returned. If
  * the proivded address + offset would overflow pl_vm_address_t, PLCRASH_ENOMEM is returned.
  */
-plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_size_t offset, void *dest, pl_vm_size_t len) {
+plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_off_t offset, void *dest, pl_vm_size_t len) {
     pl_vm_address_t target;
     kern_return_t kt;
 

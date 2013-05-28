@@ -61,6 +61,9 @@
 #define PL_VM_SIZE_MAX UINT32_MAX
 #endif
 
+/** The largest offset value that can be represented via the pl_vm_off_t type. */
+#define PL_VM_OFF_MAX PTRDIFF_MAX
+
 /** VM address type. 
  * @ingroup plcrash_async */
 typedef vm_address_t pl_vm_address_t;
@@ -68,6 +71,10 @@ typedef vm_address_t pl_vm_address_t;
 /** VM size type.
  * @ingroup plcrash_async */
 typedef vm_size_t pl_vm_size_t;
+
+/** Architecture-independent VM offset type.
+ * @ingroup plcrash_async */
+typedef ptrdiff_t pl_vm_off_t;
 
 #else
 
@@ -80,6 +87,9 @@ typedef vm_size_t pl_vm_size_t;
 /** The largest address value that can be represented via the pl_vm_size_t type. */
 #define PL_VM_SIZE_MAX UINT64_MAX
 
+/** The largest offset value that can be represented via the pl_vm_off_t type. */
+#define PL_VM_OFF_MAX INT64_MAX
+
 /** Architecture-independent VM address type.
  * @ingroup plcrash_async */
 typedef mach_vm_address_t pl_vm_address_t;
@@ -87,6 +97,10 @@ typedef mach_vm_address_t pl_vm_address_t;
 /** Architecture-independent VM size type. 
  * @ingroup plcrash_async */
 typedef mach_vm_size_t pl_vm_size_t;
+
+/** Architecture-independent VM offset type.
+ * @ingroup plcrash_async */
+typedef int64_t pl_vm_off_t;
 
 #endif /* TARGET_OS_IPHONE */
 
@@ -168,8 +182,8 @@ const char *plcrash_async_strerror (plcrash_error_t error);
 
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
 
-bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_size_t offset, pl_vm_address_t *result);
-plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_size_t offset, void *dest, pl_vm_size_t len);
+bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off_t offset, pl_vm_address_t *result);
+plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_off_t offset, void *dest, pl_vm_size_t len);
 
 int plcrash_async_strcmp(const char *s1, const char *s2);
 int plcrash_async_strncmp(const char *s1, const char *s2, size_t n);

@@ -115,6 +115,25 @@
 }
 
 /**
+ * Test negative offset handling
+ */
+- (void) test_mapMobj_map_negative_offset {
+    size_t size = vm_page_size+1;
+    uint8_t template[size];
+    
+    /* Map the memory */
+    plcrash_async_mobject_t mobj;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
+    STAssertEquals((pl_vm_address_t)template, (pl_vm_address_t) (mobj.address + mobj.vm_slide), @"Incorrect slide value!");
+    
+    /* Test slide handling */
+    STAssertEquals((void*)mobj.address+1, plcrash_async_mobject_remap_address(&mobj, (pl_vm_address_t) template+2, -1, 0), @"Mapped to incorrect address");
+    
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
  * Test mapped object pointer validation.
  */
 - (void) test_mapMobj_pointer {
@@ -126,6 +145,9 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)template, size, true), @"Failed to initialize mapping");
     
     /* Test the address offset validation */
+    STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, -1, 2), @"Returned pointer for a range that starts before our memory object");
+    STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address+1, -1, 1), @"Failed to return pointer for a valid range at the start of our memory object");
+
     STAssertFalse(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, mobj.length-1, 2), @"Returned pointer for a range that ends after our memory object");
     STAssertTrue(plcrash_async_mobject_verify_local_pointer(&mobj, mobj.address, mobj.length-1, 1), @"Failed to return pointer for a valid range at the tail of our memory object");
 

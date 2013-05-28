@@ -96,9 +96,14 @@
     /* Verify standard operation */
     STAssertTrue(plcrash_async_address_apply_offset(1, 1, &result), @"Failed to apply offset");
     STAssertEquals((pl_vm_address_t)2, result, @"Incorrect address returned");
+    
+    /* Verify negative offset handling */
+    STAssertTrue(plcrash_async_address_apply_offset(1, -1, &result), @"Failed to apply offset");
+    STAssertEquals((pl_vm_address_t)0, result, @"Incorrect address returned");
 
     /* Verify that overflow is safely handled */
     STAssertFalse(plcrash_async_address_apply_offset(PL_VM_ADDRESS_MAX, 1, &result), @"Bad adddress was accepted");
+    STAssertFalse(plcrash_async_address_apply_offset(1, -2, &result), @"Bad adddress was accepted");
 }
 
 - (void) testSafeMemcpyAddr {

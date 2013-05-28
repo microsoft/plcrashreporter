@@ -188,10 +188,13 @@ pl_vm_address_t plcrash_async_mobject_length (plcrash_async_mobject_t *mobj) {
  * @param address An address within the current task's memory space.
  * @param length The number of bytes that should be readable at @a address.
  */
-bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, pl_vm_size_t offset, size_t length) {
-    /* Verify that the offset value won't overrun */
-    if (UINTPTR_MAX - offset < address)
+bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, pl_vm_off_t offset, size_t length) {
+    /* Verify that the offset value won't overrun a native pointer */
+    if (offset > 0 && UINTPTR_MAX - offset < address) {
         return false;
+    } else if (offset < 0 && (offset * -1) > address) {
+        return false;
+    }
 
     /* Adjust the address using the verified offset */
     address += offset;
@@ -225,7 +228,7 @@ bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, 
  *
  * @return Returns the validated pointer, or NULL if the requested bytes are not within @a mobj's range.
  */
-void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_size_t offset, size_t length) {
+void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_off_t offset, size_t length) {
     /* Map into our memory space */
     pl_vm_address_t remapped = address - mobj->vm_slide;
 
