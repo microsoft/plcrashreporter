@@ -38,14 +38,14 @@
  */
 
 
-static bool pl_mobj_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest);
+static bool pl_dwarf_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest);
 
-static bool pl_mobj_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest);
+static bool pl_dwarf_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest);
 
-static bool pl_mobj_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                     pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest);
+static bool pl_dwarf_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                      pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest);
 
 /**
  * Initialize a new DWARF frame reader using the provided memory object. Any resources held by a successfully initialized
@@ -94,13 +94,13 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
     {
         uint32_t length32;
 
-        if (!pl_mobj_read_u32(reader->mobj, byteorder, fde_address, 0x0, &length32)) {
+        if (!pl_dwarf_read_u32(reader->mobj, byteorder, fde_address, 0x0, &length32)) {
             PLCF_DEBUG("The current FDE entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) fde_address);
             return PLCRASH_EINVAL;
         }
         
         if (length32 == UINT32_MAX) {
-            pl_mobj_read_vm_address(reader->mobj, byteorder, fde_address, sizeof(uint32_t), true, &info->fde_length);
+            pl_dwarf_read_vm_address(reader->mobj, byteorder, fde_address, sizeof(uint32_t), true, &info->fde_length);
             length_size = sizeof(uint64_t) + sizeof(uint32_t);
             m64 = true;
         } else {
@@ -121,7 +121,7 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
     pl_vm_off_t fde_instruction_offset;
     {
         pl_vm_address_t raw_offset;
-        if (!pl_mobj_read_vm_address(reader->mobj, byteorder, fde_address, length_size, m64, &raw_offset)) {
+        if (!pl_dwarf_read_vm_address(reader->mobj, byteorder, fde_address, length_size, m64, &raw_offset)) {
             PLCF_DEBUG("FDE instruction offset falls outside the mapped range");
             return PLCRASH_EINVAL;
         }
@@ -248,7 +248,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         
         /* Fetch the entry id */
         pl_vm_address_t cie_id;
-        if (!pl_mobj_read_vm_address(reader->mobj, byteorder, cfi_entry, length_size, m64, &cie_id)) {
+        if (!pl_dwarf_read_vm_address(reader->mobj, byteorder, cfi_entry, length_size, m64, &cie_id)) {
             PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
             return PLCRASH_EINVAL;
         }
@@ -316,8 +316,8 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  * @param offset An offset to be applied to base_addr.
  * @param dest The destination value.
  */
-static bool pl_mobj_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest)
+static bool pl_dwarf_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest)
 {
     uint32_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint32_t));
     if (input == NULL)
@@ -338,8 +338,8 @@ static bool pl_mobj_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async
  * @param offset An offset to be applied to base_addr.
  * @param dest The destination value.
  */
-static bool pl_mobj_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                              pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest)
+static bool pl_dwarf_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest)
 {
     uint64_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint64_t));
     if (input == NULL)
@@ -361,19 +361,19 @@ static bool pl_mobj_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async
  * @param m64 If true, a 64-bit value will be read. If false, a 32-bit value will be read.
  * @param dest The destination value.
  */
-static bool pl_mobj_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                     pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest)
+static bool pl_dwarf_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                      pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest)
 {
     if (m64) {
         uint64_t r64;
-        if (!pl_mobj_read_u64(mobj, byteorder, base_addr, offset, &r64))
+        if (!pl_dwarf_read_u64(mobj, byteorder, base_addr, offset, &r64))
             return false;
         
         *dest = r64;
         return true;
     } else {
         uint32_t r32;
-        if (!pl_mobj_read_u32(mobj, byteorder, base_addr, offset, &r32))
+        if (!pl_dwarf_read_u32(mobj, byteorder, base_addr, offset, &r32))
             return false;
         *dest = r32;
         return true;
