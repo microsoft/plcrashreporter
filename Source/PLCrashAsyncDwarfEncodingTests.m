@@ -111,8 +111,29 @@
     plcrash_nasync_macho_free(&_image);
 }
 
+/**
+ * Test ULEB128 parsing; test cases are taken from DWARF 3 standard, figure 22.
+ */
+- (void) testReadULEB128 {
+    /* Configure test */
+    uint8_t buffer[2];
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    uint64_t result;
+    
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj mapping");
 
-#define TEST_CFE_ENTRY_SIZE 16
+    /* Test cases */
+    buffer[0] = 2;
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
+    STAssertEquals(result, (uint64_t)2, @"Incorrect value decoded");
+
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
+}
+
 
 - (void) testFindEHFrameDescriptorEntry {
     plcrash_error_t err;

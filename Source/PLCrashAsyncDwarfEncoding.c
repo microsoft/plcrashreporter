@@ -306,6 +306,30 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
 }
 
 /**
+ * Read a ULEB128 value from @a location within @a mobj.
+ *
+ * @param mobj The memory object from which the LEB128 data will be read.
+ * @param location A task-relative location within @a mobj.
+ * @param result On success, the ULEB128 value.
+ */
+plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result) {
+    // TODO
+    return PLCRASH_ENOTSUP;
+}
+
+/**
+ * Read a SLEB128 value from @a location within @a mobj.
+ *
+ * @param mobj The memory object from which the LEB128 data will be read.
+ * @param location A task-relative location within @a mobj.
+ * @param result On success, the ULEB128 value.
+ */
+plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result) {
+    // TODO
+    return PLCRASH_ENOTSUP;
+}
+
+/**
  * @internal
  *
  * Read a 32-bit value.
