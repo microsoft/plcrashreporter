@@ -37,6 +37,8 @@
  * @{
  */
 
+static bool pl_dwarf_read_u16 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint16_t *dest);
 
 static bool pl_dwarf_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
                                pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest);
@@ -306,12 +308,159 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
 }
 
 /**
+ * Read a DWARF encoded pointer value from @a location within @a mobj. The encoding format is defined in
+ * the Linux Standard Base Core Specification 4.1, section 10.5, DWARF Extensions.
+ *
+ * @param mobj The memory object from which the pointer data will be read.
+ * @param location A task-relative location within @a mobj.
+ * @param result On success, the pointer value.
+ * @param size On success, will be set to the total size of the pointer data read at @a location, in bytes.
+ */
+plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                      pl_vm_address_t location, PL_DW_EH_PE_t encoding,
+                                                      pl_vm_address_t *result, pl_vm_size_t *size)
+{
+    plcrash_error_t err;
+
+    /* Skip DW_EH_pe_omit -- as per LSB 4.1.0, this signifies that no value is present */
+    if (encoding == PL_DW_EH_PE_omit) {
+        PLCF_DEBUG("Skipping decoding of DW_EH_PE_omit pointer");
+        return PLCRASH_ENOTFOUND;
+    }
+
+    /* Calculate the base address. Currently, only pcrel and absptr are supported; this matches
+     * the behavior of Darwin's libunwind */
+    pl_vm_address_t base;
+    switch (encoding & 0x70) {
+        case PL_DW_EH_PE_pcrel:
+            base = location;
+            break;
+            
+        case PL_DW_EH_PE_absptr:
+            base = 0x0;
+            break;
+            
+        case PL_DW_EH_PE_textrel:
+        case PL_DW_EH_PE_datarel:
+        case PL_DW_EH_PE_funcrel:
+        case PL_DW_EH_PE_aligned:
+            // TODO!
+
+        default:
+            PLCF_DEBUG("Unsupported pointer base encoding of 0x%x", encoding);
+            return PLCRASH_ENOTSUP;
+    }
+
+    /* Read and apply the pointer value */
+    switch (encoding & 0x0F) {
+        case PL_DW_EH_PE_absptr:
+            // TODO - we need to know the native pointer size of the target.
+            return PLCRASH_ENOTSUP;
+
+        case PL_DW_EH_PE_uleb128: {
+            uint64_t ulebv;            
+            err = plcrash_async_dwarf_read_uleb128(mobj, location, &ulebv, size);
+            
+            /* There's no garuantee that PL_VM_ADDRESS_MAX >= UINT64_MAX on all platforms */
+            if (ulebv > PL_VM_ADDRESS_MAX) {
+                PLCF_DEBUG("ULEB128 value exceeds PL_VM_ADDRESS_MAX");
+                return PLCRASH_ENOTSUP;
+            }
+            
+            *result = ulebv + base;
+            return PLCRASH_ESUCCESS;
+        }
+
+        case PL_DW_EH_PE_udata2: {
+            uint16_t udata2;
+            if (!pl_dwarf_read_u16(mobj, byteorder, location, 0, &udata2))
+                return PLCRASH_EINVAL;
+
+            *result = udata2 + base;
+            *size = 2;
+            return PLCRASH_ESUCCESS;
+        }
+            
+        case PL_DW_EH_PE_udata4: {
+            uint32_t udata4;
+            if (!pl_dwarf_read_u32(mobj, byteorder, location, 0, &udata4))
+                return PLCRASH_EINVAL;
+            
+            *result = udata4 + base;
+            *size = 4;
+            return PLCRASH_ESUCCESS;
+        }
+            
+        case PL_DW_EH_PE_udata8: {
+            uint64_t udata8;
+            if (!pl_dwarf_read_u64(mobj, byteorder, location, 0, &udata8))
+                return PLCRASH_EINVAL;
+            
+            *result = udata8 + base;
+            *size = 8;
+            return PLCRASH_ESUCCESS;
+        }
+
+        case PL_DW_EH_PE_sleb128: {
+            int64_t slebv;
+            err = plcrash_async_dwarf_read_sleb128(mobj, location, &slebv, size);
+            
+            /* There's no garuantee that PL_VM_ADDRESS_MAX >= INT64_MAX on all platforms */
+            if (slebv > PL_VM_OFF_MAX || slebv < PL_VM_OFF_MIN) {
+                PLCF_DEBUG("SLEB128 value exceeds PL_VM_OFF_MIN/PL_VM_OFF_MAX");
+                return PLCRASH_ENOTSUP;
+            }
+            
+            *result = slebv + base;
+            return PLCRASH_ESUCCESS;
+        }
+            
+        case PL_DW_EH_PE_sdata2: {
+            int16_t sdata2;
+            if (!pl_dwarf_read_u16(mobj, byteorder, location, 0, (uint16_t *) &sdata2))
+                return PLCRASH_EINVAL;
+            
+            *result = sdata2 + base;
+            *size = 2;
+            return PLCRASH_ESUCCESS;
+        }
+            
+        case PL_DW_EH_PE_sdata4: {
+            int32_t sdata4;
+            if (!pl_dwarf_read_u32(mobj, byteorder, location, 0, (uint32_t *) &sdata4))
+                return PLCRASH_EINVAL;
+            
+            *result = sdata4 + base;
+            *size = 4;
+            return PLCRASH_ESUCCESS;
+        }
+            
+        case PL_DW_EH_PE_sdata8: {
+            int64_t sdata8;
+            if (!pl_dwarf_read_u64(mobj, byteorder, location, 0, (uint64_t *) &sdata8))
+                return PLCRASH_EINVAL;
+            
+            *result = sdata8 + base;
+            *size = 8;
+            return PLCRASH_ESUCCESS;
+        }
+            
+        default:
+            PLCF_DEBUG("Unknown pointer encoding of type 0x%x", encoding);
+            return PLCRASH_ENOTSUP;
+    }
+
+    /* Unreachable */
+    return PLCRASH_EINTERNAL;
+}
+
+/**
  * Read a ULEB128 value from @a location within @a mobj.
  *
  * @param mobj The memory object from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
  * @param result On success, the ULEB128 value.
- * @param size On success, will be set to the total size of the decoded LEB128 value, in bytes.
+ * @param size On success, will be set to the total size of the decoded LEB128 value at @a location, in bytes.
  */
 plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result, pl_vm_size_t *size) {
     unsigned int shift = 0;
@@ -395,6 +544,29 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
 
     *size = offset;
     return PLCRASH_ESUCCESS;
+}
+
+
+/**
+ * @internal
+ *
+ * Read a 16-bit value.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
+ * @param offset An offset to be applied to base_addr.
+ * @param dest The destination value.
+ */
+static bool pl_dwarf_read_u16 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint16_t *dest)
+{
+    uint16_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint16_t));
+    if (input == NULL)
+        return false;
+    
+    *dest = byteorder->swap16(*input);
+    return true;
 }
 
 /**

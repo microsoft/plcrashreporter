@@ -38,6 +38,75 @@
  */
 
 /**
+ * Exception handling pointer encoding constants, as defined by the LSB Specification:
+ * http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/dwarfext.html
+ *
+ * The upper 4 bits indicate how the value is to be applied. The lower 4 bits indicate the format of the data.
+ */
+typedef enum PL_DW_EH_PE {
+    /**
+     * Value is an indirect reference. This value is not specified by the LSB, and appears to be a
+     * GCC extension; unfortunately, the intended use is not clear:
+     *
+     * - Apple's implementation of libunwind treats this as an indirected reference to a target-width pointer value,
+     *   as does the upstream libunwind.
+     * - LLDB does not appear to support indirect encoding at all.
+     * - LLVM's asm printer decodes it as an independent flag on the encoding type value; eg, DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_pcrel
+     *   LLVM/clang does not seem to otherwise emit this value.
+     * - GDB explicitly does not support indirect encodings.
+     *
+     * For our purposes, we treat the value as per LLVM's asm printer, and may re-evaluate if the indirect encoding
+     * is ever seen in the wild.
+     */
+    PL_DW_EH_PE_indirect = 0x80,
+    
+    /** No value is present. */
+    PL_DW_EH_PE_omit = 0xff,
+    
+    /** The value is a literal pointer whose size is determined by the architecture. */
+    PL_DW_EH_PE_absptr = 0x00,
+    
+    /** Unsigned value encoded using LEB128 as defined by DWARF Debugging Information Format, Revision 2.0.0. */
+    PL_DW_EH_PE_uleb128 = 0x01,
+    
+    /** Unsigned 16-bit value */
+    PL_DW_EH_PE_udata2 = 0x02,
+    
+    /* Unsigned 32-bit value */
+    PL_DW_EH_PE_udata4 = 0x03,
+    
+    /** Unsigned 64-bit value */
+    PL_DW_EH_PE_udata8 = 0x04,
+    
+    /** Signed value encoded using LEB128 as defined by DWARF Debugging Information Format, Revision 2.0.0. */
+    PL_DW_EH_PE_sleb128 = 0x09,
+    
+    /** Signed 16-bit value */
+    PL_DW_EH_PE_sdata2 = 0x0a,
+    
+    /** Signed 32-bit value */
+    PL_DW_EH_PE_sdata4 = 0x0b,
+    
+    /** Signed 64-bit value */
+    PL_DW_EH_PE_sdata8 = 0x0c,
+        
+    /** Value is relative to the current program counter. */
+    PL_DW_EH_PE_pcrel = 0x10,
+    
+    /** Value is relative to the beginning of the __TEXT section. */
+    PL_DW_EH_PE_textrel = 0x20,
+    
+    /** Value is relative to the beginning of the __DATA section. */
+    PL_DW_EH_PE_datarel = 0x30,
+    
+    /** Value is relative to the beginning of the function. */
+    PL_DW_EH_PE_funcrel = 0x40,
+    
+    /** Value is aligned to an address unit sized boundary. */
+    PL_DW_EH_PE_aligned = 0x50,
+} PL_DW_EH_PE_t;
+
+/**
  * A DWARF frame reader instance. Performs DWARF eh_frame/debug_frame parsing from a backing memory object.
  */
 typedef struct plcrash_async_dwarf_frame_reader {
@@ -91,6 +160,10 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
 
 plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result, pl_vm_size_t *size);
 plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result, pl_vm_size_t *size);
+
+plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                    pl_vm_address_t location, PL_DW_EH_PE_t encoding,
+                                                    pl_vm_address_t *result, pl_vm_size_t *size);
 
 
 /**

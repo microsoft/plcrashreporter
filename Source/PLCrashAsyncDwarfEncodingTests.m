@@ -112,6 +112,117 @@
 }
 
 /**
+ * Test pointer decoding.
+ */
+- (void) testReadEncodedPointer {
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    pl_vm_address_t result;
+    pl_vm_size_t size;
+
+    /* Test data */
+    union {
+        uint8_t leb128[2];
+    
+        uint16_t udata2;
+        uint32_t udata4;
+        uint64_t udata8;
+        
+        int16_t sdata2;
+        int16_t sdata4;
+        int16_t sdata8;
+    } test_data;
+    
+    /* Test ULEB128 */
+    test_data.leb128[0] = 2;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_uleb128, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
+    STAssertEquals(result, (pl_vm_address_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test udata2 */
+    test_data.udata2 = UINT16_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_udata2, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata2");
+    STAssertEquals(result, (pl_vm_address_t)UINT16_MAX, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)2, @"Incorrect byte length");
+    
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test udata4 */
+    test_data.udata4 = UINT32_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_udata4, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata4");
+    STAssertEquals(result, (pl_vm_address_t)UINT32_MAX, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)4, @"Incorrect byte length");
+    
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test udata8 */
+    test_data.udata8 = UINT64_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_udata8, &result, &size);
+    if (PL_VM_ADDRESS_MAX >= UINT64_MAX) {
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata8");
+        STAssertEquals(result, (pl_vm_address_t)UINT64_MAX, @"Incorrect value decoded");
+        STAssertEquals(size, (pl_vm_size_t)8, @"Incorrect byte length");
+    } else {
+        STAssertEquals(err, PLCRASH_EINVAL, @"Decoding should have failed");
+    }
+    
+    /* Test SLEB128 (including pcrel validation to ensure that signed values are handled as offsets) */
+    test_data.leb128[0] = 0x7e; // -2
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_pcrel|PL_DW_EH_PE_sleb128, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, ((pl_vm_address_t) &test_data) - 2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test sdata2 (including pcrel validation) */
+    test_data.sdata2 = -256;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_pcrel|PL_DW_EH_PE_sdata2, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata2");
+    STAssertEquals(result, ((pl_vm_address_t) &test_data) - 256, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)2, @"Incorrect byte length");
+    
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test sdata4 (including pcrel validation) */
+    test_data.sdata4 = -256;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_pcrel|PL_DW_EH_PE_sdata4, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sdata4");
+    STAssertEquals(result, ((pl_vm_address_t) &test_data) - 256, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)4, @"Incorrect byte length");
+    
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test sdata8 (including pcrel validation) */
+    test_data.sdata8 = -256;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data, PL_DW_EH_PE_pcrel|PL_DW_EH_PE_udata8, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata8");
+    STAssertEquals(result, ((pl_vm_address_t) &test_data) - 256, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)8, @"Incorrect byte length");
+}
+
+/**
  * Test ULEB128 parsing.
  */
 - (void) testReadULEB128 {

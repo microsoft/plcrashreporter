@@ -828,8 +828,8 @@
 		054627B811D99D06007891C7 /* PLCrashReportFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportFormatter.h; sourceTree = "<group>"; };
 		054F51070EEC73C80034B184 /* PLCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReporter.h; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
-		05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncDwarfEncoding.h; sourceTree = "<group>"; };
-		05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncDwarfEncoding.c; sourceTree = "<group>"; };
+		05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.c; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		05659DF117456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncDwarfEncodingTests.m; sourceTree = "<group>"; };
 		05659DF7174D2E1200D2EE21 /* PLCrashTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashTestCase.h; sourceTree = "<group>"; };
 		05659DF8174D2E1200D2EE21 /* PLCrashTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashTestCase.m; sourceTree = "<group>"; };
@@ -909,7 +909,6 @@
 		05E734830EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncSignalInfoTests.m; sourceTree = "<group>"; };
 		05E734F50EFAE59C005EDFB7 /* PLCrashReportSignalInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportSignalInfo.h; sourceTree = "<group>"; };
 		05E734F60EFAE59C005EDFB7 /* PLCrashReportSignalInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportSignalInfo.m; sourceTree = "<group>"; };
-		05E7483E175A3865009B8745 /* dwarf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dwarf.h; sourceTree = "<group>"; };
 		05EB2AF615B454DD0066EB4D /* PLCrashAsyncThread_current.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = PLCrashAsyncThread_current.S; sourceTree = "<group>"; };
 		05EB2AFC15B456750066EB4D /* PLCrashAsyncThread_current.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncThread_current.c; sourceTree = "<group>"; };
 		05EB2B0115B459770066EB4D /* PLCrashAsyncThread_current_defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncThread_current_defs.h; sourceTree = "<group>"; };
@@ -1502,7 +1501,6 @@
 			isa = PBXGroup;
 			children = (
 				052DC863175553DC004335FE /* dwarf_encoding_test.h */,
-				05E7483E175A3865009B8745 /* dwarf.h */,
 			);
 			name = Private;
 			sourceTree = "<group>";
