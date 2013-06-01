@@ -171,6 +171,76 @@
     plcrash_async_mobject_free(&mobj);
 }
 
+/**
+ * Test SLEB128 parsing.
+ */
+- (void) testReadSLEB128 {
+    /* Configure test */
+    uint8_t buffer[11];
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    int64_t result;
+    pl_vm_size_t size;
+    
+    /* Test a single byte */
+    buffer[0] = 2;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, (int64_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test single (negative) byte */
+    buffer[0] = 0x7e;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, (int64_t)-2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test multi-byte */
+    buffer[0] = 0+0x80;
+    buffer[1] = 1;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, (int64_t)128, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)2, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test -INT64_MAX */
+    memset(buffer, 0x80, sizeof(buffer));
+    buffer[9] = 0x7f;
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, INT64_MIN, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)10, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test handling of an integer larger than 64 bits. */
+    memset(buffer, 0x80, sizeof(buffer));
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ENOTSUP, @"SLEB128 should not be decodable");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test end-of-buffer handling */
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, 1, true), @"Failed to initialize mobj mapping");
+    buffer[0] = 1+0x80;
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_EINVAL, @"SLEB128 should not be decodable");
+    plcrash_async_mobject_free(&mobj);
+}
+
 
 - (void) testFindEHFrameDescriptorEntry {
     plcrash_error_t err;
