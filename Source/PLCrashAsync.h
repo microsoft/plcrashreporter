@@ -64,6 +64,9 @@
 /** The largest offset value that can be represented via the pl_vm_off_t type. */
 #define PL_VM_OFF_MAX PTRDIFF_MAX
 
+/** The smallest offset value that can be represented via the pl_vm_off_t type. */
+#define PL_VM_OFF_MIN PTRDIFF_MIN
+
 /** VM address type. 
  * @ingroup plcrash_async */
 typedef vm_address_t pl_vm_address_t;
@@ -89,6 +92,9 @@ typedef ptrdiff_t pl_vm_off_t;
 
 /** The largest offset value that can be represented via the pl_vm_off_t type. */
 #define PL_VM_OFF_MAX INT64_MAX
+
+/** The smallest offset value that can be represented via the pl_vm_off_t type. */
+#define PL_VM_OFF_MIN INT64_MIN
 
 /** Architecture-independent VM address type.
  * @ingroup plcrash_async */
