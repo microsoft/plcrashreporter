@@ -311,10 +311,43 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  * @param mobj The memory object from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
  * @param result On success, the ULEB128 value.
+ * @param size On success, will be set to the total size of the decoded LEB128 value, in bytes.
  */
-plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result) {
-    // TODO
-    return PLCRASH_ENOTSUP;
+plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result, pl_vm_size_t *size) {
+    
+    unsigned int shift = 0;
+    pl_vm_off_t offset = 0;
+    *result = 0;
+    
+    uint8_t *p;
+    while ((p = plcrash_async_mobject_remap_address(mobj, location, offset, 1)) != NULL) {
+        /* LEB128 uses 7 bits for the number, the final bit to signal completion */
+        uint8_t byte = *p;
+        *result |= ((uint64_t) (byte & 0x7f)) << shift;
+        shift += 7;
+
+        /* This is used to track length, so we must set it before
+         * potentially terminating the loop below */
+        offset++;
+        
+        /* Check for terminating bit */
+        if ((byte & 0x80) == 0)
+            break;
+        
+        /* Check for a ULEB128 larger than 64-bits */
+        if (shift >= 64) {
+            PLCF_DEBUG("ULEB128 is larger than the maximum supported size of 64 bits");
+            return PLCRASH_ENOTSUP;
+        }        
+    }
+
+    if (p == NULL) {
+        PLCF_DEBUG("ULEB128 value did not terminate within mapped memory range");
+        return PLCRASH_EINVAL;
+    }
+
+    *size = offset;
+    return PLCRASH_ESUCCESS;
 }
 
 /**
@@ -323,8 +356,9 @@ plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj,
  * @param mobj The memory object from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
  * @param result On success, the ULEB128 value.
+ * @param size On success, will be set to the total size of the decoded LEB128 value, in bytes.
  */
-plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result) {
+plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result, pl_vm_size_t *size) {
     // TODO
     return PLCRASH_ENOTSUP;
 }

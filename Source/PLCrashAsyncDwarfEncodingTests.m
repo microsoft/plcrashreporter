@@ -112,25 +112,62 @@
 }
 
 /**
- * Test ULEB128 parsing; test cases are taken from DWARF 3 standard, figure 22.
+ * Test ULEB128 parsing.
  */
 - (void) testReadULEB128 {
     /* Configure test */
-    uint8_t buffer[2];
+    uint8_t buffer[11];
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     uint64_t result;
-    
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj mapping");
+    pl_vm_size_t size;
 
-    /* Test cases */
+    /* Test a single byte */
     buffer[0] = 2;
-    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result);
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
     STAssertEquals(result, (uint64_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test multi-byte */
+    buffer[0] = 0+0x80;
+    buffer[1] = 1;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
 
-    /* Clean up */
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
+    STAssertEquals(result, (uint64_t)128, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)2, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Test UINT64_MAX */
+    memset(buffer, 0xFF, sizeof(buffer));
+    buffer[9] = 0x7F;
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
+    STAssertEquals(result, (uint64_t)UINT64_MAX, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)10, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test handling of an integer larger than 64 bits. */
+    memset(buffer, 0x80, sizeof(buffer));
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_ENOTSUP, @"ULEB128 should not be decodable");
+    plcrash_async_mobject_free(&mobj);
+
+    /* Test end-of-buffer handling */
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, 1, true), @"Failed to initialize mobj mapping");
+    buffer[0] = 1+0x80;
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    STAssertEquals(err, PLCRASH_EINVAL, @"ULEB128 should not be decodable");
     plcrash_async_mobject_free(&mobj);
 }
 
