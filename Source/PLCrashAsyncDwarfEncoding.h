@@ -144,6 +144,31 @@ typedef struct plcrash_async_dwarf_fde_info {
     pl_vm_address_t pc_end;
 } plcrash_async_dwarf_fde_info_t;
 
+
+/**
+ * GNU eh_frame pointer state. This is the base state to which PL_DW_EH_PE_t encoded pointer values will be applied.
+ */
+typedef struct plcrash_async_dwarf_gnueh_ptr_state {
+    /**
+     * The pointer size of the target system, in bytes; sizes greater than 8 bytes are unsupported.
+     */
+    pl_vm_address_t address_size;
+    
+    /** PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PL_VM_ADDRESS_INVALID. In the case of FDE
+     * entries, this should be the address of the FDE entry itself. */
+    pl_vm_address_t pc_rel_base;
+    
+    /** The base address of the text segment to be applied to DW_EH_PE_textrel offsets, or PL_VM_ADDRESS_INVALID. */
+    pl_vm_address_t text_base;
+    
+    /** The base address of the data segment to be applied to DW_EH_PE_datarel offsets, or PL_VM_ADDRESS_INVALID. */
+    pl_vm_address_t data_base;
+    
+    /** The base address of the function to be applied to DW_EH_PE_funcrel offsets, or PL_VM_ADDRESS_INVALID. */
+    pl_vm_address_t func_base;
+} plcrash_async_dwarf_gnueh_ptr_state_t;
+
+
 plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
                                                        plcrash_async_mobject_t *mobj,
                                                        const plcrash_async_byteorder_t *byteorder,
@@ -158,12 +183,26 @@ void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *
 
 void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info);
 
+
+void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
+                                               pl_vm_address_t address_size,
+                                               pl_vm_address_t pc_rel_base,
+                                               pl_vm_address_t text_base,
+                                               pl_vm_address_t data_base,
+                                               pl_vm_address_t func_base);
+
+void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_state_t *state);
+
 plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result, pl_vm_size_t *size);
 plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result, pl_vm_size_t *size);
 
-plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                                    pl_vm_address_t location, PL_DW_EH_PE_t encoding,
-                                                    pl_vm_address_t *result, pl_vm_size_t *size);
+plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj,
+                                                    const plcrash_async_byteorder_t *byteorder,
+                                                    pl_vm_address_t location,
+                                                    PL_DW_EH_PE_t encoding,
+                                                    plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
+                                                    pl_vm_address_t *result,
+                                                    pl_vm_size_t *size);
 
 
 /**
