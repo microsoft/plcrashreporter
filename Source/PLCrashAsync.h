@@ -110,6 +110,8 @@ typedef int64_t pl_vm_off_t;
 
 #endif /* TARGET_OS_IPHONE */
 
+/** An invalid address value. */
+#define PL_VM_ADDRESS_INVALID PL_VM_ADDRESS_MAX
 
 // assert() support. We prefer to leave assertions on in release builds, but need
 // to disable them in async-safe code paths.
