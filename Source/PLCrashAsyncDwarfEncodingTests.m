@@ -134,7 +134,6 @@
                                              PL_VM_ADDRESS_INVALID, // data_base
                                              PL_VM_ADDRESS_INVALID); // func_base
     
-    /* Test */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), aligned_data, sizeof(aligned_data), true), @"Failed to initialize mobj mapping");
     
     err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, plcrash_async_byteorder_big_endian(), &aligned_data[0], PL_DW_EH_PE_aligned, &state, &result, &size);
@@ -143,6 +142,45 @@
     /* The VM base is 1 byte shy of four byte alignment. To align the pointer value, we'll have to skip 3 bytes. */
     STAssertEquals(result, (pl_vm_address_t) 0xadaeafba, @"Incorrect value decoded, got 0%" PRIx32, (uint32_t) result);
     STAssertEquals(size, (pl_vm_size_t)7, @"Incorrect byte length");
+    
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
+ * Test indirect pointer handling.
+ */
+- (void) testReadIndirectEncodedPointer {
+    plcrash_async_mobject_t mobj;
+    plcrash_async_dwarf_gnueh_ptr_state_t state;
+    plcrash_error_t err;
+    pl_vm_address_t result;
+    pl_vm_size_t size;
+    
+    /* Test data */
+    struct {
+        uint64_t udata8;
+        uint64_t ptr;
+    } test_data;
+    test_data.udata8 = &test_data.ptr;
+    test_data.ptr = UINT32_MAX;
+
+    plcrash_async_dwarf_gnueh_ptr_state_init(&state,
+                                             sizeof(uint64_t),
+                                             PL_VM_ADDRESS_INVALID,
+                                             PL_VM_ADDRESS_INVALID,
+                                             PL_VM_ADDRESS_INVALID,
+                                             PL_VM_ADDRESS_INVALID,
+                                             PL_VM_ADDRESS_INVALID,
+                                             PL_VM_ADDRESS_INVALID);
+    
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, &test_data.udata8, PL_DW_EH_PE_indirect|PL_DW_EH_PE_udata8, &state, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode aligned value");
+    
+    STAssertEquals(result, (pl_vm_address_t) test_data.ptr, @"Incorrect value decoded, got 0%" PRIx32, (uint32_t) result);
+    STAssertEquals(size, (pl_vm_size_t)8, @"Incorrect byte length");
     
     plcrash_async_mobject_free(&mobj);
 }

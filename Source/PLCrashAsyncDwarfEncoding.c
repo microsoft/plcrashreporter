@@ -477,13 +477,13 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             uint64_t u64;
 
             if (!pl_dwarf_read_umax64(mobj, byteorder, location, 0, state->address_size, &u64)) {
-                PLCF_DEBUG("Failed to read value");
+                PLCF_DEBUG("Failed to read value at 0x%" PRIx64, (uint64_t) location);
                 return PLCRASH_EINVAL;
             }
             
             *result = u64 + base;
             *size += state->address_size;
-            return PLCRASH_ESUCCESS;
+            break;
         }
 
         case PL_DW_EH_PE_uleb128: {
@@ -500,8 +500,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = ulebv + base;
             *size += uleb_size;
-
-            return PLCRASH_ESUCCESS;
+            break;
         }
 
         case PL_DW_EH_PE_udata2: {
@@ -511,7 +510,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
 
             *result = udata2 + base;
             *size += 2;
-            return PLCRASH_ESUCCESS;
+            break;
         }
             
         case PL_DW_EH_PE_udata4: {
@@ -521,7 +520,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = udata4 + base;
             *size += 4;
-            return PLCRASH_ESUCCESS;
+            break;
         }
             
         case PL_DW_EH_PE_udata8: {
@@ -531,7 +530,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = udata8 + base;
             *size += 8;
-            return PLCRASH_ESUCCESS;
+            break;
         }
 
         case PL_DW_EH_PE_sleb128: {
@@ -548,7 +547,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = slebv + base;
             *size += sleb_size;
-            return PLCRASH_ESUCCESS;
+            break;
         }
             
         case PL_DW_EH_PE_sdata2: {
@@ -558,7 +557,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = sdata2 + base;
             *size += 2;
-            return PLCRASH_ESUCCESS;
+            break;
         }
             
         case PL_DW_EH_PE_sdata4: {
@@ -568,7 +567,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = sdata4 + base;
             *size += 4;
-            return PLCRASH_ESUCCESS;
+            break;
         }
             
         case PL_DW_EH_PE_sdata8: {
@@ -578,7 +577,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
             *result = sdata8 + base;
             *size += 8;
-            return PLCRASH_ESUCCESS;
+            break;
         }
             
         default:
@@ -586,8 +585,16 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             return PLCRASH_ENOTSUP;
     }
 
-    /* Unreachable */
-    return PLCRASH_EINTERNAL;
+    /* Handle indirection; the target value may only be an absptr; there is no way to define an
+     * encoding for the indirected target. */
+    if (encoding & PL_DW_EH_PE_indirect) {
+        /* The size of the target doesn't matter; the caller only needs to know how many bytes were read from
+         * @a location */
+        pl_vm_size_t target_size;
+        return plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, *result, PL_DW_EH_PE_absptr, state, result, &target_size);
+    }
+
+    return PLCRASH_ESUCCESS;
 }
 
 /**
