@@ -378,8 +378,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
         return PLCRASH_ENOTFOUND;
     }
 
-    /* Calculate the base address. Currently, only pcrel and absptr are supported; this matches
-     * the behavior of Darwin's libunwind */
+    /* Calculate the base address; bits 5-8 are used to specify the relative offset type */
     pl_vm_address_t base;
     switch (encoding & 0x70) {
         case PL_DW_EH_PE_pcrel:
@@ -392,6 +391,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             break;
             
         case PL_DW_EH_PE_absptr:
+            /* No flags are set */
             base = 0x0;
             break;
             
@@ -428,7 +428,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             return PLCRASH_ENOTSUP;
     }
 
-    /* Read and apply the pointer value */
+    /* Decode and return the pointer value [+ offset]. */
     switch (encoding & 0x0F) {
         case PL_DW_EH_PE_absptr: {
             uint64_t u64;
@@ -438,7 +438,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
             }
             
-            *result = u64;
+            *result = u64 + base;
             *size = state->address_size;
             return PLCRASH_ESUCCESS;
         }
