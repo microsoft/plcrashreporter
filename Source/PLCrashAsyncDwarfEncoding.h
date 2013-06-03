@@ -112,7 +112,17 @@ typedef enum PL_DW_EH_PE {
     /** Value is relative to the beginning of the function. */
     PL_DW_EH_PE_funcrel = 0x40,
     
-    /** Value is aligned to an address unit sized boundary. */
+    /**
+     * Value is aligned to an address unit sized boundary. The meaning of this flag is not defined in the
+     * LSB 4.1.0 specification; review of various implementations demonstrate that:
+     *
+     * - The value must be aligned relative to the VM load address of the eh_frame/debug_frame section that contains
+     *   it.
+     * - Some implementations assume that an aligned pointer value is always the architecture's natural pointer size.
+     *   Other implementations, such as gdb, permit the use of alternative value types (uleb, sleb, data2/4/8, etc).
+     *
+     * In our implementation, we support the combination of DW_EH_PE_aligned with any other supported value type.
+     */
     PL_DW_EH_PE_aligned = 0x50,
 } PL_DW_EH_PE_t;
 
@@ -168,6 +178,23 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
      * entries, this should be the address of the FDE entry itself. */
     pl_vm_address_t pc_rel_base;
     
+    /**
+     * The base address (in-memory) of the loaded debug_frame or eh_frame section, or PL_VM_ADDRESS_INVALID. This is
+     * used to calculate the offset of DW_EH_PE_aligned from the start of the frame section.
+     *
+     * This address should be the actual base address at which the section has been mapped.
+     */
+    pl_vm_address_t frame_section_base;
+
+    /**
+     * The base VM address of the eh_frame or debug_frame section, or PL_VM_ADDRESS_INVALID. This is used to calculate
+     * alignment for DW_EH_PE_aligned-encoded values.
+     *
+     * This address should be the aligned base VM address at which the section will (or has been loaded) during
+     * execution, and will be used to calculate PL_DW_EH_PE_aligned alignment.
+     */
+    pl_vm_address_t frame_section_vm_addr;
+
     /** The base address of the text segment to be applied to DW_EH_PE_textrel offsets, or PL_VM_ADDRESS_INVALID. */
     pl_vm_address_t text_base;
     
@@ -196,6 +223,8 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
 
 void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
                                                pl_vm_address_t address_size,
+                                               pl_vm_address_t frame_section_base,
+                                               pl_vm_address_t frame_section_vm_addr,
                                                pl_vm_address_t pc_rel_base,
                                                pl_vm_address_t text_base,
                                                pl_vm_address_t data_base,

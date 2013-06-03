@@ -317,6 +317,15 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  *
  * @param state The state value to be initialized.
  * @param address_size The pointer size of the target system, in bytes; must be one of 1, 2, 4, or 8.
+ * @param frame_section_base The base address (in-memory) of the loaded debug_frame or eh_frame section, or PL_VM_ADDRESS_INVALID. This is
+ * used to calculate the offset of DW_EH_PE_aligned from the start of the frame section. This address should be the
+ * actual base address at which the section has been mapped.
+ *
+ * @param frame_section_vm_addr The base VM address of the eh_frame or debug_frame section, or PL_VM_ADDRESS_INVALID.
+ * This is used to calculate alignment for DW_EH_PE_aligned-encoded values. This address should be the aligned base VM
+ * address at which the section will (or has been loaded) during execution, and will be used to calculate
+ * PL_DW_EH_PE_aligned alignment.
+ *
  * @param pc_rel_base PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PL_VM_ADDRESS_INVALID. In the case of FDE
  * entries, this should be the address of the FDE entry itself.
  * @param text_base The base address of the text segment to be applied to DW_EH_PE_textrel offsets, or PL_VM_ADDRESS_INVALID.
@@ -327,6 +336,8 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  */
 void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
                                                pl_vm_address_t address_size,
+                                               pl_vm_address_t frame_section_base,
+                                               pl_vm_address_t frame_section_vm_addr,
                                                pl_vm_address_t pc_rel_base,
                                                pl_vm_address_t text_base,
                                                pl_vm_address_t data_base,
@@ -335,6 +346,8 @@ void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_sta
     PLCF_ASSERT(address_size == 1 || address_size == 2 || address_size == 4 || address_size == 8);
 
     state->address_size = address_size;
+    state->frame_section_base = frame_section_base;
+    state->frame_section_vm_addr = frame_section_vm_addr;
     state->pc_rel_base = pc_rel_base;
     state->text_base = text_base;
     state->data_base = data_base;
@@ -353,7 +366,9 @@ void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_sta
  * Read a DWARF encoded pointer value from @a location within @a mobj. The encoding format is defined in
  * the Linux Standard Base Core Specification 4.1, section 10.5, DWARF Extensions.
  *
- * @param mobj The memory object from which the pointer data will be read.
+ * @param mobj The memory object from which the pointer data (including TEXT/DATA-relative values) will be read. This
+ * should map the full binary that may be read; the pointer value may reference data that is relative to the binary
+ * sections, depending on the base addresses supplied via @a state.
  * @param byteoder The byte order of the data referenced by @a mobj.
  * @param location A task-relative location within @a mobj.
  * @param encoding The encoding method to be used to decode the target pointer
@@ -377,6 +392,10 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
         PLCF_DEBUG("Skipping decoding of DW_EH_PE_omit pointer");
         return PLCRASH_ENOTFOUND;
     }
+    
+    /* Initialize the output size; we apply offsets to this size to allow for aligning the
+     * address prior to reading the pointer data, etc. */
+    *size = 0;
 
     /* Calculate the base address; bits 5-8 are used to specify the relative offset type */
     pl_vm_address_t base;
@@ -420,8 +439,32 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             base = state->func_base;
             break;
             
-        case PL_DW_EH_PE_aligned:
-            // TODO - unsupported
+        case PL_DW_EH_PE_aligned: {
+            /* Verify availability of required base addresses */
+            if (state->frame_section_vm_addr == PL_VM_ADDRESS_INVALID) {
+                PLCF_DEBUG("Cannot decode DW_EH_PE_aligned value with PL_VM_ADDRESS_INVALID frame_section_vm_addr");
+                return PLCRASH_ENOTSUP;
+            } else if (state->frame_section_base == PL_VM_ADDRESS_INVALID) {
+                PLCF_DEBUG("Cannot decode DW_EH_PE_aligned value with PL_VM_ADDRESS_INVALID frame_section_base");
+                return PLCRASH_ENOTSUP;
+            }
+            
+            /* Compute the offset+alignment relative to the section base */
+            PLCF_ASSERT(location >= state->frame_section_base);
+            pl_vm_address_t offset = location - state->frame_section_base;
+            
+            /* Apply to the VM load address for the section. */
+            pl_vm_address_t vm_addr = state->frame_section_vm_addr + offset;
+            pl_vm_address_t vm_aligned = (vm_addr + (state->address_size-1)) & ~(state->address_size);
+            
+            /* Apply the new offset to the actual load address */
+            location += (vm_aligned - vm_addr);
+
+            /* Set the base size to the number of bytes skipped */
+            base = 0x0;
+            *size = (vm_aligned - vm_addr);
+            break;
+        }
 
         default:
             PLCF_DEBUG("Unsupported pointer base encoding of 0x%x", encoding);
@@ -439,13 +482,15 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             }
             
             *result = u64 + base;
-            *size = state->address_size;
+            *size += state->address_size;
             return PLCRASH_ESUCCESS;
         }
 
         case PL_DW_EH_PE_uleb128: {
-            uint64_t ulebv;            
-            err = plcrash_async_dwarf_read_uleb128(mobj, location, &ulebv, size);
+            uint64_t ulebv;
+            pl_vm_address_t uleb_size;
+
+            err = plcrash_async_dwarf_read_uleb128(mobj, location, &ulebv, &uleb_size);
             
             /* There's no garuantee that PL_VM_ADDRESS_MAX >= UINT64_MAX on all platforms */
             if (ulebv > PL_VM_ADDRESS_MAX) {
@@ -454,6 +499,8 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             }
             
             *result = ulebv + base;
+            *size += uleb_size;
+
             return PLCRASH_ESUCCESS;
         }
 
@@ -463,7 +510,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
 
             *result = udata2 + base;
-            *size = 2;
+            *size += 2;
             return PLCRASH_ESUCCESS;
         }
             
@@ -473,7 +520,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
             
             *result = udata4 + base;
-            *size = 4;
+            *size += 4;
             return PLCRASH_ESUCCESS;
         }
             
@@ -483,13 +530,15 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
             
             *result = udata8 + base;
-            *size = 8;
+            *size += 8;
             return PLCRASH_ESUCCESS;
         }
 
         case PL_DW_EH_PE_sleb128: {
             int64_t slebv;
-            err = plcrash_async_dwarf_read_sleb128(mobj, location, &slebv, size);
+            pl_vm_size_t sleb_size;
+
+            err = plcrash_async_dwarf_read_sleb128(mobj, location, &slebv, &sleb_size);
             
             /* There's no garuantee that PL_VM_ADDRESS_MAX >= INT64_MAX on all platforms */
             if (slebv > PL_VM_OFF_MAX || slebv < PL_VM_OFF_MIN) {
@@ -498,6 +547,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             }
             
             *result = slebv + base;
+            *size += sleb_size;
             return PLCRASH_ESUCCESS;
         }
             
@@ -507,7 +557,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
             
             *result = sdata2 + base;
-            *size = 2;
+            *size += 2;
             return PLCRASH_ESUCCESS;
         }
             
@@ -517,7 +567,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
             
             *result = sdata4 + base;
-            *size = 4;
+            *size += 4;
             return PLCRASH_ESUCCESS;
         }
             
@@ -527,7 +577,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                 return PLCRASH_EINVAL;
             
             *result = sdata8 + base;
-            *size = 8;
+            *size += 8;
             return PLCRASH_ESUCCESS;
         }
             
