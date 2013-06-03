@@ -63,7 +63,17 @@ typedef enum PL_DW_EH_PE {
     /** No value is present. */
     PL_DW_EH_PE_omit = 0xff,
     
-    /** The value is a literal pointer whose size is determined by the architecture. */
+    /**
+     * If no flags are set (0x0), the value is a literal pointer whose size is determined by the architecture. Note that this has two different meanings,
+     * and is not a flag, but rather, the absense of a flag (0x0). If a relative flag is not set in the high 4 bits of the DW_EH_PE encoding, this
+     * signifies that no offset is to be applied. If the bottom 4 bits are 0, this signifies a native-width pointer value reference.
+     *
+     * As such, it's possible to mix DW_EH_PE_absptr with other relative flags, eg, DW_EH_PE_textrel. Examples:
+     *
+     * - DW_EH_PE_absptr|DW_EH_PE_textrel (0x20): Address is relative to TEXT segment, and is an architecture-native pointer width.
+     * - DW_EH_PE_absptr|PL_DW_EH_PE_uleb128 (0x1): The address is absolute, and is a ULEB128 value.
+     * - DW_EH_PE_absptr|PL_DW_EH_PE_uleb128|PL_DW_EH_PE_indirect (0x81): The address is absolute, indirect, and is a ULEB128 value.
+     */
     PL_DW_EH_PE_absptr = 0x00,
     
     /** Unsigned value encoded using LEB128 as defined by DWARF Debugging Information Format, Revision 2.0.0. */
