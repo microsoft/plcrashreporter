@@ -67,6 +67,14 @@ pl_vm_address_t plcrash_async_mobject_length (plcrash_async_mobject_t *mobj);
 bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, pl_vm_off_t offset, size_t length);
 void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_off_t offset, size_t length);
 
+plcrash_error_t plcrash_async_mobject_read_uint8 (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_off_t offset, uint8_t *result);
+plcrash_error_t plcrash_async_mobject_read_uint16 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address, pl_vm_off_t offset, uint16_t *result);
+plcrash_error_t plcrash_async_mobject_read_uint32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address, pl_vm_off_t offset, uint32_t *result);
+plcrash_error_t plcrash_async_mobject_read_uint64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address, pl_vm_off_t offset, uint64_t *result);
+
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj);
 
 #endif // PLCrashAsyncMObject_h

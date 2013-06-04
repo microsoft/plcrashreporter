@@ -186,7 +186,8 @@ pl_vm_address_t plcrash_async_mobject_length (plcrash_async_mobject_t *mobj) {
  *
  * @param mobj An initialized memory object.
  * @param address An address within the current task's memory space.
- * @param length The number of bytes that should be readable at @a address.
+ * @param offset An offset to be applied to @a address prior to verifying the address range.
+ * @param length The number of bytes that should be readable at @a address + @a offset.
  */
 bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, pl_vm_off_t offset, size_t length) {
     /* Verify that the offset value won't overrun a native pointer */
@@ -223,7 +224,8 @@ bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, 
  * from @a mobj at @a address, and return the pointer from which a @a length read may be performed.
  *
  * @param mobj An initialized memory object.
- * @param address The address to be read. This address should be relative to the target task's address space.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address prior to verifying the address range.
  * @param length The total number of bytes that should be readable at @a address.
  *
  * @return Returns the validated pointer, or NULL if the requested bytes are not within @a mobj's range.
@@ -236,6 +238,96 @@ void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_
         return NULL;
 
     return (void *) remapped + offset;
+}
+
+/**
+ * Read a single byte from @a mobj.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_mobject_read_uint8 (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_off_t offset, uint8_t *result) {
+    uint8_t *input = plcrash_async_mobject_remap_address(mobj, address, offset, sizeof(uint8_t));
+    if (input == NULL)
+        return PLCRASH_EINVAL;
+    
+    *result = *input;
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Read a 16-bit value from @a mobj.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_mobject_read_uint16 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address, pl_vm_off_t offset, uint16_t *result)
+{
+    uint16_t *input = plcrash_async_mobject_remap_address(mobj, address, offset, sizeof(uint16_t));
+    if (input == NULL)
+        return PLCRASH_EINVAL;
+    
+    *result = byteorder->swap16(*input);
+    return PLCRASH_ESUCCESS;
+}
+
+
+/**
+ * Read a 32-bit value from @a mobj.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_mobject_read_uint32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address, pl_vm_off_t offset, uint32_t *result)
+{
+    uint32_t *input = plcrash_async_mobject_remap_address(mobj, address, offset, sizeof(uint32_t));
+    if (input == NULL)
+        return PLCRASH_EINVAL;
+    
+    *result = byteorder->swap32(*input);
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Read a 64-bit value from @a mobj.
+ *
+ * @param mobj Memory object from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_mobject_read_uint64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address, pl_vm_off_t offset, uint64_t *result)
+{
+    uint64_t *input = plcrash_async_mobject_remap_address(mobj, address, offset, sizeof(uint64_t));
+    if (input == NULL)
+        return PLCRASH_EINVAL;
+    
+    *result = byteorder->swap64(*input);
+    return PLCRASH_ESUCCESS;
 }
 
 /**

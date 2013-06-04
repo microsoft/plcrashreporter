@@ -37,15 +37,6 @@
  * @{
  */
 
-static bool pl_dwarf_read_u16 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint16_t *dest);
-
-static bool pl_dwarf_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest);
-
-static bool pl_dwarf_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest);
-
 static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
                                   pl_vm_address_t base_addr, pl_vm_off_t offset, pl_vm_size_t data_size,
                                   uint64_t *dest);
@@ -98,7 +89,7 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
     {
         uint32_t length32;
 
-        if (!pl_dwarf_read_u32(reader->mobj, byteorder, fde_address, 0x0, &length32)) {
+        if (plcrash_async_mobject_read_uint32(reader->mobj, byteorder, fde_address, 0x0, &length32) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("The current FDE entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) fde_address);
             return PLCRASH_EINVAL;
         }
@@ -510,8 +501,8 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
 
         case PL_DW_EH_PE_udata2: {
             uint16_t udata2;
-            if (!pl_dwarf_read_u16(mobj, byteorder, location, 0, &udata2))
-                return PLCRASH_EINVAL;
+            if ((err = plcrash_async_mobject_read_uint16(mobj, byteorder, location, 0, &udata2)) != PLCRASH_ESUCCESS)
+                return err;
 
             *result = udata2 + base;
             *size += 2;
@@ -520,8 +511,8 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case PL_DW_EH_PE_udata4: {
             uint32_t udata4;
-            if (!pl_dwarf_read_u32(mobj, byteorder, location, 0, &udata4))
-                return PLCRASH_EINVAL;
+            if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, location, 0, &udata4)) != PLCRASH_ESUCCESS)
+                return err;
             
             *result = udata4 + base;
             *size += 4;
@@ -530,9 +521,9 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case PL_DW_EH_PE_udata8: {
             uint64_t udata8;
-            if (!pl_dwarf_read_u64(mobj, byteorder, location, 0, &udata8))
-                return PLCRASH_EINVAL;
-            
+            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, location, 0, &udata8)) != PLCRASH_ESUCCESS)
+                return err;
+
             *result = udata8 + base;
             *size += 8;
             break;
@@ -557,9 +548,9 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case PL_DW_EH_PE_sdata2: {
             int16_t sdata2;
-            if (!pl_dwarf_read_u16(mobj, byteorder, location, 0, (uint16_t *) &sdata2))
-                return PLCRASH_EINVAL;
-            
+            if ((err = plcrash_async_mobject_read_uint16(mobj, byteorder, location, 0, (uint16_t *) &sdata2)) != PLCRASH_ESUCCESS)
+                return err;
+
             *result = sdata2 + base;
             *size += 2;
             break;
@@ -567,8 +558,8 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case PL_DW_EH_PE_sdata4: {
             int32_t sdata4;
-            if (!pl_dwarf_read_u32(mobj, byteorder, location, 0, (uint32_t *) &sdata4))
-                return PLCRASH_EINVAL;
+            if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, location, 0, (uint32_t *) &sdata4)) != PLCRASH_ESUCCESS)
+                return err;
             
             *result = sdata4 + base;
             *size += 4;
@@ -577,9 +568,9 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case PL_DW_EH_PE_sdata8: {
             int64_t sdata8;
-            if (!pl_dwarf_read_u64(mobj, byteorder, location, 0, (uint64_t *) &sdata8))
-                return PLCRASH_EINVAL;
-            
+            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, location, 0, (uint64_t *) &sdata8)) != PLCRASH_ESUCCESS)
+                return err;
+    
             *result = sdata8 + base;
             *size += 8;
             break;
@@ -694,73 +685,6 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
     return PLCRASH_ESUCCESS;
 }
 
-
-/**
- * @internal
- *
- * Read a 16-bit value.
- *
- * @param mobj Memory object from which to read the value.
- * @param byteorder Byte order of the target value.
- * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
- * @param offset An offset to be applied to base_addr.
- * @param dest The destination value.
- */
-static bool pl_dwarf_read_u16 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint16_t *dest)
-{
-    uint16_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint16_t));
-    if (input == NULL)
-        return false;
-    
-    *dest = byteorder->swap16(*input);
-    return true;
-}
-
-/**
- * @internal
- *
- * Read a 32-bit value.
- *
- * @param mobj Memory object from which to read the value.
- * @param byteorder Byte order of the target value.
- * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
- * @param offset An offset to be applied to base_addr.
- * @param dest The destination value.
- */
-static bool pl_dwarf_read_u32 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint32_t *dest)
-{
-    uint32_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint32_t));
-    if (input == NULL)
-        return false;
-
-    *dest = byteorder->swap32(*input);
-    return true;
-}
-
-/**
- * @internal
- *
- * Read a 64-bit value.
- *
- * @param mobj Memory object from which to read the value.
- * @param byteorder Byte order of the target value.
- * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
- * @param offset An offset to be applied to base_addr.
- * @param dest The destination value.
- */
-static bool pl_dwarf_read_u64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                               pl_vm_address_t base_addr, pl_vm_off_t offset, uint64_t *dest)
-{
-    uint64_t *input = plcrash_async_mobject_remap_address(mobj, base_addr, offset, sizeof(uint64_t));
-    if (input == NULL)
-        return false;
-    
-    *dest = byteorder->swap64(*input);
-    return true;
-}
-
 /**
  * @internal
  *
@@ -831,14 +755,14 @@ static bool pl_dwarf_read_vm_address (plcrash_async_mobject_t *mobj, const plcra
 {
     if (m64) {
         uint64_t r64;
-        if (!pl_dwarf_read_u64(mobj, byteorder, base_addr, offset, &r64))
+        if (plcrash_async_mobject_read_uint64(mobj, byteorder, base_addr, offset, &r64) != PLCRASH_ESUCCESS)
             return false;
         
         *dest = r64;
         return true;
     } else {
         uint32_t r32;
-        if (!pl_dwarf_read_u32(mobj, byteorder, base_addr, offset, &r32))
+        if (plcrash_async_mobject_read_uint32(mobj, byteorder, base_addr, offset, &r32) != PLCRASH_ESUCCESS)
             return false;
         *dest = r32;
         return true;

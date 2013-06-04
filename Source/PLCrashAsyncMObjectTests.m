@@ -165,4 +165,42 @@
     plcrash_async_mobject_free(&mobj);
 }
 
+/**
+ * Test byte/multibyte read routines.
+ */
+- (void) testReadHandling {
+    uint8_t test_bytes[] = { 0x00, 0x01, 0x02, 0x03 , 0x04, 0x05, 0x06, 0x07 };
+    
+    /* Use big endian byte order to simplify determining the expected value in the below tests; it will always be the first N bytes
+     * of the test bytes, in order. */
+    const plcrash_async_byteorder_t *byteorder = plcrash_async_byteorder_big_endian();
+
+    /* Map the memory */
+    plcrash_async_mobject_t mobj;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), test_bytes, sizeof(test_bytes), true), @"Failed to initialize mapping");
+    
+    /* uint8 */
+    uint8_t u8;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint8(&mobj, test_bytes-1, 1, &u8), @"Failed to read data");
+    STAssertEquals(u8, (uint8_t) 0x0, @"Incorrect data");
+    
+    /* uint16 */
+    uint16_t u16;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint16(&mobj, byteorder, test_bytes-1, 1, &u16), @"Failed to read data");
+    STAssertEquals(u16, (uint16_t) 0x0001, @"Incorrect data");
+    
+    /* uint32 */
+    uint32_t u32;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint32(&mobj, byteorder, test_bytes-1, 1, &u32), @"Failed to read data");
+    STAssertEquals(u32, (uint32_t) 0x00010203, @"Incorrect data");
+    
+    /* uint64 */
+    uint64_t u64;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint64(&mobj, byteorder, test_bytes-1, 1, &u64), @"Failed to read data");
+    STAssertEquals(u64, (uint64_t) 0x0001020304050607ULL, @"Incorrect data");
+
+    /* Clean up */
+    plcrash_async_mobject_free(&mobj);
+}
+
 @end
