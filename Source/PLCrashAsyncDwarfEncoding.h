@@ -56,7 +56,7 @@ typedef struct plcrash_async_dwarf_frame_reader {
  * DWARF Frame Descriptor Entry.
  */
 typedef struct plcrash_async_dwarf_fde_info {
-    /** The starting address of the FDE entry (not including the initial length field),
+    /** The starting address of the entry (not including the initial length field),
      * relative to the eh_frame/debug_frame section base. */
     pl_vm_address_t fde_offset;
 
