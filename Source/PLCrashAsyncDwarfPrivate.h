@@ -179,14 +179,56 @@ typedef struct plcrash_async_dwarf_cie_info {
     /** The CIE record length, not including the initial length field. */
     uint64_t cie_length;
     
-    /** The CIE identifier. For GCC3 eh_frame sections, this value must always be 0. For DWARF2 debug_frame sections,
-     * this value must always be UINT32_MAX */
-    uint32_t cie_id;
+    /**
+     * The CIE identifier. This will be either 4 or 8 bytes, depending on the decoded DWARF
+     * format.
+     *
+     * @par GCC .eh_frame.
+     * For GCC3 eh_frame sections, this value will always be 0.
+     *
+     * @par DWARF
+     * For DWARF debug_frame sections, this value will always be UINT32_MAX or UINT64_MAX for
+     * the DWARF 32-bit and 64-bit formats, respectively.
+     */
+    uint64_t cie_id;
     
-    /** The CIE version. For GCC3 eh_frame sections, this value must always be 1. For DWARF2 debug_frame sections,
-     * this value must always be 3 */
+    /**
+     * The CIE version. Supported version numbers:
+     * - GCC3 .eh_frame: 1
+     * - DWARF3 debug_frame: 3
+     * - DWARF4 debug_frame: 4
+     */
     uint8_t cie_version;
+    
+    /**
+     * The size in bytes of an address (or the offset portion of an address for segmented addressing) on
+     * the target system. This value will only be present in DWARF4 CIE records; on non-DWARF4 records,
+     * the value will be initialized to zero.
+     *
+     * Defined in the DWARF4 standard, Section 7.20.
+     */
+    uint8_t address_size;
 
+    /**
+     * The size in bytes of a segment selector on the target system, or 0. This value will
+     * only be present in DWARF4 CIE records; on non-DWARF4 records, the value will be initialized
+     * to zero.
+     *
+     * Defined in the DWARF4 standard, Section 7.20.
+     */
+    uint8_t segment_size;
+    
+    /**
+     * Code alignment factor. A constant that is factored out of all advance location instructions; see DWARF4 Section 6.4.2.1.
+     */
+    uint64_t code_alignment_factor;
+
+    /** Data alignment factor. A constant that is factored out of certain offset instructions; see DWARF4 Section 6.4.2.1. */
+    uint64_t data_alignment_factor;
+
+    /** Return address register. A constant that constant that indicates which column in the rule table represents the return
+     * address of the function. Note that this column might not correspond to an actual machine register. */
+    uint64_t return_address_register;
 #if 0
 
 
@@ -276,8 +318,8 @@ void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_sta
 
 void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_state_t *state);
 
-plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result, pl_vm_size_t *size);
-plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result, pl_vm_size_t *size);
+plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, pl_vm_off_t offset, uint64_t *result, pl_vm_size_t *size);
+plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, pl_vm_off_t offset, int64_t *result, pl_vm_size_t *size);
 
 plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj,
                                                     const plcrash_async_byteorder_t *byteorder,

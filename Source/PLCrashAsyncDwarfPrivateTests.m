@@ -37,10 +37,13 @@ struct __attribute__((packed)) cie_data {
         uint64_t l2;
     } length;
     
-    uint32_t cie_id;
+    uint64_t cie_id;
     uint8_t cie_version;
     
-    char augmentation[6];
+    uint8_t address_size;
+    uint8_t segment_size;
+    
+    uint8_t augmentation[6];
 };
 
 @interface PLCrashAsyncDwarfPrivateTests : PLCrashTestCase {
@@ -55,9 +58,16 @@ struct __attribute__((packed)) cie_data {
     _cie_data.length.l2 = sizeof(_cie_data) - sizeof(_cie_data.length);
 
     _cie_data.cie_id = 0x0;
-    _cie_data.cie_version = 3;
+    _cie_data.cie_version = 4;
     
+    _cie_data.address_size = 4;
+    _cie_data.segment_size = 0;
+
     _cie_data.augmentation[0] = 'z';
+    _cie_data.augmentation[1] = 'z';
+    _cie_data.augmentation[2] = 'z';
+    _cie_data.augmentation[3] = '\0';
+
 }
 
 /**
@@ -79,6 +89,9 @@ struct __attribute__((packed)) cie_data {
     
     STAssertEquals(cie.cie_id, _cie_data.cie_id, @"Incorrect ID");
     STAssertEquals(cie.cie_version, _cie_data.cie_version, @"Incorrect version");
+    
+    STAssertEquals(cie.address_size, _cie_data.address_size, @"Incorrect ID");
+    STAssertEquals(cie.segment_size, _cie_data.segment_size, @"Incorrect version");
 
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);
@@ -114,7 +127,7 @@ struct __attribute__((packed)) cie_data {
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     
-    _cie_data.cie_version = 5; // invalid version
+    _cie_data.cie_version = 9999; // invalid version
     err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
     
@@ -419,7 +432,7 @@ struct __attribute__((packed)) cie_data {
     buffer[0] = 2;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
     STAssertEquals(result, (uint64_t)2, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
@@ -430,7 +443,7 @@ struct __attribute__((packed)) cie_data {
     buffer[1] = 1;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
     STAssertEquals(result, (uint64_t)128, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)2, @"Incorrect byte length");
@@ -442,7 +455,7 @@ struct __attribute__((packed)) cie_data {
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
     STAssertEquals(result, (uint64_t)UINT64_MAX, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)10, @"Incorrect byte length");
@@ -452,14 +465,14 @@ struct __attribute__((packed)) cie_data {
     memset(buffer, 0x80, sizeof(buffer));
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ENOTSUP, @"ULEB128 should not be decodable");
     plcrash_async_mobject_free(&mobj);
     
     /* Test end-of-buffer handling */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, 1, true), @"Failed to initialize mobj mapping");
     buffer[0] = 1+0x80;
-    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_EINVAL, @"ULEB128 should not be decodable");
     plcrash_async_mobject_free(&mobj);
 }
@@ -479,7 +492,7 @@ struct __attribute__((packed)) cie_data {
     buffer[0] = 2;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
     STAssertEquals(result, (int64_t)2, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
@@ -489,7 +502,7 @@ struct __attribute__((packed)) cie_data {
     buffer[0] = 0x7e;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
     STAssertEquals(result, (int64_t)-2, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
@@ -500,7 +513,7 @@ struct __attribute__((packed)) cie_data {
     buffer[1] = 1;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
     STAssertEquals(result, (int64_t)128, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)2, @"Incorrect byte length");
@@ -512,7 +525,7 @@ struct __attribute__((packed)) cie_data {
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
     STAssertEquals(result, INT64_MIN, @"Incorrect value decoded");
     STAssertEquals(size, (pl_vm_size_t)10, @"Incorrect byte length");
@@ -522,14 +535,14 @@ struct __attribute__((packed)) cie_data {
     memset(buffer, 0x80, sizeof(buffer));
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
     
-    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_ENOTSUP, @"SLEB128 should not be decodable");
     plcrash_async_mobject_free(&mobj);
     
     /* Test end-of-buffer handling */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, 1, true), @"Failed to initialize mobj mapping");
     buffer[0] = 1+0x80;
-    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, &result, &size);
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer, 0, &result, &size);
     STAssertEquals(err, PLCRASH_EINVAL, @"SLEB128 should not be decodable");
     plcrash_async_mobject_free(&mobj);
 }

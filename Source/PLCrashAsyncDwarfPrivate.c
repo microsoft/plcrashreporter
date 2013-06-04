@@ -83,33 +83,96 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     info->cie_offset = (address - base_addr) + length_size;
     offset += length_size;
 
-    /* Sanity check the CIE id; it should always be 0 (eh_frame) or UINT32_MAX (debug_frame) */
-    if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, address, offset, &info->cie_id)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("CIE id is outside of mapped range");
-        return err;
+    /* Fetch the cie_id. This is either 32-bit or 64-bit */
+    if (m64) {
+        if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, address, offset, &info->cie_id)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("CIE id could not be read");
+            return err;
+        }
+        
+        offset += sizeof(uint64_t);
+    } else {
+        uint32_t u32;
+        if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, address, offset, &u32)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("CIE id could not be read");
+            return err;
+        }
+        info->cie_id = u32;
+        offset += sizeof(uint32_t);
     }
 
-    if (info->cie_id != 0 && info->cie_id != UINT32_MAX) {
-        PLCF_DEBUG("CIE id is not one of 0 (eh_frame) or UINT32_MAX (debug_frame): %" PRIx32, info->cie_id);
+    /* Sanity check the CIE id; it should always be 0 (eh_frame) or UINT?_MAX (debug_frame) */
+    if (info->cie_id != 0 && ((!m64 && info->cie_id != UINT32_MAX) || (m64 && info->cie_id != UINT64_MAX)))  {
+        PLCF_DEBUG("CIE id is not one of 0 (eh_frame) or UINT?_MAX (debug_frame): %" PRIx64, info->cie_id);
         return PLCRASH_EINVAL;
     }
     
-    offset += sizeof(info->cie_id);
     
-    /* Sanity check the version; it should either be 1 (eh_frame) or 3 (debug_frame) */
+    /* Fetch and sanity check the version; it should either be 1 (eh_frame), 3 (DWARF3 debug_frame), or 4 (DWARF4 debug_frame) */
     if ((err = plcrash_async_mobject_read_uint8(mobj, address, offset, &info->cie_version)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("CIE version is outside of mapped range");
+        PLCF_DEBUG("CIE version could not be read");
         return err;
     }
     
-    if (info->cie_version != 1 && info->cie_version != 3) {
-        PLCF_DEBUG("CIE id is not one of 1 (eh_frame) or 3 (debug_frame): %" PRIu8, info->cie_version);
+    if (info->cie_version != 1 && info->cie_version != 3 && info->cie_version != 4) {
+        PLCF_DEBUG("CIE id is not one of 1 (eh_frame) or 3 (DWARF3) or 4 (DWARF4): %" PRIu8, info->cie_version);
         return PLCRASH_EINVAL;
     }
     
-    offset += sizeof(info->cie_version);
+    offset += sizeof(uint8_t);
     
-    /* .. */
+    /* Save the start and end of the augmentation data; we'll parse the string below. */
+    pl_vm_address_t augment_offset = offset;
+    pl_vm_size_t augment_size = 0;
+    {
+        uint8_t augment_char;
+        while (augment_size < PL_VM_SIZE_MAX && (err = plcrash_async_mobject_read_uint8(mobj, address, augment_offset+augment_size, &augment_char)) == PLCRASH_ESUCCESS) {
+            /* Adjust the calculated size */
+            augment_size++;
+
+            /* Check for completion */
+            if (augment_char == '\0')
+                break;
+        }
+        
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("CFI augmentation string could not be read");
+            return err;
+        }
+        
+        if (augment_size == PL_VM_SIZE_MAX) {
+            /* This is pretty much impossible */
+            PLCF_DEBUG("CFI augmentation string was too long");
+            return err;
+        }
+        
+
+    }
+    // pl_vm_address_t augment_end = augment_offset + augment_size;
+
+    /* Fetch the DWARF 4-only fields. */
+    if (info->cie_version == 4) {
+        if ((err = plcrash_async_mobject_read_uint8(mobj, address, offset, &info->address_size)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("CIE address_size could not be read");
+            return err;
+        }
+        offset += sizeof(uint8_t);
+        
+        if ((err = plcrash_async_mobject_read_uint8(mobj, address, offset, &info->segment_size)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("CIE segment_size could not be read");
+            return err;
+        }
+        offset += sizeof(uint8_t);
+    }
+    
+    /* Fetch the code alignement */
+    pl_vm_size_t leb_size;
+    if ((err = plcrash_async_dwarf_read_uleb128(mobj, address, offset, &info->code_alignment_factor, &leb_size)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to read CFI code alignment value");
+        return err;
+    }
+    
+    offset += leb_size;
 
     return PLCRASH_ESUCCESS;
 }
@@ -306,7 +369,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             uint64_t ulebv;
             pl_vm_size_t uleb_size;
             
-            if ((err = plcrash_async_dwarf_read_uleb128(mobj, location, &ulebv, &uleb_size)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_dwarf_read_uleb128(mobj, location, 0, &ulebv, &uleb_size)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read uleb128 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -356,7 +419,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             int64_t slebv;
             pl_vm_size_t sleb_size;
             
-            if ((err = plcrash_async_dwarf_read_sleb128(mobj, location, &slebv, &sleb_size)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_dwarf_read_sleb128(mobj, location, 0, &slebv, &sleb_size)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read sleb128 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -425,12 +488,12 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
  *
  * @param mobj The memory object from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
+ * @param offset Offset to be applied to @a location.
  * @param result On success, the ULEB128 value.
  * @param size On success, will be set to the total size of the decoded LEB128 value at @a location, in bytes.
  */
-plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, uint64_t *result, pl_vm_size_t *size) {
+plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, pl_vm_off_t offset, uint64_t *result, pl_vm_size_t *size) {
     unsigned int shift = 0;
-    pl_vm_off_t offset = 0;
     *result = 0;
     
     uint8_t *p;
@@ -469,12 +532,12 @@ plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj,
  *
  * @param mobj The memory object from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
+ * @param offset Offset to be applied to @a location.
  * @param result On success, the ULEB128 value.
  * @param size On success, will be set to the total size of the decoded LEB128 value, in bytes.
  */
-plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, int64_t *result, pl_vm_size_t *size) {
+plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, pl_vm_off_t offset, int64_t *result, pl_vm_size_t *size) {
     unsigned int shift = 0;
-    pl_vm_off_t offset = 0;
     *result = 0;
     
     uint8_t *p;
