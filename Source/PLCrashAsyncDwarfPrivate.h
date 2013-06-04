@@ -224,7 +224,7 @@ typedef struct plcrash_async_dwarf_cie_info {
     uint64_t code_alignment_factor;
 
     /** Data alignment factor. A constant that is factored out of certain offset instructions; see DWARF4 Section 6.4.2.1. */
-    uint64_t data_alignment_factor;
+    int64_t data_alignment_factor;
 
     /** Return address register. A constant that constant that indicates which column in the rule table represents the return
      * address of the function. Note that this column might not correspond to an actual machine register. */

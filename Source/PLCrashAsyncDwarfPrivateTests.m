@@ -40,10 +40,14 @@ struct __attribute__((packed)) cie_data {
     uint64_t cie_id;
     uint8_t cie_version;
     
+    uint8_t augmentation[2];
+    
     uint8_t address_size;
     uint8_t segment_size;
     
-    uint8_t augmentation[6];
+    uint8_t code_alignment_factor;
+    uint8_t data_alignment_factor;
+    uint8_t return_address_register;
 };
 
 @interface PLCrashAsyncDwarfPrivateTests : PLCrashTestCase {
@@ -59,14 +63,16 @@ struct __attribute__((packed)) cie_data {
 
     _cie_data.cie_id = 0x0;
     _cie_data.cie_version = 4;
-    
-    _cie_data.address_size = 4;
-    _cie_data.segment_size = 0;
 
     _cie_data.augmentation[0] = 'z';
-    _cie_data.augmentation[1] = 'z';
-    _cie_data.augmentation[2] = 'z';
-    _cie_data.augmentation[3] = '\0';
+    _cie_data.augmentation[1] = '\0';
+
+    _cie_data.address_size = 4;
+    _cie_data.segment_size = 4;
+
+    _cie_data.code_alignment_factor = 1;
+    _cie_data.data_alignment_factor = 2;
+    _cie_data.return_address_register = 3;
 
 }
 
@@ -90,8 +96,12 @@ struct __attribute__((packed)) cie_data {
     STAssertEquals(cie.cie_id, _cie_data.cie_id, @"Incorrect ID");
     STAssertEquals(cie.cie_version, _cie_data.cie_version, @"Incorrect version");
     
-    STAssertEquals(cie.address_size, _cie_data.address_size, @"Incorrect ID");
-    STAssertEquals(cie.segment_size, _cie_data.segment_size, @"Incorrect version");
+    STAssertEquals(cie.address_size, _cie_data.address_size, @"Incorrect address size");
+    STAssertEquals(cie.segment_size, _cie_data.segment_size, @"Incorrect segment size");
+
+    STAssertEquals(cie.code_alignment_factor, (uint64_t)_cie_data.code_alignment_factor, @"Incorrect code alignment factor");
+    STAssertEquals(cie.data_alignment_factor, (int64_t)_cie_data.data_alignment_factor, @"Incorrect data alignment factor");
+    STAssertEquals(cie.return_address_register, (uint64_t)_cie_data.return_address_register, @"Incorrect return address register");
 
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);
@@ -428,6 +438,16 @@ struct __attribute__((packed)) cie_data {
     uint64_t result;
     pl_vm_size_t size;
     
+    /* Test offset handling */
+    buffer[0] = 2;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_uleb128(&mobj, buffer+1, -1, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
+    STAssertEquals(result, (uint64_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+
     /* Test a single byte */
     buffer[0] = 2;
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
@@ -487,6 +507,16 @@ struct __attribute__((packed)) cie_data {
     plcrash_error_t err;
     int64_t result;
     pl_vm_size_t size;
+    
+    /* Test offset handling */
+    buffer[0] = 2;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer+1, -1, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, (int64_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
     
     /* Test a single byte */
     buffer[0] = 2;

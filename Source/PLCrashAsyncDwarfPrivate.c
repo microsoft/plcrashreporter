@@ -136,17 +136,17 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
         }
         
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("CFI augmentation string could not be read");
+            PLCF_DEBUG("CIE augmentation string could not be read");
             return err;
         }
         
         if (augment_size == PL_VM_SIZE_MAX) {
             /* This is pretty much impossible */
-            PLCF_DEBUG("CFI augmentation string was too long");
+            PLCF_DEBUG("CIE augmentation string was too long");
             return err;
         }
         
-
+        offset += augment_size;
     }
     // pl_vm_address_t augment_end = augment_offset + augment_size;
 
@@ -165,13 +165,29 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
         offset += sizeof(uint8_t);
     }
     
-    /* Fetch the code alignement */
+    /* Fetch the code alignment factor */
     pl_vm_size_t leb_size;
     if ((err = plcrash_async_dwarf_read_uleb128(mobj, address, offset, &info->code_alignment_factor, &leb_size)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Failed to read CFI code alignment value");
+        PLCF_DEBUG("Failed to read CIE code alignment value");
         return err;
     }
     
+    offset += leb_size;
+    
+    /* Fetch the data alignment factor */
+    if ((err = plcrash_async_dwarf_read_sleb128(mobj, address, offset, &info->data_alignment_factor, &leb_size)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to read CIE data alignment value");
+        return err;
+    }
+    
+    offset += leb_size;
+    
+    /* Fetch the return address register */
+    if ((err = plcrash_async_dwarf_read_uleb128(mobj, address, offset, &info->return_address_register, &leb_size)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to read CIE return address register");
+        return err;
+    }
+
     offset += leb_size;
 
     return PLCRASH_ESUCCESS;
@@ -494,10 +510,11 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
  */
 plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, pl_vm_off_t offset, uint64_t *result, pl_vm_size_t *size) {
     unsigned int shift = 0;
+    pl_vm_off_t position = 0;
     *result = 0;
     
     uint8_t *p;
-    while ((p = plcrash_async_mobject_remap_address(mobj, location, offset, 1)) != NULL) {
+    while ((p = plcrash_async_mobject_remap_address(mobj, location, position + offset, 1)) != NULL) {
         /* LEB128 uses 7 bits for the number, the final bit to signal completion */
         uint8_t byte = *p;
         *result |= ((uint64_t) (byte & 0x7f)) << shift;
@@ -505,7 +522,7 @@ plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj,
         
         /* This is used to track length, so we must set it before
          * potentially terminating the loop below */
-        offset++;
+        position++;
         
         /* Check for terminating bit */
         if ((byte & 0x80) == 0)
@@ -523,7 +540,7 @@ plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj,
         return PLCRASH_EINVAL;
     }
     
-    *size = offset;
+    *size = position;
     return PLCRASH_ESUCCESS;
 }
 
@@ -538,10 +555,11 @@ plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj,
  */
 plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj, pl_vm_address_t location, pl_vm_off_t offset, int64_t *result, pl_vm_size_t *size) {
     unsigned int shift = 0;
+    pl_vm_off_t position = 0;
     *result = 0;
     
     uint8_t *p;
-    while ((p = plcrash_async_mobject_remap_address(mobj, location, offset, 1)) != NULL) {
+    while ((p = plcrash_async_mobject_remap_address(mobj, location, position + offset, 1)) != NULL) {
         /* LEB128 uses 7 bits for the number, the final bit to signal completion */
         uint8_t byte = *p;
         *result |= ((uint64_t) (byte & 0x7f)) << shift;
@@ -549,7 +567,7 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
         
         /* This is used to track length, so we must set it before
          * potentially terminating the loop below */
-        offset++;
+        position++;
         
         /* Check for terminating bit */
         if ((byte & 0x80) == 0)
@@ -571,7 +589,7 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
     if (shift < 64 && (*p & 0x40))
         *result |= -(1ULL << shift);
     
-    *size = offset;
+    *size = position;
     return PLCRASH_ESUCCESS;
 }
 
