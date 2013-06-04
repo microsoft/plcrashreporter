@@ -84,8 +84,6 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
  * @param reader The frame reader.
  * @param address The target-relative address containing the FDE data to be decoded. This must include
  * the length field of the FDE.
- * @param length The length of the FDE element (not including the entry's variable 'initial length' field)
- * @param m64 If true, the FDE will be parsed as a 64-bit entry. If false, will be parsed as a 32-bit entry.
  */
 static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info,
                                                        plcrash_async_dwarf_frame_reader_t *reader,
