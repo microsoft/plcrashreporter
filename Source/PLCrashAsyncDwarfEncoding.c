@@ -65,7 +65,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
 
 
 /**
- * Decode FDE info at target-relative @a address within @a mobj, using the given @a byteorder.
+ * Decode FDE info at target-relative @a address.
  *
  * @param info The FDE record to be initialized.
  * @param reader The frame reader.
@@ -78,6 +78,7 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
 {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
+    plcrash_error_t err;
 
     /* Extract and save the FDE length */
     bool m64;
@@ -91,7 +92,16 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
         }
         
         if (length32 == UINT32_MAX) {
-            pl_dwarf_read_vm_address(reader->mobj, byteorder, fde_address, sizeof(uint32_t), true, &info->fde_length);
+            uint64_t len64;
+            if ((err = plcrash_async_mobject_read_uint64(reader->mobj, byteorder, fde_address, sizeof(uint32_t), &len64)) != PLCRASH_ESUCCESS)
+                return err;
+            
+            if (len64 > PL_VM_ADDRESS_MAX) {
+                PLCF_DEBUG("CIE length exceeds PL_VM_ADDRESS_MAX");
+                return PLCRASH_EINVAL;
+            }
+
+            info->fde_length = len64;
             length_size = sizeof(uint64_t) + sizeof(uint32_t);
             m64 = true;
         } else {
