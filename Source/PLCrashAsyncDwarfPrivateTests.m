@@ -31,9 +31,101 @@
 #include "PLCrashAsyncDwarfEncoding.h"
 #include "PLCrashAsyncDwarfPrivate.h"
 
-@interface PLCrashAsyncDwarfPrivateTests : PLCrashTestCase @end
+struct __attribute__((packed)) cie_data {
+    struct __attribute__((packed)) {
+        uint32_t l1;
+        uint64_t l2;
+    } length;
+    
+    uint32_t cie_id;
+    uint8_t cie_version;
+    
+    char augmentation[6];
+};
+
+@interface PLCrashAsyncDwarfPrivateTests : PLCrashTestCase {
+    struct cie_data _cie_data;
+}@end
 
 @implementation PLCrashAsyncDwarfPrivateTests
+
+- (void) setUp {
+    /* Set up default CIE data */
+    _cie_data.length.l1 = UINT32_MAX; /* 64-bit entry flag */
+    _cie_data.length.l2 = sizeof(_cie_data) - sizeof(_cie_data.length);
+
+    _cie_data.cie_id = 0x0;
+    _cie_data.cie_version = 3;
+    
+    _cie_data.augmentation[0] = 'z';
+}
+
+/**
+ * Test default (standard path, no error) CIE parsing
+ */
+- (void) testParseCIE {
+    plcrash_async_dwarf_cie_info_t cie;
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
+
+    /* Try to parse the CIE */
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_cie_data);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
+    STAssertEquals(cie.cie_offset, (pl_vm_address_t)sizeof(_cie_data.length), @"Incorrect offset");
+    STAssertEquals(cie.cie_length, (pl_vm_address_t) sizeof(_cie_data) - sizeof(_cie_data.length), @"Incorrect length");
+    
+    STAssertEquals(cie.cie_id, _cie_data.cie_id, @"Incorrect ID");
+    STAssertEquals(cie.cie_version, _cie_data.cie_version, @"Incorrect version");
+
+    /* Clean up */
+    plcrash_async_dwarf_cie_info_free(&cie);
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
+ * Test parsing of a CIE entry with a bad identifier.
+ */
+- (void) testParseCIEBadIdentifier {
+    plcrash_async_dwarf_cie_info_t cie;
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+
+    _cie_data.cie_id = 5; // invalid id
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
+    
+    /* Try to parse the CIE, verify failure */
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_cie_data);
+    STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
+    
+    /* Clean up */
+    plcrash_async_dwarf_cie_info_free(&cie);
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
+ * Test parsing of a CIE entry with a bad version.
+ */
+- (void) testParseCIEBadVersion {
+    plcrash_async_dwarf_cie_info_t cie;
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    
+    _cie_data.cie_version = 5; // invalid version
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
+    
+    /* Try to parse the CIE, verify failure */
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_cie_data);
+    STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
+    
+    /* Clean up */
+    plcrash_async_dwarf_cie_info_free(&cie);
+    plcrash_async_mobject_free(&mobj);
+}
 
 /**
  * Test aligned pointer decoding

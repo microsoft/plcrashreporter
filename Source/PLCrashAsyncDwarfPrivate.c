@@ -42,6 +42,93 @@ static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_a
                                   uint64_t *dest);
 
 /**
+ *
+ */
+plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
+                                                   plcrash_async_mobject_t *mobj,
+                                                   const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address)
+{
+    pl_vm_address_t base_addr = plcrash_async_mobject_base_address(mobj);
+    pl_vm_address_t offset = 0;
+    plcrash_error_t err;
+
+    /* Extract and save the FDE length */
+    bool m64;
+    pl_vm_size_t length_size;
+    {
+        uint32_t length32;
+        
+        if (plcrash_async_mobject_read_uint32(mobj, byteorder, address, 0x0, &length32) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("CIE 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) address);
+            return PLCRASH_EINVAL;
+        }
+        
+        if (length32 == UINT32_MAX) {
+            uint64_t len64;
+            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, address, sizeof(uint32_t), &len64)) != PLCRASH_ESUCCESS)
+                return err;
+            
+            if (len64 > PL_VM_ADDRESS_MAX) {
+                PLCF_DEBUG("CIE length exceeds PL_VM_ADDRESS_MAX");
+                return PLCRASH_EINVAL;
+            }
+
+            info->cie_length = len64;
+            length_size = sizeof(uint64_t) + sizeof(uint32_t);
+            m64 = true;
+        } else {
+            info->cie_length = length32;
+            length_size = sizeof(uint32_t);
+            m64 = false;
+        }
+    }
+    
+    /* Save the CIE offset; this is the CIE address, relative to the section base address, not including
+     * the CIE initial length. */
+    PLCF_ASSERT(address >= base_addr);
+    info->cie_offset = (address - base_addr) + length_size;
+    offset += length_size;
+
+    /* Sanity check the CIE id; it should always be 0 (eh_frame) or UINT32_MAX (debug_frame) */
+    if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, address, offset, &info->cie_id)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("CIE id is outside of mapped range");
+        return err;
+    }
+
+    if (info->cie_id != 0 && info->cie_id != UINT32_MAX) {
+        PLCF_DEBUG("CIE id is not one of 0 (eh_frame) or UINT32_MAX (debug_frame): %" PRIx32, info->cie_id);
+        return PLCRASH_EINVAL;
+    }
+    
+    offset += sizeof(info->cie_id);
+    
+    /* Sanity check the version; it should either be 1 (eh_frame) or 3 (debug_frame) */
+    if ((err = plcrash_async_mobject_read_uint8(mobj, address, offset, &info->cie_version)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("CIE version is outside of mapped range");
+        return err;
+    }
+    
+    if (info->cie_version != 1 && info->cie_version != 3) {
+        PLCF_DEBUG("CIE id is not one of 1 (eh_frame) or 3 (debug_frame): %" PRIu8, info->cie_version);
+        return PLCRASH_EINVAL;
+    }
+    
+    offset += sizeof(info->cie_version);
+    
+    /* .. */
+
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ *
+ */
+void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info) {
+    
+}
+
+/**
  * Initialize GNU eh_frame pointer @a state. This is the base state to which DW_EH_PE_t encoded pointer values will be applied.
  *
  * @param state The state value to be initialized.

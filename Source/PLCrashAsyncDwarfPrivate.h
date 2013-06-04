@@ -166,6 +166,34 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
     pl_vm_address_t func_base;
 } plcrash_async_dwarf_gnueh_ptr_state_t;
 
+/**
+ * DWARF Common Information Entry.
+ */
+typedef struct plcrash_async_dwarf_cie_info {
+    /**
+     * The task-relative address of the CIE record (not including the initial length field),
+     * relative to the eh_frame/debug_frame section base.
+     */
+    pl_vm_address_t cie_offset;
+
+    /** The CIE record length, not including the initial length field. */
+    pl_vm_size_t cie_length;
+    
+    /** The CIE identifier. For GCC3 eh_frame sections, this value must always be 0. For DWARF2 debug_frame sections,
+     * this value must always be UINT32_MAX */
+    uint32_t cie_id;
+    
+    /** The CIE version. For GCC3 eh_frame sections, this value must always be 1. For DWARF2 debug_frame sections,
+     * this value must always be 3 */
+    uint8_t cie_version;
+} plcrash_async_dwarf_cie_info_t;
+
+plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
+                                                   plcrash_async_mobject_t *mobj,
+                                                   const plcrash_async_byteorder_t *byteorder,
+                                                   pl_vm_address_t address);
+
+void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 
 void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
                                                pl_vm_address_t address_size,
