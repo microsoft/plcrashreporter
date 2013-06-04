@@ -471,7 +471,14 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             return PLCRASH_ENOTSUP;
     }
 
-    /* Decode and return the pointer value [+ offset]. */
+    /*
+     * Decode and return the pointer value [+ offset].
+     *
+     * TODO: This code permits overflow to occur under the assumption that the failure will be caught
+     * when safely dereferencing the resulting address. This should only occur when either bad data is presented,
+     * or due to an implementation flaw in this code path -- in those cases, it would be preferable to
+     * detect overflow early.
+     */
     switch (encoding & 0x0F) {
         case PL_DW_EH_PE_absptr: {
             uint64_t u64;
