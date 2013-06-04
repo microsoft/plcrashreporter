@@ -145,10 +145,10 @@ struct __attribute__((packed)) cie_data {
                                              sizeof(uint32_t),
                                              aligned_data, // sect_base
                                              aligned_data-1, // sect_vm_addr
-                                             PL_VM_ADDRESS_INVALID, // pcrel_base
-                                             PL_VM_ADDRESS_INVALID, // text_base
-                                             PL_VM_ADDRESS_INVALID, // data_base
-                                             PL_VM_ADDRESS_INVALID); // func_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // pcrel_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // text_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // data_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR); // func_base
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), aligned_data, sizeof(aligned_data), true), @"Failed to initialize mobj mapping");
     
@@ -182,12 +182,12 @@ struct __attribute__((packed)) cie_data {
     
     plcrash_async_dwarf_gnueh_ptr_state_init(&state,
                                              sizeof(uint64_t),
-                                             PL_VM_ADDRESS_INVALID,
-                                             PL_VM_ADDRESS_INVALID,
-                                             PL_VM_ADDRESS_INVALID,
-                                             PL_VM_ADDRESS_INVALID,
-                                             PL_VM_ADDRESS_INVALID,
-                                             PL_VM_ADDRESS_INVALID);
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR);
     
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
@@ -222,8 +222,8 @@ struct __attribute__((packed)) cie_data {
 #define T_FUNC_BASE 3
     plcrash_async_dwarf_gnueh_ptr_state_init(&state,
                                              sizeof(uint64_t),
-                                             PL_VM_ADDRESS_INVALID, // sect_base
-                                             PL_VM_ADDRESS_INVALID, // sect_vm_addr
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_vm_addr
                                              &test_data, // pcrel_base
                                              T_TEXT_BASE, // text_base
                                              T_DATA_BASE, // data_base
@@ -306,12 +306,12 @@ struct __attribute__((packed)) cie_data {
     /* Default state */
     plcrash_async_dwarf_gnueh_ptr_state_init(&state,
                                              sizeof(uint64_t),
-                                             PL_VM_ADDRESS_INVALID, // sect_base
-                                             PL_VM_ADDRESS_INVALID, // sect_vm_addr
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_vm_addr
                                              &test_data, // pcrel_base
-                                             PL_VM_ADDRESS_INVALID, // text_base
-                                             PL_VM_ADDRESS_INVALID, // data_base
-                                             PL_VM_ADDRESS_INVALID); // func_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // text_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // data_base
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR); // func_base
     
     /* Test ULEB128 */
     test_data.leb128[0] = 2;

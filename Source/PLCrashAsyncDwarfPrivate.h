@@ -133,11 +133,11 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
     /**
      * The pointer size of the target system, in bytes; sizes greater than 8 bytes are unsupported.
      */
-    pl_vm_address_t address_size;
+    uint8_t address_size;
     
     /** PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PL_VM_ADDRESS_INVALID. In the case of FDE
      * entries, this should be the address of the FDE entry itself. */
-    pl_vm_address_t pc_rel_base;
+    uint64_t pc_rel_base;
     
     /**
      * The base address (in-memory) of the loaded debug_frame or eh_frame section, or PL_VM_ADDRESS_INVALID. This is
@@ -145,7 +145,7 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
      *
      * This address should be the actual base address at which the section has been mapped.
      */
-    pl_vm_address_t frame_section_base;
+    uint64_t frame_section_base;
     
     /**
      * The base VM address of the eh_frame or debug_frame section, or PL_VM_ADDRESS_INVALID. This is used to calculate
@@ -154,16 +154,16 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
      * This address should be the aligned base VM address at which the section will (or has been loaded) during
      * execution, and will be used to calculate DW_EH_PE_aligned alignment.
      */
-    pl_vm_address_t frame_section_vm_addr;
+    uint64_t frame_section_vm_addr;
     
     /** The base address of the text segment to be applied to DW_EH_PE_textrel offsets, or PL_VM_ADDRESS_INVALID. */
-    pl_vm_address_t text_base;
+    uint64_t text_base;
     
     /** The base address of the data segment to be applied to DW_EH_PE_datarel offsets, or PL_VM_ADDRESS_INVALID. */
-    pl_vm_address_t data_base;
+    uint64_t data_base;
     
     /** The base address of the function to be applied to DW_EH_PE_funcrel offsets, or PL_VM_ADDRESS_INVALID. */
-    pl_vm_address_t func_base;
+    uint64_t func_base;
 } plcrash_async_dwarf_gnueh_ptr_state_t;
 
 /**
@@ -174,10 +174,10 @@ typedef struct plcrash_async_dwarf_cie_info {
      * The task-relative address of the CIE record (not including the initial length field),
      * relative to the eh_frame/debug_frame section base.
      */
-    pl_vm_address_t cie_offset;
+    uint64_t cie_offset;
 
     /** The CIE record length, not including the initial length field. */
-    pl_vm_size_t cie_length;
+    uint64_t cie_length;
     
     /** The CIE identifier. For GCC3 eh_frame sections, this value must always be 0. For DWARF2 debug_frame sections,
      * this value must always be UINT32_MAX */
@@ -186,7 +186,77 @@ typedef struct plcrash_async_dwarf_cie_info {
     /** The CIE version. For GCC3 eh_frame sections, this value must always be 1. For DWARF2 debug_frame sections,
      * this value must always be 3 */
     uint8_t cie_version;
+
+#if 0
+
+
+    /** The address of the CIE initial instructions, relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t cie_initial_instruction_offset;
+    
+    /** The pointer encoding format. */
+    DW_EH_PE_t ptr_encoding;
+
+    pint_t		cieInstructions;
+    uint8_t		pointerEncoding;
+    uint8_t		lsdaEncoding;
+    uint8_t		personalityEncoding;
+    uint8_t		personalityOffsetInCIE;
+    pint_t		personality;
+    int			codeAlignFactor;
+    int			dataAlignFactor;
+    bool		isSignalFrame;
+    bool		fdesHaveAugmentationData;
+
+    /** The CIE's starting and ending offset within the debug info section, minus length. */
+    uintptr_t cieStart, cieEnd;
+    
+    /** The CIE's length, not counting the length field. This is the parsed
+     * length value, not the raw length bytes. */
+    size_t length;
+    
+    /** The CIE ID. Not particularly useful, included for completeness. */
+    uint64_t cieID;
+    
+    /** The CIE version. Either 1 (GCC) or 3 (DWARF 2 spec). */
+    uint8_t version;
+    
+    /** Flag whether FDEs based on this CIE have augmentation data. */
+    bool hasAugmentationData;
+    
+    /** Augmentation data size, if hasAugmentationData is true. */
+    uint64_t augmentationDataSize;
+    
+    /** Personality routine pointer, if any. */
+    uintptr_t personalityRoutine;
+    
+    /** Language-Specific Data Area encoding. */
+    uint8_t lsdaEncoding;
+    
+    /** Pointer encoding format for FDEs. */
+    uint8_t pointerEncoding;
+    
+    /** Signal frame flag. */
+    bool isSignalFrame;
+    
+    /** Code alignment factor. Factored out of advance location instructions. */
+    uint64_t codeAlignmentFactor;
+    
+    /** Data alignment factor. Factored out of offset instructions. */
+    int64_t dataAlignmentFactor;
+    
+    /** Return address register column. */
+    uint8_t returnAddressColumn;
+    
+    /** The raw offset in the debug info section to the initial instructions.
+     * This is not a set of parsed instructions because that is only done at
+     * DWARF step time. This structure is meant to reduce memory allocation,
+     * not encapsulate all available information. */
+    uintptr_t initialInstructionsStart;
+#endif
 } plcrash_async_dwarf_cie_info_t;
+
+/** An invalid DWARF GNU EH base address value. */
+#define PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR UINT64_MAX
 
 plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
                                                    plcrash_async_mobject_t *mobj,
@@ -196,13 +266,13 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 
 void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
-                                               pl_vm_address_t address_size,
-                                               pl_vm_address_t frame_section_base,
-                                               pl_vm_address_t frame_section_vm_addr,
-                                               pl_vm_address_t pc_rel_base,
-                                               pl_vm_address_t text_base,
-                                               pl_vm_address_t data_base,
-                                               pl_vm_address_t func_base);
+                                               uint8_t address_size,
+                                               uint64_t frame_section_base,
+                                               uint64_t frame_section_vm_addr,
+                                               uint64_t pc_rel_base,
+                                               uint64_t text_base,
+                                               uint64_t data_base,
+                                               uint64_t func_base);
 
 void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_state_t *state);
 
@@ -214,8 +284,8 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                                                     pl_vm_address_t location,
                                                     DW_EH_PE_t encoding,
                                                     plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
-                                                    pl_vm_address_t *result,
-                                                    pl_vm_size_t *size);
+                                                    uint64_t *result,
+                                                    uint64_t *size);
 
 
 /**

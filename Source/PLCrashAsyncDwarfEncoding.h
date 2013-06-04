@@ -61,18 +61,18 @@ typedef struct plcrash_async_dwarf_fde_info {
     pl_vm_address_t fde_offset;
 
     /** The FDE entry length, not including the initial length field. */
-    pl_vm_size_t fde_length;
+    uint64_t fde_length;
 
     /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
     pl_vm_address_t fde_instruction_offset;
 
     /** The start of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
      * the in-memory PC address of a loaded images. */
-    pl_vm_address_t pc_start;
+    uint64_t pc_start;
 
     /** The end of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
      * the in-memory PC address of a loaded images.  */
-    pl_vm_address_t pc_end;
+    uint64_t pc_end;
 } plcrash_async_dwarf_fde_info_t;
 
 

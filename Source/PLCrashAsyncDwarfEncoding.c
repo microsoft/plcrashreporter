@@ -92,16 +92,11 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
         }
         
         if (length32 == UINT32_MAX) {
-            uint64_t len64;
-            if ((err = plcrash_async_mobject_read_uint64(reader->mobj, byteorder, fde_address, sizeof(uint32_t), &len64)) != PLCRASH_ESUCCESS)
+            if ((err = plcrash_async_mobject_read_uint64(reader->mobj, byteorder, fde_address, sizeof(uint32_t), &info->fde_length)) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Failed to read FDE 64-bit length value value; FDE entry lies outside the mapped range");
                 return err;
-            
-            if (len64 > PL_VM_ADDRESS_MAX) {
-                PLCF_DEBUG("CIE length exceeds PL_VM_ADDRESS_MAX");
-                return PLCRASH_EINVAL;
             }
 
-            info->fde_length = len64;
             length_size = sizeof(uint64_t) + sizeof(uint32_t);
             m64 = true;
         } else {
