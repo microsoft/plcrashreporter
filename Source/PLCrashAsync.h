@@ -75,7 +75,7 @@ typedef vm_address_t pl_vm_address_t;
  * @ingroup plcrash_async */
 typedef vm_size_t pl_vm_size_t;
 
-/** Architecture-independent VM offset type.
+/** VM offset type.
  * @ingroup plcrash_async */
 typedef ptrdiff_t pl_vm_off_t;
 
