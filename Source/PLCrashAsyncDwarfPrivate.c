@@ -190,7 +190,30 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
 
     offset += leb_size;
     
-    /* TODO: Parse the augmentation data. */
+    /*
+     * Parse the augmentation string (and associated data); the definition of the augmentation string is left to implementors. Most
+     * entities, including Apple, use the augmentation values defined by GCC and documented in the the LSB Core Standard -- we document
+     * the supported flags here, but refer to LSB 4.1.0 Section 10.6.1.1.1 for more details.
+     *
+     * According to the DWARF specification (see DWARF4, Section 6.4.1), only a few fields are readable if an unknown augmentation
+     * string is parsed. Since the augmentation string may define additional fields or data values in the CIE/FDE, the inclusion
+     * of an unknown value makes most of the structure unparsable. However, GCC has defined an additional augmentation value, which,
+     * if included as the first byte in the augmentation string, will define the total length of associated augmentation data; in
+     * that case, one can simply skip over the full set of augmentation data, and safely parse the remainder of the structure.
+     *
+     * Supported augmentation flags:
+     *
+     *  'z': If present as the first character of the string, the the GCC Augmentation Data shall be present and the augmentation
+     *       string and data be interpreted according to the LSB specification. The first field of the augmentation data will be
+     *       a ULEB128 length value, allowing our parser to skip over the entire augmentation data field. In the case of
+     *       unknown augmentation flags, the parser may still safely read past the entire Augmentation Data field, and the
+     *       field constraints of DWARF4 Section 6.4.1 no longer apply.
+     *
+     *       If this value is not present, no other LSB-defined augmentation values may be parsed.
+     *  'L':
+     *  'P':
+     '  'R': 
+     */
     
     /* Save the initial instructions offset */
     info->initial_instructions_offset = offset;
