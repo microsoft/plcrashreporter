@@ -42,11 +42,20 @@ static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_a
                                   uint64_t *dest);
 
 /**
+ * Parse a new DWARF CIE record using the provided memory object and initialize @a info.
  *
+ * Any resources held by a successfully initialized instance must be freed via plcrash_async_dwarf_cie_info_free();
+ *
+ * @param info The CIE info instance to initialize.
+ * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address.
+ * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param ptr_state The pointer state to be used when decoding GNU eh_frame pointer values.
+ * @param address The task-relative address within @a mobj of the CIE to be decoded.
  */
 plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
                                                    plcrash_async_mobject_t *mobj,
                                                    const plcrash_async_byteorder_t *byteorder,
+                                                   plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                    pl_vm_address_t address)
 {
     pl_vm_address_t base_addr = plcrash_async_mobject_base_address(mobj);
@@ -127,6 +136,17 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     {
         uint8_t augment_char;
         while (augment_size < PL_VM_SIZE_MAX && (err = plcrash_async_mobject_read_uint8(mobj, address, augment_offset+augment_size, &augment_char)) == PLCRASH_ESUCCESS) {
+            /* Check for an unknown augmentation string. See the parsing section below for more details. If the augmentation
+             * string is not of the expected format (or empty), we can't parse a useful subset of the CIE */
+            if (augment_size == 0) {
+                if (augment_char == 'z') {
+                    info->has_eh_augmentation = true;
+                } else if (augment_char != '\0') {
+                    PLCF_DEBUG("Unknown augmentation string prefix of %c, cannot parse CIE", augment_char);
+                    return PLCRASH_ENOTSUP;
+                }
+            }
+
             /* Adjust the calculated size */
             augment_size++;
 
@@ -199,9 +219,14 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
      * string is parsed. Since the augmentation string may define additional fields or data values in the CIE/FDE, the inclusion
      * of an unknown value makes most of the structure unparsable. However, GCC has defined an additional augmentation value, which,
      * if included as the first byte in the augmentation string, will define the total length of associated augmentation data; in
-     * that case, one can simply skip over the full set of augmentation data, and safely parse the remainder of the structure.
+     * that case, one could skip over the full set of augmentation data, and safely parse the remainder of the structure.
      *
-     * Supported augmentation flags:
+     * That said, an unknown augmentation flag will prevent reading of the remainder of the augmentation field, which
+     * may result in the CIE being unusable. Ideally, future toolchains will only append new flag types to the end of the
+     * string, allowing all known data to be read first. Given this, we terminate parsing upon hitting an unknown string
+     * and leave the remainder of the augmentation data flags unset in our parsed info record.
+     *
+     * Supported augmentation flags (as defined by the LSB 4.1.0 Section 10.6.1.1.1):
      *
      *  'z': If present as the first character of the string, the the GCC Augmentation Data shall be present and the augmentation
      *       string and data be interpreted according to the LSB specification. The first field of the augmentation data will be
@@ -210,10 +235,122 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
      *       field constraints of DWARF4 Section 6.4.1 no longer apply.
      *
      *       If this value is not present, no other LSB-defined augmentation values may be parsed.
-     *  'L':
-     *  'P':
-     '  'R': 
+     *
+     *  'L': May be present at any position after the first character of the augmentation string, but only if 'z' is
+     *       the first character of the string. If present, it indicates the presence of one argument in the Augmentation Data
+     *       of the CIE, and a corresponding argument in the Augmentation Data of the FDE. The argument in the Augmentation Data
+     *       of the CIE is 1-byte and represents the pointer encoding used for the argument in the Augmentation Data of the FDE,
+     *       which is the address of a language-specific data area (LSDA). The size of the LSDA pointer is specified by the pointer
+     *       encoding used.
+     *
+     *  'P': May be present at any position after the first character of the augmentation string, but only if 'z' is
+     *       the first character of the string. If present, it indicates the presence of two arguments in the Augmentation
+     *       Data of the CIE. The first argument is 1-byte and represents the pointer encoding used for the second argument,
+     *       which is the address of a personality routine handler. The personality routine is used to handle language and
+     *       vendor-specific tasks. The system unwind library interface accesses the language-specific exception handling
+     *       semantics via the pointer to the personality routine. The personality routine does not have an ABI-specific name.
+     *       The size of the personality routine pointer is specified by the pointer encoding used.
+     *
+     *  'R': May be present at any position after the first character of the augmentation string, but only if 'z' is
+     *       the first character of the string. If present, The Augmentation Data shall include a 1 byte argument that
+     *       represents the pointer encoding for the address pointers used in the FDE.
+     *
+     *  'S': This is not documented by the LSB eh_frame specification. This value designates the frame as a signal
+     *       frame, which may require special handling on some architectures/ABIs. This value is poorly documented, but
+     *       seems to be unused on Mac OS X and iOS. The best available 'documentation' may be found in GCC's bugzilla:
+     *         http://gcc.gnu.org/bugzilla/show_bug.cgi?id=26208
      */
+    uint64_t augment_data_size = 0;
+    if (info->has_eh_augmentation) {
+        /* Fetch the total augmentation data size */
+        if ((err = plcrash_async_dwarf_read_uleb128(mobj, address, offset, &augment_data_size, &leb_size)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("Failed to read the augmentation data uleb128 length");
+            return err;
+        }
+
+        /* Determine the read position for the augmentation data */
+        pl_vm_size_t data_offset = offset + leb_size;
+        
+        /* Iterate the entries, skipping the initial 'z' */
+        for (pl_vm_size_t i = 1; i < augment_size; i++) {
+            bool terminate = false;
+
+            /* Fetch the next flag */
+            uint8_t uc;
+            if ((err = plcrash_async_mobject_read_uint8(mobj, address, augment_offset+i, &uc)) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Failed to read CIE augmentation data");
+                return err;
+            }
+    
+            switch (uc) {
+                case 'L':
+                    /* Read the LSDA encoding */
+                    if ((err = plcrash_async_mobject_read_uint8(mobj, address, data_offset, &info->eh_augmentation.lsda_encoding)) != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to read the LSDA encoding value");
+                        return err;
+                    }
+                    
+                    info->eh_augmentation.has_lsda_encoding = true;
+                    data_offset += sizeof(uint8_t);
+                    break;
+                    
+                case 'P': {
+                    uint8_t ptr_enc;
+                    pl_vm_size_t size;
+                    
+                    /* Read the personality routine pointer encoding */
+                    if ((err = plcrash_async_mobject_read_uint8(mobj, address, data_offset, &ptr_enc)) != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to read the personality routine encoding value");
+                        return err;
+                    }
+                    
+                    data_offset += sizeof(uint8_t);
+
+                    /* Read the actual pointer value */
+                    err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, address, data_offset, ptr_enc, ptr_state,
+                                                             &info->eh_augmentation.personality_address, &size);
+                    if (err != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to read the personality routine pointer value");
+                        return err;
+                    }
+
+                    info->eh_augmentation.has_personality_address = true;
+                    data_offset += size;                    
+                    break;
+                }
+
+                case 'R':
+                    /* Read the pointer encoding */
+                    if ((err = plcrash_async_mobject_read_uint8(mobj, address, data_offset, &info->eh_augmentation.pointer_encoding)) != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to read the LSDA encoding value");
+                        return err;
+                    }
+                    
+                    info->eh_augmentation.has_pointer_encoding = true;
+                    data_offset += sizeof(uint8_t);
+                    break;
+                    break;
+                    
+                case 'S':
+                    info->eh_augmentation.signal_frame = true;
+                    break;
+
+                case '\0':
+                    break;
+
+                default:
+                    PLCF_DEBUG("Unknown augmentation entry of %c; terminating parsing early", uc);
+                    terminate = true;
+                    break;
+            }
+            
+            if (terminate)
+                break;
+        }
+    }
+    
+    /* Skip all (possibly partially parsed) augmentation data */
+    offset += augment_data_size;
     
     /* Save the initial instructions offset */
     info->initial_instructions_offset = offset;
@@ -287,6 +424,7 @@ void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_sta
  * sections, depending on the base addresses supplied via @a state.
  * @param byteoder The byte order of the data referenced by @a mobj.
  * @param location A task-relative location within @a mobj.
+ * @param offset An offset to apply to @a location.
  * @param encoding The encoding method to be used to decode the target pointer
  * @param state The base GNU eh_frame pointer state to which the encoded pointer value will be applied. If a value
  * is read that is relative to a @state-supplied base address of PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, PLCRASH_ENOTSUP will be returned.
@@ -296,6 +434,7 @@ void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_sta
 plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj,
                                                     const plcrash_async_byteorder_t *byteorder,
                                                     pl_vm_address_t location,
+                                                    pl_vm_off_t offset,
                                                     DW_EH_PE_t encoding,
                                                     plcrash_async_dwarf_gnueh_ptr_state_t *state,
                                                     uint64_t *result,
@@ -399,7 +538,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
         case DW_EH_PE_absptr: {
             uint64_t u64;
             
-            if (!pl_dwarf_read_umax64(mobj, byteorder, location, 0, state->address_size, &u64)) {
+            if (!pl_dwarf_read_umax64(mobj, byteorder, location, offset, state->address_size, &u64)) {
                 PLCF_DEBUG("Failed to read value at 0x%" PRIx64, (uint64_t) location);
                 return PLCRASH_EINVAL;
             }
@@ -413,7 +552,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             uint64_t ulebv;
             pl_vm_size_t uleb_size;
             
-            if ((err = plcrash_async_dwarf_read_uleb128(mobj, location, 0, &ulebv, &uleb_size)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_dwarf_read_uleb128(mobj, location, offset, &ulebv, &uleb_size)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read uleb128 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -425,7 +564,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case DW_EH_PE_udata2: {
             uint16_t udata2;
-            if ((err = plcrash_async_mobject_read_uint16(mobj, byteorder, location, 0, &udata2)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_read_uint16(mobj, byteorder, location, offset, &udata2)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read udata2 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -437,7 +576,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case DW_EH_PE_udata4: {
             uint32_t udata4;
-            if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, location, 0, &udata4)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, location, offset, &udata4)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read udata4 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -449,7 +588,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case DW_EH_PE_udata8: {
             uint64_t udata8;
-            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, location, 0, &udata8)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, location, offset, &udata8)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read udata8 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -463,7 +602,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             int64_t slebv;
             pl_vm_size_t sleb_size;
             
-            if ((err = plcrash_async_dwarf_read_sleb128(mobj, location, 0, &slebv, &sleb_size)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_dwarf_read_sleb128(mobj, location, offset, &slebv, &sleb_size)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read sleb128 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -476,7 +615,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
         case DW_EH_PE_sdata2: {
             int16_t sdata2;
 
-            if ((err = plcrash_async_mobject_read_uint16(mobj, byteorder, location, 0, (uint16_t *) &sdata2)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_read_uint16(mobj, byteorder, location, offset, (uint16_t *) &sdata2)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read sdata2 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -488,7 +627,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case DW_EH_PE_sdata4: {
             int32_t sdata4;
-            if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, location, 0, (uint32_t *) &sdata4)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_read_uint32(mobj, byteorder, location, offset, (uint32_t *) &sdata4)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read sdata4 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -500,7 +639,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
             
         case DW_EH_PE_sdata8: {
             int64_t sdata8;
-            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, location, 0, (uint64_t *) &sdata8)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_read_uint64(mobj, byteorder, location, offset, (uint64_t *) &sdata8)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read sdata8 value at 0x%" PRIx64, (uint64_t) location);
                 return err;
             }
@@ -521,7 +660,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
         /* The size of the target doesn't matter; the caller only needs to know how many bytes were read from
          * @a location */
         pl_vm_size_t target_size;
-        return plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, *result, DW_EH_PE_absptr, state, result, &target_size);
+        return plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, *result, 0, DW_EH_PE_absptr, state, result, &target_size);
     }
     
     return PLCRASH_ESUCCESS;

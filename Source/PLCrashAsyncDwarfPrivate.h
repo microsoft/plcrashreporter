@@ -229,6 +229,48 @@ typedef struct plcrash_async_dwarf_cie_info {
     /** Return address register. A constant that constant that indicates which column in the rule table represents the return
      * address of the function. Note that this column might not correspond to an actual machine register. */
     uint64_t return_address_register;
+
+    /** If true, the GCC eh_frame augmentation data is available. See the LSB 4.1.0 Core Standard, Section 10.6.1.1.1 */
+    bool has_eh_augmentation;
+
+    /** Data parsed from the GCC eh_frame augmentation data. See the LSB 4.1.0 Core Standard, Section 10.6.1.1.1. */
+    struct {
+        /** If true, an LSDA encoding type was supplied in the CIE augmentation data. */
+        bool has_lsda_encoding;
+        
+        /**
+         * The DW_EH_PE_t encoding to be used to decode the LSDA pointer value in the FDE, if any. This value is undefined
+         * if has_lsda_encoding is not true.
+         */
+        uint8_t lsda_encoding;
+        
+        
+        /** If true, a personality address value was supplied in the CIE augmentation data. */
+        bool has_personality_address;
+        
+        /**
+         * The decoded pointer value for the personality routine for this CIE. The personality routine is
+         * used to handle language and vendor-specific tasks.. This value is undefined if has_personality_address
+         * is not true.
+         */
+        uint64_t personality_address;
+        
+        /** If true, the FDE pointer encoding type was supplied in the CIE augmentation data. */
+        bool has_pointer_encoding;
+
+        /**
+         * The DW_EH_PE_t encoding to be used to decode address pointer values in the FDE, if any. This value is undefined
+         * if has_lsda_encoding is not true.
+         */
+        uint8_t pointer_encoding;
+    
+        /**
+         * This flag is part of the GCC .eh_frame implementation, but is not defined by the LSB eh_frame specification. This
+         * value designates the frame as a signal frame, which may require special handling on some architectures/ABIs. This
+         * value is poorly documented, but seems to be unused on Mac OS X and iOS. The best available 'documentation' may
+         * be found in GCC's bugzilla: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=26208 */
+        bool signal_frame;
+    } eh_augmentation;
     
     /**
      * The task relative address to the sequence of rules to be interpreted to create the initial setting of
@@ -236,72 +278,6 @@ typedef struct plcrash_async_dwarf_cie_info {
      * eh_frame/debug_frame section base (eg, the mobj base address).
      */
     pl_vm_address_t initial_instructions_offset;
-#if 0
-
-
-    /** The address of the CIE initial instructions, relative to the eh_frame/debug_frame section base. */
-    pl_vm_address_t cie_initial_instruction_offset;
-    
-    /** The pointer encoding format. */
-    DW_EH_PE_t ptr_encoding;
-
-    pint_t		cieInstructions;
-    uint8_t		pointerEncoding;
-    uint8_t		lsdaEncoding;
-    uint8_t		personalityEncoding;
-    uint8_t		personalityOffsetInCIE;
-    pint_t		personality;
-    int			codeAlignFactor;
-    int			dataAlignFactor;
-    bool		isSignalFrame;
-    bool		fdesHaveAugmentationData;
-
-    /** The CIE's starting and ending offset within the debug info section, minus length. */
-    uintptr_t cieStart, cieEnd;
-    
-    /** The CIE's length, not counting the length field. This is the parsed
-     * length value, not the raw length bytes. */
-    size_t length;
-    
-    /** The CIE ID. Not particularly useful, included for completeness. */
-    uint64_t cieID;
-    
-    /** The CIE version. Either 1 (GCC) or 3 (DWARF 2 spec). */
-    uint8_t version;
-    
-    /** Flag whether FDEs based on this CIE have augmentation data. */
-    bool hasAugmentationData;
-    
-    /** Augmentation data size, if hasAugmentationData is true. */
-    uint64_t augmentationDataSize;
-    
-    /** Personality routine pointer, if any. */
-    uintptr_t personalityRoutine;
-    
-    /** Language-Specific Data Area encoding. */
-    uint8_t lsdaEncoding;
-    
-    /** Pointer encoding format for FDEs. */
-    uint8_t pointerEncoding;
-    
-    /** Signal frame flag. */
-    bool isSignalFrame;
-    
-    /** Code alignment factor. Factored out of advance location instructions. */
-    uint64_t codeAlignmentFactor;
-    
-    /** Data alignment factor. Factored out of offset instructions. */
-    int64_t dataAlignmentFactor;
-    
-    /** Return address register column. */
-    uint8_t returnAddressColumn;
-    
-    /** The raw offset in the debug info section to the initial instructions.
-     * This is not a set of parsed instructions because that is only done at
-     * DWARF step time. This structure is meant to reduce memory allocation,
-     * not encapsulate all available information. */
-    uintptr_t initialInstructionsStart;
-#endif
 } plcrash_async_dwarf_cie_info_t;
 
 /** An invalid DWARF GNU EH base address value. */
@@ -310,6 +286,7 @@ typedef struct plcrash_async_dwarf_cie_info {
 plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
                                                    plcrash_async_mobject_t *mobj,
                                                    const plcrash_async_byteorder_t *byteorder,
+                                                   plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                    pl_vm_address_t address);
 
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
@@ -331,6 +308,7 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
 plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mobj,
                                                     const plcrash_async_byteorder_t *byteorder,
                                                     pl_vm_address_t location,
+                                                    pl_vm_off_t offset,
                                                     DW_EH_PE_t encoding,
                                                     plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                     uint64_t *result,
