@@ -61,6 +61,9 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     pl_vm_address_t base_addr = plcrash_async_mobject_base_address(mobj);
     pl_vm_address_t offset = 0;
     plcrash_error_t err;
+    
+    /* Default initialization */
+    plcrash_async_memset(info, 0, sizeof(*info));
 
     /* Extract and save the FDE length */
     bool m64;
