@@ -359,10 +359,12 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
 }
 
 /**
+ * Free all resources associated with @a info.
  *
+ * @param info A previously initialized info instance.
  */
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info) {
-    
+    // No-op
 }
 
 /**
@@ -409,6 +411,8 @@ void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_sta
 
 /**
  * Free all resources associated with @a state.
+ *
+ * @param state A previously initialized state instance.
  */
 void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_state_t *state) {
     // noop
