@@ -48,6 +48,8 @@ struct __attribute__((packed)) cie_data {
     uint8_t code_alignment_factor;
     uint8_t data_alignment_factor;
     uint8_t return_address_register;
+    
+    uint8_t initial_instructions[0];
 };
 
 @interface PLCrashAsyncDwarfPrivateTests : PLCrashTestCase {
@@ -102,6 +104,8 @@ struct __attribute__((packed)) cie_data {
     STAssertEquals(cie.code_alignment_factor, (uint64_t)_cie_data.code_alignment_factor, @"Incorrect code alignment factor");
     STAssertEquals(cie.data_alignment_factor, (int64_t)_cie_data.data_alignment_factor, @"Incorrect data alignment factor");
     STAssertEquals(cie.return_address_register, (uint64_t)_cie_data.return_address_register, @"Incorrect return address register");
+    
+    STAssertEquals(cie.initial_instructions_offset, ((pl_vm_address_t)_cie_data.initial_instructions) - (pl_vm_address_t) &_cie_data, @"Incorrect initial instruction offset");
 
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);

@@ -172,7 +172,7 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
 typedef struct plcrash_async_dwarf_cie_info {
     /**
      * The task-relative address of the CIE record (not including the initial length field),
-     * relative to the eh_frame/debug_frame section base.
+     * relative to the start of the eh_frame/debug_frame section base (eg, the mobj base address).
      */
     uint64_t cie_offset;
 
@@ -229,6 +229,13 @@ typedef struct plcrash_async_dwarf_cie_info {
     /** Return address register. A constant that constant that indicates which column in the rule table represents the return
      * address of the function. Note that this column might not correspond to an actual machine register. */
     uint64_t return_address_register;
+    
+    /**
+     * The task relative address to the sequence of rules to be interpreted to create the initial setting of
+     * each column in the table during DWARF interpretation. This address is relative to the start of the
+     * eh_frame/debug_frame section base (eg, the mobj base address).
+     */
+    pl_vm_address_t initial_instructions_offset;
 #if 0
 
 

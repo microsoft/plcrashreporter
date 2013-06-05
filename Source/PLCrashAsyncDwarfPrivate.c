@@ -149,7 +149,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
         offset += augment_size;
     }
     // pl_vm_address_t augment_end = augment_offset + augment_size;
-
+    
     /* Fetch the DWARF 4-only fields. */
     if (info->cie_version == 4) {
         if ((err = plcrash_async_mobject_read_uint8(mobj, address, offset, &info->address_size)) != PLCRASH_ESUCCESS) {
@@ -189,6 +189,11 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     }
 
     offset += leb_size;
+    
+    /* TODO: Parse the augmentation data. */
+    
+    /* Save the initial instructions offset */
+    info->initial_instructions_offset = offset;
 
     return PLCRASH_ESUCCESS;
 }
