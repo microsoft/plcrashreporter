@@ -62,6 +62,9 @@ typedef struct plcrash_async_dwarf_fde_info {
 
     /** The FDE entry length, not including the initial length field. */
     uint64_t fde_length;
+    
+    /** Offset to the CIE associated with this FDE, relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t cie_offset;
 
     /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
     pl_vm_address_t fde_instruction_offset;

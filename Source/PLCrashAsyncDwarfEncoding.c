@@ -25,6 +25,7 @@
  */
 
 #include "PLCrashAsyncDwarfEncoding.h"
+#include "PLCrashAsyncDwarfPrivate.h"
 
 #include <inttypes.h>
 
@@ -37,8 +38,8 @@
  * @{
  */
 
-static bool pl_dwarf_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                      pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest);
+static bool pl_dwarf_read_machine_word (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                      pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, uint64_t *dest);
 
 /**
  * Initialize a new DWARF frame reader using the provided memory object. Any resources held by a successfully initialized
@@ -111,43 +112,60 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
     info->fde_offset = (fde_address - base_addr) + length_size;
 
     /*
-     * Calculate the instruction base and offset (eg, the offset to the CIE entry)
+     * Calculate the the offset to the CIE entry.
      */
-    pl_vm_address_t fde_instruction_base;
-    pl_vm_off_t fde_instruction_offset;
     {
+        pl_vm_address_t cie_base;
+        pl_vm_off_t cie_offset;
         pl_vm_address_t raw_offset;
-        if (!pl_dwarf_read_vm_address(reader->mobj, byteorder, fde_address, length_size, m64, &raw_offset)) {
+        if (!pl_dwarf_read_machine_word(reader->mobj, byteorder, fde_address, length_size, m64, &raw_offset)) {
             PLCF_DEBUG("FDE instruction offset falls outside the mapped range");
             return PLCRASH_EINVAL;
         }
 
         if (reader->debug_frame) {
             /* In a .debug_frame, the CIE offset is relative to the start of the section. */
-            fde_instruction_base = base_addr;
-            fde_instruction_offset = raw_offset;
+            cie_base = base_addr;
+            cie_offset = raw_offset;
         } else {
             /* In a .eh_frame, the CIE offset is negative, relative to the current offset of the the FDE. */
-            fde_instruction_base = fde_address;
-            fde_instruction_offset = -raw_offset;
+            cie_base = fde_address;
+            cie_offset = -raw_offset;
         }
-    }
 
-    /* Apply the offset */
-    {
         /* Compute the task-relative address */
         pl_vm_address_t absolute_addr;
-        if (!plcrash_async_address_apply_offset(fde_instruction_base, fde_instruction_offset, &absolute_addr)) {
+        if (!plcrash_async_address_apply_offset(cie_base, cie_offset, &absolute_addr)) {
             PLCF_DEBUG("FDE instruction offset overflows the base address");
             return PLCRASH_EINVAL;
         }
         
         /* Convert to a section-relative address */
-        if (!plcrash_async_address_apply_offset(absolute_addr, -base_addr, &info->fde_instruction_offset)) {
+        if (!plcrash_async_address_apply_offset(absolute_addr, -base_addr, &info->cie_offset)) {
             PLCF_DEBUG("FDE instruction offset overflows the base address");
             return PLCRASH_EINVAL;
         }
     }
+    
+    /* Parse the CIE */
+    // TODO - incomplete
+    plcrash_async_dwarf_cie_info_t cie;
+    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
+    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, m64 ? 8 : 4,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
+                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR);
+    
+    if ((err = plcrash_async_dwarf_cie_info_init(&cie, reader->mobj, byteorder, &ptr_state, base_addr + info->cie_offset)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to parse CFE for FDE");
+        return err;
+    }
+    
+    plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
+    plcrash_async_dwarf_cie_info_free(&cie);
 
     return PLCRASH_ESUCCESS;
 }
@@ -244,7 +262,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         
         /* Fetch the entry id */
         pl_vm_address_t cie_id;
-        if (!pl_dwarf_read_vm_address(reader->mobj, byteorder, cfi_entry, length_size, m64, &cie_id)) {
+        if (!pl_dwarf_read_machine_word(reader->mobj, byteorder, cfi_entry, length_size, m64, &cie_id)) {
             PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
             return PLCRASH_EINVAL;
         }
@@ -306,7 +324,7 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
 /**
  * @internal
  *
- * Read a VM address value.
+ * Read a value of the target machine's native word size.
  *
  * @param mobj Memory object from which to read the value.
  * @param byteorder Byte order of the target value.
@@ -315,15 +333,13 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  * @param m64 If true, a 64-bit value will be read. If false, a 32-bit value will be read.
  * @param dest The destination value.
  */
-static bool pl_dwarf_read_vm_address (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                      pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, pl_vm_address_t *dest)
+static bool pl_dwarf_read_machine_word (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
+                                      pl_vm_address_t base_addr, pl_vm_off_t offset, bool m64, uint64_t *dest)
 {
     if (m64) {
-        uint64_t r64;
-        if (plcrash_async_mobject_read_uint64(mobj, byteorder, base_addr, offset, &r64) != PLCRASH_ESUCCESS)
+        if (plcrash_async_mobject_read_uint64(mobj, byteorder, base_addr, offset, dest) != PLCRASH_ESUCCESS)
             return false;
         
-        *dest = r64;
         return true;
     } else {
         uint32_t r32;
