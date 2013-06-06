@@ -29,7 +29,7 @@
 #import "PLCrashTestCase.h"
 
 #include "PLCrashAsyncDwarfEncoding.h"
-#include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfPrimitives.h"
 #include "PLCrashAsyncDwarfCIE.h"
 #include "PLCrashAsyncDwarfFDE.h"
 

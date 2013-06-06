@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfPrimitives.h"
 #include "PLCrashAsyncDwarfEncoding.h"
 
 #include <inttypes.h>

@@ -33,7 +33,7 @@
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf_private
+ * @ingroup plcrash_async_dwarf
  * @{
  */
 

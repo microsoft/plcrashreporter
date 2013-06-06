@@ -29,7 +29,7 @@
 
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncMObject.h"
-#include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfPrimitives.h"
 
 /**
  * @internal

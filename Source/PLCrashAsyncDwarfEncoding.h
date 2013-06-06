@@ -31,7 +31,7 @@
 #include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
 
-#include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfPrimitives.h"
 #include "PLCrashAsyncDwarfFDE.h"
 
 /**

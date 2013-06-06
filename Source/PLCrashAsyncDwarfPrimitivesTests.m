@@ -29,14 +29,14 @@
 #import "PLCrashTestCase.h"
 
 #include "PLCrashAsyncDwarfEncoding.h"
-#include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfPrimitives.h"
 #include "PLCrashAsyncDwarfFDE.h"
 
-@interface PLCrashAsyncDwarfPrivateTests : PLCrashTestCase {
+@interface PLCrashAsyncDwarfPrimativesTests : PLCrashTestCase {
 }
 @end
 
-@implementation PLCrashAsyncDwarfPrivateTests
+@implementation PLCrashAsyncDwarfPrimativesTests
 
 /**
  * Test aligned pointer decoding
