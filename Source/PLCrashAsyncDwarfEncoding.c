@@ -25,7 +25,6 @@
  */
 
 #include "PLCrashAsyncDwarfEncoding.h"
-#include "PLCrashAsyncDwarfPrivate.h"
 
 #include <inttypes.h>
 
@@ -60,143 +59,6 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
     reader->byteorder = byteorder;
     reader->address_size = address_size;
     reader->debug_frame = debug_frame;
-
-    return PLCRASH_ESUCCESS;
-}
-
-
-/**
- * Decode FDE info at target-relative @a address.
- *
- * @param info The FDE record to be initialized.
- * @param reader The frame reader.
- * @param address The target-relative address containing the FDE data to be decoded. This must include
- * the length field of the FDE.
- */
-static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info,
-                                                       plcrash_async_dwarf_frame_reader_t *reader,
-                                                       pl_vm_address_t fde_address)
-{
-    const plcrash_async_byteorder_t *byteorder = reader->byteorder;
-    const pl_vm_address_t sect_addr = plcrash_async_mobject_base_address(reader->mobj);
-    plcrash_error_t err;
-    pl_vm_size_t offset = 0;
-
-    /* Extract and save the FDE length */
-    uint8_t dwarf_word_size;
-    pl_vm_size_t length_size;
-    {
-        uint32_t length32;
-
-        if (plcrash_async_mobject_read_uint32(reader->mobj, byteorder, fde_address, offset, &length32) != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("The current FDE entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) fde_address);
-            return PLCRASH_EINVAL;
-        }
-        
-        offset += sizeof(uint32_t);
-        
-        if (length32 == UINT32_MAX) {
-            if ((err = plcrash_async_mobject_read_uint64(reader->mobj, byteorder, fde_address, sizeof(uint32_t), &info->fde_length)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Failed to read FDE 64-bit length value value; FDE entry lies outside the mapped range");
-                return err;
-            }
-
-            length_size = sizeof(uint64_t) + sizeof(uint32_t);
-            offset += sizeof(uint64_t);
-            dwarf_word_size = 8; // 64-bit DWARF
-        } else {
-            info->fde_length = length32;
-            length_size = sizeof(uint32_t);
-            dwarf_word_size = 4; // 32-bit DWARF
-        }
-    }
-    
-    /* Save the FDE offset; this is the FDE address, relative to the mobj base address, not including
-     * the FDE initial length. */
-    info->fde_offset = (fde_address - sect_addr) + length_size;
-
-    /*
-     * Calculate the the offset to the CIE entry.
-     */
-    pl_vm_address_t cie_target_address;
-    {
-        uint64_t raw_offset;
-
-        if ((err = plcrash_async_dwarf_read_uintmax64(reader->mobj, byteorder, fde_address, offset, dwarf_word_size, &raw_offset)) != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("FDE instruction offset falls outside the mapped range");
-            return err;
-        }
-        offset += dwarf_word_size;
-
-        /* In a .debug_frame, the CIE offset is already relative to the start of the section;
-         * In a .eh_frame, the CIE offset is negative, relative to the current offset of the the FDE. */
-        if (reader->debug_frame) {
-            info->cie_offset = raw_offset;
-            
-            /* (Safely) calculate the absolute, task-relative address */
-            if (raw_offset > PL_VM_OFF_MAX || !plcrash_async_address_apply_offset(sect_addr, raw_offset, &cie_target_address)) {
-                PLCF_DEBUG("CIE offset of 0x%" PRIx64 " overflows representable range of pl_vm_address_t", raw_offset);
-                return PLCRASH_EINVAL;
-            }
-        } else {            
-            /* First, verify that the below subtraction won't overflow */
-            if (raw_offset > fde_address) {
-                PLCF_DEBUG("CIE offset 0x%" PRIx64 " would place the CIE value outside of the .eh_frame section", raw_offset);
-                return PLCRASH_EINVAL;
-            }
-            
-            cie_target_address = fde_address - raw_offset;
-            info->cie_offset = cie_target_address - sect_addr;
-        }
-    
-    }
-        
-    /*
-     * Set up default pointer state. TODO: Mac OS X and iOS do not currently use any relative-based encodings other
-     * than pcrel. This matches libunwind-35.1, but we should ammend our API to support supplying the remainder of
-     * the supported base addresses.
-     *
-     * We use the base of the eh_frame/debug_frame as the PC-relative base address (why?).
-     */
-    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
-    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, reader->address_size);    
-    
-    /* Parse the CIE */
-    plcrash_async_dwarf_cie_info_t cie;
-    if ((err = plcrash_async_dwarf_cie_info_init(&cie, reader->mobj, byteorder, &ptr_state, cie_target_address)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Failed to parse CFE for FDE");
-        return err;
-    }
-    
-    /*
-     * Fetch the address range described by this entry
-     */
-    {
-        pl_vm_size_t ptr_size;
-
-        /* Determine the correct encoding to use. This will either be encoded using the standard plaform
-         * pointer size (as per DWARF), or using the encoding defined in the augmentation string
-         * (as per the LSB 4.1.0 eh_frame specification). */
-        DW_EH_PE_t pc_encoding = DW_EH_PE_absptr;
-        if (cie.has_eh_augmentation && cie.eh_augmentation.has_pointer_encoding)
-            pc_encoding = cie.eh_augmentation.pointer_encoding;
-
-        /* Set the PC address to our current read offset. The LSB specification does not define what value should
-         * be used for the DW_EH_PE_pcrel base address; reviewing the available implementations demonstrates that
-         * the current read buffer position should be used. */
-        plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&ptr_state, offset);
-        
-        /* Fetch the base address and convert to relative offset */
-        if ((err = plcrash_async_dwarf_read_gnueh_ptr(reader->mobj, byteorder, fde_address, offset, pc_encoding, &ptr_state, &info->pc_start, &ptr_size)) != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Failed to read initial PC address");
-            return err;
-        }
-        
-        
-    }
-
-    plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
-    plcrash_async_dwarf_cie_info_free(&cie);
 
     return PLCRASH_ESUCCESS;
 }
@@ -320,7 +182,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         }
 
         /* Decode the FDE */
-        err = plcrash_async_dwarf_decode_fde(fde_info, reader, cfi_entry);
+        err = plcrash_async_dwarf_decode_fde(fde_info, reader->mobj, byteorder, reader->address_size, cfi_entry, reader->debug_frame);
         if (err != PLCRASH_ESUCCESS)
             return err;
 
@@ -341,13 +203,6 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
  * Free all resources associated with @a reader.
  */
 void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader) {
-    // noop
-}
-
-/**
- * Free all resources associated with @a fde_info.
- */
-void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info) {
     // noop
 }
 

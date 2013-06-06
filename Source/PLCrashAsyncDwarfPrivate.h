@@ -278,6 +278,32 @@ typedef struct plcrash_async_dwarf_cie_info {
     pl_vm_address_t initial_instructions_offset;
 } plcrash_async_dwarf_cie_info_t;
 
+/**
+ * DWARF Frame Descriptor Entry.
+ */
+typedef struct plcrash_async_dwarf_fde_info {
+    /** The starting address of the entry (not including the initial length field),
+     * relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t fde_offset;
+    
+    /** The FDE entry length, not including the initial length field. */
+    uint64_t fde_length;
+    
+    /** Offset to the CIE associated with this FDE, relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t cie_offset;
+    
+    /** The start of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
+     * the in-memory PC address of a loaded images. */
+    uint64_t pc_start;
+    
+    /** The end of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
+     * the in-memory PC address of a loaded images.  */
+    uint64_t pc_end;
+    
+    /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t fde_instruction_offset;
+} plcrash_async_dwarf_fde_info_t;
+
 /** An invalid DWARF GNU EH base address value. */
 #define PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR UINT64_MAX
 
@@ -288,6 +314,15 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
                                                    pl_vm_address_t address);
 
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
+
+plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info,
+                                                plcrash_async_mobject_t *mobj,
+                                                const plcrash_async_byteorder_t *byteorder,
+                                                uint8_t address_size,
+                                                pl_vm_address_t fde_address,
+                                                bool debug_frame);
+void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info);
+
 
 void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint8_t address_size);
 void plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t pc_rel_base);
