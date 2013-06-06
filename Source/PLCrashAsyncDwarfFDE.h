@@ -63,12 +63,12 @@ typedef struct plcrash_async_dwarf_fde_info {
     pl_vm_address_t fde_instruction_offset;
 } plcrash_async_dwarf_fde_info_t;
 
-plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info,
-                                                plcrash_async_mobject_t *mobj,
-                                                const plcrash_async_byteorder_t *byteorder,
-                                                uint8_t address_size,
-                                                pl_vm_address_t fde_address,
-                                                bool debug_frame);
+plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
+                                                   plcrash_async_mobject_t *mobj,
+                                                   const plcrash_async_byteorder_t *byteorder,
+                                                   uint8_t address_size,
+                                                   pl_vm_address_t fde_address,
+                                                   bool debug_frame);
 void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info);
 
 

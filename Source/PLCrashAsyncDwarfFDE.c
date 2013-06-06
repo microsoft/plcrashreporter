@@ -50,12 +50,12 @@
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
  * frame reader will assume eh_frame data.
  */
-plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_info_t *info,
-                                                plcrash_async_mobject_t *mobj,
-                                                const plcrash_async_byteorder_t *byteorder,
-                                                uint8_t address_size,
-                                                pl_vm_address_t fde_address,
-                                                bool debug_frame)
+plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
+                                                   plcrash_async_mobject_t *mobj,
+                                                   const plcrash_async_byteorder_t *byteorder,
+                                                   uint8_t address_size,
+                                                   pl_vm_address_t fde_address,
+                                                   bool debug_frame)
 {
     const pl_vm_address_t sect_addr = plcrash_async_mobject_base_address(mobj);
     plcrash_error_t err;
