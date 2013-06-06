@@ -130,9 +130,7 @@ typedef enum PL_DW_EH_PE {
  * GNU eh_frame pointer state. This is the base state to which DW_EH_PE_t encoded pointer values will be applied.
  */
 typedef struct plcrash_async_dwarf_gnueh_ptr_state {
-    /**
-     * The pointer size of the target system, in bytes; sizes greater than 8 bytes are unsupported.
-     */
+    /**  The pointer size of the target system, in bytes. Must be one of 1, 2, 4, or 8. */
     uint8_t address_size;
     
     /** PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PL_VM_ADDRESS_INVALID. In the case of FDE
@@ -291,14 +289,12 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
 
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 
-void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
-                                               uint8_t address_size,
-                                               uint64_t frame_section_base,
-                                               uint64_t frame_section_vm_addr,
-                                               uint64_t pc_rel_base,
-                                               uint64_t text_base,
-                                               uint64_t data_base,
-                                               uint64_t func_base);
+void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint8_t address_size);
+void plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t pc_rel_base);
+void plcrash_async_dwarf_gnueh_ptr_state_set_frame_section_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t frame_section_base, uint64_t frame_section_vm_addr);
+void plcrash_async_dwarf_gnueh_ptr_state_set_text_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t text_base);
+void plcrash_async_dwarf_gnueh_ptr_state_set_data_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t data_base);
+void plcrash_async_dwarf_gnueh_ptr_state_set_func_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t func_base);
 
 void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_state_t *state);
 

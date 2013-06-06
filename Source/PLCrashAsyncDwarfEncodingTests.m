@@ -93,11 +93,18 @@
     err = plcrash_async_macho_map_section(&_image, "__PL_DWARF", "__debug_frame", &_debug_frame);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to map __debug_frame section");
     
+    /* Determine the address size */
+    const plcrash_async_byteorder_t *byteorder = plcrash_async_macho_byteorder(&_image);
+    cpu_type_t cputype = byteorder->swap32(_image.header.cputype);
+    uint8_t address_size = 4;
+    if (cputype & CPU_ARCH_ABI64)
+        address_size = 8;
+
     /* Initialize eh/debug readers */
-    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, plcrash_async_macho_byteorder(&_image), false);
+    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, byteorder, address_size, false);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 
-    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, plcrash_async_macho_byteorder(&_image), true);
+    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, byteorder, address_size, true);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 }
 
@@ -168,6 +175,12 @@
         err = plcrash_nasync_macho_init(&image, mach_task_self(), [tcasePath UTF8String], [mappedImage bytes]);
         STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
         
+        /* Determine the address size */
+        const plcrash_async_byteorder_t *byteorder = plcrash_async_macho_byteorder(&_image);
+        cpu_type_t cputype = byteorder->swap32(_image.header.cputype);
+        uint8_t address_size = 4;
+        if (cputype & CPU_ARCH_ABI64)
+            address_size = 8;
         
         /* Map the (optional) eh/debug DWARF sections. */
         plcrash_async_mobject_t eh_frame;
@@ -191,7 +204,7 @@
         // TODO
         if (has_eh_frame) {
             plcrash_async_dwarf_frame_reader_t reader;
-            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, plcrash_async_macho_byteorder(&_image), false);
+            plcrash_async_dwarf_frame_reader_init(&reader, &eh_frame, byteorder, address_size, false);
         }
 
         if (has_debug_frame) {

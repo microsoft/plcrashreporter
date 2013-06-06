@@ -63,13 +63,7 @@ struct __attribute__((packed)) cie_data {
 
 - (void) setUp {
     /* Set up the default pointer decode state. */
-    plcrash_async_dwarf_gnueh_ptr_state_init(&_ptr_state, 8,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR);
+    plcrash_async_dwarf_gnueh_ptr_state_init(&_ptr_state, 8);
 
     /* Set up default CIE data */
     _cie_data.length.l1 = UINT32_MAX; /* 64-bit entry flag */
@@ -239,15 +233,9 @@ struct __attribute__((packed)) cie_data {
     const uint8_t aligned_data[] = { 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb };
     
     /* Default state */
-    plcrash_async_dwarf_gnueh_ptr_state_init(&state,
-                                             sizeof(uint32_t),
-                                             aligned_data, // sect_base
-                                             aligned_data-1, // sect_vm_addr
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // pcrel_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // text_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // data_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR); // func_base
-    
+    plcrash_async_dwarf_gnueh_ptr_state_init(&state, sizeof(uint32_t));
+    plcrash_async_dwarf_gnueh_ptr_state_set_frame_section_base(&state, aligned_data, aligned_data-1);
+
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), aligned_data, sizeof(aligned_data), true), @"Failed to initialize mobj mapping");
     
     err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, plcrash_async_byteorder_big_endian(), &aligned_data[0], 0, DW_EH_PE_aligned, &state, &result, &size);
@@ -278,15 +266,7 @@ struct __attribute__((packed)) cie_data {
     test_data.udata8 = &test_data.ptr;
     test_data.ptr = UINT32_MAX;
     
-    plcrash_async_dwarf_gnueh_ptr_state_init(&state,
-                                             sizeof(uint64_t),
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR);
-    
+    plcrash_async_dwarf_gnueh_ptr_state_init(&state, sizeof(uint64_t));
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
     
@@ -318,14 +298,11 @@ struct __attribute__((packed)) cie_data {
 #define T_TEXT_BASE 1
 #define T_DATA_BASE 2
 #define T_FUNC_BASE 3
-    plcrash_async_dwarf_gnueh_ptr_state_init(&state,
-                                             sizeof(uint64_t),
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_vm_addr
-                                             &test_data, // pcrel_base
-                                             T_TEXT_BASE, // text_base
-                                             T_DATA_BASE, // data_base
-                                             T_FUNC_BASE); // func_base
+    plcrash_async_dwarf_gnueh_ptr_state_init(&state, sizeof(uint64_t));
+    plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&state, &test_data);
+    plcrash_async_dwarf_gnueh_ptr_state_set_text_base(&state, T_TEXT_BASE);
+    plcrash_async_dwarf_gnueh_ptr_state_set_data_base(&state, T_DATA_BASE);
+    plcrash_async_dwarf_gnueh_ptr_state_set_func_base(&state, T_FUNC_BASE);
     
     /* Test absptr */
     test_data.udata8 = UINT64_MAX;
@@ -402,14 +379,8 @@ struct __attribute__((packed)) cie_data {
     } test_data;
     
     /* Default state */
-    plcrash_async_dwarf_gnueh_ptr_state_init(&state,
-                                             sizeof(uint64_t),
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // sect_vm_addr
-                                             &test_data, // pcrel_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // text_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, // data_base
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR); // func_base
+    plcrash_async_dwarf_gnueh_ptr_state_init(&state, sizeof(uint64_t));
+    plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&state, &test_data);
     
     /* We use an -1 +1 offset below to verify the address+offset handling for all data types */
     

@@ -375,6 +375,36 @@ void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info) {
  *
  * @param state The state value to be initialized.
  * @param address_size The pointer size of the target system, in bytes; must be one of 1, 2, 4, or 8.
+ *
+ * Any resources held by a successfully initialized instance must be freed via plcrash_async_dwarf_gnueh_ptr_state_free();
+ */
+void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint8_t address_size) {
+    PLCF_ASSERT(address_size == 1 || address_size == 2 || address_size == 4 || address_size == 8);
+    
+    state->address_size = address_size;
+    state->frame_section_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
+    state->frame_section_vm_addr = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
+    state->pc_rel_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
+    state->text_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
+    state->data_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
+    state->func_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
+}
+
+/**
+ * Set the DW_EH_PE_pcrel base address.
+ *
+ * @param state State instance to modify.
+ * @param pc_rel_base PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR. In the case of FDE
+ * entries, this should be the address of the FDE entry itself.
+ */
+void plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t pc_rel_base) {
+    state->pc_rel_base = pc_rel_base;
+}
+
+/**
+ * Set the DW_EH_PE_aligned base addresses.
+ *
+ * @param state State instance to modify.
  * @param frame_section_base The base address (in-memory) of the loaded debug_frame or eh_frame section, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR. This is
  * used to calculate the offset of DW_EH_PE_aligned from the start of the frame section. This address should be the
  * actual base address at which the section has been mapped.
@@ -383,32 +413,40 @@ void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info) {
  * This is used to calculate alignment for DW_EH_PE_aligned-encoded values. This address should be the aligned base VM
  * address at which the section will (or has been loaded) during execution, and will be used to calculate
  * DW_EH_PE_aligned alignment.
- *
- * @param pc_rel_base PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR. In the case of FDE
- * entries, this should be the address of the FDE entry itself.
- * @param text_base The base address of the text segment to be applied to DW_EH_PE_textrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR.
- * @param data_base The base address of the data segment to be applied to DW_EH_PE_datarel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR.
- * @param func_base The base address of the function to be applied to DW_EH_PE_funcrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR.
- *
- * Any resources held by a successfully initialized instance must be freed via plcrash_async_dwarf_gnueh_ptr_state_free();
  */
-void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state,
-                                               uint8_t address_size,
-                                               uint64_t frame_section_base,
-                                               uint64_t frame_section_vm_addr,
-                                               uint64_t pc_rel_base,
-                                               uint64_t text_base,
-                                               uint64_t data_base,
-                                               uint64_t func_base)
-{
-    PLCF_ASSERT(address_size == 1 || address_size == 2 || address_size == 4 || address_size == 8);
-    
-    state->address_size = address_size;
+void plcrash_async_dwarf_gnueh_ptr_state_set_frame_section_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t frame_section_base, uint64_t frame_section_vm_addr) {
     state->frame_section_base = frame_section_base;
     state->frame_section_vm_addr = frame_section_vm_addr;
-    state->pc_rel_base = pc_rel_base;
+}
+
+/**
+ * Set the DW_EH_PE_textrel base address.
+ *
+ * @param state State instance to modify.
+ *
+ * @param text_base The base address of the text segment to be applied to DW_EH_PE_textrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR.
+ */
+void plcrash_async_dwarf_gnueh_ptr_state_set_text_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t text_base) {
     state->text_base = text_base;
+}
+
+/**
+ * Set the DW_EH_PE_datarel base address.
+ *
+ * @param state State instance to modify.
+ * @param data_base The base address of the data segment to be applied to DW_EH_PE_datarel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR.
+ */
+void plcrash_async_dwarf_gnueh_ptr_state_set_data_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t data_base) {
     state->data_base = data_base;
+}
+
+/**
+ * Set the DW_EH_PE_funcrel base address.
+ *
+ * @param state State instance to modify.
+ * @param func_base The base address of the function to be applied to DW_EH_PE_funcrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR.
+ */
+void plcrash_async_dwarf_gnueh_ptr_state_set_func_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t func_base) {
     state->func_base = func_base;
 }
 

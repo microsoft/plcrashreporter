@@ -47,6 +47,9 @@ typedef struct plcrash_async_dwarf_frame_reader {
     /** The byte order of the encoded data. */
     const plcrash_async_byteorder_t *byteorder;
     
+    /** The pointer size of the target system, in bytes. Must be one of 1, 2, 4, or 8. */
+    uint8_t address_size;
+
     /** True if this is a debug_frame section */
     bool debug_frame;
 } plcrash_async_dwarf_frame_reader_t;
@@ -66,9 +69,6 @@ typedef struct plcrash_async_dwarf_fde_info {
     /** Offset to the CIE associated with this FDE, relative to the eh_frame/debug_frame section base. */
     pl_vm_address_t cie_offset;
 
-    /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
-    pl_vm_address_t fde_instruction_offset;
-
     /** The start of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
      * the in-memory PC address of a loaded images. */
     uint64_t pc_start;
@@ -76,12 +76,16 @@ typedef struct plcrash_async_dwarf_fde_info {
     /** The end of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
      * the in-memory PC address of a loaded images.  */
     uint64_t pc_end;
+
+    /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
+    pl_vm_address_t fde_instruction_offset;
 } plcrash_async_dwarf_fde_info_t;
 
 
 plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
                                                        plcrash_async_mobject_t *mobj,
                                                        const plcrash_async_byteorder_t *byteorder,
+                                                       uint8_t address_size,
                                                        bool debug_frame);
 
 plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader,

@@ -49,16 +49,19 @@ static bool pl_dwarf_read_machine_word (plcrash_async_mobject_t *mobj, const plc
  * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address. This instance must
  * survive for the lifetime of the reader.
  * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param The pointer size of the target system, in bytes. Must be one of 1, 2, 4, or 8 bytes.
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
  * frame reader will assume eh_frame data.
  */
 plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
                                                        plcrash_async_mobject_t *mobj,
                                                        const plcrash_async_byteorder_t *byteorder,
+                                                       uint8_t address_size,
                                                        bool debug_frame)
 {
     reader->mobj = mobj;
     reader->byteorder = byteorder;
+    reader->address_size = address_size;
     reader->debug_frame = debug_frame;
 
     return PLCRASH_ESUCCESS;
@@ -146,19 +149,17 @@ static plcrash_error_t plcrash_async_dwarf_decode_fde (plcrash_async_dwarf_fde_i
             return PLCRASH_EINVAL;
         }
     }
+        
+    /*
+     * Set up default pointer state. TODO: Mac OS X and iOS do not currently use any relative-based encodings;
+     * and we do not provide the base addresses required here. This matches libunwind-35.1, but should
+     * probably be fixed.
+     */
+    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
+    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, reader->address_size);
     
     /* Parse the CIE */
-    // TODO - incomplete
     plcrash_async_dwarf_cie_info_t cie;
-    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
-    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, m64 ? 8 : 4,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR,
-                                             PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR);
-    
     if ((err = plcrash_async_dwarf_cie_info_init(&cie, reader->mobj, byteorder, &ptr_state, base_addr + info->cie_offset)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to parse CFE for FDE");
         return err;
