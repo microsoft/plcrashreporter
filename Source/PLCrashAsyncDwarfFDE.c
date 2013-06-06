@@ -192,6 +192,9 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
         offset += ptr_size;
     }
     
+    /* The remainder of the FDE data is comprised of call frame instructions */
+    info->instruction_offset = (fde_address+offset) - sect_addr;
+
     plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
     plcrash_async_dwarf_cie_info_free(&cie);
     

@@ -66,6 +66,8 @@ struct __attribute__((packed)) fde_data {
     
     uint64_t pc_start;
     uint64_t pc_length;
+
+    uint8_t instructions;
 };
 
 @interface PLCrashAsyncDwarfFDETests : PLCrashTestCase {
@@ -138,6 +140,9 @@ struct __attribute__((packed)) fde_data {
     
     STAssertEquals(info.pc_start, _data.fde.pc_start, @"Incorrect PC start value");
     STAssertEquals(info.pc_end, (uint64_t)_data.fde.pc_start + _data.fde.pc_length, @"Incorrect PC end value");
+    
+    STAssertEquals(info.instruction_offset, (uint64_t)&_data.fde.instructions - (uint64_t)&_data, @"Incorrect instruction offset");
+
 
     /* Clean up */
     plcrash_async_dwarf_fde_info_free(&info);
