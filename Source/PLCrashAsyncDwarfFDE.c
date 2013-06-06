@@ -160,18 +160,36 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
         if (cie.has_eh_augmentation && cie.eh_augmentation.has_pointer_encoding)
             pc_encoding = cie.eh_augmentation.pointer_encoding;
         
-        /* Set the PC address to our current read offset. The LSB specification does not define what value should
+        /* Set the ptr PC relative base to our current read offset. The LSB specification does not define what value should
          * be used for the DW_EH_PE_pcrel base address; reviewing the available implementations demonstrates that
          * the current read buffer position should be used. */
         plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&ptr_state, offset);
         
-        /* Fetch the base address and convert to relative offset */
+        /* Fetch the base PC address */
         if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, pc_encoding, &ptr_state, &info->pc_start, &ptr_size)) != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Failed to read initial PC address");
+            PLCF_DEBUG("Failed to read FDE initial_location");
             return err;
         }
         
+        offset += ptr_size;
         
+        /* Fetch the PC length. In DWARF 3&4 specifications, this value is defined to use the standard platform pointer size. The
+         * LSB 4.1.0 specification does not define the expected format, but a review of GNU's GDB implementation (along with
+         * other independent implementations), demonstrates that this value uses the FDE pointer encoding with all indirection
+         * flags cleared. */
+        uint64_t pc_length;
+        if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, pc_encoding&DW_EH_PE_MASK_ENCODING, &ptr_state, &pc_length, &ptr_size))) {
+            PLCF_DEBUG("Failed to read FDE address_length");
+            return err;
+        }
+        
+        if (UINT64_MAX - pc_length < info->pc_start) {
+            PLCF_DEBUG("FDE address_length + initial_location exceeds UINT64_MAX");
+            return PLCRASH_EINVAL;
+        }
+        
+        info->pc_end = info->pc_start + pc_length;
+        offset += ptr_size;
     }
     
     plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);

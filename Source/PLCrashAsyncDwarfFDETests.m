@@ -137,6 +137,7 @@ struct __attribute__((packed)) fde_data {
     STAssertEquals(info.cie_offset, (uint64_t) ((uintptr_t)&_data.cie) - ((uintptr_t)&_data), @"Incorrect CIE offset");
     
     STAssertEquals(info.pc_start, _data.fde.pc_start, @"Incorrect PC start value");
+    STAssertEquals(info.pc_end, (uint64_t)_data.fde.pc_start + _data.fde.pc_length, @"Incorrect PC end value");
 
     /* Clean up */
     plcrash_async_dwarf_fde_info_free(&info);
@@ -164,7 +165,8 @@ struct __attribute__((packed)) fde_data {
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
     
     STAssertEquals(info.pc_start, (uint64_t)0xFF, @"Incorrect PC start value");
-    
+    STAssertEquals(info.pc_end, (uint64_t)0xFF + _data.fde.pc_length, @"Incorrect PC end value");
+
     /* Clean up */
     plcrash_async_dwarf_fde_info_free(&info);
     plcrash_async_mobject_free(&mobj);

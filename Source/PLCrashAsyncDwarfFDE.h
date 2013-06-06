@@ -55,7 +55,7 @@ typedef struct plcrash_async_dwarf_fde_info {
      * the in-memory PC address of a loaded images. */
     uint64_t pc_start;
     
-    /** The end of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
+    /** The end of the IP range covered by this FDE (inclusive). The address is relative to the image's base address, <em>not</em>
      * the in-memory PC address of a loaded images.  */
     uint64_t pc_end;
     

@@ -41,7 +41,7 @@
  * Exception handling pointer encoding constants, as defined by the LSB Specification:
  * http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/dwarfext.html
  *
- * The upper 4 bits indicate how the value is to be applied. The lower 4 bits indicate the format of the data.
+ * The upper 4 bits indicate how the value is to be applied. The lower 4 bits indicate the encoding format of the data.
  */
 typedef enum PL_DW_EH_PE {
     /**
@@ -125,6 +125,9 @@ typedef enum PL_DW_EH_PE {
      */
     DW_EH_PE_aligned = 0x50,
 } DW_EH_PE_t;
+
+/** Mask for the lower four bits of a DW_EH_PE_t value, defining the encoding type. */
+#define DW_EH_PE_MASK_ENCODING 0x0F
 
 /**
  * GNU eh_frame pointer state. This is the base state to which DW_EH_PE_t encoded pointer values will be applied.
