@@ -550,7 +550,7 @@ typedef union {
  * will include any required bit flags -- such as the ARM thumb high-order bit -- which are not included in the symbol
  * table by default.
  *
- * @return Returns PLCRASH_ESUCCESS if the symbol is found, or PLCRASH_EUNKNOWN if not found. If the symbol is not
+ * @return Returns PLCRASH_ESUCCESS if the symbol is found, or PLCRASH_ENOTFOUND if not found. If the symbol is not
  * found, the contents of @a pc are undefined.
  *
  * @todo Migrate this API to use the plcrash_async_macho_symtab_reader types when returning symbol data.
@@ -586,7 +586,7 @@ plcrash_error_t plcrash_async_macho_find_symbol_by_name (plcrash_async_macho_t *
     }
 
     plcrash_async_macho_symtab_reader_free(&reader);
-    return PLCRASH_EUNKNOWN;
+    return PLCRASH_ENOTFOUND;
 }
 
 /**
