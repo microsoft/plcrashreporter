@@ -32,6 +32,7 @@
 #include "PLCrashAsyncThread.h"
 
 #include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfFDE.h"
 
 /**
  * @internal

@@ -30,6 +30,8 @@
 
 #include "PLCrashAsyncDwarfEncoding.h"
 #include "PLCrashAsyncDwarfPrivate.h"
+#include "PLCrashAsyncDwarfCIE.h"
+#include "PLCrashAsyncDwarfFDE.h"
 
 struct __attribute__((packed)) cie_data {
     struct __attribute__((packed)) {

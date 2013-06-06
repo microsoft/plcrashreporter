@@ -367,6 +367,26 @@
 		05E74856175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E74855175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m */; };
 		05E74857175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E74855175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m */; };
 		05E74858175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05E74855175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m */; };
+		05E7485A1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E748591760D62A009B8745 /* PLCrashAsyncDwarfFDE.h */; };
+		05E7485B1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E748591760D62A009B8745 /* PLCrashAsyncDwarfFDE.h */; };
+		05E7485C1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E748591760D62A009B8745 /* PLCrashAsyncDwarfFDE.h */; };
+		05E7485D1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E748591760D62A009B8745 /* PLCrashAsyncDwarfFDE.h */; };
+		05E7485F1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748601760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748611760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748621760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748631760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748641760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748651760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */; };
+		05E748671760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E748681760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E748691760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E7486A1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E7486B1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E7486C1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E7486D1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */; };
+		05E7486F1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E7486E1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h */; };
+		05E748701760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h in Headers */ = {isa = PBXBuildFile; fileRef = 05E7486E1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h */; };
 		05EB2AF715B454DD0066EB4D /* PLCrashAsyncThread_current.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashAsyncThread_current.S */; };
 		05EB2AF815B454DD0066EB4D /* PLCrashAsyncThread_current.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashAsyncThread_current.S */; };
 		05EB2AF915B454DD0066EB4D /* PLCrashAsyncThread_current.S in Sources */ = {isa = PBXBuildFile; fileRef = 05EB2AF615B454DD0066EB4D /* PLCrashAsyncThread_current.S */; };
@@ -922,6 +942,10 @@
 		05E7484C175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncDwarfPrivate.c; sourceTree = "<group>"; };
 		05E74854175E535C009B8745 /* PLCrashAsyncDwarfPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncDwarfPrivate.h; sourceTree = "<group>"; };
 		05E74855175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncDwarfPrivateTests.m; sourceTree = "<group>"; };
+		05E748591760D62A009B8745 /* PLCrashAsyncDwarfFDE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncDwarfFDE.h; sourceTree = "<group>"; };
+		05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncDwarfFDE.c; sourceTree = "<group>"; };
+		05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncDwarfCIE.c; sourceTree = "<group>"; };
+		05E7486E1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncDwarfCIE.h; sourceTree = "<group>"; };
 		05EB2AF615B454DD0066EB4D /* PLCrashAsyncThread_current.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = PLCrashAsyncThread_current.S; sourceTree = "<group>"; };
 		05EB2AFC15B456750066EB4D /* PLCrashAsyncThread_current.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncThread_current.c; sourceTree = "<group>"; };
 		05EB2B0115B459770066EB4D /* PLCrashAsyncThread_current_defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncThread_current_defs.h; sourceTree = "<group>"; };
@@ -1131,6 +1155,10 @@
 			isa = PBXGroup;
 			children = (
 				05E7483D175A384C009B8745 /* Private */,
+				05E7486E1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h */,
+				05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.c */,
+				05E748591760D62A009B8745 /* PLCrashAsyncDwarfFDE.h */,
+				05E7485E1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c */,
 				05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.h */,
 				05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c */,
 				05659DF117456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.m */,
@@ -1737,6 +1765,8 @@
 				05A17DEF16DBCDBF00888448 /* PLCrashAsyncThread_arm.h in Headers */,
 				05F3CD6616DD6A58007911FB /* PLCrashFrameCompactUnwind.h in Headers */,
 				05659DEC17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.h in Headers */,
+				05E7485B1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */,
+				05E748701760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1772,6 +1802,7 @@
 				FCE4586A7041D332D1025F37 /* PLCrashFrameStackUnwind.h in Headers */,
 				05A17DCF16D7F82700888448 /* PLCrashAsyncThread.h in Headers */,
 				05F3CD7616DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
+				05E7485C1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1807,6 +1838,7 @@
 				FCE45210FDD184E397747BE3 /* PLCrashFrameStackUnwind.h in Headers */,
 				05A17DD016D7F82700888448 /* PLCrashAsyncThread.h in Headers */,
 				05F3CD7716DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
+				05E7485D1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1870,6 +1902,8 @@
 				05F3CD6516DD6A58007911FB /* PLCrashFrameCompactUnwind.h in Headers */,
 				05F3CD7516DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
 				05659DEB17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.h in Headers */,
+				05E7485A1760D62A009B8745 /* PLCrashAsyncDwarfFDE.h in Headers */,
+				05E7486F1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2387,6 +2421,8 @@
 				05F3CD6216DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7A16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05E7484F175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
+				05E748611760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E748691760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2437,6 +2473,8 @@
 				05F3CD6316DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7B16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05E74850175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
+				05E748621760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E7486A1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2499,6 +2537,8 @@
 				0518E0AA174E8A1F00BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */,
 				05E74851175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
 				05E74856175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m in Sources */,
+				05E748631760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E7486B1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2563,6 +2603,8 @@
 				0518E0A8174E8A0E00BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */,
 				05E74852175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
 				05E74857175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m in Sources */,
+				05E748641760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E7486C1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2627,6 +2669,8 @@
 				0518E0A9174E8A1300BB47DE /* PLCrashAsyncDwarfEncoding.c in Sources */,
 				05E74853175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
 				05E74858175E5370009B8745 /* PLCrashAsyncDwarfPrivateTests.m in Sources */,
+				05E748651760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E7486D1760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2686,6 +2730,8 @@
 				05F3CD6016DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7816DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05E7484D175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
+				05E7485F1760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E748671760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2746,6 +2792,8 @@
 				05F3CD7916DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05659DEE17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.c in Sources */,
 				05E7484E175E5349009B8745 /* PLCrashAsyncDwarfPrivate.c in Sources */,
+				05E748601760D64D009B8745 /* PLCrashAsyncDwarfFDE.c in Sources */,
+				05E748681760D891009B8745 /* PLCrashAsyncDwarfCIE.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
