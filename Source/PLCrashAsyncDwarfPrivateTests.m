@@ -546,6 +546,68 @@ struct __attribute__((packed)) cie_data {
 }
 
 /**
+ * Test uintmax64 reading.
+ */
+- (void) testReadUintMax64 {
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    uint64_t result;
+
+    /* Test data */
+    union {
+        uint8_t udata1;
+        uint16_t udata2;
+        uint32_t udata4;
+        uint64_t udata8;
+    } test_data;
+    
+    /* uint8_t */
+    test_data.udata1 = UINT8_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_uintmax64(&mobj, &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 1, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint8_t");
+    STAssertEquals(result, (uint64_t)UINT8_MAX, @"Incorrect value decoded");
+
+    plcrash_async_mobject_free(&mobj);
+    
+    /* uint16_t */
+    test_data.udata2 = UINT16_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_uintmax64(&mobj, &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 2, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint16_t");
+    STAssertEquals(result, (uint64_t)UINT16_MAX, @"Incorrect value decoded");
+    plcrash_async_mobject_free(&mobj);
+
+    /* uint32_t */
+    test_data.udata4 = UINT32_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_uintmax64(&mobj, &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 4, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint32_t");
+    STAssertEquals(result, (uint64_t)UINT32_MAX, @"Incorrect value decoded");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* uint64_t */
+    test_data.udata8 = UINT64_MAX;
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_uintmax64(&mobj, &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 8, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint64_t");
+    STAssertEquals(result, (uint64_t)UINT64_MAX, @"Incorrect value decoded");
+    plcrash_async_mobject_free(&mobj);
+    
+    /* Invalid size */
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &test_data, sizeof(test_data), true), @"Failed to initialize mobj mapping");
+    err = plcrash_async_dwarf_read_uintmax64(&mobj, &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 3, &result);
+    STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Expected error with invalid byte size of 3");
+    
+    plcrash_async_mobject_free(&mobj);
+    
+}
+
+/**
  * Test SLEB128 parsing.
  */
 - (void) testReadSLEB128 {

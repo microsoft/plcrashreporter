@@ -37,10 +37,6 @@
  * @{
  */
 
-static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                  pl_vm_address_t base_addr, pl_vm_off_t offset, uint8_t data_size,
-                                  uint64_t *dest);
-
 /**
  * Parse a new DWARF CIE record using the provided memory object and initialize @a info.
  *
@@ -583,9 +579,9 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
         case DW_EH_PE_absptr: {
             uint64_t u64;
             
-            if (!pl_dwarf_read_umax64(mobj, byteorder, location, offset, state->address_size, &u64)) {
+            if ((err = plcrash_async_dwarf_read_uintmax64(mobj, byteorder, location, offset, state->address_size, &u64)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read value at 0x%" PRIx64, (uint64_t) location);
-                return PLCRASH_EINVAL;
+                return err;
             }
             
             *result = u64 + base;
@@ -817,9 +813,12 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
  * @param data_size The size of the value to be read. If an unsupported size is supplied, false will be returned.
  * @param dest The destination value.
  */
-static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_async_byteorder_t *byteorder,
-                                  pl_vm_address_t base_addr, pl_vm_off_t offset, uint8_t data_size,
-                                  uint64_t *dest)
+plcrash_error_t plcrash_async_dwarf_read_uintmax64 (plcrash_async_mobject_t *mobj,
+                                                    const plcrash_async_byteorder_t *byteorder,
+                                                    pl_vm_address_t base_addr,
+                                                    pl_vm_off_t offset,
+                                                    uint8_t data_size,
+                                                    uint64_t *dest)
 {
     union {
         uint8_t u8;
@@ -830,7 +829,7 @@ static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_a
     
     data = plcrash_async_mobject_remap_address(mobj, base_addr, offset, data_size);
     if (data == NULL)
-        return false;
+        return PLCRASH_EINVAL;
     
     switch (data_size) {
         case 1:
@@ -851,10 +850,10 @@ static bool pl_dwarf_read_umax64 (plcrash_async_mobject_t *mobj, const plcrash_a
             
         default:
             PLCF_DEBUG("Unhandled data width %" PRIu64, (uint64_t) data_size);
-            return false;
+            return PLCRASH_EINVAL;
     }
     
-    return true;
+    return PLCRASH_ESUCCESS;
 }
 
 /**

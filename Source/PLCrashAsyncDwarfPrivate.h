@@ -310,6 +310,13 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
                                                     uint64_t *result,
                                                     uint64_t *size);
 
+plcrash_error_t plcrash_async_dwarf_read_uintmax64 (plcrash_async_mobject_t *mobj,
+                                                    const plcrash_async_byteorder_t *byteorder,
+                                                    pl_vm_address_t base_addr,
+                                                    pl_vm_off_t offset,
+                                                    uint8_t data_size,
+                                                    uint64_t *dest);
+
 
 /**
  * @}
