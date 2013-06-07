@@ -100,7 +100,7 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
         return PLCRASH_EINVAL;
     }
     
-    /* A read macro that abuses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
+    /* A read macro that uses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
      * if the read extends beyond the mapped range. */
 #define dw_expr_read(_type) ({ \
     _type v; \
@@ -156,6 +156,38 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
                 dw_expr_push(opcode-DW_OP_lit0);
                 break;
                 
+            case DW_OP_const1u:
+                dw_expr_push(dw_expr_read(uint8_t));
+                break;
+
+            case DW_OP_const1s:
+                dw_expr_push(dw_expr_read(int8_t));
+                break;
+                
+            case DW_OP_const2u:
+                dw_expr_push(byteorder->swap16(dw_expr_read(uint16_t)));
+                break;
+                
+            case DW_OP_const2s:
+                dw_expr_push((int16_t) byteorder->swap16(dw_expr_read(int16_t)));
+                break;
+                
+            case DW_OP_const4u:
+                dw_expr_push(byteorder->swap32(dw_expr_read(uint32_t)));
+                break;
+                
+            case DW_OP_const4s:
+                dw_expr_push((int32_t) byteorder->swap32(dw_expr_read(int32_t)));
+                break;
+                
+            case DW_OP_const8u:
+                dw_expr_push(byteorder->swap64(dw_expr_read(uint64_t)));
+                break;
+                
+            case DW_OP_const8s:
+                dw_expr_push((int64_t) byteorder->swap64(dw_expr_read(int64_t)));
+                break;
+
             case DW_OP_nop: // no-op
                 break;
 

@@ -39,44 +39,106 @@
  */
 @implementation PLCrashAsyncDwarfExpressionTests
 
+/* Perform evaluation of the given opcodes, expecting a result of type @a type,
+ * with an expected value of @a expected. The data is interpreted as big endian,
+ * as to simplify formulating multi-byte test values in the opcode stream */
+#define PERFORM_EVAL_TEST(opcodes, type, expected) do { \
+    plcrash_async_mobject_t mobj; \
+    plcrash_error_t err; \
+    uint64_t result;\
+\
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
+\
+    err = plcrash_async_dwarf_eval_expression(&mobj, 8, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed"); \
+    STAssertEquals((type)result, (type)expected, @"Incorrect result"); \
+} while(0)
+
 /**
  * Test evaluation of the DW_OP_litN opcodes.
  */
 - (void) testLitN {
-    plcrash_async_mobject_t mobj;
-    plcrash_error_t err;
-    uint64_t result;
-    
     for (uint64_t i = 0; i < (DW_OP_lit31 - DW_OP_lit0); i++) {
         uint8_t opcodes[] = {
-            DW_OP_lit0 + i // The opcodes are defined in order.
+            DW_OP_lit0 + i // The opcodes are defined in monotonically increasing order.
         };
-    
-        STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
         
-        err = plcrash_async_dwarf_eval_expression(&mobj, 8, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
-        STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed");
-        STAssertEquals(result, (uint64_t) i, @"Incorrect result");
+        PERFORM_EVAL_TEST(opcodes, uint64_t, i);
     }
 }
 
 /**
- * Test basic evaluation of a NOP.
+ * Test evaluation of the DW_OP_const1u opcode
  */
+- (void) testConst1u {
+    uint8_t opcodes[] = { DW_OP_const1u, 0xFF };
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFF);
+}
+
+/**
+ * Test evaluation of the DW_OP_const1s opcode
+ */
+- (void) testConst1s {
+    uint8_t opcodes[] = { DW_OP_const1s, 0x80 };
+    PERFORM_EVAL_TEST(opcodes, int64_t, INT8_MIN);
+}
+
+/**
+ * Test evaluation of the DW_OP_const2u opcode
+ */
+- (void) testConst2u {
+    uint8_t opcodes[] = { DW_OP_const2u, 0xFF, 0xFA};
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFFFA);
+}
+
+/**
+ * Test evaluation of the DW_OP_const2s opcode
+ */
+- (void) testConst2s {
+    uint8_t opcodes[] = { DW_OP_const2s, 0x80, 0x00 };
+    PERFORM_EVAL_TEST(opcodes, int64_t, INT16_MIN);
+}
+
+/**
+ * Test evaluation of the DW_OP_const4u opcode
+ */
+- (void) testConst4u {
+    uint8_t opcodes[] = { DW_OP_const4u, 0xFF, 0xFF, 0xFF, 0xFA};
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFFFFFFFA);
+}
+
+/**
+ * Test evaluation of the DW_OP_const4s opcode
+ */
+- (void) testConst4s {
+    uint8_t opcodes[] = { DW_OP_const4s, 0x80, 0x00, 0x00, 0x00 };
+    PERFORM_EVAL_TEST(opcodes, int64_t, INT32_MIN);
+}
+
+/**
+ * Test evaluation of the DW_OP_const8u opcode
+ */
+- (void) testConst8u {
+    uint8_t opcodes[] = { DW_OP_const8u, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFA};
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFFFFFFFFFFFFFFFA);
+}
+
+/**
+ * Test evaluation of the DW_OP_const8s opcode
+ */
+- (void) testConst8s {
+    uint8_t opcodes[] = { DW_OP_const8s, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    PERFORM_EVAL_TEST(opcodes, int64_t, INT64_MIN);
+}
+
+/** Test basic evaluation of a NOP. */
 - (void) testNop {
-    plcrash_async_mobject_t mobj;
-    plcrash_error_t err;
-    uint64_t result;
     uint8_t opcodes[] = {
         DW_OP_nop,
-        DW_OP_lit0 // at least one result must be available
+        DW_OP_lit31 // at least one result must be available
     };
-
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
-
-    err = plcrash_async_dwarf_eval_expression(&mobj, 8, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed");
-    STAssertEquals(result, (uint64_t) 0, @"Incorrect result");
+    
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 31);
 }
 
 /**
