@@ -151,7 +151,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
      * Fetch the address range described by this entry
      */
     {
-        pl_vm_size_t ptr_size;
+        uint64_t ptr_size;
         
         /* Determine the correct encoding to use. This will either be encoded using the standard plaform
          * pointer size (as per DWARF), or using the encoding defined in the augmentation string

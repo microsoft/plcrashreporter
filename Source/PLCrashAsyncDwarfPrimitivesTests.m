@@ -45,8 +45,8 @@
     plcrash_async_mobject_t mobj;
     plcrash_async_dwarf_gnueh_ptr_state_t state;
     plcrash_error_t err;
-    pl_vm_address_t result;
-    pl_vm_size_t size;
+    uint64_t result;
+    uint64_t size;
     
     /* Test data */
     const uint8_t aligned_data[] = { 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb };
@@ -74,8 +74,8 @@
     plcrash_async_mobject_t mobj;
     plcrash_async_dwarf_gnueh_ptr_state_t state;
     plcrash_error_t err;
-    pl_vm_address_t result;
-    pl_vm_size_t size;
+    uint64_t result;
+    uint64_t size;
     
     /* Test data */
     struct {
@@ -105,8 +105,8 @@
     plcrash_async_mobject_t mobj;
     plcrash_async_dwarf_gnueh_ptr_state_t state;
     plcrash_error_t err;
-    pl_vm_address_t result;
-    pl_vm_size_t size;
+    uint64_t result;
+    uint64_t size;
     
     /* Test data */
     union {
@@ -181,8 +181,8 @@
     plcrash_async_mobject_t mobj;
     plcrash_async_dwarf_gnueh_ptr_state_t state;
     plcrash_error_t err;
-    pl_vm_address_t result;
-    pl_vm_size_t size;
+    uint64_t result;
+    uint64_t size;
     
     /* Test data */
     union {

@@ -369,7 +369,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
     if (encoding & DW_EH_PE_indirect) {
         /* The size of the target doesn't matter; the caller only needs to know how many bytes were read from
          * @a location */
-        pl_vm_size_t target_size;
+        uint64_t target_size;
         return plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, *result, 0, DW_EH_PE_absptr, state, result, &target_size);
     }
     
