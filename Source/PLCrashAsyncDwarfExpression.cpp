@@ -232,7 +232,9 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
 
             case DW_OP_nop: // no-op
                 break;
-
+                
+            // Not implemented -- fall through
+            case DW_OP_fbreg:
             default:
                 PLCF_DEBUG("Unsupported opcode 0x%" PRIx8, opcode);
                 return PLCRASH_ENOTSUP;
