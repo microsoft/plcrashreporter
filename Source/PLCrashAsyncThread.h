@@ -45,11 +45,17 @@
 #if defined(__i386__) || defined(__x86_64__)
 #define PLCRASH_ASYNC_THREAD_X86_SUPPORT 1
 #include <mach/i386/thread_state.h>
+
+/** Host architecture mcontext_t type. */
+typedef mcontext_t pl_mcontext_t;
 #endif
 
 #if defined(__arm__)
 #define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
 #include <mach/arm/thread_state.h>
+
+/** Host architecture mcontext_t-compatible type. */
+typedef struct __darwin_mcontext *pl_mcontext_t;
 #endif
 
 /**
@@ -136,7 +142,7 @@ typedef enum {
 typedef plcrash_pdef_greg_t plcrash_greg_t;
 
 plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *thread_state, cpu_type_t cpu_type);
-void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, mcontext_t mctx);
+void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, pl_mcontext_t mctx);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
 /**

@@ -95,7 +95,7 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
  *
  * All registers will be marked as available.
  */
-void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, mcontext_t mctx) {
+void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, pl_mcontext_t mctx) {
     /*
      * Copy in the thread state. Unlike the mach thread variants, mcontext_t may only represent
      * the thread state of the host process, and we may assume that the compilation target matches the mcontext_t
