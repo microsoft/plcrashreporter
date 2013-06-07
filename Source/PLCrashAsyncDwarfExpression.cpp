@@ -67,7 +67,8 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
- * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param thread_state The thread state against which the expression will be evaluated.
+ * @param byteoder The byte order of the data referenced by @a mobj and @a thread_state.
  * @param start The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param end The task-relative terminating address for the opcode evaluation.
  * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
@@ -82,6 +83,7 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  * on failure.
  */
 template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
+                                                                                                plcrash_async_thread_state_t *thread_state,
                                                                                                 const plcrash_async_byteorder_t *byteorder,
                                                                                                 pl_vm_address_t start,
                                                                                                 pl_vm_address_t end,
@@ -256,9 +258,8 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
  * Evaluate a DWARF expression, as defined in the DWARF 3 Specification, Section 2.5.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
- * @param byteoder The byte order of the data referenced by @a mobj.
- * @param address_size The native address size of the target architecture. Currently, only 4 and 8
- * byte address widths are supported.
+ * @param thread_state The thread state against which the expression will be evaluated.
+ * @param byteoder The byte order of the data referenced by @a mobj and @a thread_state.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
@@ -271,7 +272,7 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
  * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  */
 plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mobj,
-                                                     uint8_t address_size,
+                                                     plcrash_async_thread_state_t *thread_state,
                                                      const plcrash_async_byteorder_t *byteorder,
                                                      pl_vm_address_t address,
                                                      pl_vm_off_t offset,
@@ -281,6 +282,8 @@ plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mo
     plcrash_error_t err;
     pl_vm_address_t start;
     pl_vm_address_t end;
+    
+    size_t address_size = plcrash_async_thread_state_get_greg_size(thread_state);
 
     /* Calculate the terminating address */
     if (!plcrash_async_address_apply_offset(address, offset, &start)) {
@@ -297,18 +300,18 @@ plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mo
     switch (address_size) {
         case 4: {
             uint32_t v;
-            if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t>(mobj, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
+            if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t>(mobj, thread_state, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
                 *result = v;
             return err;
         }
         case 8: {
             uint64_t v;
-            if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t>(mobj, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
+            if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t>(mobj, thread_state, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
                 *result = v;
             return err;
         }
         default:
-            PLCF_DEBUG("Unsupported address size of %" PRIu8, address_size);
+            PLCF_DEBUG("Unsupported address size of %zu", address_size);
             return PLCRASH_EINVAL;
     }
 }

@@ -43,15 +43,19 @@
  * with an expected value of @a expected. The data is interpreted as big endian,
  * as to simplify formulating multi-byte test values in the opcode stream */
 #define PERFORM_EVAL_TEST(opcodes, type, expected) do { \
+    plcrash_async_thread_state_t ts; \
     plcrash_async_mobject_t mobj; \
     plcrash_error_t err; \
     uint64_t result;\
 \
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), @"Failed to initialize thread state"); \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
 \
-    err = plcrash_async_dwarf_eval_expression(&mobj, 8, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+    err = plcrash_async_dwarf_eval_expression(&mobj, &ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed"); \
     STAssertEquals((type)result, (type)expected, @"Incorrect result"); \
+\
+    plcrash_async_mobject_free(&mobj); \
 } while(0)
 
 /**
@@ -162,23 +166,28 @@
  * Test handling of an empty result.
  */
 - (void) testEmptyStackResult {
+    plcrash_async_thread_state_t ts;
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     uint64_t result;
     uint8_t opcodes[] = {
         DW_OP_nop // push nothing onto the stack
     };
-    
+
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), @"Failed to initialize thread state");
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    err = plcrash_async_dwarf_eval_expression(&mobj, 8, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    err = plcrash_async_dwarf_eval_expression(&mobj, &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
     STAssertEquals(err, PLCRASH_EINVAL, @"Evaluation of a no-result expression should have failed with EINVAL");
+
+    plcrash_async_mobject_free(&mobj);
 }
 
 /**
  * Test invalid opcode handling
  */
 - (void) testInvalidOpcode {
+    plcrash_async_thread_state_t ts;
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     uint64_t result;
@@ -189,10 +198,13 @@
         0x0 
     };
     
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), @"Failed to initialize thread state");
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    err = plcrash_async_dwarf_eval_expression(&mobj, 8, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    err = plcrash_async_dwarf_eval_expression(&mobj, &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
     STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of a bad opcode should have failed with ENOTSUP");
+    
+    plcrash_async_mobject_free(&mobj);
 }
 
 
