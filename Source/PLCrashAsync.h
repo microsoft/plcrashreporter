@@ -32,6 +32,7 @@
 #include <stdio.h> // for snprintf
 #include <unistd.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <assert.h>
 
 #include <TargetConditionals.h>
