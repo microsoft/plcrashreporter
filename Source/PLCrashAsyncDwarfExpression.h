@@ -72,12 +72,12 @@
  *     if (opcode == "DW_OP_lit1") {
  *         for (i = 2; i < 31; i++) {
  *             printf("    /\* Literal %d value; see DW_OP_lit1. *\/\n", i)
- *             printf("    DW_OP_lit%d = 0x%x,\n\n", i, val+i)
+ *             printf("    DW_OP_lit%d = 0x%x,\n\n", i, val+i-1)
  *         }
  *     } else if (opcode == "DW_OP_reg1") {
  *        for (i = 2; i < 31; i++) {
  *            printf("    /\* Register number; see DW_OP_reg1. *\/\n")
- *            printf("    DW_OP_reg%d = 0x%x,\n\n", i, val+i)
+ *            printf("    DW_OP_reg%d = 0x%x,\n\n", i, val+i-1)
  *        }
  *    }
  * }
@@ -217,91 +217,91 @@ typedef enum DW_OP {
     DW_OP_lit1 = 0x31,
     
     /* Literal 2 value; see DW_OP_lit1. */
-    DW_OP_lit2 = 0x33,
+    DW_OP_lit2 = 0x32,
     
     /* Literal 3 value; see DW_OP_lit1. */
-    DW_OP_lit3 = 0x34,
+    DW_OP_lit3 = 0x33,
     
     /* Literal 4 value; see DW_OP_lit1. */
-    DW_OP_lit4 = 0x35,
+    DW_OP_lit4 = 0x34,
     
     /* Literal 5 value; see DW_OP_lit1. */
-    DW_OP_lit5 = 0x36,
+    DW_OP_lit5 = 0x35,
     
     /* Literal 6 value; see DW_OP_lit1. */
-    DW_OP_lit6 = 0x37,
+    DW_OP_lit6 = 0x36,
     
     /* Literal 7 value; see DW_OP_lit1. */
-    DW_OP_lit7 = 0x38,
+    DW_OP_lit7 = 0x37,
     
     /* Literal 8 value; see DW_OP_lit1. */
-    DW_OP_lit8 = 0x39,
+    DW_OP_lit8 = 0x38,
     
     /* Literal 9 value; see DW_OP_lit1. */
-    DW_OP_lit9 = 0x3a,
+    DW_OP_lit9 = 0x39,
     
     /* Literal 10 value; see DW_OP_lit1. */
-    DW_OP_lit10 = 0x3b,
+    DW_OP_lit10 = 0x3a,
     
     /* Literal 11 value; see DW_OP_lit1. */
-    DW_OP_lit11 = 0x3c,
+    DW_OP_lit11 = 0x3b,
     
     /* Literal 12 value; see DW_OP_lit1. */
-    DW_OP_lit12 = 0x3d,
+    DW_OP_lit12 = 0x3c,
     
     /* Literal 13 value; see DW_OP_lit1. */
-    DW_OP_lit13 = 0x3e,
+    DW_OP_lit13 = 0x3d,
     
     /* Literal 14 value; see DW_OP_lit1. */
-    DW_OP_lit14 = 0x3f,
+    DW_OP_lit14 = 0x3e,
     
     /* Literal 15 value; see DW_OP_lit1. */
-    DW_OP_lit15 = 0x40,
+    DW_OP_lit15 = 0x3f,
     
     /* Literal 16 value; see DW_OP_lit1. */
-    DW_OP_lit16 = 0x41,
+    DW_OP_lit16 = 0x40,
     
     /* Literal 17 value; see DW_OP_lit1. */
-    DW_OP_lit17 = 0x42,
+    DW_OP_lit17 = 0x41,
     
     /* Literal 18 value; see DW_OP_lit1. */
-    DW_OP_lit18 = 0x43,
+    DW_OP_lit18 = 0x42,
     
     /* Literal 19 value; see DW_OP_lit1. */
-    DW_OP_lit19 = 0x44,
+    DW_OP_lit19 = 0x43,
     
     /* Literal 20 value; see DW_OP_lit1. */
-    DW_OP_lit20 = 0x45,
+    DW_OP_lit20 = 0x44,
     
     /* Literal 21 value; see DW_OP_lit1. */
-    DW_OP_lit21 = 0x46,
+    DW_OP_lit21 = 0x45,
     
     /* Literal 22 value; see DW_OP_lit1. */
-    DW_OP_lit22 = 0x47,
+    DW_OP_lit22 = 0x46,
     
     /* Literal 23 value; see DW_OP_lit1. */
-    DW_OP_lit23 = 0x48,
+    DW_OP_lit23 = 0x47,
     
     /* Literal 24 value; see DW_OP_lit1. */
-    DW_OP_lit24 = 0x49,
+    DW_OP_lit24 = 0x48,
     
     /* Literal 25 value; see DW_OP_lit1. */
-    DW_OP_lit25 = 0x4a,
+    DW_OP_lit25 = 0x49,
     
     /* Literal 26 value; see DW_OP_lit1. */
-    DW_OP_lit26 = 0x4b,
+    DW_OP_lit26 = 0x4a,
     
     /* Literal 27 value; see DW_OP_lit1. */
-    DW_OP_lit27 = 0x4c,
+    DW_OP_lit27 = 0x4b,
     
     /* Literal 28 value; see DW_OP_lit1. */
-    DW_OP_lit28 = 0x4d,
+    DW_OP_lit28 = 0x4c,
     
     /* Literal 29 value; see DW_OP_lit1. */
-    DW_OP_lit29 = 0x4e,
+    DW_OP_lit29 = 0x4d,
     
     /* Literal 30 value; see DW_OP_lit1. */
-    DW_OP_lit30 = 0x4f,
+    DW_OP_lit30 = 0x4e,
     
     /** DW_OP_lit31, accepts no operands. */
     DW_OP_lit31 = 0x4f,
@@ -313,91 +313,91 @@ typedef enum DW_OP {
     DW_OP_reg1 = 0x51,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg2 = 0x53,
+    DW_OP_reg2 = 0x52,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg3 = 0x54,
+    DW_OP_reg3 = 0x53,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg4 = 0x55,
+    DW_OP_reg4 = 0x54,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg5 = 0x56,
+    DW_OP_reg5 = 0x55,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg6 = 0x57,
+    DW_OP_reg6 = 0x56,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg7 = 0x58,
+    DW_OP_reg7 = 0x57,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg8 = 0x59,
+    DW_OP_reg8 = 0x58,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg9 = 0x5a,
+    DW_OP_reg9 = 0x59,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg10 = 0x5b,
+    DW_OP_reg10 = 0x5a,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg11 = 0x5c,
+    DW_OP_reg11 = 0x5b,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg12 = 0x5d,
+    DW_OP_reg12 = 0x5c,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg13 = 0x5e,
+    DW_OP_reg13 = 0x5d,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg14 = 0x5f,
+    DW_OP_reg14 = 0x5e,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg15 = 0x60,
+    DW_OP_reg15 = 0x5f,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg16 = 0x61,
+    DW_OP_reg16 = 0x60,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg17 = 0x62,
+    DW_OP_reg17 = 0x61,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg18 = 0x63,
+    DW_OP_reg18 = 0x62,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg19 = 0x64,
+    DW_OP_reg19 = 0x63,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg20 = 0x65,
+    DW_OP_reg20 = 0x64,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg21 = 0x66,
+    DW_OP_reg21 = 0x65,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg22 = 0x67,
+    DW_OP_reg22 = 0x66,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg23 = 0x68,
+    DW_OP_reg23 = 0x67,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg24 = 0x69,
+    DW_OP_reg24 = 0x68,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg25 = 0x6a,
+    DW_OP_reg25 = 0x69,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg26 = 0x6b,
+    DW_OP_reg26 = 0x6a,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg27 = 0x6c,
+    DW_OP_reg27 = 0x6b,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg28 = 0x6d,
+    DW_OP_reg28 = 0x6c,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg29 = 0x6e,
+    DW_OP_reg29 = 0x6d,
     
     /* Register number; see DW_OP_reg1. */
-    DW_OP_reg30 = 0x6f,
+    DW_OP_reg30 = 0x6e,
     
     /** DW_OP_reg31, accepts no operands. */
     DW_OP_reg31 = 0x6f,
@@ -465,7 +465,8 @@ plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mo
                                                      const plcrash_async_byteorder_t *byteorder,
                                                      pl_vm_address_t address,
                                                      pl_vm_off_t offset,
-                                                     pl_vm_size_t length);
+                                                     pl_vm_size_t length,
+                                                     uint64_t *result);
 
 
 

@@ -70,6 +70,13 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  * @param byteoder The byte order of the data referenced by @a mobj.
  * @param start The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param end The task-relative terminating address for the opcode evaluation.
+ * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
+ * the top-most element on the evaluation stack. If the stack is empty, an error will be returned
+ * and no value will be written to this parameter.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
+ * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned. If the stack
+ * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
  * on failure.
@@ -77,7 +84,8 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
 template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
                                                                                                 const plcrash_async_byteorder_t *byteorder,
                                                                                                 pl_vm_address_t start,
-                                                                                                pl_vm_address_t end)
+                                                                                                pl_vm_address_t end,
+                                                                                                machine_ptr *result)
 {
     // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
     // use of the new async-safe allocator.
@@ -102,11 +110,52 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
     } \
     v; \
 })
+    
+    /* A push macro that handles reporting of stack overflow errors */
+#define dw_expr_push(v) if (!stack.push(v)) { \
+    PLCF_DEBUG("Hit stack limit; cannot push further values"); \
+    return PLCRASH_EINTERNAL; \
+}
 
     void *p = instr;
     while (p < instr_max) {
         uint8_t opcode = dw_expr_read(uint8_t);
         switch (opcode) {
+            case DW_OP_lit0:
+            case DW_OP_lit1:
+            case DW_OP_lit2:
+            case DW_OP_lit3:
+            case DW_OP_lit4:
+            case DW_OP_lit5:
+            case DW_OP_lit6:
+            case DW_OP_lit7:
+            case DW_OP_lit8:
+            case DW_OP_lit9:
+            case DW_OP_lit10:
+            case DW_OP_lit11:
+            case DW_OP_lit12:
+            case DW_OP_lit13:
+            case DW_OP_lit14:
+            case DW_OP_lit15:
+            case DW_OP_lit16:
+            case DW_OP_lit17:
+            case DW_OP_lit18:
+            case DW_OP_lit19:
+            case DW_OP_lit20:
+            case DW_OP_lit21:
+            case DW_OP_lit22:
+            case DW_OP_lit23:
+            case DW_OP_lit24:
+            case DW_OP_lit25:
+            case DW_OP_lit26:
+            case DW_OP_lit27:
+            case DW_OP_lit28:
+            case DW_OP_lit29:
+            case DW_OP_lit30:
+            case DW_OP_lit31:
+                dw_expr_push(opcode-DW_OP_lit0);
+                break;
+                
             case DW_OP_nop: // no-op
                 break;
 
@@ -116,7 +165,14 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
         }
     }
 
+    /* Provide the result */
+    if (!stack.pop(result)) {
+        PLCF_DEBUG("Expression did not provide a result value.");
+        return PLCRASH_EINVAL;
+    }
+
 #undef dw_expr_read
+#undef dw_expr_push
     return PLCRASH_ESUCCESS;
 }
 
@@ -130,16 +186,23 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
+ * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
+ * the top-most element on the evaluation stack. If the stack is empty, an error will be returned
+ * and no value will be written to this parameter.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
- * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned.
+ * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned. If the stack
+ * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  */
 plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mobj,
                                                      uint8_t address_size,
                                                      const plcrash_async_byteorder_t *byteorder,
                                                      pl_vm_address_t address,
                                                      pl_vm_off_t offset,
-                                                     pl_vm_size_t length) {
+                                                     pl_vm_size_t length,
+                                                     uint64_t *result)
+{
+    plcrash_error_t err;
     pl_vm_address_t start;
     pl_vm_address_t end;
 
@@ -156,10 +219,18 @@ plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mo
     
     /* Call the appropriate implementation for the target's native pointer size */
     switch (address_size) {
-        case 4:
-            return plcrash_async_dwarf_eval_expression_int<uint32_t>(mobj, byteorder, start, end);
-        case 8:
-            return plcrash_async_dwarf_eval_expression_int<uint64_t>(mobj, byteorder, start, end);
+        case 4: {
+            uint32_t v;
+            if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t>(mobj, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
+                *result = v;
+            return err;
+        }
+        case 8: {
+            uint64_t v;
+            if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t>(mobj, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
+                *result = v;
+            return err;
+        }
         default:
             PLCF_DEBUG("Unsupported address size of %" PRIu8, address_size);
             return PLCRASH_EINVAL;
