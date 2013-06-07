@@ -133,15 +133,15 @@ struct __attribute__((packed)) fde_data {
     err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, &_data.fde, true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
 
-    STAssertEquals(info.fde_offset, (uint64_t) ((uintptr_t)&_data.fde) - ((uintptr_t)&_data) + sizeof(_data.fde.length), @"Incorrect FDE offset");
+    STAssertEquals(info.fde_offset, (pl_vm_address_t) ((uintptr_t)&_data.fde - (uintptr_t)&_data + sizeof(_data.fde.length)), @"Incorrect FDE offset");
     STAssertEquals(info.fde_length, (uint64_t) (sizeof(_data.fde) - sizeof(_data.fde.length)), @"Incorrect FDE length");
 
-    STAssertEquals(info.cie_offset, (uint64_t) ((uintptr_t)&_data.cie) - ((uintptr_t)&_data), @"Incorrect CIE offset");
+    STAssertEquals(info.cie_offset, (pl_vm_address_t) ((uintptr_t)&_data.cie - (uintptr_t)&_data), @"Incorrect CIE offset");
     
     STAssertEquals(info.pc_start, _data.fde.pc_start, @"Incorrect PC start value");
     STAssertEquals(info.pc_end, (uint64_t)_data.fde.pc_start + _data.fde.pc_length, @"Incorrect PC end value");
     
-    STAssertEquals(info.instruction_offset, (uint64_t)&_data.fde.instructions - (uint64_t)&_data, @"Incorrect instruction offset");
+    STAssertEquals(info.instruction_offset, (pl_vm_address_t) ((uint64_t)&_data.fde.instructions - (uint64_t)&_data), @"Incorrect instruction offset");
 
 
     /* Clean up */

@@ -120,8 +120,8 @@ struct __attribute__((packed)) cie_data {
     /* Try to parse the CIE */
     err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, &_cie_data);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
-    STAssertEquals(cie.cie_offset, (pl_vm_address_t)sizeof(_cie_data.length), @"Incorrect offset");
-    STAssertEquals(cie.cie_length, (pl_vm_address_t) sizeof(_cie_data) - sizeof(_cie_data.length), @"Incorrect length");
+    STAssertEquals(cie.cie_offset, (uint64_t)sizeof(_cie_data.length), @"Incorrect offset");
+    STAssertEquals(cie.cie_length, (uint64_t) sizeof(_cie_data) - sizeof(_cie_data.length), @"Incorrect length");
     
     /* Test basics */
     STAssertEquals(cie.cie_id, _cie_data.cie_id, @"Incorrect ID");
