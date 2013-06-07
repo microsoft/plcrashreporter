@@ -39,14 +39,41 @@
  */
 @implementation PLCrashAsyncDwarfExpressionTests
 
-- (void) testSimpleEval {
-    // TODO
-#if 0
+/**
+ * Test basic evaluation of a NOP.
+ */
+- (void) testNOP {
+    plcrash_async_mobject_t mobj;
     plcrash_error_t err;
+    uint8_t opcodes[] = {
+        DW_OP_nop
+    };
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
 
-    err = plcrash_async_dwarf_eval_expression();
+    err = plcrash_async_dwarf_eval_expression(&mobj, 8, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes));
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed");
-#endif
 }
+
+
+/**
+ * Test invalid opcode handling
+ */
+- (void) testInvalidOpcode {
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    uint8_t opcodes[] = {
+        // Arbitrarily selected bad instruction value.
+        // This -could- be allocated to an opcode in the future, but
+        // then our test will fail and we can pick another one.
+        0x0 
+    };
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+    
+    err = plcrash_async_dwarf_eval_expression(&mobj, 8, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes));
+    STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of a bad opcode should have failed with ENOTSUP");
+}
+
 
 @end

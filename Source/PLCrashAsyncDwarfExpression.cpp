@@ -29,21 +29,94 @@ extern "C" {
     #include <inttypes.h>
 }
 
+#include "dwarf_stack.h"
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
  * @{
  */
 
+/**
+ * Read a value of type and size @a T from @a *p, advancing @a p the past the read value,
+ * and verifying that the read will not overrun the address @a maxpos.
+ *
+ * @param p The pointer from which the value will be read. This pointer will be advanced by sizeof(T).
+ * @param maxpos The maximum address from which a value may be read.
+ * @param result The destination to which the result will be written.
+ *
+ * @return Returns true on success, or false if the read would exceed the boundry specified by @a maxpos.
+ */
+template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxpos, T *result) {
+    if ((uint8_t *)maxpos - (uint8_t *)*p < sizeof(T)) {
+        return false;
+    }
+    
+    *result = *((T *)*p);
+    *((uint8_t **)p) += sizeof(T);
+    return true;
+}
+
+
+/**
+ * Evaluate the expression opcodes starting at address expression evaluation imlementation. 
+ */
+
+/**
+ * Evaluate a DWARF expression, as defined in the DWARF 3 Specification, Section 2.5. This
+ * internal implementation is templated to support 32-bit and 64-bit evaluation.
+ *
+ * @param mobj The memory object from which the expression opcodes will be read.
+ * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param start The task-relative address within @a mobj at which the opcodes will be fetched.
+ * @param end The task-relative terminating address for the opcode evaluation.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
+ * on failure.
+ */
 template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
                                                                                                 const plcrash_async_byteorder_t *byteorder,
                                                                                                 pl_vm_address_t start,
                                                                                                 pl_vm_address_t end)
 {
-    
-    //machine_ptr stack[255];
-    //machine_ptr *sp = stack;
+    // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
+    // use of the new async-safe allocator.
+    plcrash::dwarf_stack<machine_ptr, 100> stack;
 
+    /* Map in the full instruction range */
+    void *instr = plcrash_async_mobject_remap_address(mobj, start, 0, end-start);
+    void *instr_max = (uint8_t *)instr + (end - start);
+
+    if (instr == NULL) {
+        PLCF_DEBUG("Could not map the DWARF instructions; range falls outside mapped pages");
+        return PLCRASH_EINVAL;
+    }
+    
+    /* A read macro that abuses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
+     * if the read extends beyond the mapped range. */
+#define dw_expr_read(_type) ({ \
+    _type v; \
+    if (!dw_expr_read_impl<_type>(&p, instr_max, &v)) { \
+        PLCF_DEBUG("Read of size %zu exceeds mapped range", sizeof(v)); \
+        return PLCRASH_EINVAL; \
+    } \
+    v; \
+})
+
+    void *p = instr;
+    while (p < instr_max) {
+        uint8_t opcode = dw_expr_read(uint8_t);
+        switch (opcode) {
+            case DW_OP_nop: // no-op
+                break;
+
+            default:
+                PLCF_DEBUG("Unsupported opcode 0x%" PRIx8, opcode);
+                return PLCRASH_ENOTSUP;
+        }
+    }
+
+#undef dw_expr_read
     return PLCRASH_ESUCCESS;
 }
 
@@ -59,7 +132,7 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
  * @param length The total length of the opcodes readable at @a address + @a offset.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
- * on failure.
+ * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned.
  */
 plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mobj,
                                                      uint8_t address_size,
