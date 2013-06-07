@@ -131,6 +131,23 @@
     PERFORM_EVAL_TEST(opcodes, int64_t, INT64_MIN);
 }
 
+
+/**
+ * Test evaluation of the DW_OP_constu (ULEB128 constant) opcode
+ */
+- (void) testConstu {
+    uint8_t opcodes[] = { DW_OP_constu, 0+0x80, 0x1 };
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 128);
+}
+
+/**
+ * Test evaluation of the DW_OP_consts (SLEB128 constant) opcode
+ */
+- (void) testConsts {
+    uint8_t opcodes[] = { DW_OP_consts, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x7f};
+    PERFORM_EVAL_TEST(opcodes, int64_t, INT64_MIN);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {

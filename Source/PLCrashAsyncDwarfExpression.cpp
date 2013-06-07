@@ -26,6 +26,7 @@
 
 extern "C" {
     #include "PLCrashAsyncDwarfExpression.h"
+    #include "PLCrashAsyncDwarfPrimitives.h"
     #include <inttypes.h>
 }
 
@@ -57,9 +58,8 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
     return true;
 }
 
-
 /**
- * Evaluate the expression opcodes starting at address expression evaluation imlementation. 
+ * Evaluate the expression opcodes starting at address expression evaluation imlementation.
  */
 
 /**
@@ -100,7 +100,7 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
         return PLCRASH_EINVAL;
     }
     
-    /* A read macro that uses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
+    /* A position-advancing read macro that uses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
      * if the read extends beyond the mapped range. */
 #define dw_expr_read(_type) ({ \
     _type v; \
@@ -108,6 +108,40 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
         PLCF_DEBUG("Read of size %zu exceeds mapped range", sizeof(v)); \
         return PLCRASH_EINVAL; \
     } \
+    v; \
+})
+    
+    /* A position-advancing uleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
+     * if the read fails. */
+#define dw_expr_read_uleb128() ({ \
+    plcrash_error_t err; \
+    uint64_t v; \
+    pl_vm_size_t lebsize; \
+    pl_vm_off_t offset = ((uint8_t *)p - (uint8_t *)instr); \
+    \
+    if ((err = plcrash_async_dwarf_read_uleb128(mobj, start, offset, &v, &lebsize)) != PLCRASH_ESUCCESS) { \
+        PLCF_DEBUG("Read of ULEB128 value failed"); \
+        return err; \
+    } \
+    \
+    p = (uint8_t *)p + lebsize; \
+    v; \
+})
+
+    /* A position-advancing sleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
+     * if the read fails. */
+#define dw_expr_read_sleb128() ({ \
+    plcrash_error_t err; \
+    int64_t v; \
+    pl_vm_size_t lebsize; \
+    pl_vm_off_t offset = ((uint8_t *)p - (uint8_t *)instr); \
+    \
+    if ((err = plcrash_async_dwarf_read_sleb128(mobj, start, offset, &v, &lebsize)) != PLCRASH_ESUCCESS) { \
+        PLCF_DEBUG("Read of SLEB128 value failed"); \
+        return err; \
+    } \
+    \
+    p = (uint8_t *)p + lebsize; \
     v; \
 })
     
@@ -186,6 +220,14 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
                 
             case DW_OP_const8s:
                 dw_expr_push((int64_t) byteorder->swap64(dw_expr_read(int64_t)));
+                break;
+                
+            case DW_OP_constu:
+                dw_expr_push(dw_expr_read_uleb128());
+                break;
+                
+            case DW_OP_consts:
+                dw_expr_push(dw_expr_read_sleb128());
                 break;
 
             case DW_OP_nop: // no-op
