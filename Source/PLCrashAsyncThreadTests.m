@@ -91,6 +91,79 @@
     }
 }
 
+/**
+ * Test mapping of DWARF register values.
+ */
+- (void) testMapDwarfRegister {
+    plcrash_async_thread_state_t ts;
+    
+#define CHECKREG(plreg, dwreg) do { \
+    STAssertEquals(plreg, plcrash_async_thread_state_map_dwarf_reg(&ts, dwreg), @"Incorrect register mapping for " # plreg); \
+} while (0)
+
+#if PLCRASH_ASYNC_THREAD_X86_SUPPORT
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    CHECKREG(PLCRASH_X86_EAX, 0);
+    CHECKREG(PLCRASH_X86_ECX, 1);
+    CHECKREG(PLCRASH_X86_EDX, 2);
+    CHECKREG(PLCRASH_X86_EBX, 3);
+    CHECKREG(PLCRASH_X86_ESP, 4);
+    CHECKREG(PLCRASH_X86_EBP, 5);
+    CHECKREG(PLCRASH_X86_ESI, 6);
+    CHECKREG(PLCRASH_X86_EDI, 7);
+    CHECKREG(PLCRASH_X86_EIP, 8);
+
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    CHECKREG(PLCRASH_X86_64_RAX, 0);
+    CHECKREG(PLCRASH_X86_64_RDX, 1);
+    CHECKREG(PLCRASH_X86_64_RCX, 2);
+    CHECKREG(PLCRASH_X86_64_RBX, 3);
+    CHECKREG(PLCRASH_X86_64_RSI, 4);
+    CHECKREG(PLCRASH_X86_64_RDI, 5);
+    CHECKREG(PLCRASH_X86_64_RBP, 6);
+    CHECKREG(PLCRASH_X86_64_RSP, 7);
+
+    CHECKREG(PLCRASH_X86_64_R8, 8);
+    CHECKREG(PLCRASH_X86_64_R9, 9);
+    CHECKREG(PLCRASH_X86_64_R10, 10);
+    CHECKREG(PLCRASH_X86_64_R11, 11);
+    CHECKREG(PLCRASH_X86_64_R12, 12);
+    CHECKREG(PLCRASH_X86_64_R13, 13);
+    CHECKREG(PLCRASH_X86_64_R14, 14);
+    CHECKREG(PLCRASH_X86_64_R15, 15);
+    
+    CHECKREG(PLCRASH_X86_64_RFLAGS, 49);
+
+    CHECKREG(PLCRASH_X86_64_CS, 51);
+    CHECKREG(PLCRASH_X86_64_FS, 54);
+    CHECKREG(PLCRASH_X86_64_GS, 55);
+
+#endif /* PLCRASH_ASYNC_THREAD_X86_SUPPORT */
+
+#if PLCRASH_ASYNC_THREAD_ARM_SUPPORT
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_ARM), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+
+    CHECKREG(PLCRASH_ARM_R0, 0);
+    CHECKREG(PLCRASH_ARM_R1, 1);
+    CHECKREG(PLCRASH_ARM_R2, 2);
+    CHECKREG(PLCRASH_ARM_R3, 3);
+    CHECKREG(PLCRASH_ARM_R4, 4);
+    CHECKREG(PLCRASH_ARM_R5, 5);
+    CHECKREG(PLCRASH_ARM_R6, 6);
+    CHECKREG(PLCRASH_ARM_R7, 7);
+    CHECKREG(PLCRASH_ARM_R8, 8);
+    CHECKREG(PLCRASH_ARM_R9, 9);
+    CHECKREG(PLCRASH_ARM_R10, 10);
+    CHECKREG(PLCRASH_ARM_R11, 11);
+    CHECKREG(PLCRASH_ARM_R12, 12);
+    CHECKREG(PLCRASH_ARM_SP, 13);
+    CHECKREG(PLCRASH_ARM_LR, 14);
+    CHECKREG(PLCRASH_ARM_PC, 15);
+#endif
+    
+#undef CHECKREG
+}
+
 /* Test plcrash_async_thread_state_init() */
 - (void) testEmptyInit {
     plcrash_async_thread_state_t ts;
@@ -285,6 +358,9 @@ static plcrash_error_t write_current_thread_callback (plcrash_async_thread_state
 #endif
 }
 
+/**
+ * Test copying of a thread state.
+ */
 - (void) testThreadStateCopy {
     plcrash_async_thread_state_t thr_state;
     thread_t thr;

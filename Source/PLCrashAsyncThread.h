@@ -198,6 +198,18 @@ plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_st
 void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg);
 
 /**
+ * Map a DWARF register number to its plcrash_regnum_t representation. If the DWARF register value is unknown,
+ * PLCRASH_REG_INVALID will be returned.
+ *
+ * @warning This API may require changes in the future to support specifying the register mapping type; eg, DWARF debug_frame
+ * vs eh_frame, or similar.
+ *
+ * @param thread_state The thread state to be used for performing the mapping.
+ * @param dwarf_reg The DWARF register number to be mapped.
+ */
+plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg);
+
+/**
  * @}
  */
 

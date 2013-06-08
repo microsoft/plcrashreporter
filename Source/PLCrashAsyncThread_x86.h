@@ -139,6 +139,12 @@ typedef enum {
     PLCRASH_X86_64_RSI,
     
     /** Temporary register. */
+    PLCRASH_X86_64_R8,
+    
+    /** Temporary register. */
+    PLCRASH_X86_64_R9,
+    
+    /** Temporary register. */
     PLCRASH_X86_64_R10,
     
     /** Callee-saved register. */

@@ -54,6 +54,9 @@ static void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_state_t 
 static const char *plcrash_async_thread_state_get_regname_32 (plcrash_regnum_t regnum);
 static const char *plcrash_async_thread_state_get_regname_64 (plcrash_regnum_t regnum);
 
+plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg_32 (uint64_t dwarf_reg);
+plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg_64 (uint64_t dwarf_reg);
+
 // PLCrashAsyncThread API
 plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
     if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
@@ -88,6 +91,15 @@ size_t plcrash_async_thread_state_get_reg_count (const plcrash_async_thread_stat
         return PLCRASH_X86_LAST_REG+1;
     } else {
         return PLCRASH_X86_64_LAST_REG+1;
+    }
+}
+
+// PLCrashAsyncThread API
+plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg) {
+    if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
+        return plcrash_async_thread_state_map_dwarf_reg_32(dwarf_reg);
+    } else {
+        return plcrash_async_thread_state_map_dwarf_reg_64(dwarf_reg);
     }
 }
 
@@ -188,6 +200,12 @@ static plcrash_greg_t plcrash_async_thread_state_get_reg_64 (const plcrash_async
             
         case PLCRASH_X86_64_RSP:
             RETGEN(rsp, thread.uts.ts64, ts);
+            
+        case PLCRASH_X86_64_R8:
+            RETGEN(r8, thread.uts.ts64, ts);
+            
+        case PLCRASH_X86_64_R9:
+            RETGEN(r9, thread.uts.ts64, ts);
             
         case PLCRASH_X86_64_R10:
             RETGEN(r10, thread.uts.ts64, ts);
@@ -326,6 +344,12 @@ static void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_state_t 
         case PLCRASH_X86_64_RSP:
             SETGEN(rsp, thread.uts.ts64, ts, regnum, reg);
             
+        case PLCRASH_X86_64_R8:
+            SETGEN(r8, thread.uts.ts64, ts, regnum, reg);
+            
+        case PLCRASH_X86_64_R9:
+            SETGEN(r9, thread.uts.ts64, ts, regnum, reg);
+            
         case PLCRASH_X86_64_R10:
             SETGEN(r10, thread.uts.ts64, ts, regnum, reg);
             
@@ -460,6 +484,12 @@ static const char *plcrash_async_thread_state_get_regname_64 (plcrash_regnum_t r
         case PLCRASH_X86_64_RSP:
             return "rsp";
             
+        case PLCRASH_X86_64_R8:
+            return "r8";
+            
+        case PLCRASH_X86_64_R9:
+            return "r9";
+            
         case PLCRASH_X86_64_R10:
             return "r10";
             
@@ -501,6 +531,96 @@ static const char *plcrash_async_thread_state_get_regname_64 (plcrash_regnum_t r
     /* Unsupported register is an implementation error (checked in unit tests) */
     PLCF_DEBUG("Missing register name for register id: %d", regnum);
     abort();
+}
+
+
+/**
+ * @internal
+ * 32-bit implementation of plcrash_async_thread_state_map_dwarf_reg()
+ */
+plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg_32 (uint64_t dwarf_reg) {
+#define MAPREG(_pl_num, _dwarf_num) do { \
+    case _dwarf_num:\
+        return _pl_num; \
+} while (0)
+    
+    /*
+     * DWARF register mappings as defined by GCC and LLVM/clang. These mappings
+     * appear to have originally been defined by the SVR4 reference port C compiler,
+     * and then later implemented by GCC for its 80386 target.
+     *
+     * This set of registers defines the common intersection of the gcc/llvm implementations.
+     * It appears that LLVM implements a strict subset of the GCC-defined register set, but
+     * further investigation is warranted prior to expanding the set of defined DWARF registers.
+     *
+     * Note that not all registers defined by gcc/LLVM are currently supported by our
+     * thread-state API, and are not mapped.
+     */
+    switch (dwarf_reg) {
+        MAPREG(PLCRASH_X86_EAX, 0);
+        MAPREG(PLCRASH_X86_ECX, 1);
+        MAPREG(PLCRASH_X86_EDX, 2);
+        MAPREG(PLCRASH_X86_EBX, 3);
+        MAPREG(PLCRASH_X86_ESP, 4);
+        MAPREG(PLCRASH_X86_EBP, 5);
+        MAPREG(PLCRASH_X86_ESI, 6);
+        MAPREG(PLCRASH_X86_EDI, 7);
+        MAPREG(PLCRASH_X86_EIP, 8);
+    }
+    
+#undef MAPREG
+    
+    /* Unknown DWARF register.  */
+    return PLCRASH_REG_INVALID;
+}
+
+/**
+ * @internal
+ * 64-bit implementation of plcrash_async_thread_state_map_dwarf_reg()
+ */
+plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg_64 (uint64_t dwarf_reg) {
+#define MAPREG(_pl_num, _dwarf_num) do { \
+    case _dwarf_num:\
+        return _pl_num; \
+} while (0)
+    
+    /*
+     * DWARF register mappings as defined in the System V Application Binary Interface,
+     * AMD64 Architecture Processor Supplement - Draft Version 0.99.6
+     *
+     * Note that not all registers defined the AMD64 ABI are currently supported by our
+     * thread-state API, and are not mapped.
+     */
+    switch (dwarf_reg) {
+        MAPREG(PLCRASH_X86_64_RAX, 0);
+        MAPREG(PLCRASH_X86_64_RDX, 1);
+        MAPREG(PLCRASH_X86_64_RCX, 2);
+        MAPREG(PLCRASH_X86_64_RBX, 3);
+        MAPREG(PLCRASH_X86_64_RSI, 4);
+        MAPREG(PLCRASH_X86_64_RDI, 5);
+        MAPREG(PLCRASH_X86_64_RBP, 6);
+        MAPREG(PLCRASH_X86_64_RSP, 7);
+        
+        MAPREG(PLCRASH_X86_64_R8, 8);
+        MAPREG(PLCRASH_X86_64_R9, 9);
+        MAPREG(PLCRASH_X86_64_R10, 10);
+        MAPREG(PLCRASH_X86_64_R11, 11);
+        MAPREG(PLCRASH_X86_64_R12, 12);
+        MAPREG(PLCRASH_X86_64_R13, 13);
+        MAPREG(PLCRASH_X86_64_R14, 14);
+        MAPREG(PLCRASH_X86_64_R15, 15);
+        
+        MAPREG(PLCRASH_X86_64_RFLAGS, 49);
+        
+        MAPREG(PLCRASH_X86_64_CS, 51);
+        MAPREG(PLCRASH_X86_64_FS, 54);
+        MAPREG(PLCRASH_X86_64_GS, 55);
+    }
+    
+#undef MAPREG
+    
+    /* Unknown DWARF register.  */
+    return PLCRASH_REG_INVALID;
 }
 
 #endif /* defined(__i386__) || defined(__x86_64__) */
