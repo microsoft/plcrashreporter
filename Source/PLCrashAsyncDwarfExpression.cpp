@@ -81,13 +81,17 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
  * on failure.
+ *
+ * @todo Consider defining updated status codes or error handling to provide more structured
+ * error data on failure.
  */
-template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
-                                                                                                plcrash_async_thread_state_t *thread_state,
-                                                                                                const plcrash_async_byteorder_t *byteorder,
-                                                                                                pl_vm_address_t start,
-                                                                                                pl_vm_address_t end,
-                                                                                                machine_ptr *result)
+template <typename machine_ptr, typename machine_ptr_s>
+static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
+                                                                plcrash_async_thread_state_t *thread_state,
+                                                                const plcrash_async_byteorder_t *byteorder,
+                                                                pl_vm_address_t start,
+                                                                pl_vm_address_t end,
+                                                                machine_ptr *result)
 {
     // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
     // use of the new async-safe allocator.
@@ -101,6 +105,12 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
         PLCF_DEBUG("Could not map the DWARF instructions; range falls outside mapped pages");
         return PLCRASH_EINVAL;
     }
+    
+    /*
+     * Note that the below value macros all cast data to the appropriate target machine word size.
+     * This will result in overflows, as defined in the DWARF specification; the unsigned overflow
+     * behavior is defined, and as per DWARF and C, the signed overflow behavior is not.
+     */
     
     /* A position-advancing read macro that uses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
      * if the read extends beyond the mapped range. */
@@ -127,7 +137,7 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
     } \
     \
     p = (uint8_t *)p + lebsize; \
-    v; \
+    (machine_ptr) v; \
 })
 
     /* A position-advancing sleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
@@ -144,9 +154,26 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
     } \
     \
     p = (uint8_t *)p + lebsize; \
-    v; \
+    (machine_ptr_s) v; \
 })
     
+    /* Macro to fetch register valeus; handles unsupported register numbers and missing registers values */
+#define dw_thread_regval(_dw_regnum) ({ \
+    plcrash_regnum_t rn = plcrash_async_thread_state_map_dwarf_reg(thread_state, _dw_regnum); \
+    if (rn == PLCRASH_REG_INVALID) { \
+        PLCF_DEBUG("Unsupported DWARF register value of 0x%" PRIx64, (uint64_t)_dw_regnum);\
+        return PLCRASH_ENOTSUP; \
+    } \
+\
+    if (!plcrash_async_thread_state_has_reg(thread_state, rn)) { \
+        PLCF_DEBUG("Register value of %s unavailable in the current frame.", plcrash_async_thread_state_get_reg_name(thread_state, rn)); \
+        return PLCRASH_ENOTSUP; \
+    } \
+\
+    plcrash_greg_t val = plcrash_async_thread_state_get_reg(thread_state, rn); \
+    (machine_ptr) val; \
+})
+
     /* A push macro that handles reporting of stack overflow errors */
 #define dw_expr_push(v) if (!stack.push(v)) { \
     PLCF_DEBUG("Hit stack limit; cannot push further values"); \
@@ -156,6 +183,7 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
     void *p = instr;
     while (p < instr_max) {
         uint8_t opcode = dw_expr_read(uint8_t);
+
         switch (opcode) {
             case DW_OP_lit0:
             case DW_OP_lit1:
@@ -231,7 +259,42 @@ template <typename machine_ptr> static plcrash_error_t plcrash_async_dwarf_eval_
             case DW_OP_consts:
                 dw_expr_push(dw_expr_read_sleb128());
                 break;
-
+                
+            case DW_OP_breg0:
+			case DW_OP_breg1:
+			case DW_OP_breg2:
+			case DW_OP_breg3:
+			case DW_OP_breg4:
+			case DW_OP_breg5:
+			case DW_OP_breg6:
+			case DW_OP_breg7:
+			case DW_OP_breg8:
+			case DW_OP_breg9:
+			case DW_OP_breg10:
+			case DW_OP_breg11:
+			case DW_OP_breg12:
+			case DW_OP_breg13:
+			case DW_OP_breg14:
+			case DW_OP_breg15:
+			case DW_OP_breg16:
+			case DW_OP_breg17:
+			case DW_OP_breg18:
+			case DW_OP_breg19:
+			case DW_OP_breg20:
+			case DW_OP_breg21:
+			case DW_OP_breg22:
+			case DW_OP_breg23:
+			case DW_OP_breg24:
+			case DW_OP_breg25:
+			case DW_OP_breg26:
+			case DW_OP_breg27:
+			case DW_OP_breg28:
+			case DW_OP_breg29:
+			case DW_OP_breg30:
+			case DW_OP_breg31:
+                dw_expr_push(dw_thread_regval(opcode - DW_OP_breg0) + dw_expr_read_sleb128());
+                break;
+    
             case DW_OP_nop: // no-op
                 break;
                 
@@ -300,13 +363,13 @@ plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mo
     switch (address_size) {
         case 4: {
             uint32_t v;
-            if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t>(mobj, thread_state, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
+            if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t, int32_t>(mobj, thread_state, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
                 *result = v;
             return err;
         }
         case 8: {
             uint64_t v;
-            if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t>(mobj, thread_state, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
+            if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t, int64_t>(mobj, thread_state, byteorder, start, end, &v)) == PLCRASH_ESUCCESS)
                 *result = v;
             return err;
         }

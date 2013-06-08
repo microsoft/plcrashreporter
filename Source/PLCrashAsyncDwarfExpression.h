@@ -27,6 +27,10 @@
 #ifndef PLCRASH_ASYNC_DWARF_EXPRESSION_H
 #define PLCRASH_ASYNC_DWARF_EXPRESSION_H 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncThread.h"
@@ -566,5 +570,9 @@ plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mo
 /**
  * @}
  */
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_ASYNC_DWARF_CFA_H */

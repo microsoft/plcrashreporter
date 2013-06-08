@@ -31,6 +31,7 @@
 #include "PLCrashAsyncDwarfExpression.h"
 
 @interface PLCrashAsyncDwarfExpressionTests : PLCrashTestCase {
+    plcrash_async_thread_state_t _ts;
 }
 @end
 
@@ -39,24 +40,41 @@
  */
 @implementation PLCrashAsyncDwarfExpressionTests
 
+/* Determine the supported thread state types, and configure
+ * for use in the tests below. All we require is the ability
+ * to represent thread state for the given architecture. */
+#ifdef PLCRASH_ASYNC_THREAD_X86_SUPPORT
+#    define TEST_THREAD_CPU CPU_TYPE_X86_64
+#    define TEST_THREAD_DWARF_REG1 14 // r14
+#    define TEST_THREAD_DWARF_REG_INVALID 99 // unhandled DWARF register number
+#elif PLCRASH_ASYNC_THREAD_ARM_SUPPORT
+#    define TEST_THREAD_CPU CPU_TYPE_ARM
+#    define TEST_THREAD_DWARF_REG1 14 // LR (r14)
+#    define TEST_THREAD_DWARF_REG_INVALID 99 // unhandled DWARF register number
+#else
+#    error Add support for this platform
+#endif
+
 /* Perform evaluation of the given opcodes, expecting a result of type @a type,
  * with an expected value of @a expected. The data is interpreted as big endian,
  * as to simplify formulating multi-byte test values in the opcode stream */
 #define PERFORM_EVAL_TEST(opcodes, type, expected) do { \
-    plcrash_async_thread_state_t ts; \
     plcrash_async_mobject_t mobj; \
     plcrash_error_t err; \
     uint64_t result;\
 \
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), @"Failed to initialize thread state"); \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
 \
-    err = plcrash_async_dwarf_eval_expression(&mobj, &ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+    err = plcrash_async_dwarf_eval_expression(&mobj, &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed"); \
     STAssertEquals((type)result, (type)expected, @"Incorrect result"); \
 \
     plcrash_async_mobject_free(&mobj); \
 } while(0)
+
+- (void) setUp {
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&_ts, TEST_THREAD_CPU), @"Failed to initialize thread state");
+}
 
 /**
  * Test evaluation of the DW_OP_litN opcodes.
@@ -152,6 +170,22 @@
     PERFORM_EVAL_TEST(opcodes, int64_t, INT64_MIN);
 }
 
+/**
+ * Test evaluation of DW_OP_bregN opcodes.
+ */
+- (void) testBreg {
+    /* Set up the thread state */
+    plcrash_async_thread_state_set_reg(&_ts, plcrash_async_thread_state_map_dwarf_reg(&_ts, TEST_THREAD_DWARF_REG1), 0xFF);
+
+    /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, plus 5 (the value is sleb128 encoded) */
+    uint8_t opcodes[] = { DW_OP_breg0 + TEST_THREAD_DWARF_REG1, 0x5 };
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFF+5);
+    
+    /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, minus 2 (the value is sleb128 encoded)*/
+    uint8_t opcodes_negative[] = { DW_OP_breg0 + TEST_THREAD_DWARF_REG1, 0x7e };
+    PERFORM_EVAL_TEST(opcodes_negative, uint64_t, 0xFF-2);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
@@ -174,7 +208,7 @@
         DW_OP_nop // push nothing onto the stack
     };
 
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), @"Failed to initialize thread state");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, TEST_THREAD_CPU), @"Failed to initialize thread state");
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
     err = plcrash_async_dwarf_eval_expression(&mobj, &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
@@ -198,7 +232,7 @@
         0x0 
     };
     
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), @"Failed to initialize thread state");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, TEST_THREAD_CPU), @"Failed to initialize thread state");
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
     err = plcrash_async_dwarf_eval_expression(&mobj, &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);

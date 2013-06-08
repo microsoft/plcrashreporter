@@ -43,7 +43,10 @@
  * is required (or supported), but -- in theory -- such cross-architecture support could be
  * enabled by modifying these defines. */
 #if defined(__i386__) || defined(__x86_64__)
+
+/** Defined if x86-64 and x86-32 thread states are supported by the PLCrashReporter thread state API. */
 #define PLCRASH_ASYNC_THREAD_X86_SUPPORT 1
+
 #include <mach/i386/thread_state.h>
 
 /** Host architecture mcontext_t type. */
@@ -51,7 +54,10 @@ typedef mcontext_t pl_mcontext_t;
 #endif
 
 #if defined(__arm__)
+
+/** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
 #define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
+
 #include <mach/arm/thread_state.h>
 
 /** Host architecture mcontext_t-compatible type. */
