@@ -310,6 +310,9 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
 			case DW_OP_breg31:
                 dw_expr_push(dw_thread_regval(opcode - DW_OP_breg0) + dw_expr_read_sleb128());
                 break;
+                
+            case DW_OP_bregx:
+                dw_expr_push(dw_thread_regval(dw_expr_read_sleb128()) + dw_expr_read_sleb128());
     
             case DW_OP_nop: // no-op
                 break;

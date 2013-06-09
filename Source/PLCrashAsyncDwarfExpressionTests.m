@@ -35,26 +35,29 @@
  * Configure the test cases for thread states that are supported by the host.
  *
  * The primary test validates the 64-bit variation (on hosts that support it). The
- * _32 test case subclass variant validates 32-bit operation
+ * _32 test case subclass variant validates 32-bit operation.
+ *
+ * The DWARF register numbers must be <= 31, to permit encoding with a DW_OP_bregN
+ * opcode
  */
 #ifdef PLCRASH_ASYNC_THREAD_X86_SUPPORT
 #    define TEST_THREAD_64_CPU CPU_TYPE_X86_64
 #    define TEST_THREAD_64_DWARF_REG1 14 // r14
-#    define TEST_THREAD_64_DWARF_REG_INVALID 99 // unhandled DWARF register number
+#    define TEST_THREAD_64_DWARF_REG_INVALID 31 // unhandled DWARF register number
 
 #    define TEST_THREAD_32_CPU CPU_TYPE_X86
 #    define TEST_THREAD_32_DWARF_REG1 8 // EIP
-#    define TEST_THREAD_32_DWARF_REG_INVALID 99 // unhandled DWARF register number
+#    define TEST_THREAD_32_DWARF_REG_INVALID 31 // unhandled DWARF register number
 
 #elif PLCRASH_ASYNC_THREAD_ARM_SUPPORT
 
 #    define TEST_THREAD_64_CPU CPU_TYPE_ARM
 #    define TEST_THREAD_64_DWARF_REG1 14 // LR (r14)
-#    define TEST_THREAD_64_DWARF_REG_INVALID 99 // unhandled DWARF register number
+#    define TEST_THREAD_64_DWARF_REG_INVALID 31 // unhandled DWARF register number
 
 #    define TEST_THREAD_32_CPU CPU_TYPE_ARM
 #    define TEST_THREAD_32_DWARF_REG1 14 // LR (r14)
-#    define TEST_THREAD_32_DWARF_REG_INVALID 99 // unhandled DWARF register number
+#    define TEST_THREAD_32_DWARF_REG_INVALID 31 // unhandled DWARF register number
 
 #else
 #    error Add support for this platform
@@ -269,6 +272,8 @@
  * Test evaluation of DW_OP_bregN opcodes.
  */
 - (void) testBreg {
+    STAssertTrue([self dwarfTestRegister] <= 31, @"Registers > 31 can't be encoded with DW_OP_bregN");
+
     /* Set up the thread state */
     plcrash_async_thread_state_set_reg(&_ts, plcrash_async_thread_state_map_dwarf_reg(&_ts, [self dwarfTestRegister]), 0xFF);
 
@@ -278,6 +283,24 @@
     
     /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, minus 2 (the value is sleb128 encoded)*/
     uint8_t opcodes_negative[] = { DW_OP_breg0 + [self dwarfTestRegister], 0x7e };
+    PERFORM_EVAL_TEST(opcodes_negative, uint64_t, 0xFF-2);
+}
+
+/**
+ * Test evaluation of DW_OP_bregx opcode.
+ */
+- (void) testBregx {
+    STAssertTrue([self dwarfTestRegister] <= 0x7F, @"Register won't fit in 7 bits, you need a real ULEB128 encoder here");
+    
+    /* Set up the thread state */
+    plcrash_async_thread_state_set_reg(&_ts, plcrash_async_thread_state_map_dwarf_reg(&_ts, [self dwarfTestRegister]), 0xFF);
+
+    /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, plus 5 (the value is sleb128 encoded) */
+    uint8_t opcodes[] = { DW_OP_bregx, [self dwarfTestRegister], 0x5 };
+    PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFF+5);
+    
+    /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, minus 2 (the value is sleb128 encoded)*/
+    uint8_t opcodes_negative[] = { DW_OP_bregx, [self dwarfTestRegister], 0x7e };
     PERFORM_EVAL_TEST(opcodes_negative, uint64_t, 0xFF-2);
 }
 
