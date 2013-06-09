@@ -42,13 +42,19 @@ namespace plcrash {
  *
  * A simple machine pointer stack for use with DWARF opcode/CFA evaluation.
  */
-template <class machine_ptr, size_t S> class dwarf_stack {
-    machine_ptr mem[S];
-    machine_ptr *sp = mem;
+template <typename T, size_t S> class dwarf_stack {
+    T mem[S];
+    T *sp = mem;
     
 public:
-    inline bool push (machine_ptr value);
-    inline bool pop (machine_ptr *value);
+    inline bool push (T value);
+    inline bool peek (T *value);
+    inline bool pop (T *value);
+    inline bool pick (size_t index);
+
+    inline bool dup (void);
+    inline bool swap (void);
+    inline bool rotate (void);
 };
 
 /**
@@ -57,7 +63,7 @@ public:
  * @param value The value to push.
  * @return Returns true on success, or false if the stack is full.
  */
-template <class P, size_t S> inline bool dwarf_stack<P,S>::push (P value) {
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::push (T value) {
     /* Refuse to exceed the allocated stack size */
     if (sp == &mem[S])
         return false;
@@ -74,13 +80,125 @@ template <class P, size_t S> inline bool dwarf_stack<P,S>::push (P value) {
  * @param value An address to which the popped value will be written.
  * @return Returns true on success, or false if the stack is empty.
  */
-template <class P, size_t S> inline bool dwarf_stack<P,S>::pop (P *value) {
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::pop (T *value) {
     /* Refuse to pop the final value */
     if (sp == mem)
         return false;
 
     sp--;
     *value = *sp;
+    return true;
+}
+
+/**
+ * Peek at the top of the stack.
+ *
+ * @param value An address to which the peeked value will be written.
+ * @return Returns true on success, or false if the stack is empty.
+ */
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::peek (T *value) {
+    /* Refuse to peek an empty stack */
+    if (sp == mem)
+        return false;
+    
+    *value = *(sp-1);
+    return true;
+}
+    
+/**
+ * Duplicate the value at the top of the stack.
+ *
+ * @return Returns true on success, or false if the stack is full.
+ */
+template <class T, size_t S> inline bool dwarf_stack<T,S>::dup (void) {
+    /* Refuse to exceed the allocated stack size */
+    if (sp == &mem[S])
+        return false;
+
+    /* Peek and push the current value */
+    T val;
+    if (!peek(&val))
+        return false;
+    
+    return push(val);
+}
+    
+/**
+ * Pick the stack entry with the specified index, and push its value on
+ * the top of the stack.
+ *
+ * @param index The index of the entry to be picked
+ * @return Returns true on success, or false if the index is outside the stack bounds.
+ */
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::pick (size_t index) {
+    /* Validate the index range */
+    if (sp - mem <= index)
+        return false;
+
+    push(*(sp-1-index));
+    return true;
+}
+    
+/**
+ * Swap the top two stack entries.
+ *
+ * @return Returns true on success, or false if less than two values are available on
+ * the stack.
+ */
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::swap (void) {
+    T v1;
+    T v2;
+
+    /* Fetch the current values */
+    if (!pop(&v1))
+        return false;
+    
+    if (!pop(&v2))
+        return false;
+
+    /* Pushing two just-popped values should never fail */
+    if (!push(v1))
+        return false;
+    
+    if (!push(v2))
+        return false;
+
+    return true;
+}
+    
+/**
+ * Rotate the top three stack entries. The entry at the top of the stack
+ * is becomes the third stack entry, the second entry becomes the top of the stack,
+ * and the third entry becomes the second entry.
+ *
+ * @return Returns true on success, or false if less than three values are available on
+ * the stack.
+ */
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::rotate (void) {
+    T v1;
+    T v2;
+    T v3;
+    
+    /* Fetch the current values */
+    if (!pop(&v1))
+        return false;
+    
+    if (!pop(&v2))
+        return false;
+
+    if (!pop(&v3))
+        return false;
+    
+    /* Pushing three just-popped values should never fail */
+    if (!push(v1))
+        return false;
+
+    if (!push(v3))
+        return false;
+
+    if (!push(v2))
+        return false;
+    
     return true;
 }
 

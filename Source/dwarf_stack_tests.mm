@@ -33,7 +33,8 @@
 using namespace plcrash;
 
 @interface dwarf_stack_tests : PLCrashTestCase {
-    
+@private
+    dwarf_stack<int, 10> _stack;
 }
 @end
 
@@ -42,21 +43,119 @@ using namespace plcrash;
  */
 @implementation dwarf_stack_tests
 
-/**
- * Test basic push/pop handling.
- */
+#define assert_push(v) STAssertTrue(_stack.push(v), @"push failed")
+#define assert_pop(v) STAssertTrue(_stack.pop(v), @"pop failed")
+
+/** Test basic push/pop handling. */
 - (void) testPushPop {
-    dwarf_stack<int, 2> stack;
     int v;
+    
+    assert_push(1);
+    assert_push(2);
 
-    STAssertTrue(stack.push(1), @"push failed");
-    STAssertTrue(stack.push(2), @"push failed");
-
-    STAssertTrue(stack.pop(&v), @"pop failed");
+    assert_pop(&v);
     STAssertEquals(2, v, @"Incorrect value popped");
     
-    STAssertTrue(stack.pop(&v), @"pop failed");
+    assert_pop(&v);
     STAssertEquals(1, v, @"Incorrect value popped");
+}
+
+/** Test peek */
+- (void) testPeek {
+    int v;
+    
+    _stack.push(10);
+    
+    STAssertTrue(_stack.peek(&v), @"Peek failed");
+    STAssertEquals(10, v, @"Incorrect value popped");
+    
+    assert_pop(&v);
+    STAssertEquals(10, v, @"Incorrect value popped");
+    
+}
+
+/** Test dup */
+- (void) testDup {
+    int v;
+
+    _stack.push(10);
+    _stack.push(5);
+    _stack.dup();
+
+    assert_pop(&v);
+    STAssertEquals(5, v, @"Incorrect value popped");
+
+    assert_pop(&v);
+    STAssertEquals(5, v, @"Incorrect value popped");
+
+}
+
+/** Test pick */
+- (void) testPick {
+    int v;
+    
+    _stack.push(10);
+    _stack.push(5);
+
+    /* Pick the two existing values in reverse order */
+    STAssertTrue(_stack.pick(0), @"Pick failed");
+    STAssertTrue(_stack.pick(2), @"Pick failed");
+
+    /* Verify the order */
+    assert_pop(&v);
+    STAssertEquals(10, v, @"Incorrect value picked");
+
+    assert_pop(&v);
+    STAssertEquals(5, v, @"Incorrect value picked");
+    
+    /* Verify bounds checking (there should only be 2 items on the stack) */
+    STAssertFalse(_stack.pick(2), @"Invalid pick succeeded");
+    STAssertFalse(_stack.pick(3), @"Invalid pick succeeded");
+}
+
+/** Test swap */
+- (void) testSwap {
+    int v;
+    
+    assert_push(1);
+    assert_push(2);
+    
+    STAssertTrue(_stack.swap(), @"Swap failed");
+    
+    assert_pop(&v);
+    STAssertEquals(1, v, @"Incorrect value popped");
+    
+    assert_pop(&v);
+    STAssertEquals(2, v, @"Incorrect value popped");
+    
+    STAssertFalse(_stack.swap(), @"Swap on empty stack without two elements should fail");
+    assert_push(1);
+    STAssertFalse(_stack.swap(), @"Swap on empty stack without two elements should fail");
+}
+
+/** Test rotate */
+- (void) testRotate {
+    int v;
+    
+    assert_push(3);
+    assert_push(2);
+    assert_push(1);
+
+    STAssertTrue(_stack.rotate(), @"Rotate failed");
+
+    assert_pop(&v);
+    STAssertEquals(2, v, @"Incorrect value popped");
+    
+    assert_pop(&v);
+    STAssertEquals(3, v, @"Incorrect value popped");
+    
+    assert_pop(&v);
+    STAssertEquals(1, v, @"Incorrect value popped");
+    
+    STAssertFalse(_stack.rotate(), @"Rotate on empty stack without three elements should fail");
+    assert_push(1);
+    assert_push(2);
+    STAssertFalse(_stack.rotate(), @"Rotate on empty stack without three elements should fail");
 }
 
 /**
