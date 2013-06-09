@@ -557,15 +557,21 @@ typedef enum DW_OP {
     DW_OP_hi_user = 0xff,
 } DW_OP_t;
 
-plcrash_error_t plcrash_async_dwarf_eval_expression (plcrash_async_mobject_t *mobj,
+plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t *mobj,
                                                      plcrash_async_thread_state_t *thread_state,
                                                      const plcrash_async_byteorder_t *byteorder,
                                                      pl_vm_address_t address,
                                                      pl_vm_off_t offset,
                                                      pl_vm_size_t length,
-                                                     uint64_t *result);
+                                                     uint32_t *result);
 
-
+plcrash_error_t plcrash_async_dwarf_eval_expression_64 (plcrash_async_mobject_t *mobj,
+                                                        plcrash_async_thread_state_t *thread_state,
+                                                        const plcrash_async_byteorder_t *byteorder,
+                                                        pl_vm_address_t address,
+                                                        pl_vm_off_t offset,
+                                                        pl_vm_size_t length,
+                                                        uint64_t *result);
 
 /**
  * @}
