@@ -183,7 +183,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
 \
     if (!plcrash_async_thread_state_has_reg(thread_state, rn)) { \
         PLCF_DEBUG("Register value of %s unavailable in the current frame.", plcrash_async_thread_state_get_reg_name(thread_state, rn)); \
-        return PLCRASH_ENOTSUP; \
+        return PLCRASH_ENOTFOUND; \
     } \
 \
     plcrash_greg_t val = plcrash_async_thread_state_get_reg(thread_state, rn); \

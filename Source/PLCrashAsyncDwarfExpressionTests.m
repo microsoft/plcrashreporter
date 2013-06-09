@@ -315,6 +315,44 @@
 }
 
 /**
+ * Test handling of registers for which a value is not available.
+ */
+- (void) testFetchUnavailableRegister {
+    STAssertTrue([self dwarfTestRegister] <= 0x7F, @"Register won't fit in 7 bits, you need a real ULEB128 encoder here");
+    
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    uint32_t result;
+    
+    uint8_t opcodes[] = { DW_OP_breg0, 0x01 };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+    
+    err = plcrash_async_dwarf_eval_expression_32(&mobj, &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    STAssertEquals(err, PLCRASH_ENOTFOUND, @"Evaluation of an expression that fetches an unavailable register should return ENOTSUP");
+    
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
+ * Test handling of unknown DWARF register values
+ */
+- (void) testBadRegister {
+    STAssertTrue([self dwarfBadRegister] <= 0x7F, @"Register won't fit in 7 bits, you need a real ULEB128 encoder here");
+    
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    uint32_t result;
+    
+    uint8_t opcodes[] = { DW_OP_bregx, [self dwarfBadRegister], 0x01 };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+    
+    err = plcrash_async_dwarf_eval_expression_32(&mobj, &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of an expression that fetches an unavailable register should return ENOTSUP");
+    
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
  * Test handling of an empty result.
  */
 - (void) testEmptyStackResult {
