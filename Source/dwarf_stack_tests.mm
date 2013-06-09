@@ -64,14 +64,33 @@ using namespace plcrash;
 - (void) testPeek {
     int v;
     
-    _stack.push(10);
+    assert_push(10);
     
     STAssertTrue(_stack.peek(&v), @"Peek failed");
     STAssertEquals(10, v, @"Incorrect value popped");
     
     assert_pop(&v);
     STAssertEquals(10, v, @"Incorrect value popped");
+}
+
+/** Test drop */
+- (void) testDrop {
+    int v;
     
+    assert_push(1);
+    assert_push(2);
+    assert_push(3);
+    
+    STAssertTrue(_stack.drop(), @"Drop failed");
+
+    assert_pop(&v);
+    STAssertEquals(2, v, @"Incorrect value popped");
+    
+    assert_pop(&v);
+    STAssertEquals(1, v, @"Incorrect value popped");
+    
+    STAssertFalse(_stack.peek(&v), @"Stack should be empty");
+    STAssertFalse(_stack.drop(), @"Drop should fail on an empty stack");
 }
 
 /** Test dup */

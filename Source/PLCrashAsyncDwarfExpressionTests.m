@@ -304,6 +304,42 @@
     PERFORM_EVAL_TEST(opcodes_negative, uint64_t, 0xFF-2);
 }
 
+/** Test evaluation of DW_OP_dup */
+- (void) testDup {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x5, DW_OP_dup };
+    PERFORM_EVAL_TEST(opcodes, uint8_t, 0x5);
+}
+
+/** Test evaluation of DW_OP_drop */
+- (void) testDrop {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x5, DW_OP_const1u, 0x10, DW_OP_drop };
+    PERFORM_EVAL_TEST(opcodes, uint8_t, 0x5);
+}
+
+/** Test evaluation of DW_OP_pick */
+- (void) testPick {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x5, DW_OP_const1u, 0x10, DW_OP_pick, 1};
+    PERFORM_EVAL_TEST(opcodes, uint8_t, 0x5);
+}
+
+/** Test evaluation of DW_OP_over */
+- (void) testOver {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x5, DW_OP_const1u, 0x10, DW_OP_over};
+    PERFORM_EVAL_TEST(opcodes, uint8_t, 0x5);
+}
+
+/** Test evaluation of DW_OP_swap */
+- (void) testSwap {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x5, DW_OP_const1u, 0x10, DW_OP_swap };
+    PERFORM_EVAL_TEST(opcodes, uint8_t, 0x5);
+}
+
+/** Test evaluation of DW_OP_rot */
+- (void) testRotate {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x5, DW_OP_const1u, 0x10, DW_OP_const1u, 0x15, DW_OP_rot};
+    PERFORM_EVAL_TEST(opcodes, uint8_t, 0x10);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {

@@ -51,6 +51,7 @@ public:
     inline bool peek (T *value);
     inline bool pop (T *value);
     inline bool pick (size_t index);
+    inline bool drop (void);
 
     inline bool dup (void);
     inline bool swap (void);
@@ -104,7 +105,21 @@ template <typename T, size_t S> inline bool dwarf_stack<T,S>::peek (T *value) {
     *value = *(sp-1);
     return true;
 }
-    
+
+/**
+ * Pop and discard an element from the stack.
+ *
+ * @return Returns true on success, or false if the stack is empty.
+ */
+template <typename T, size_t S> inline bool dwarf_stack<T,S>::drop (void) {
+    /* Refuse to pop the final value */
+    if (sp == mem)
+        return false;
+
+    sp--;
+    return true;
+}
+
 /**
  * Duplicate the value at the top of the stack.
  *

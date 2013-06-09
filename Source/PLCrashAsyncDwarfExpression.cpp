@@ -313,6 +313,49 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 
             case DW_OP_bregx:
                 dw_expr_push(dw_thread_regval(dw_expr_read_sleb128()) + dw_expr_read_sleb128());
+                
+            case DW_OP_dup:
+                if (!stack.dup()) {
+                    PLCF_DEBUG("DW_OP_dup on an empty stack");
+                    return PLCRASH_EINVAL;
+                }
+                break;
+                
+            case DW_OP_drop: {
+                if (!stack.drop()) {
+                    PLCF_DEBUG("DW_OP_drop on an empty stack");
+                    return PLCRASH_EINVAL;
+                }
+                break;
+            }
+                
+            case DW_OP_pick:
+                if (!stack.pick(dw_expr_read(uint8_t))) {
+                    PLCF_DEBUG("DW_OP_pick on invalid index");
+                    return PLCRASH_EINVAL;
+                }
+                break;
+
+            case DW_OP_over:
+                if (!stack.pick(1)) {
+                    PLCF_DEBUG("DW_OP_over on stack with < 2 elements");
+                    return PLCRASH_EINVAL;
+                }
+                break;
+                
+            case DW_OP_swap:
+                if (!stack.swap()) {
+                    PLCF_DEBUG("DW_OP_swap on stack with < 2 elements");
+                    return PLCRASH_EINVAL;
+                }
+                break;
+                
+            case DW_OP_rot:
+                if (!stack.rotate()) {
+                    PLCF_DEBUG("DW_OP_rot on stack with < 3 elements");
+                    return PLCRASH_EINVAL;
+                }
+                break;
     
             case DW_OP_nop: // no-op
                 break;
