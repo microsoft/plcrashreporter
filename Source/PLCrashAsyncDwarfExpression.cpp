@@ -377,8 +377,51 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 }
 
                 dw_expr_push(value);
+                
+                break;
             }
-    
+                
+            case DW_OP_deref_size: {
+                /* Fetch the target size */
+                uint8_t size = dw_expr_read(uint8_t);
+                if (size > sizeof(machine_ptr)) {
+                    PLCF_DEBUG("DW_OP_deref_size specified a size larger than the native machine word");
+                    return PLCRASH_EINVAL;
+                }
+                
+                /* Pop the address from the stack */
+                machine_ptr addr;
+                dw_expr_pop(&addr);
+                
+                
+                /* Perform the read */
+                #define readval(_type) case sizeof(_type): { \
+                    _type r; \
+                    if ((err = plcrash_async_safe_memcpy(task, (pl_vm_address_t)addr, 0, &r, sizeof(_type))) != PLCRASH_ESUCCESS) { \
+                        PLCF_DEBUG("DW_OP_deref_size referenced an invalid target address 0x%" PRIx64, (uint64_t) addr); \
+                        return err; \
+                    } \
+                    value = r; \
+                    break; \
+                }
+                machine_ptr value = 0;
+                switch (size) {
+                    readval(uint8_t);
+                    readval(uint16_t);
+                    readval(uint32_t);
+                    readval(uint64_t);
+
+                    default:
+                        PLCF_DEBUG("DW_OP_deref_size specified an unsupported size of %"PRIu8, size);
+                        return PLCRASH_EINVAL;
+                }
+                #undef readval
+
+                dw_expr_push(value);
+                
+                break;
+            }
+
             case DW_OP_nop: // no-op
                 break;
                 
