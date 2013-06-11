@@ -340,6 +340,47 @@
     PERFORM_EVAL_TEST(opcodes, uint8_t, 0x10);
 }
 
+/** Test evaluation of DW_OP_xderef */
+- (void) testXDereference {
+    /* An opcode stream that can be repurposed for 4 or 8 byte address sizes. */
+    uint8_t opcodes[] = { DW_OP_const1u, 0x0, DW_OP_const4u, 0x0, 0x0, 0x0, 0x0, DW_OP_nop, DW_OP_nop, DW_OP_nop, DW_OP_nop, DW_OP_xderef };
+
+    if ([self is32]) {
+        uint32_t testval = UINT32_MAX;
+        
+        /* We can only test the 32-bit case when our addresses are within the 32-bit
+         * addressable range. This is always true on 32-bit hosts, and may be true on 64-bit hosts
+         * depending on where the stack is allocated */
+        if ((uintptr_t)&testval < UINT32_MAX) {
+            uintptr_t addr = &testval;
+            
+            /* Write out the address to our test value as a big-endian const4u value */
+            opcodes[3] = addr >> 24;
+            opcodes[4] = (addr >> 16) & 0xFF;
+            opcodes[5] = (addr >> 8) & 0xFF;
+            opcodes[6] = (addr) & 0xFF;
+            
+            PERFORM_EVAL_TEST(opcodes, uint32_t, UINT32_MAX);
+        }
+    } else {
+        uint64_t testval = UINT64_MAX;
+        uint64_t addr = &testval;
+        
+        /* Write out the address to our test value as a big-endian const8u value */
+        opcodes[2] = DW_OP_const8u;
+        opcodes[3] = addr >> 56;
+        opcodes[4] = (addr >> 48) & 0xFF;
+        opcodes[5] = (addr >> 40) & 0xFF;
+        opcodes[6] = (addr >> 32) & 0xFF;
+        opcodes[7] = (addr >> 24) & 0xFF;
+        opcodes[8] = (addr >> 16) & 0xFF;
+        opcodes[9] = (addr >> 8) & 0xFF;
+        opcodes[10] = (addr) & 0xFF;
+        
+        PERFORM_EVAL_TEST(opcodes, uint64_t, UINT64_MAX);
+    }
+}
+
 /** Test evaluation of DW_OP_deref */
 - (void) testDereference {
     /* An opcode stream that can be repurposed for 4 or 8 byte address sizes. */
@@ -416,6 +457,44 @@
         opcodes[8] = (addr) & 0xFF;
         
         PERFORM_EVAL_TEST(opcodes, uint64_t, DW_OP_const8u);
+    }
+}
+
+/** Test evaluation of DW_OP_xderef_size */
+- (void) testXDereferenceSize {
+    /* An opcode stream that can be repurposed for 4 or 8 byte address sizes. */
+    uint8_t opcodes[] = { DW_OP_const1u, 0x0, DW_OP_const4u, 0x0, 0x0, 0x0, 0x0, DW_OP_nop, DW_OP_nop, DW_OP_nop, DW_OP_nop, DW_OP_xderef_size, 1};
+    
+    if ([self is32]) {        
+        /* We can only test the 32-bit case when our addresses are within the 32-bit
+         * addressable range. This is always true on 32-bit hosts, and may be true on 64-bit hosts
+         * depending on where the stack is allocated */
+        if ((uintptr_t)&opcodes < UINT32_MAX) {
+            uintptr_t addr = &opcodes;
+            
+            /* Write out the address to our test value as a big-endian const4u value */
+            opcodes[3] = addr >> 24;
+            opcodes[4] = (addr >> 16) & 0xFF;
+            opcodes[5] = (addr >> 8) & 0xFF;
+            opcodes[6] = (addr) & 0xFF;
+            
+            PERFORM_EVAL_TEST(opcodes, uint32_t, DW_OP_const1u);
+        }
+    } else {
+        uint64_t addr = &opcodes;
+        
+        /* Write out the address to our test value as a big-endian const8u value */
+        opcodes[2] = DW_OP_const8u;
+        opcodes[3] = addr >> 56;
+        opcodes[4] = (addr >> 48) & 0xFF;
+        opcodes[5] = (addr >> 40) & 0xFF;
+        opcodes[6] = (addr >> 32) & 0xFF;
+        opcodes[7] = (addr >> 24) & 0xFF;
+        opcodes[8] = (addr >> 16) & 0xFF;
+        opcodes[9] = (addr >> 8) & 0xFF;
+        opcodes[10] = (addr) & 0xFF;
+        
+        PERFORM_EVAL_TEST(opcodes, uint64_t, DW_OP_const1u);
     }
 }
 

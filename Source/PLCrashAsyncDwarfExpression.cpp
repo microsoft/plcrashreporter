@@ -365,6 +365,22 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                     return PLCRASH_EINVAL;
                 }
                 break;
+            
+                
+            case DW_OP_xderef:
+                /* This is identical to deref, except that it consumes an additional stack value
+                 * containing the address space of the address. We don't support any systems with multiple
+                 * address spaces, so we simply excise this value from the stack and fall through to the
+                 * deref implementation */
+
+                /* Move the address space value to the top of the stack, and then drop it */
+                if (!stack.swap()) {
+                    PLCF_DEBUG("DW_OP_xderef on stack with < 2 elements");
+                    return PLCRASH_EINVAL;
+                }
+                
+                /* This can't fail after the swap suceeded */
+                stack.drop();
                 
             case DW_OP_deref: {
                 machine_ptr addr;
@@ -380,7 +396,21 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 
                 break;
             }
+            case DW_OP_xderef_size:
+                /* This is identical to deref_size, except that it consumes an additional stack value
+                 * containing the address space of the address. We don't support any systems with multiple
+                 * address spaces, so we simply excise this value from the stack and fall through to the
+                 * deref implementation */
                 
+                /* Move the address space value to the top of the stack, and then drop it */
+                if (!stack.swap()) {
+                    PLCF_DEBUG("DW_OP_xderef_size on stack with < 2 elements");
+                    return PLCRASH_EINVAL;
+                }
+
+                /* This can't fail after the swap suceeded */
+                stack.drop();
+
             case DW_OP_deref_size: {
                 /* Fetch the target size */
                 uint8_t size = dw_expr_read(uint8_t);
@@ -392,8 +422,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 /* Pop the address from the stack */
                 machine_ptr addr;
                 dw_expr_pop(&addr);
-                
-                
+
                 /* Perform the read */
                 #define readval(_type) case sizeof(_type): { \
                     _type r; \
