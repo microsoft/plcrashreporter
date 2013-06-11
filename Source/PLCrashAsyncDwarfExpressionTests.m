@@ -350,16 +350,22 @@
          * addressable range. This is always true on 32-bit hosts, and may be true on 64-bit hosts
          * depending on where the stack is allocated */
         if ((uintptr_t)opcodes < UINT32_MAX) {
-            uintptr_t addr = opcodes;
+            uint32_t testval = UINT32_MAX;
+            uintptr_t addr = &testval;
+
+            /* Write out the address to our test value as a big-endian const4u value */
             opcodes[1] = addr >> 24;
             opcodes[2] = (addr >> 16) & 0xFF;
             opcodes[3] = (addr >> 8) & 0xFF;
             opcodes[4] = (addr) & 0xFF;
             
-            PERFORM_EVAL_TEST(opcodes, uint8_t, DW_OP_const4u);
+            PERFORM_EVAL_TEST(opcodes, uint8_t, UINT32_MAX);
         }
     } else {
-        uint64_t addr = opcodes;
+        uint64_t testval = UINT64_MAX;
+        uint64_t addr = &testval;
+        
+        /* Write out the address to our test value as a big-endian const8u value */
         opcodes[0] = DW_OP_const8u;
         opcodes[1] = addr >> 56;
         opcodes[2] = (addr >> 48) & 0xFF;
@@ -370,7 +376,7 @@
         opcodes[7] = (addr >> 8) & 0xFF;
         opcodes[8] = (addr) & 0xFF;
         
-        PERFORM_EVAL_TEST(opcodes, uint8_t, DW_OP_const8u);
+        PERFORM_EVAL_TEST(opcodes, uint64_t, UINT64_MAX);
     }
 }
 
