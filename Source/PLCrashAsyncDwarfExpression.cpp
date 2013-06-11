@@ -100,7 +100,8 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
     // use of the new async-safe allocator.
     plcrash::dwarf_stack<machine_ptr, 100> stack;
-    
+    plcrash_error_t err;
+
     pl_vm_address_t start;
     pl_vm_address_t end;
 
@@ -195,6 +196,12 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     /* A push macro that handles reporting of stack overflow errors */
 #define dw_expr_push(v) if (!stack.push(v)) { \
     PLCF_DEBUG("Hit stack limit; cannot push further values"); \
+    return PLCRASH_EINTERNAL; \
+}
+    
+    /* A pop macro that handles reporting of stack underflow errors */
+#define dw_expr_pop(v) if (!stack.pop(v)) { \
+    PLCF_DEBUG("Pop on an empty stack"); \
     return PLCRASH_EINTERNAL; \
 }
 
@@ -358,6 +365,19 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                     return PLCRASH_EINVAL;
                 }
                 break;
+                
+            case DW_OP_deref: {
+                machine_ptr addr;
+                machine_ptr value;
+
+                dw_expr_pop(&addr);
+                if ((err = plcrash_async_safe_memcpy(task, addr, 0, &value, sizeof(value))) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("DW_OP_deref referenced an invalid target address 0x%" PRIx64, (uint64_t) addr);
+                    return err;
+                }
+
+                dw_expr_push(value);
+            }
     
             case DW_OP_nop: // no-op
                 break;
