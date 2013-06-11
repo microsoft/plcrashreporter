@@ -456,11 +456,27 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 
             // Not implemented -- fall through
             case DW_OP_fbreg:
+                /* Unimplemented */
+
             case DW_OP_push_object_address:
-                /* As per the DWARF spec: DW_OP_push_object_address is not meaningful in an operand of these
-                 * instructions because there is no object context to provide a value to push. */
+                /*
+                 * As per DWARF 3, Section 6.4.2 Call Frame Instructions, DW_OP_push_object_address is not meaningful in an operand of these
+                 * instructions because there is no object context to provide a value to push.
+                 *
+                 * If this implementation is further extended for use outside of CFI evaluation, this opcode should be implemented.
+                 */
+
             case DW_OP_form_tls_address:
                 /* The structure of TLS data on Darwin is implementation private. */
+                
+            case DW_OP_call_frame_cfa:
+                /*
+                 * As per DWARF 3, Section 6.4.2 Call Frame Instructions, DW_OP_call_frame_cfa is not meaningful in an operand of these
+                 * instructions because its use would be circular.
+                 *
+                 * If this implementation is further extended for use outside of CFI evaluation, this opcode should be implemented.
+                 */
+                
             default:
                 PLCF_DEBUG("Unsupported opcode 0x%" PRIx8, opcode);
                 return PLCRASH_ENOTSUP;
