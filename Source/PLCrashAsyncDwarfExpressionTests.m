@@ -124,12 +124,12 @@
 \
     if ([self targetCPU] & CPU_ARCH_ABI64) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_eval_expression_64(&mobj, &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_eval_expression_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 64-bit result"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_eval_expression_32(&mobj, &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"32-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 32-bit result"); \
     } \
@@ -363,7 +363,7 @@
     uint8_t opcodes[] = { DW_OP_breg0, 0x01 };
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
     STAssertEquals(err, PLCRASH_ENOTFOUND, @"Evaluation of an expression that fetches an unavailable register should return ENOTSUP");
     
     plcrash_async_mobject_free(&mobj);
@@ -382,7 +382,7 @@
     uint8_t opcodes[] = { DW_OP_bregx, [self dwarfBadRegister], 0x01 };
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
     STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of an expression that fetches an unavailable register should return ENOTSUP");
     
     plcrash_async_mobject_free(&mobj);
@@ -403,7 +403,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, [self targetCPU] & ~CPU_ARCH_ABI64), @"Failed to initialize thread state");
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
     STAssertEquals(err, PLCRASH_EINVAL, @"Evaluation of a no-result expression should have failed with EINVAL");
 
     plcrash_async_mobject_free(&mobj);
@@ -427,7 +427,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, [self targetCPU] & ~CPU_ARCH_ABI64), @"Failed to initialize thread state");
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
+    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
     STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of a bad opcode should have failed with ENOTSUP");
     
     plcrash_async_mobject_free(&mobj);

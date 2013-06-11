@@ -67,6 +67,7 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
+ * @param task The task from which any DWARF expression memory loads will be performed.
  * @param thread_state The thread state against which the expression will be evaluated.
  * @param byteoder The byte order of the data referenced by @a mobj and @a thread_state.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
@@ -88,6 +89,7 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  */
 template <typename machine_ptr, typename machine_ptr_s>
 static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
+                                                                task_t task,
                                                                 plcrash_async_thread_state_t *thread_state,
                                                                 const plcrash_async_byteorder_t *byteorder,
                                                                 pl_vm_address_t address,
@@ -384,6 +386,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
  * using a 32-bit stack.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
+ * @param task The task from which any DWARF expression memory loads will be performed.
  * @param thread_state The thread state against which the expression will be evaluated.
  * @param byteoder The byte order of the data referenced by @a mobj and @a thread_state.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
@@ -398,6 +401,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
  * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  */
 plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t *mobj,
+                                                        task_t task,
                                                         plcrash_async_thread_state_t *thread_state,
                                                         const plcrash_async_byteorder_t *byteorder,
                                                         pl_vm_address_t address,
@@ -408,7 +412,7 @@ plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t 
     plcrash_error_t err;
 
     uint32_t v;
-    if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t, int32_t>(mobj, thread_state, byteorder, address, offset, length, &v)) == PLCRASH_ESUCCESS)
+    if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t, int32_t>(mobj, task, thread_state, byteorder, address, offset, length, &v)) == PLCRASH_ESUCCESS)
         *result = v;
 
     return err;
@@ -419,6 +423,7 @@ plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t 
  * using a 64-bit stack.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
+ * @param task The task from which any DWARF expression memory loads will be performed.
  * @param thread_state The thread state against which the expression will be evaluated.
  * @param byteoder The byte order of the data referenced by @a mobj and @a thread_state.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
@@ -433,6 +438,7 @@ plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t 
  * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  */
 plcrash_error_t plcrash_async_dwarf_eval_expression_64 (plcrash_async_mobject_t *mobj,
+                                                        task_t task,
                                                         plcrash_async_thread_state_t *thread_state,
                                                         const plcrash_async_byteorder_t *byteorder,
                                                         pl_vm_address_t address,
@@ -443,7 +449,7 @@ plcrash_error_t plcrash_async_dwarf_eval_expression_64 (plcrash_async_mobject_t 
     plcrash_error_t err;
     
     uint64_t v;
-    if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t, int64_t>(mobj, thread_state, byteorder, address, offset, length, &v)) == PLCRASH_ESUCCESS)
+    if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t, int64_t>(mobj, task, thread_state, byteorder, address, offset, length, &v)) == PLCRASH_ESUCCESS)
         *result = v;
 
     return err;
