@@ -459,6 +459,8 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
             case DW_OP_push_object_address:
                 /* As per the DWARF spec: DW_OP_push_object_address is not meaningful in an operand of these
                  * instructions because there is no object context to provide a value to push. */
+            case DW_OP_form_tls_address:
+                /* The structure of TLS data on Darwin is implementation private. */
             default:
                 PLCF_DEBUG("Unsupported opcode 0x%" PRIx8, opcode);
                 return PLCRASH_ENOTSUP;
