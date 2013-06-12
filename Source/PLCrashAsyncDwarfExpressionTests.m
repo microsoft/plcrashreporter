@@ -137,6 +137,25 @@
     plcrash_async_mobject_free(&mobj); \
 } while(0)
 
+/* Perform evaluation of the given opcodes, expecting a result error of @a errval. The data is interpreted as big endian,
+ * as to simplify formulating multi-byte test values in the opcode stream */
+#define PERFORM_EVAL_TEST_ERROR(opcodes, errval) do { \
+    plcrash_async_mobject_t mobj; \
+    plcrash_error_t err; \
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
+    \
+    if ([self targetCPU] & CPU_ARCH_ABI64) { \
+        uint64_t result; \
+        err = plcrash_async_dwarf_eval_expression_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        STAssertEquals(err, errval, @"64-bit evaluation did not return expected error code"); \
+    } else { \
+        uint32_t result; \
+        err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        STAssertEquals(err, errval, @"32-bit evaluation did not return expected error code"); \
+    } \
+    \
+    plcrash_async_mobject_free(&mobj); \
+} while(0)
 
 
 /**
@@ -512,6 +531,17 @@
 - (void) testAnd {
     uint8_t opcodes[] = { DW_OP_const1u, 0x7, DW_OP_const1u, 0x3, DW_OP_and };
     PERFORM_EVAL_TEST(opcodes, uint32_t, 0x3);
+}
+
+/** Test evaluation of DW_OP_div */
+- (void) testDiv {
+    uint8_t opcodes[] = { DW_OP_const1u, 10, DW_OP_const1u, 5, DW_OP_div };
+    PERFORM_EVAL_TEST(opcodes, int32_t, 2);
+
+    /* Test 0 divisor handling */
+    opcodes[3] = 0;
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
+    
 }
 
 /** Test basic evaluation of a NOP. */
