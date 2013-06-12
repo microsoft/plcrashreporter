@@ -560,17 +560,8 @@
 - (void) testFetchUnavailableRegister {
     STAssertTrue([self dwarfTestRegister] <= 0x7F, @"Register won't fit in 7 bits, you need a real ULEB128 encoder here");
     
-    plcrash_async_mobject_t mobj;
-    plcrash_error_t err;
-    uint32_t result;
-    
     uint8_t opcodes[] = { DW_OP_breg0, 0x01 };
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
-    
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
-    STAssertEquals(err, PLCRASH_ENOTFOUND, @"Evaluation of an expression that fetches an unavailable register should return ENOTSUP");
-    
-    plcrash_async_mobject_free(&mobj);
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_ENOTFOUND);
 }
 
 /**
@@ -579,62 +570,32 @@
 - (void) testBadRegister {
     STAssertTrue([self dwarfBadRegister] <= 0x7F, @"Register won't fit in 7 bits, you need a real ULEB128 encoder here");
     
-    plcrash_async_mobject_t mobj;
-    plcrash_error_t err;
-    uint32_t result;
-    
     uint8_t opcodes[] = { DW_OP_bregx, [self dwarfBadRegister], 0x01 };
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
-    
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
-    STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of an expression that fetches an unavailable register should return ENOTSUP");
-    
-    plcrash_async_mobject_free(&mobj);
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_ENOTSUP);
 }
 
 /**
  * Test handling of an empty result.
  */
 - (void) testEmptyStackResult {
-    plcrash_async_thread_state_t ts;
-    plcrash_async_mobject_t mobj;
-    plcrash_error_t err;
-    uint32_t result;
-    uint8_t opcodes[] = {
-        DW_OP_nop // push nothing onto the stack
-    };
-
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, [self targetCPU] & ~CPU_ARCH_ABI64), @"Failed to initialize thread state");
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+    uint8_t opcodes[] = { DW_OP_nop /* push nothing onto the stack */ };
     
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
-    STAssertEquals(err, PLCRASH_EINVAL, @"Evaluation of a no-result expression should have failed with EINVAL");
-
-    plcrash_async_mobject_free(&mobj);
+    /* Evaluation of a no-result expression should fail with EINVAL */
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
 }
 
 /**
  * Test invalid opcode handling
  */
 - (void) testInvalidOpcode {
-    plcrash_async_thread_state_t ts;
-    plcrash_async_mobject_t mobj;
-    plcrash_error_t err;
-    uint32_t result;
     uint8_t opcodes[] = {
         // Arbitrarily selected bad instruction value.
         // This -could- be allocated to an opcode in the future, but
         // then our test will fail and we can pick another one.
         0x0 
     };
-    
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&ts, [self targetCPU] & ~CPU_ARCH_ABI64), @"Failed to initialize thread state");
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
-    
-    err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &ts, &plcrash_async_byteorder_direct, &opcodes, 0, sizeof(opcodes), &result);
-    STAssertEquals(err, PLCRASH_ENOTSUP, @"Evaluation of a bad opcode should have failed with ENOTSUP");
-    
-    plcrash_async_mobject_free(&mobj);
+
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_ENOTSUP);
 }
 
 
