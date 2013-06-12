@@ -508,6 +508,12 @@
     PERFORM_EVAL_TEST(opcodes, int32_t, 128);
 }
 
+/** Test evaluation of DW_OP_and */
+- (void) testAnd {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x7, DW_OP_const1u, 0x3, DW_OP_and };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x3);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
