@@ -498,6 +498,16 @@
     }
 }
 
+/** Test evaluation of DW_OP_abs */
+- (void) testAbs {
+    uint8_t opcodes[] = { DW_OP_const1s, 0x80, DW_OP_abs };
+    PERFORM_EVAL_TEST(opcodes, int32_t, 128);
+    
+    /* Check positive number handling, too */
+    opcodes[0] = DW_OP_const1u;
+    PERFORM_EVAL_TEST(opcodes, int32_t, 128);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
