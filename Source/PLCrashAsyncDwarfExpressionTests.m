@@ -544,6 +544,12 @@
     
 }
 
+/** Test evaluation of DW_OP_minus */
+- (void) testMinus {
+    uint8_t opcodes[] = { DW_OP_const1u, 10, DW_OP_const1u, 5, DW_OP_minus };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 5);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
