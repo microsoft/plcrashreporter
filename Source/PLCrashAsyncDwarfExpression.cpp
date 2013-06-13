@@ -493,6 +493,24 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 dw_expr_pop(&subtrahend);
                 dw_expr_pop(&minuend);
                 dw_expr_push(minuend - subtrahend);
+                break;
+            }
+                
+            case DW_OP_mod: {
+                machine_ptr divisor;
+                machine_ptr dividend;
+                
+                dw_expr_pop(&divisor);
+                dw_expr_pop(&dividend);
+                
+                if (divisor == 0) {
+                    PLCF_DEBUG("DW_OP_mod attempted divide by zero");
+                    return PLCRASH_EINVAL;
+                }
+                
+                machine_ptr result = dividend % divisor;
+                dw_expr_push(result);
+                break;
             }
 
             case DW_OP_nop: // no-op

@@ -550,6 +550,16 @@
     PERFORM_EVAL_TEST(opcodes, uint32_t, 5);
 }
 
+/** Test evaluation of DW_OP_mod */
+- (void) testMod {
+    uint8_t opcodes[] = { DW_OP_const1u, 10, DW_OP_const1u, 6, DW_OP_mod };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 4);
+
+    /* Test 0 divisor handling */
+    opcodes[3] = 0;
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
