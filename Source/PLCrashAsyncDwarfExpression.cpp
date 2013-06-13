@@ -461,7 +461,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 }
                 break;
             }
-                
+
             case DW_OP_and: {
                 machine_ptr v1, v2;
                 dw_expr_pop(&v1);
@@ -510,6 +510,14 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 
                 machine_ptr result = dividend % divisor;
                 dw_expr_push(result);
+                break;
+            }
+                
+            case DW_OP_mul: {
+                machine_ptr v1, v2;
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                dw_expr_push(v1 * v2);
                 break;
             }
 

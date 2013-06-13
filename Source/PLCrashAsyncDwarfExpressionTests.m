@@ -560,6 +560,12 @@
     PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
 }
 
+/** Test evaluation of DW_OP_mul */
+- (void) testMul {
+    uint8_t opcodes[] = { DW_OP_const1u, 10, DW_OP_const1u, 5, DW_OP_mul };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 50);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
