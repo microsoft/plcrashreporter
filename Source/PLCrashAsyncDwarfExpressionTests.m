@@ -581,6 +581,12 @@
     PERFORM_EVAL_TEST(opcodes, uint32_t, ~0x10);
 }
 
+/** Test evaluation of DW_OP_or */
+- (void) testOr {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x10, DW_OP_const1u, 0x20, DW_OP_or };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x10 | 0x20);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
