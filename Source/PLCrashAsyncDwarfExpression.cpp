@@ -527,6 +527,13 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 dw_expr_push(0 - svalue);
                 break;
             }
+                
+            case DW_OP_not: {
+                machine_ptr v;
+                dw_expr_pop(&v);
+                dw_expr_push(~v);
+                break;
+            }
 
             case DW_OP_nop: // no-op
                 break;
