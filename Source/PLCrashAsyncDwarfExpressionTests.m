@@ -624,6 +624,38 @@
     PERFORM_EVAL_TEST(opcodes, uint32_t, 0x80^0xC0);
 }
 
+/** Test evaluation of the comparison opcodes - DW_OP_le, DW_OP_ge, DW_OP_eq, DW_OP_lt, DW_OP_gt, DW_OP_ne */
+- (void) testComparison {
+    #define COMPARE(opcode, value1, value2, expected) do { \
+        uint8_t opcodes[] = { DW_OP_const1u, value1, DW_OP_const1u, value2, opcode }; \
+        PERFORM_EVAL_TEST(opcodes, uint32_t, expected); \
+    } while(0)
+    
+    COMPARE(DW_OP_le, 39, 40, 1);
+    COMPARE(DW_OP_le, 40, 40, 1);
+    COMPARE(DW_OP_le, 41, 40, 0);
+    
+    COMPARE(DW_OP_ge, 39, 40, 0);
+    COMPARE(DW_OP_ge, 40, 40, 1);
+    COMPARE(DW_OP_ge, 41, 40, 1);
+    
+    COMPARE(DW_OP_eq, 40, 40, 1);
+    COMPARE(DW_OP_eq, 41, 40, 0);
+    
+    COMPARE(DW_OP_lt, 41, 40, 0);
+    COMPARE(DW_OP_lt, 40, 40, 0);
+    COMPARE(DW_OP_lt, 39, 40, 1);
+    
+    COMPARE(DW_OP_gt, 41, 40, 1);
+    COMPARE(DW_OP_gt, 40, 40, 0);
+    COMPARE(DW_OP_gt, 39, 40, 0);
+    
+    COMPARE(DW_OP_ne, 40, 40, 0);
+    COMPARE(DW_OP_ne, 39, 40, 1);
+
+#undef COMPARE
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {

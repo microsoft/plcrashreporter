@@ -602,6 +602,66 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 dw_expr_push(v1 ^ v2);
                 break;
             }
+                
+            case DW_OP_le: {
+                machine_ptr v1, v2;
+                
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                
+                dw_expr_push((v2 <= v1));
+                break;
+            }
+
+            case DW_OP_ge: {
+                machine_ptr v1, v2;
+                
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                
+                dw_expr_push((v2 >= v1));
+                break;
+            }
+                
+            case DW_OP_eq: {
+                machine_ptr v1, v2;
+                
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                
+                dw_expr_push((v2 == v1));
+                break;
+            }
+    
+            case DW_OP_lt: {
+                machine_ptr v1, v2;
+                
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                
+                dw_expr_push((v2 < v1));
+                break;
+            }
+
+            case DW_OP_gt: {
+                machine_ptr v1, v2;
+                
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                
+                dw_expr_push((v2 > v1));
+                break;
+            }
+
+            case DW_OP_ne: {
+                machine_ptr v1, v2;
+                
+                dw_expr_pop(&v1);
+                dw_expr_pop(&v2);
+                
+                dw_expr_push((v2 != v1));
+                break;
+            }
 
             case DW_OP_nop: // no-op
                 break;
