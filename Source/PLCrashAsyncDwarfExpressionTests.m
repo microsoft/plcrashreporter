@@ -593,6 +593,13 @@
     PERFORM_EVAL_TEST(opcodes, uint32_t, 0x10 + 0x20);
 }
 
+/** Test evaluation of DW_OP_plus_uconst */
+- (void) testPlusUConst {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x10, DW_OP_plus_uconst, 0x01 };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x10 + 0x01);
+
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
