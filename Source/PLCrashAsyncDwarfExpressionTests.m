@@ -656,6 +656,41 @@
 #undef COMPARE
 }
 
+/** Test evaluation of DW_OP_skip */
+- (void) testSkip {
+    uint8_t opcodes[] = {
+        DW_OP_const1u, 0x10,
+
+        // Skip the bad opcode
+        DW_OP_skip, 1, 0x0,
+
+        // Arbitrarily selected bad instruction value.
+        // This -could- be allocated to an opcode in the future, but
+        // then our test will fail and we can pick another one.
+        0x0
+    };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x10);
+}
+
+/** Test bounds checking in evaluation of DW_OP_skip */
+- (void) testSkipBounds {
+    uint8_t opcodes[] = { DW_OP_skip, 1, 0x0 };
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
+}
+
+/** Test evaluation of DW_OP_bra */
+- (void) testBranch {
+    /* This should count down from 5, returning 0 */
+    uint8_t opcodes[] = { DW_OP_lit5, DW_OP_lit1, DW_OP_minus, DW_OP_dup, DW_OP_bra, 0xFA, 0xFF /* -6; jump to decrement */ };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x0);
+}
+
+/** Test bounds checking in evaluation of DW_OP_bra */
+- (void) testBranchBounds {
+    uint8_t opcodes[] = { DW_OP_lit1, DW_OP_bra, 1, 0x0 };
+    PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {

@@ -662,6 +662,29 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 dw_expr_push((v2 != v1));
                 break;
             }
+                
+            case DW_OP_skip: {
+                int16_t offset = dw_expr_read(int16_t);
+                
+                /* We blindly apply the offset; out-of-range is caught by the
+                 * read macros */
+                p = ((uint8_t *)p) + offset;
+                break;
+            }
+                
+            case DW_OP_bra: {
+                int16_t offset = dw_expr_read(int16_t);
+                machine_ptr cond;
+                
+                dw_expr_pop(&cond);
+
+
+                /* We blindly apply the offset; out-of-range is caught by the
+                 * read macros */
+                if (cond != 0)
+                    p = ((uint8_t *)p) + offset;
+                break;
+            }
 
             case DW_OP_nop: // no-op
                 break;
