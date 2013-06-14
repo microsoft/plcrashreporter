@@ -600,6 +600,12 @@
 
 }
 
+/** Test evaluation of DW_OP_shl */
+- (void) testShiftLeft {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x1, DW_OP_const1u, 0x10, DW_OP_shl };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x1 << 0x10);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
