@@ -77,9 +77,6 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned. If the stack
  * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  *
- * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
- * on failure.
- *
  * @todo Consider defining updated status codes or error handling to provide more structured
  * error data on failure.
  */
