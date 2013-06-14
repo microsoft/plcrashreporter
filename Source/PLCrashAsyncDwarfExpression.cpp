@@ -692,6 +692,17 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
             // Not implemented -- fall through
             case DW_OP_fbreg:
                 /* Unimplemented */
+                
+            case DW_OP_call2:
+            case DW_OP_call4:
+            case DW_OP_call_ref:
+                /*
+                 * As per DWARF 3, Section 6.4.2 Call Frame Instructions DW_OP_call2, DW_OP_call4 and DW_OP_call_ref operators
+                 * are not meaningful in an operand of these instructions because there is no mapping from call frame information
+                 * to any corresponding debugging compilation unit information, thus there is no way to interpret the call offset.
+                 *
+                 * If this implementation is further extended for use outside of CFI evaluation, this opcode should be implemented.
+                */
 
             case DW_OP_push_object_address:
                 /*
