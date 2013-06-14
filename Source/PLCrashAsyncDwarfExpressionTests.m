@@ -606,6 +606,24 @@
     PERFORM_EVAL_TEST(opcodes, uint32_t, 0x1 << 0x10);
 }
 
+/** Test evaluation of DW_OP_shr */
+- (void) testShiftRight {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x80, DW_OP_const1u, 0x1, DW_OP_shr };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x40);
+}
+
+/** Test evaluation of DW_OP_shra */
+- (void) testShiftRightArithmetic {
+    uint8_t opcodes[] = { DW_OP_const1s, -10, DW_OP_const1u, 0x1, DW_OP_shra };
+    PERFORM_EVAL_TEST(opcodes, int32_t, -10>>1);
+}
+
+/** Test evaluation of DW_OP_xor */
+- (void) testXor {
+    uint8_t opcodes[] = { DW_OP_const1u, 0x80, DW_OP_const1u, 0xC0, DW_OP_xor };
+    PERFORM_EVAL_TEST(opcodes, uint32_t, 0x80^0xC0);
+}
+
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = {
