@@ -65,7 +65,7 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
  * @param mobj The memory object from which the expression opcodes will be read.
  * @param task The task from which any DWARF expression memory loads will be performed.
  * @param thread_state The thread state against which the expression will be evaluated.
- * @param byteoder The byte order of the data referenced by @a mobj and @a thread_state.
+ * @param byteorder The byte order of the data referenced by @a mobj and @a thread_state.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
@@ -657,7 +657,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
             }
                 
             case DW_OP_skip: {
-                int16_t offset = dw_expr_read(int16_t);
+                int16_t offset = byteorder->swap16(dw_expr_read(int16_t));
                 
                 /* We blindly apply the offset; out-of-range is caught by the
                  * read macros */
@@ -666,7 +666,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
             }
                 
             case DW_OP_bra: {
-                int16_t offset = dw_expr_read(int16_t);
+                int16_t offset = byteorder->swap16(dw_expr_read(int16_t));
                 machine_ptr cond;
                 
                 dw_expr_pop(&cond);

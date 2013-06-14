@@ -674,14 +674,14 @@
 
 /** Test bounds checking in evaluation of DW_OP_skip */
 - (void) testSkipBounds {
-    uint8_t opcodes[] = { DW_OP_skip, 1, 0x0 };
+    uint8_t opcodes[] = { DW_OP_skip, 0x0, 0x1 };
     PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_EINVAL);
 }
 
 /** Test evaluation of DW_OP_bra */
 - (void) testBranch {
     /* This should count down from 5, returning 0 */
-    uint8_t opcodes[] = { DW_OP_lit5, DW_OP_lit1, DW_OP_minus, DW_OP_dup, DW_OP_bra, 0xFA, 0xFF /* -6; jump to decrement */ };
+    uint8_t opcodes[] = { DW_OP_lit5, DW_OP_lit1, DW_OP_minus, DW_OP_dup, DW_OP_bra, 0xFF, 0xFA /* -6; jump to decrement */ };
     PERFORM_EVAL_TEST(opcodes, uint32_t, 0x0);
 }
 
