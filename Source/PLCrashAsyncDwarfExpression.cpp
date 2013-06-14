@@ -59,10 +59,6 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
 }
 
 /**
- * Evaluate the expression opcodes starting at address expression evaluation imlementation.
- */
-
-/**
  * Evaluate a DWARF expression, as defined in the DWARF 3 Specification, Section 2.5. This
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
