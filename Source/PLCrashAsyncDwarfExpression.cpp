@@ -59,7 +59,7 @@ template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxp
 }
 
 /**
- * Evaluate a DWARF expression, as defined in the DWARF 3 Specification, Section 2.5. This
+ * Evaluate a DWARF expression, as defined in the DWARF 4 Specification, Section 2.5. This
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
@@ -737,7 +737,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
 }
 
 /**
- * Evaluate a DWARF expression, as defined in the DWARF 3 Specification, Section 2.5,
+ * Evaluate a DWARF expression, as defined in the DWARF 4 Specification, Section 2.5,
  * using a 32-bit stack.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
@@ -774,7 +774,7 @@ plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t 
 }
 
 /**
- * Evaluate a DWARF expression, as defined in the DWARF 3 Specification, Section 2.5,
+ * Evaluate a DWARF expression, as defined in the DWARF 4 Specification, Section 2.5,
  * using a 64-bit stack.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
