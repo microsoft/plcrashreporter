@@ -35,6 +35,8 @@ extern "C" {
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncThread.h"
 
+#include "PLCrashAsyncDwarfCIE.h"
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -137,9 +139,9 @@ typedef enum {
     DW_CFA_hi_user = 0x3f,
 } DW_CFA_t;
 
-plcrash_error_t plcrash_async_dwarf_exec_cfa_program (void);
-
 plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *mobj,
+                                                      plcrash_async_dwarf_cie_info_t *cie_info,
+                                                      plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                       const plcrash_async_byteorder_t *byteorder,
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,

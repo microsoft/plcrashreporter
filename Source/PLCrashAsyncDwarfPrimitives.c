@@ -126,7 +126,7 @@ void plcrash_async_dwarf_gnueh_ptr_state_free (plcrash_async_dwarf_gnueh_ptr_sta
 
 
 /**
- * Read a DWARF encoded pointer value from @a location within @a mobj. The encoding format is defined in
+ * Read a GNU DWARF encoded pointer value from @a location within @a mobj. The encoding format is defined in
  * the Linux Standard Base Core Specification 4.1, section 10.5, DWARF Extensions.
  *
  * @param mobj The memory object from which the pointer data (including TEXT/DATA-relative values) will be read. This

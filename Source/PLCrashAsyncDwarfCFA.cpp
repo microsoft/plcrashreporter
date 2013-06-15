@@ -40,6 +40,10 @@
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
+ * @param cie_info The CIE info data for this opcode stream.
+ * @param ptr_state GNU EH pointer state configuration; this defines the base addresses and other
+ * information required to decode pointers in the CFA opcode stream. May be NULL if eh_frame
+ * augmentation data is not available in @a cie_info.
  * @param byteoder The byte order of the data referenced by @a mobj.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
@@ -52,6 +56,8 @@
  * error data on failure.
  */
 plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *mobj,
+                                                      plcrash_async_dwarf_cie_info_t *cie_info,
+                                                      plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                       const plcrash_async_byteorder_t *byteorder,
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,
@@ -59,7 +65,14 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
 {
     plcrash::dwarf_opstream opstream;
     plcrash_error_t err;
-    
+    uint64_t ip = 0;
+
+    /* Default to reading as a standard machine word */
+    DW_EH_PE_t gnu_eh_ptr_encoding = DW_EH_PE_absptr;
+    if (cie_info->has_eh_augmentation && cie_info->eh_augmentation.has_pointer_encoding && ptr_state != NULL) {
+        gnu_eh_ptr_encoding = (DW_EH_PE_t) cie_info->eh_augmentation.pointer_encoding;
+    }
+
     /* Configure the opstream */
     if ((err = opstream.init(mobj, byteorder, address, offset, length)) != PLCRASH_ESUCCESS)
         return err;
@@ -76,6 +89,19 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
         }
         
         switch (opcode) {
+            case DW_CFA_set_loc:
+                if (cie_info->segment_size != 0) {
+                    PLCF_DEBUG("Segment support has not been implemented");
+                    return PLCRASH_ENOTSUP;
+                }
+
+                /* Try reading an eh_frame encoded pointer */
+                if (!opstream.read_gnueh_ptr(ptr_state, gnu_eh_ptr_encoding, &ip)) {
+                    PLCF_DEBUG("DW_CFA_set_loc failed to read the target pointer value");
+                    return PLCRASH_EINVAL;
+                }
+                break;
+                
             case DW_CFA_nop:
                 break;
                 
