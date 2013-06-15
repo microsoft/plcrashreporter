@@ -31,32 +31,13 @@ extern "C" {
 }
 
 #include "dwarf_stack.h"
+#include "dwarf_opstream.h"
 
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
  * @{
  */
-
-/**
- * Read a value of type and size @a T from @a *p, advancing @a p the past the read value,
- * and verifying that the read will not overrun the address @a maxpos.
- *
- * @param p The pointer from which the value will be read. This pointer will be advanced by sizeof(T).
- * @param maxpos The maximum address from which a value may be read.
- * @param result The destination to which the result will be written.
- *
- * @return Returns true on success, or false if the read would exceed the boundry specified by @a maxpos.
- */
-template <typename T> static inline bool dw_expr_read_impl (void **p, void *maxpos, T *result) {
-    if ((uint8_t *)maxpos - (uint8_t *)*p < sizeof(T)) {
-        return false;
-    }
-    
-    *result = *((T *)*p);
-    *((uint8_t **)p) += sizeof(T);
-    return true;
-}
 
 /**
  * Evaluate a DWARF expression, as defined in the DWARF 4 Specification, Section 2.5. This
@@ -93,30 +74,12 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
     // use of the new async-safe allocator.
     plcrash::dwarf_stack<machine_ptr, 100> stack;
+    plcrash::dwarf_opstream opstream;
     plcrash_error_t err;
 
-    pl_vm_address_t start;
-    pl_vm_address_t end;
-
-    /* Calculate the start and end addresses */
-    if (!plcrash_async_address_apply_offset(address, offset, &start)) {
-        PLCF_DEBUG("Offset overflows base address");
-        return PLCRASH_EINVAL;
-    }
-    
-    if (length > PL_VM_OFF_MAX || !plcrash_async_address_apply_offset(start, length, &end)) {
-        PLCF_DEBUG("Length overflows base address");
-        return PLCRASH_EINVAL;
-    }
-
-    /* Map in the full instruction range */
-    void *instr = plcrash_async_mobject_remap_address(mobj, start, 0, end-start);
-    void *instr_max = (uint8_t *)instr + (end - start);
-
-    if (instr == NULL) {
-        PLCF_DEBUG("Could not map the DWARF instructions; range falls outside mapped pages");
-        return PLCRASH_EINVAL;
-    }
+    /* Configure the opstream */
+    if ((err = opstream.init(mobj, byteorder, address, offset, length)) != PLCRASH_ESUCCESS)
+        return err;
     
     /*
      * Note that the below value macros all cast data to the appropriate target machine word size.
@@ -126,9 +89,9 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     
     /* A position-advancing read macro that uses GCC/clang's compound statement value extension, returning PLCRASH_EINVAL
      * if the read extends beyond the mapped range. */
-#define dw_expr_read(_type) ({ \
+#define dw_expr_read_int(_type) ({ \
     _type v; \
-    if (!dw_expr_read_impl<_type>(&p, instr_max, &v)) { \
+    if (!opstream.read_intU<_type>(&v)) { \
         PLCF_DEBUG("Read of size %zu exceeds mapped range", sizeof(v)); \
         return PLCRASH_EINVAL; \
     } \
@@ -138,37 +101,25 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     /* A position-advancing uleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
      * if the read fails. */
 #define dw_expr_read_uleb128() ({ \
-    plcrash_error_t err; \
     uint64_t v; \
-    pl_vm_size_t lebsize; \
-    pl_vm_off_t offset = ((uint8_t *)p - (uint8_t *)instr); \
-    \
-    if ((err = plcrash_async_dwarf_read_uleb128(mobj, start, offset, &v, &lebsize)) != PLCRASH_ESUCCESS) { \
+    if (!opstream.read_uleb128(&v)) { \
         PLCF_DEBUG("Read of ULEB128 value failed"); \
-        return err; \
+        return PLCRASH_EINVAL; \
     } \
-    \
-    p = (uint8_t *)p + lebsize; \
     (machine_ptr) v; \
 })
 
     /* A position-advancing sleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
      * if the read fails. */
 #define dw_expr_read_sleb128() ({ \
-    plcrash_error_t err; \
     int64_t v; \
-    pl_vm_size_t lebsize; \
-    pl_vm_off_t offset = ((uint8_t *)p - (uint8_t *)instr); \
-    \
-    if ((err = plcrash_async_dwarf_read_sleb128(mobj, start, offset, &v, &lebsize)) != PLCRASH_ESUCCESS) { \
+    if (!opstream.read_sleb128(&v)) { \
         PLCF_DEBUG("Read of SLEB128 value failed"); \
-        return err; \
+        return PLCRASH_EINVAL; \
     } \
-    \
-    p = (uint8_t *)p + lebsize; \
     (machine_ptr_s) v; \
 })
-    
+
     /* Macro to fetch register valeus; handles unsupported register numbers and missing registers values */
 #define dw_thread_regval(_dw_regnum) ({ \
     plcrash_regnum_t rn = plcrash_async_thread_state_map_dwarf_reg(thread_state, _dw_regnum); \
@@ -198,10 +149,8 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     return PLCRASH_EINTERNAL; \
 }
 
-    void *p = instr;
-    while (p < instr_max) {
-        uint8_t opcode = dw_expr_read(uint8_t);
-
+    uint8_t opcode;
+    while (opstream.read_intU(&opcode)) {
         switch (opcode) {
             case DW_OP_lit0:
             case DW_OP_lit1:
@@ -239,35 +188,35 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 break;
                 
             case DW_OP_const1u:
-                dw_expr_push(dw_expr_read(uint8_t));
+                dw_expr_push(dw_expr_read_int(uint8_t));
                 break;
 
             case DW_OP_const1s:
-                dw_expr_push(dw_expr_read(int8_t));
+                dw_expr_push(dw_expr_read_int(int8_t));
                 break;
                 
             case DW_OP_const2u:
-                dw_expr_push(byteorder->swap16(dw_expr_read(uint16_t)));
+                dw_expr_push(dw_expr_read_int(uint16_t));
                 break;
                 
             case DW_OP_const2s:
-                dw_expr_push((int16_t) byteorder->swap16(dw_expr_read(int16_t)));
+                dw_expr_push((int16_t)dw_expr_read_int(int16_t));
                 break;
                 
             case DW_OP_const4u:
-                dw_expr_push(byteorder->swap32(dw_expr_read(uint32_t)));
+                dw_expr_push(dw_expr_read_int(uint32_t));
                 break;
                 
             case DW_OP_const4s:
-                dw_expr_push((int32_t) byteorder->swap32(dw_expr_read(int32_t)));
+                dw_expr_push((int32_t) dw_expr_read_int(int32_t));
                 break;
                 
             case DW_OP_const8u:
-                dw_expr_push(byteorder->swap64(dw_expr_read(uint64_t)));
+                dw_expr_push(dw_expr_read_int(uint64_t));
                 break;
                 
             case DW_OP_const8s:
-                dw_expr_push((int64_t) byteorder->swap64(dw_expr_read(int64_t)));
+                dw_expr_push((int64_t) dw_expr_read_int(int64_t));
                 break;
                 
             case DW_OP_constu:
@@ -332,7 +281,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
             }
                 
             case DW_OP_pick:
-                if (!stack.pick(dw_expr_read(uint8_t))) {
+                if (!stack.pick(dw_expr_read_int(uint8_t))) {
                     PLCF_DEBUG("DW_OP_pick on invalid index");
                     return PLCRASH_EINVAL;
                 }
@@ -406,7 +355,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
 
             case DW_OP_deref_size: {
                 /* Fetch the target size */
-                uint8_t size = dw_expr_read(uint8_t);
+                uint8_t size = dw_expr_read_int(uint8_t);
                 if (size > sizeof(machine_ptr)) {
                     PLCF_DEBUG("DW_OP_deref_size specified a size larger than the native machine word");
                     return PLCRASH_EINVAL;
@@ -657,25 +606,25 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
             }
                 
             case DW_OP_skip: {
-                int16_t offset = byteorder->swap16(dw_expr_read(int16_t));
-                
-                /* We blindly apply the offset; out-of-range is caught by the
-                 * read macros */
-                p = ((uint8_t *)p) + offset;
+                int16_t offset = dw_expr_read_int(int16_t);
+                if (!opstream.skip(offset)) {
+                    PLCF_DEBUG("DW_OP_skip offset %" PRId16 " falls outside of opcode range", offset);
+                    return PLCRASH_EINVAL;
+                }
                 break;
             }
                 
             case DW_OP_bra: {
-                int16_t offset = byteorder->swap16(dw_expr_read(int16_t));
+                int16_t offset = dw_expr_read_int(int16_t);
                 machine_ptr cond;
-                
+
                 dw_expr_pop(&cond);
-
-
-                /* We blindly apply the offset; out-of-range is caught by the
-                 * read macros */
-                if (cond != 0)
-                    p = ((uint8_t *)p) + offset;
+                if (cond != 0) {
+                    if (!opstream.skip(offset)) {
+                        PLCF_DEBUG("DW_OP_bra offset %" PRId16 " falls outside of opcode range", offset);
+                        return PLCRASH_EINVAL;
+                    }
+                }
                 break;
             }
 
