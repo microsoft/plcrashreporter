@@ -103,6 +103,36 @@
 }
 
 /**
+ * Test pointer read from an opcode stream.
+ */
+- (void) testReadGNUEHPointer {
+    plcrash_async_mobject_t mobj;
+
+    /* Set up an opcode stream with a 4 byte 'pointer' value */
+    uint8_t opcodes[] = { 0x1, 0x2, 0x3, 0x4 };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+
+    /* Configure the stream */
+    plcrash::dwarf_opstream stream;
+    STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
+    
+    /* Configure the pointer state */
+    uint64_t result;
+    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
+    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, 4);
+    
+    /* Test the read handling */
+    STAssertTrue(stream.read_gnueh_ptr(&ptr_state, DW_EH_PE_absptr, &result), @"Failed to read the pointer");
+    STAssertEquals(result, (uint64_t)0x1020304, @"Incorrect pointer value read");
+    
+    /* Test overshoot handling */
+    STAssertTrue(stream.skip(-1), @"Failed to rewind stream");
+    STAssertFalse(stream.read_gnueh_ptr(&ptr_state, DW_EH_PE_absptr, &result), @"Succeeded when attempting to read past the end of the mapped opcode stream");
+    
+    plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
+}
+
+/**
  * Test skip handling.
  */
 - (void) testSkip {

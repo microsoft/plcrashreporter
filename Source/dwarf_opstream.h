@@ -78,7 +78,8 @@ public:
     template <typename V> inline bool read_intU (V *result);
     inline bool read_uleb128 (uint64_t *result);
     inline bool read_sleb128 (int64_t *result);
-    inline bool skip (int16_t offset);
+    inline bool read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state, DW_EH_PE_t encoding, uint64_t *result);
+    inline bool skip (pl_vm_off_t offset);
 };
 
 
@@ -165,10 +166,47 @@ inline bool dwarf_opstream::read_sleb128 (int64_t *result) {
 }
 
 /**
+ * Read a GNU DWARF encoded pointer value from the stream, verifying that the read does not overrun
+ * the mapped range and advancing the stream position past the read value.
+ *
+ * @param state The base GNU eh_frame pointer state with which the encoded pointer value will be evaluated.
+ * If a value is read that is relative to a @state-supplied base address of PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, PLCRASH_ENOTSUP will be returned.
+ * @param DW_EH_PE_t The pointer encoding to use when decoding the pointer value.
+ * @param result On success, the pointer value.
+ */
+inline bool dwarf_opstream::read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state, DW_EH_PE_t encoding, uint64_t *result)
+{
+    pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
+    plcrash_error_t err;
+    uint64_t size;
+
+    /* Perform the read; this will safely handle the case where the target falls outside
+     * of the maximum range */
+    if ((err = plcrash_async_dwarf_read_gnueh_ptr(_mobj, _byteorder, _start, offset, encoding, ptr_state, result, &size)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Read of GNU EH pointer value failed with %u", err);
+        return false;
+    }
+
+    /* Sanity check the size; this should never occur */
+    if (size > PL_VM_OFF_MAX) {
+        PLCF_DEBUG("GNU EH pointer size exceeds our maximum supported offset size");
+        return PLCRASH_EINTERNAL;
+    }
+
+    /* Advance the position */
+    if (!skip(size)) {
+        PLCF_DEBUG("GNU EH pointer value extends past end of opstream");
+        return false;
+    }
+    
+    return true;
+}
+
+/**
  * Apply the given offset to the instruction position, returning false
  * if the position falls outside of the bounds of the mapped region.
  */
-inline bool dwarf_opstream::skip (int16_t offset) {
+inline bool dwarf_opstream::skip (pl_vm_off_t offset) {
     void *p = ((uint8_t *)_p) + offset;
     if (p < _instr || p > _instr_max)
         return false;
