@@ -76,6 +76,7 @@ public:
                           pl_vm_size_t length);
     
     template <typename V> inline bool read_intU (V *result);
+    inline bool read_uintmax64 (uint8_t data_size, uint64_t *result);
     inline bool read_uleb128 (uint64_t *result);
     inline bool read_sleb128 (int64_t *result);
     inline bool read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state, DW_EH_PE_t encoding, uint64_t *result);
@@ -122,6 +123,35 @@ template <typename V> inline bool dwarf_opstream::read_intU (V *result) {
 }
     
 /**
+ * @internal
+ *
+ * Read a value that is either 1, 2, 4, or 8 bytes in size, applying byte swapping. Verifies that the read
+ * will not overrun the mapped range and advancing the stream position past the read value.
+ *
+ * @param data_size The size of the value to be read. If an unsupported size is supplied, false will be returned.
+ * @param result The destination to which the result will be written.
+ *
+ * @return Returns true on success, or false if the read would exceed the boundry specified by @a maxpos.
+ */
+inline bool dwarf_opstream::read_uintmax64 (uint8_t data_size, uint64_t *result) {
+    pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
+    plcrash_error_t err;
+
+    if ((err = plcrash_async_dwarf_read_uintmax64(_mobj, _byteorder, _start, offset, data_size, result)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Read of integer value failed with %u", err);
+        return false;
+    }
+    
+    /* Advance the position */
+    if (!skip(data_size)) {
+        PLCF_DEBUG("Integer value extends past end of opstream");
+        return false;
+    }
+
+    return true;
+}
+    
+/**
  * Read a ULEB128 value from the stream, verifying that the read will not overrun
  * the mapped range and advancing the stream position past the read value.
  *
@@ -139,7 +169,11 @@ inline bool dwarf_opstream::read_uleb128 (uint64_t *result) {
         return false;
     }
 
-    _p = (uint8_t *)_p + lebsize;
+    /* Advance the position */
+    if (!skip(lebsize)) {
+        PLCF_DEBUG("ULEB128 value extends past end of opstream");
+        return false;
+    }
     return true;
 }
 
@@ -161,7 +195,11 @@ inline bool dwarf_opstream::read_sleb128 (int64_t *result) {
         return false;
     }
     
-    _p = (uint8_t *)_p + lebsize;
+    /* Advance the position */
+    if (!skip(lebsize)) {
+        PLCF_DEBUG("SLEB128 value extends past end of opstream");
+        return false;
+    }
     return true;
 }
 
@@ -190,7 +228,7 @@ inline bool dwarf_opstream::read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_
     /* Sanity check the size; this should never occur */
     if (size > PL_VM_OFF_MAX) {
         PLCF_DEBUG("GNU EH pointer size exceeds our maximum supported offset size");
-        return PLCRASH_EINTERNAL;
+        return false;
     }
 
     /* Advance the position */

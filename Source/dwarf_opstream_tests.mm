@@ -65,6 +65,31 @@
 }
 
 /**
+ * Test uintmax64 read from an opcode stream.
+ */
+- (void) testReadMax64 {
+    plcrash_async_mobject_t mobj;
+    uint8_t opcodes[] = { 0x1, 0x2, 0x3 };
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+    
+    plcrash::dwarf_opstream stream;
+    STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
+    
+    uint64_t val1;
+    uint64_t val2;
+    STAssertTrue(stream.read_uintmax64(2, &val1), @"Failed to read");
+    STAssertEquals(val1, (uint64_t)0x102, @"Incorrect 16 byte value read");
+
+    STAssertTrue(stream.read_uintmax64(1, &val2), @"Failed to read");
+    STAssertEquals(val2, (uint64_t)0x3, @"Incorrect 8 byte value read");
+
+    STAssertFalse(stream.read_uintmax64(1, &val2), @"Read off the end of the opcode stream");
+    
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
  * Test uleb128 read from an opcode stream.
  */
 - (void) testReadULEB128 {
