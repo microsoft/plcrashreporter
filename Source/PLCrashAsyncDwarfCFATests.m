@@ -39,4 +39,18 @@
  */
 @implementation PLCrashAsyncDwarfCFATests
 
+/* Perform evaluation of the given opcodes, expecting a result of type @a type,
+ * with an expected value of @a expected. The data is interpreted as big endian. */
+#define PERFORM_EVAL_TEST(opcodes, type, expected) do { \
+    plcrash_async_mobject_t mobj; \
+    plcrash_error_t err; \
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
+    \
+        uint64_t result; \
+        err = plcrash_async_dwarf_eval_cfa_program(&mobj, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes)); \
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed"); \
+    \
+    plcrash_async_mobject_free(&mobj); \
+} while(0)
+
 @end
