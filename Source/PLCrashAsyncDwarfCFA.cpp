@@ -27,6 +27,7 @@
 
 #include "PLCrashAsyncDwarfCFA.h"
 #include "dwarf_opstream.h"
+#include <inttypes.h>
 
 /**
  * @internal
@@ -62,8 +63,29 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     /* Configure the opstream */
     if ((err = opstream.init(mobj, byteorder, address, offset, length)) != PLCRASH_ESUCCESS)
         return err;
-    
-    return PLCRASH_ENOTSUP;
+
+    uint8_t opcode;
+    while (opstream.read_intU(&opcode)) {
+        uint8_t const_operand = 0;
+
+        /* Check for opcodes encoded in the top two bits, with an operand
+         * in the bottom 6 bits. */
+        if ((opcode & 0xC0) != 0) {
+            opcode &= 0xC0;
+            const_operand = opcode & 0x3F;
+        }
+        
+        switch (opcode) {
+            case DW_CFA_nop:
+                break;
+                
+            default:
+                PLCF_DEBUG("Unsupported opcode 0x%" PRIx8, opcode);
+                return PLCRASH_ENOTSUP;
+        }
+    }
+
+    return PLCRASH_ESUCCESS;
 }
 
 /**
