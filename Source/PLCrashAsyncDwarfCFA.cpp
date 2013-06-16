@@ -119,7 +119,6 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 
             case DW_CFA_advance_loc:
                 location += const_operand * cie_info->code_alignment_factor;
-                PLCF_DEBUG("%" PRIx8 " * alignment = %" PRIx64, const_operand, (uint64_t)location);
                 break;
                 
             case DW_CFA_advance_loc1:
