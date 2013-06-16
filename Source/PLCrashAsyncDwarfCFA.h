@@ -140,6 +140,7 @@ typedef enum {
 } DW_CFA_t;
 
 plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *mobj,
+                                                      pl_vm_address_t pc_offset,
                                                       plcrash_async_dwarf_cie_info_t *cie_info,
                                                       plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                       const plcrash_async_byteorder_t *byteorder,

@@ -40,6 +40,9 @@
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
+ * @param pc_offset The PC offset at which evaluation of the CFA program should terminate. If 0, 
+ * the program will be executed to completion. This offset should be relative to the executable image's
+ * base address.
  * @param cie_info The CIE info data for this opcode stream.
  * @param ptr_state GNU EH pointer state configuration; this defines the base addresses and other
  * information required to decode pointers in the CFA opcode stream. May be NULL if eh_frame
@@ -56,6 +59,7 @@
  * error data on failure.
  */
 plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *mobj,
+                                                      pl_vm_address_t pc_offset,
                                                       plcrash_async_dwarf_cie_info_t *cie_info,
                                                       plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                       const plcrash_async_byteorder_t *byteorder,
@@ -65,7 +69,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
 {
     plcrash::dwarf_opstream opstream;
     plcrash_error_t err;
-    uint64_t ip = 0;
+    pl_vm_address_t location = 0;
 
     /* Default to reading as a standard machine word */
     DW_EH_PE_t gnu_eh_ptr_encoding = DW_EH_PE_absptr;
@@ -76,16 +80,27 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     /* Configure the opstream */
     if ((err = opstream.init(mobj, byteorder, address, offset, length)) != PLCRASH_ESUCCESS)
         return err;
+    
+#define dw_expr_read_int(_type) ({ \
+    _type v; \
+    if (!opstream.read_intU<_type>(&v)) { \
+        PLCF_DEBUG("Read of size %zu exceeds mapped range", sizeof(v)); \
+        return PLCRASH_EINVAL; \
+    } \
+    v; \
+})
 
+    /* Iterate the opcode stream until the pc_offset is hit */
     uint8_t opcode;
-    while (opstream.read_intU(&opcode)) {
+    while ((pc_offset == 0 || location < pc_offset) && opstream.read_intU(&opcode)) {
         uint8_t const_operand = 0;
 
         /* Check for opcodes encoded in the top two bits, with an operand
          * in the bottom 6 bits. */
+        
         if ((opcode & 0xC0) != 0) {
-            opcode &= 0xC0;
             const_operand = opcode & 0x3F;
+            opcode &= 0xC0;
         }
         
         switch (opcode) {
@@ -96,10 +111,27 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 }
 
                 /* Try reading an eh_frame encoded pointer */
-                if (!opstream.read_gnueh_ptr(ptr_state, gnu_eh_ptr_encoding, &ip)) {
+                if (!opstream.read_gnueh_ptr(ptr_state, gnu_eh_ptr_encoding, &location)) {
                     PLCF_DEBUG("DW_CFA_set_loc failed to read the target pointer value");
                     return PLCRASH_EINVAL;
                 }
+                break;
+                
+            case DW_CFA_advance_loc:
+                location += const_operand * cie_info->code_alignment_factor;
+                PLCF_DEBUG("%" PRIx8 " * alignment = %" PRIx64, const_operand, (uint64_t)location);
+                break;
+                
+            case DW_CFA_advance_loc1:
+                location += dw_expr_read_int(uint8_t) * cie_info->code_alignment_factor;
+                break;
+                
+            case DW_CFA_advance_loc2:
+                location += dw_expr_read_int(uint16_t) * cie_info->code_alignment_factor;
+                break;
+                
+            case DW_CFA_advance_loc4:
+                location += dw_expr_read_int(uint32_t) * cie_info->code_alignment_factor;
                 break;
                 
             case DW_CFA_nop:

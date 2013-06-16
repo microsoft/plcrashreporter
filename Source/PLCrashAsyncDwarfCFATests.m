@@ -30,6 +30,8 @@
 
 #include "PLCrashAsyncDwarfCFA.h"
 
+#define DW_CFA_BAD_OPCODE DW_CFA_hi_user
+
 @interface PLCrashAsyncDwarfCFATests : PLCrashTestCase {
     plcrash_async_dwarf_gnueh_ptr_state_t _ptr_state;
     plcrash_async_dwarf_cie_info_t _cie;
@@ -49,6 +51,10 @@
     _cie.has_eh_augmentation = true;
     _cie.eh_augmentation.has_pointer_encoding = true;
     _cie.eh_augmentation.pointer_encoding = DW_EH_PE_absptr; // direct pointers
+    
+    _cie.code_alignment_factor = 1;
+    _cie.data_alignment_factor = 1;
+    
     _cie.address_size = _ptr_state.address_size;
 }
 
@@ -58,35 +64,76 @@
 
 /* Perform evaluation of the given opcodes, expecting a result of type @a type,
  * with an expected value of @a expected. The data is interpreted as big endian. */
-#define PERFORM_EVAL_TEST(opcodes) do { \
+#define PERFORM_EVAL_TEST(opcodes, pc_offset, expected) do { \
     plcrash_async_mobject_t mobj; \
     plcrash_error_t err; \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
     \
-        err = plcrash_async_dwarf_eval_cfa_program(&mobj, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes)); \
-        STAssertEquals(err, PLCRASH_ESUCCESS, @"Evaluation failed"); \
+        err = plcrash_async_dwarf_eval_cfa_program(&mobj, pc_offset, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes)); \
+        STAssertEquals(err, expected, @"Evaluation failed"); \
     \
     plcrash_async_mobject_free(&mobj); \
 } while(0)
 
 /** Test evaluation of DW_CFA_set_loc */
 - (void) testSetLoc {
-    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4 };
-    PERFORM_EVAL_TEST(opcodes);
+    /* This should terminate once our PC offset is hit below; otherwise, it will execute a
+     * bad CFA instruction and return falure */
+    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST(opcodes, 0x1020304, PLCRASH_ESUCCESS);
+    
+    /* Test evaluation without GNU EH agumentation data (eg, using direct word sized pointers) */
+    _cie.has_eh_augmentation = false;
+    PERFORM_EVAL_TEST(opcodes, 0x1020304, PLCRASH_ESUCCESS);
 }
 
-/** Test evaluation of DW_CFA_set_loc without GNU EH agumentation data (eg, using direct word sized pointers) */
-- (void) testSetLocDirect {
-    _cie.has_eh_augmentation = false;
-    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4 };
-    PERFORM_EVAL_TEST(opcodes);
+/** Test evaluation of DW_CFA_advance_loc */
+- (void) testAdvanceLoc {
+    _cie.code_alignment_factor = 2;
+    
+    /* Evaluation should terminate prior to the bad opcode */
+    uint8_t opcodes[] = { DW_CFA_advance_loc|0x1, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
+}
+
+
+/** Test evaluation of DW_CFA_advance_loc1 */
+- (void) testAdvanceLoc1 {
+    _cie.code_alignment_factor = 2;
+    
+    /* Evaluation should terminate prior to the bad opcode */
+    uint8_t opcodes[] = { DW_CFA_advance_loc1, 0x1, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
+}
+
+/** Test evaluation of DW_CFA_advance_loc2 */
+- (void) testAdvanceLoc2 {
+    _cie.code_alignment_factor = 2;
+    
+    /* Evaluation should terminate prior to the bad opcode */
+    uint8_t opcodes[] = { DW_CFA_advance_loc2, 0x0, 0x1, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
+}
+
+/** Test evaluation of DW_CFA_advance_loc2 */
+- (void) testAdvanceLoc4 {
+    _cie.code_alignment_factor = 2;
+    
+    /* Evaluation should terminate prior to the bad opcode */
+    uint8_t opcodes[] = { DW_CFA_advance_loc4, 0x0, 0x0, 0x0, 0x1, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
+}
+
+- (void) testBadOpcode {
+    uint8_t opcodes[] = { DW_CFA_BAD_OPCODE };
+    PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ENOTSUP);
 }
 
 /** Test basic evaluation of a NOP. */
 - (void) testNop {
     uint8_t opcodes[] = { DW_CFA_nop, };
     
-    PERFORM_EVAL_TEST(opcodes);
+    PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ESUCCESS);
 }
 
 @end
