@@ -88,7 +88,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     /* Find the encoding entry (if any) and free the reader */
     pl_vm_address_t function_base;
     uint32_t encoding;
-    err = plcrash_async_cfe_reader_find_pc(&reader, pc, &function_base, &encoding);
+    err = plcrash_async_cfe_reader_find_pc(&reader, pc - image->macho_image.header_addr, &function_base, &encoding);
     plcrash_async_cfe_reader_free(&reader);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Did not find CFE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
