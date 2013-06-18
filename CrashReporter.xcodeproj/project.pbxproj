@@ -244,6 +244,20 @@
 		05C76DB2176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */; };
 		05C76DB3176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */; };
 		05C76DB4176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */; };
+		05C76DC8176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DC9176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DCA176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DCB176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DCC176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DCD176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DCE176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */; };
+		05C76DCF176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */ = {isa = PBXBuildFile; fileRef = 05C76DC7176FBAF300E9B10D /* dwarf_cfa_stack.h */; };
+		05C76DD0176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */ = {isa = PBXBuildFile; fileRef = 05C76DC7176FBAF300E9B10D /* dwarf_cfa_stack.h */; };
+		05C76DD1176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */ = {isa = PBXBuildFile; fileRef = 05C76DC7176FBAF300E9B10D /* dwarf_cfa_stack.h */; };
+		05C76DD2176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */ = {isa = PBXBuildFile; fileRef = 05C76DC7176FBAF300E9B10D /* dwarf_cfa_stack.h */; };
+		05C76DD4176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DD3176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm */; };
+		05C76DD5176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DD3176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm */; };
+		05C76DD6176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DD3176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm */; };
 		05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		05CD318D0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
@@ -958,6 +972,9 @@
 		05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dwarf_opstream.cpp; sourceTree = "<group>"; };
 		05C76DA5176B8C7000E9B10D /* dwarf_opstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dwarf_opstream.h; sourceTree = "<group>"; };
 		05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dwarf_opstream_tests.mm; sourceTree = "<group>"; };
+		05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dwarf_cfa_stack.cpp; sourceTree = "<group>"; };
+		05C76DC7176FBAF300E9B10D /* dwarf_cfa_stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dwarf_cfa_stack.h; sourceTree = "<group>"; };
+		05C76DD3176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dwarf_cfa_stack_tests.mm; sourceTree = "<group>"; };
 		05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphoneos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphonesimulator.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31890EE93A90000FDE88 /* CrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashReporter.h; sourceTree = "<group>"; };
@@ -1638,6 +1655,9 @@
 				05C76DA5176B8C7000E9B10D /* dwarf_opstream.h */,
 				05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */,
 				05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */,
+				05C76DC7176FBAF300E9B10D /* dwarf_cfa_stack.h */,
+				05C76DC6176FBAF300E9B10D /* dwarf_cfa_stack.cpp */,
+				05C76DD3176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -1893,6 +1913,7 @@
 				05E7488C176135CF009B8745 /* PLCrashAsyncDwarfExpression.h in Headers */,
 				05E748B017616D30009B8745 /* dwarf_stack.h in Headers */,
 				05C76DAF176B8C7000E9B10D /* dwarf_opstream.h in Headers */,
+				05C76DD1176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1932,6 +1953,7 @@
 				05E7488D176135CF009B8745 /* PLCrashAsyncDwarfExpression.h in Headers */,
 				05E748B117616D30009B8745 /* dwarf_stack.h in Headers */,
 				05C76DB0176B8C7000E9B10D /* dwarf_opstream.h in Headers */,
+				05C76DD2176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1958,6 +1980,7 @@
 				05F3CD7416DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
 				05E748AE17616D30009B8745 /* dwarf_stack.h in Headers */,
 				05C76DAD176B8C7000E9B10D /* dwarf_opstream.h in Headers */,
+				05C76DCF176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2003,6 +2026,7 @@
 				05E7488B176135CF009B8745 /* PLCrashAsyncDwarfExpression.h in Headers */,
 				05E748AF17616D30009B8745 /* dwarf_stack.h in Headers */,
 				05C76DAE176B8C7000E9B10D /* dwarf_opstream.h in Headers */,
+				05C76DD0176FBAF300E9B10D /* dwarf_cfa_stack.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2526,6 +2550,7 @@
 				05E7488F176135CF009B8745 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
 				05E748A917616D30009B8745 /* dwarf_stack.cpp in Sources */,
 				05C76DA8176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
+				05C76DCA176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2582,6 +2607,7 @@
 				05E74890176135CF009B8745 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
 				05E748AA17616D30009B8745 /* dwarf_stack.cpp in Sources */,
 				05C76DA9176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
+				05C76DCB176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2656,6 +2682,8 @@
 				05E748B317616D6B009B8745 /* dwarf_stack_tests.mm in Sources */,
 				05C76DAA176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DB2176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */,
+				05C76DCC176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
+				05C76DD4176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2732,6 +2760,8 @@
 				05E748B417616D6B009B8745 /* dwarf_stack_tests.mm in Sources */,
 				05C76DAB176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DB3176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */,
+				05C76DCD176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
+				05C76DD5176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2808,6 +2838,8 @@
 				05E748B517616D6B009B8745 /* dwarf_stack_tests.mm in Sources */,
 				05C76DAC176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DB4176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */,
+				05C76DCE176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
+				05C76DD6176FBC1E00E9B10D /* dwarf_cfa_stack_tests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2872,6 +2904,7 @@
 				05E7487B176118C2009B8745 /* PLCrashAsyncDwarfCFA.cpp in Sources */,
 				05E748A717616D30009B8745 /* dwarf_stack.cpp in Sources */,
 				05C76DA6176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
+				05C76DC8176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2938,6 +2971,7 @@
 				05E7488E176135CF009B8745 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
 				05E748A817616D30009B8745 /* dwarf_stack.cpp in Sources */,
 				05C76DA7176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
+				05C76DC9176FBAF300E9B10D /* dwarf_cfa_stack.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
