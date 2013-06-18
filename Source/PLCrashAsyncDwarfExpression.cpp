@@ -383,7 +383,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                     readval(uint64_t);
 
                     default:
-                        PLCF_DEBUG("DW_OP_deref_size specified an unsupported size of %"PRIu8, size);
+                        PLCF_DEBUG("DW_OP_deref_size specified an unsupported size of %" PRIu8, size);
                         return PLCRASH_EINVAL;
                 }
                 #undef readval
