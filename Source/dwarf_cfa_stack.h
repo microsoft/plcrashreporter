@@ -66,21 +66,21 @@ namespace plcrash {
      * total amount of fixed stack space to be allocated; if we introduce our own async-safe heap allocator,
      * it may be reasonable to simplify this implementation to use the heap for entries.
      */
-    template <typename T, size_t S> class dwarf_cfa_stack {
+    template <typename T, uint8_t S> class dwarf_cfa_stack {
     public:
         /** A single register entry */
         typedef struct dwarf_cfa_reg_entry {
+            /** Register value */
+            T value;
+
             /** The DWARF register number */
             uint32_t regnum;
 
             /** DWARF register rule */
-            dwarf_cfa_reg_rule_t rule;
-
-            /** Register value */
-            T value;
-
+            uint8_t rule;
+            
             /** Next entry in the list, or NULL */
-            struct dwarf_cfa_reg_entry *next;
+            uint8_t next;
         } dwarf_cfa_reg_entry_t;
         
     private:
@@ -95,12 +95,13 @@ namespace plcrash {
          * The pre-allocated entry set is shared between each saved state, as to decrease total
          * memory cost of unused states.
          */
-        dwarf_cfa_reg_entry_t *_table_stack[6][15];
-        
-        unsigned int _table_pos;
+        uint8_t _table_stack[6][15];
+
+        /** Current position in the table stack */
+        uint8_t _table_pos;
 
         /** Free list of entries. These are unused records from the entries table. */
-        dwarf_cfa_reg_entry_t *_free_list;
+        uint8_t _free_list;
 
         /**
          * Statically allocated set of entries; these will be inserted into the free
@@ -119,17 +120,20 @@ namespace plcrash {
     /*
      * Default constructor.
      */
-    template <typename T, size_t S> dwarf_cfa_stack<T, S>::dwarf_cfa_stack (void) {
+    template <typename T, uint8_t S> dwarf_cfa_stack<T, S>::dwarf_cfa_stack (void) {
+        /* The size must be smaller than UINT8_MAX, which is used as a NULL flag */
+        PLCF_ASSERT_STATIC(max_size, S < UINT8_MAX);
+
         /* Initialize the free list */
-        for (size_t i = 0; i < S; i++)
-            _entries[i].next = &_entries[i+1];
+        for (uint8_t i = 0; i < S; i++)
+            _entries[i].next = i+1;
         
-        _entries[S-1].next = NULL;
-        _free_list = &_entries[0];
+        _entries[S-1].next = UINT8_MAX;
+        _free_list = 0;
         
         /* Set up the table */
         _table_pos = 0;
-        plcrash_async_memset(_table_stack, 0, sizeof(_table_stack));
+        plcrash_async_memset(_table_stack, UINT8_MAX, sizeof(_table_stack));
     }
     
     /**
@@ -139,11 +143,16 @@ namespace plcrash {
      * @param rule The DWARF CFA rule for @a regnum.
      * @param value The data value to be used when interpreting @a rule.
      */
-    template <typename T, size_t S> bool dwarf_cfa_stack<T, S>::add_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value) {
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::add_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value) {
+        PLCF_ASSERT(rule <= UINT8_MAX);
+
         /* Check for an existing entry, or find the target entry off which we'll chain our entry */
-        unsigned int bucket = regnum % (sizeof(_table_stack[_table_pos]) / sizeof(_table_stack[_table_pos][0]));
-        dwarf_cfa_reg_entry_t *parent;
-        for (parent = _table_stack[_table_pos][bucket]; parent != NULL; parent = parent->next) {
+        unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
+
+        dwarf_cfa_reg_entry_t *parent = NULL;
+        for (uint8_t parent_idx = _table_stack[_table_pos][bucket]; parent_idx != UINT8_MAX; parent_idx = parent->next) {
+            parent = &_entries[parent_idx];
+
             /* If an existing entry is found, we can re-use it directly */
             if (parent->regnum == regnum) {
                 parent->value = value;
@@ -152,33 +161,35 @@ namespace plcrash {
             }
 
             /* Otherwise, make sure we terminate with parent == last element */
-            if (parent->next == NULL)
+            if (parent->next == UINT8_MAX)
                 break;
         }
         
         /* 'parent' now either points to the end of the list, or is NULL (in which case the table
          * slot was empty */
         dwarf_cfa_reg_entry *entry = NULL;
-        
+        uint8_t entry_idx;
+
         /* Fetch a free entry */
-        entry = _free_list;
-        if (entry == NULL) {
+        if (_free_list == UINT8_MAX) {
             /* No free entries */
             return false;
         }
+        entry_idx = _free_list;
+        entry = &_entries[entry_idx];
         _free_list = entry->next;
-        
+
         /* Intialize the entry */
         entry->regnum = regnum;
         entry->rule = rule;
         entry->value = value;
-        entry->next = NULL;
+        entry->next = UINT8_MAX;
         
         /* Either insert in the parent, or insert as the first table element */
         if (parent == NULL) {
-            _table_stack[_table_pos][bucket] = entry;
+            _table_stack[_table_pos][bucket] = entry_idx;
         } else {
-            parent->next = entry;
+            parent->next = entry - _entries;
         }
         
         return true;
@@ -192,17 +203,24 @@ namespace plcrash {
      * @param rule[out] On success, the DWARF CFA rule for @a regnum.
      * @param value[out] On success, the data value to be used when interpreting @a rule.
      */
-    template <typename T, size_t S> bool dwarf_cfa_stack<T,S>::get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value) {
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T,S>::get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value) {
         /* Search for the entry */
-        unsigned int bucket = regnum % (sizeof(_table_stack[_table_pos]) / sizeof(_table_stack[_table_pos][0]));
-        dwarf_cfa_reg_entry_t *entry;
-        for (entry = _table_stack[_table_pos][bucket]; entry != NULL; entry = entry->next) {
-            if (entry->regnum != regnum)
+        unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
+    
+        dwarf_cfa_reg_entry_t *entry = NULL;
+        for (uint8_t entry_idx = _table_stack[_table_pos][bucket]; entry_idx != UINT8_MAX; entry_idx = entry->next) {
+            entry = &_entries[entry_idx];
+
+            if (entry->regnum != regnum) {
+                if (entry->next == UINT8_MAX)
+                    break;
+
                 continue;
+            }
             
             /* Existing entry found, we can re-use it directly */
             *value = entry->value;
-            *rule = entry->rule;
+            *rule = (dwarf_cfa_reg_rule_t) entry->rule;
             return true;
         }
 
