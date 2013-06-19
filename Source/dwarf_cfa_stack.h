@@ -55,6 +55,8 @@ namespace plcrash {
          */
         DWARF_CFA_REG_RULE_OFFSET,
     } dwarf_cfa_reg_rule_t;
+    
+    template <typename T, uint8_t S> class dwarf_cfa_stack_iterator;
 
     /**
      * @internal
@@ -122,8 +124,34 @@ namespace plcrash {
         bool set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value);
         bool get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value);
         inline uint8_t get_register_count (void);
+        
+        friend class dwarf_cfa_stack_iterator<T,S>;
     };
-    
+
+    /**
+     * A dwarf_cfa_stack iterator; iterates DWARF CFA register records. The target stack must
+     * not be modified while iteration is performed.
+     */
+    template <typename T, uint8_t S> class dwarf_cfa_stack_iterator {
+    private:
+        /** Current bucket index */
+        uint8_t _bucket_idx;
+        
+        /** Current entry index, or DWARF_CFA_STACK_INVALID_ENTRY_IDX if iteration has not started */
+        uint8_t _cur_entry_idx;
+
+        /** Borrowed reference to the backing DWARF CFA state */
+        dwarf_cfa_stack<T,S> *_stack;
+        
+    public:
+        dwarf_cfa_stack_iterator(dwarf_cfa_stack<T,S> *stack) {
+            _stack = stack;
+            _bucket_idx = 0;
+            _cur_entry_idx = DWARF_CFA_STACK_INVALID_ENTRY_IDX;
+        }
+
+        bool next (uint32_t *regnum, dwarf_cfa_reg_rule_t *rule, T *value);
+    };
     
     /*
      * Default constructor.
@@ -248,6 +276,48 @@ namespace plcrash {
      */
     template <typename T, uint8_t S> inline uint8_t dwarf_cfa_stack<T,S>::get_register_count (void) {
         return _register_count[_table_depth];
+    }
+
+    /**
+     * Enumerate the next register entry. Returns true on success, or false if no additional entries are available.
+     *
+     * @param regnum[out] On success, the DWARF register number.
+     * @param rule[out] On success, the DWARF CFA rule for @a regnum.
+     * @param value[out] On success, the data value to be used when interpreting @a rule.
+     */
+    template <typename T, uint8_t S> bool dwarf_cfa_stack_iterator<T,S>::next (uint32_t *regnum, dwarf_cfa_reg_rule_t *rule, T *value) {
+        /* Fetch the next entry in the bucket chain */
+        if (_cur_entry_idx != DWARF_CFA_STACK_INVALID_ENTRY_IDX) {
+            _cur_entry_idx = _stack->_entries[_cur_entry_idx].next;
+            
+            /* Advance to the next bucket if we've reached the end of the current chain */
+            if (_cur_entry_idx == DWARF_CFA_STACK_INVALID_ENTRY_IDX)
+                _bucket_idx++;
+        }
+
+        /*
+         * On the first iteration, or after the end of a bucket chain has been reached, find the next valid bucket chain.
+         * Otherwise, we have a valid bucket chain and simply need the next entry.
+         */
+        if (_cur_entry_idx == DWARF_CFA_STACK_INVALID_ENTRY_IDX) {
+            for (; _bucket_idx < DWARF_CFA_STACK_BUCKET_COUNT; _bucket_idx++) {
+                if (_stack->_table_stack[_stack->_table_depth][_bucket_idx] != DWARF_CFA_STACK_INVALID_ENTRY_IDX) {
+                    _cur_entry_idx = _stack->_table_stack[_stack->_table_depth][_bucket_idx];
+                    break;
+                }
+            }
+
+            /* If we get here without a valid entry, we've hit the end of all bucket chains. */
+            if (_cur_entry_idx == DWARF_CFA_STACK_INVALID_ENTRY_IDX)
+                return false;
+        }
+
+
+        typename dwarf_cfa_stack<T,S>::dwarf_cfa_reg_entry_t *entry = &_stack->_entries[_cur_entry_idx];
+        *regnum = entry->regnum;
+        *value = entry->value;
+        *rule = (dwarf_cfa_reg_rule_t) entry->rule;
+        return true;
     }
 }
 

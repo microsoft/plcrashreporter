@@ -28,6 +28,7 @@
 #import "PLCrashTestCase.h"
 
 #include "dwarf_cfa_stack.h"
+#include <inttypes.h>
 
 using namespace plcrash;
 
@@ -68,8 +69,33 @@ using namespace plcrash;
     }
 }
 
-- (void) testEnumerateRegister {
+- (void) testEnumerateRegisters {
+    dwarf_cfa_stack<uint32_t, 32> stack;
+
+    /* Allocate all available entries */
+    for (int i = 0; i < 32; i++) {
+        STAssertTrue(stack.set_register(i, DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
+        STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
+    }
     
+    /* Enumerate */
+    dwarf_cfa_stack_iterator<uint32_t, 32> iter = dwarf_cfa_stack_iterator<uint32_t, 32>(&stack);
+    uint32_t found_set = UINT32_MAX;
+    uint32_t regnum;
+    dwarf_cfa_reg_rule_t rule;
+    uint32_t value;
+
+    for (int i = 0; i < 32; i++) {
+        STAssertTrue(iter.next(&regnum, &rule, &value), @"Iteration failed while additional registers remain");
+        STAssertEquals(regnum, value, @"Unexpected value");
+        STAssertEquals(rule, DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
+        
+        found_set &= ~(1<<i);
+    }
+    
+    STAssertFalse(iter.next(&regnum, &rule, &value), @"Iteration succeeded after successfully iterating all registers (got regnum=%" PRIu32 ")", regnum);
+    
+    STAssertEquals(found_set, (uint32_t)0, @"Did not enumerate all 32 values: 0x%" PRIx32, found_set);
 }
 
 - (void) testRemoveRegister {
