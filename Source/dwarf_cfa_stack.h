@@ -31,7 +31,8 @@
 #include <stdint.h>
 
 extern "C" {
-#include "PLCrashAsync.h"
+    #include "PLCrashAsync.h"
+    #include "PLCrashAsyncDwarfPrimitives.h"
 }
 
 /**
@@ -44,17 +45,6 @@ namespace plcrash {
     #define DWARF_CFA_STACK_MAX_STATES 6
     #define DWARF_CFA_STACK_BUCKET_COUNT 14
     #define DWARF_CFA_STACK_INVALID_ENTRY_IDX UINT8_MAX
-
-    /**
-     * Register rules, as defined in DWARF 4 Section 6.4.1.
-     */
-    typedef enum {
-        /**
-         * The previous value of this register is saved at the address CFA+N where CFA is the current
-         * CFA value and N is a signed offset.
-         */
-        DWARF_CFA_REG_RULE_OFFSET,
-    } dwarf_cfa_reg_rule_t;
     
     template <typename T, uint8_t S> class dwarf_cfa_stack_iterator;
 
@@ -121,8 +111,8 @@ namespace plcrash {
 
     public:
         dwarf_cfa_stack (void);
-        bool set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value);
-        bool get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value);
+        bool set_register (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, T value);
+        bool get_register_rule (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, T *value);
         void remove_register (uint32_t regnum);
         inline uint8_t get_register_count (void);
         
@@ -188,7 +178,7 @@ namespace plcrash {
             _cur_entry_idx = DWARF_CFA_STACK_INVALID_ENTRY_IDX;
         }
 
-        bool next (uint32_t *regnum, dwarf_cfa_reg_rule_t *rule, T *value);
+        bool next (uint32_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, T *value);
     };
     
     /*
@@ -223,7 +213,7 @@ namespace plcrash {
      * @param rule The DWARF CFA rule for @a regnum.
      * @param value The data value to be used when interpreting @a rule.
      */
-    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value) {
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::set_register (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, T value) {
         PLCF_ASSERT(rule <= UINT8_MAX);
 
         /* Check for an existing entry, or find the target entry off which we'll chain our entry */
@@ -284,7 +274,7 @@ namespace plcrash {
      * @param rule[out] On success, the DWARF CFA rule for @a regnum.
      * @param value[out] On success, the data value to be used when interpreting @a rule.
      */
-    template <typename T, uint8_t S> bool dwarf_cfa_stack<T,S>::get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value) {
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T,S>::get_register_rule (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, T *value) {
         /* Search for the entry */
         unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
@@ -301,7 +291,7 @@ namespace plcrash {
             
             /* Existing entry found, we can re-use it directly */
             *value = entry->value;
-            *rule = (dwarf_cfa_reg_rule_t) entry->rule;
+            *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
             return true;
         }
 
@@ -357,7 +347,7 @@ namespace plcrash {
      * @param rule[out] On success, the DWARF CFA rule for @a regnum.
      * @param value[out] On success, the data value to be used when interpreting @a rule.
      */
-    template <typename T, uint8_t S> bool dwarf_cfa_stack_iterator<T,S>::next (uint32_t *regnum, dwarf_cfa_reg_rule_t *rule, T *value) {
+    template <typename T, uint8_t S> bool dwarf_cfa_stack_iterator<T,S>::next (uint32_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, T *value) {
         /* Fetch the next entry in the bucket chain */
         if (_cur_entry_idx != DWARF_CFA_STACK_INVALID_ENTRY_IDX) {
             _cur_entry_idx = _stack->_entries[_cur_entry_idx].next;
@@ -388,7 +378,7 @@ namespace plcrash {
         typename dwarf_cfa_stack<T,S>::dwarf_cfa_reg_entry_t *entry = &_stack->_entries[_cur_entry_idx];
         *regnum = entry->regnum;
         *value = entry->value;
-        *rule = (dwarf_cfa_reg_rule_t) entry->rule;
+        *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
         return true;
     }
 }
