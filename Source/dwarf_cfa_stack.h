@@ -112,7 +112,7 @@ namespace plcrash {
 
     public:
         dwarf_cfa_stack (void);
-        bool add_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value);
+        bool set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value);
         bool get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value);
     };
     
@@ -143,7 +143,7 @@ namespace plcrash {
      * @param rule The DWARF CFA rule for @a regnum.
      * @param value The data value to be used when interpreting @a rule.
      */
-    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::add_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value) {
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value) {
         PLCF_ASSERT(rule <= UINT8_MAX);
 
         /* Check for an existing entry, or find the target entry off which we'll chain our entry */

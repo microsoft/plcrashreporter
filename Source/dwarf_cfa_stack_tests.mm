@@ -41,18 +41,18 @@ using namespace plcrash;
  */
 @implementation dwarf_cfa_stack_tests
 
-- (void) testAddRegister {
+- (void) testSetRegister {
     dwarf_cfa_stack<uint32_t, 100> stack;
 
     /* Try using all available entries */
     for (int i = 0; i < 100; i++)
-        STAssertTrue(stack.add_register(i, DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
+        STAssertTrue(stack.set_register(i, DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
     
     /* Ensure that additional requests fail */
-    STAssertFalse(stack.add_register(100, DWARF_CFA_REG_RULE_OFFSET, 100), @"A register was somehow allocated from an empty free list");
+    STAssertFalse(stack.set_register(100, DWARF_CFA_REG_RULE_OFFSET, 100), @"A register was somehow allocated from an empty free list");
     
     /* Verify that modifying an already-added register succeeds */
-    STAssertTrue(stack.add_register(0, DWARF_CFA_REG_RULE_OFFSET, 0), @"Failed to modify existing register");
+    STAssertTrue(stack.set_register(0, DWARF_CFA_REG_RULE_OFFSET, 0), @"Failed to modify existing register");
 
     /* Verify the register values that were added */
     for (uint32_t i = 0; i < 100; i++) {
@@ -63,6 +63,10 @@ using namespace plcrash;
         STAssertEquals(i, value, @"Incorrect value");
         STAssertEquals(rule, DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
+}
+
+- (void) testRemoveRegister {
+    
 }
 
 @end
