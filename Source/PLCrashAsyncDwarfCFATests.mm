@@ -33,7 +33,7 @@
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
 
 @interface PLCrashAsyncDwarfCFATests : PLCrashTestCase {
-    plcrash::dwarf_cfa_stack _stack;
+    plcrash::dwarf_cfa_state _stack;
     plcrash_async_dwarf_gnueh_ptr_state_t _ptr_state;
     plcrash_async_dwarf_cie_info_t _cie;
 }

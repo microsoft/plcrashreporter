@@ -24,8 +24,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCRASH_ASYNC_DWARF_CFA_STACK_H
-#define PLCRASH_ASYNC_DWARF_CFA_STACK_H 1
+#ifndef PLCRASH_ASYNC_DWARF_CFA_STATE_H
+#define PLCRASH_ASYNC_DWARF_CFA_STATE_H 1
 
 #include <cstddef>
 #include <stdint.h>
@@ -37,19 +37,19 @@ extern "C" {
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf_cfa_stack
+ * @ingroup plcrash_async_dwarf_cfa_state
  * @{
  */
 
 namespace plcrash {
-    #define DWARF_CFA_STACK_MAX_STATES 6
-    #define DWARF_CFA_STACK_BUCKET_COUNT 14
-    #define DWARF_CFA_STACK_INVALID_ENTRY_IDX UINT8_MAX
+    #define DWARF_CFA_STATE_MAX_STATES 6
+    #define DWARF_CFA_STATE_BUCKET_COUNT 14
+    #define DWARF_CFA_STATE_INVALID_ENTRY_IDX UINT8_MAX
     
     /* Consumes around 1.65k (on 32-bit and 64-bit systems). */
-    #define DWARF_CFA_STACK_MAX_REGISTERS 100
+    #define DWARF_CFA_STATE_MAX_REGISTERS 100
     
-    class dwarf_cfa_stack_iterator;
+    class dwarf_cfa_state_iterator;
 
     /**
      * @internal
@@ -65,7 +65,7 @@ namespace plcrash {
      * total amount of fixed stack space to be allocated; if we introduce our own async-safe heap allocator,
      * it may be reasonable to simplify this implementation to use the heap for entries.
      */
-    class dwarf_cfa_stack {
+    class dwarf_cfa_state {
     private:
         /** A single register entry */
         typedef struct dwarf_cfa_reg_entry {
@@ -83,7 +83,7 @@ namespace plcrash {
         } dwarf_cfa_reg_entry_t;
         
         /** Current number of defined register entries */
-        uint8_t _register_count[DWARF_CFA_STACK_MAX_STATES];
+        uint8_t _register_count[DWARF_CFA_STATE_MAX_STATES];
 
         /**
          * Active entry lookup table. Maps from regnum to a table index. Most architectures
@@ -96,7 +96,7 @@ namespace plcrash {
          * The pre-allocated entry set is shared between each saved state, as to decrease total
          * memory cost of unused states.
          */
-        uint8_t _table_stack[DWARF_CFA_STACK_MAX_STATES][DWARF_CFA_STACK_BUCKET_COUNT];
+        uint8_t _table_stack[DWARF_CFA_STATE_MAX_STATES][DWARF_CFA_STATE_BUCKET_COUNT];
 
         /** Current position in the table stack */
         uint8_t _table_depth;
@@ -109,10 +109,10 @@ namespace plcrash {
          * list upon construction, and then moved into the entry table as registers
          * are set.
          */
-        dwarf_cfa_reg_entry_t _entries[DWARF_CFA_STACK_MAX_REGISTERS];
+        dwarf_cfa_reg_entry_t _entries[DWARF_CFA_STATE_MAX_REGISTERS];
 
     public:
-        dwarf_cfa_stack (void);
+        dwarf_cfa_state (void);
         bool set_register (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value);
         bool get_register_rule (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value);
         void remove_register (uint32_t regnum);
@@ -121,26 +121,26 @@ namespace plcrash {
         bool push_state (void);
         bool pop_state (void);
         
-        friend class dwarf_cfa_stack_iterator;
+        friend class dwarf_cfa_state_iterator;
     };
 
     /**
-     * A dwarf_cfa_stack iterator; iterates DWARF CFA register records. The target stack must
+     * A dwarf_cfa_state iterator; iterates DWARF CFA register records. The target stack must
      * not be modified while iteration is performed.
      */
-    class dwarf_cfa_stack_iterator {
+    class dwarf_cfa_state_iterator {
     private:
         /** Current bucket index */
         uint8_t _bucket_idx;
         
-        /** Current entry index, or DWARF_CFA_STACK_INVALID_ENTRY_IDX if iteration has not started */
+        /** Current entry index, or DWARF_CFA_STATE_INVALID_ENTRY_IDX if iteration has not started */
         uint8_t _cur_entry_idx;
         
         /** Borrowed reference to the backing DWARF CFA state */
-        dwarf_cfa_stack *_stack;
+        dwarf_cfa_state *_stack;
         
     public:
-        dwarf_cfa_stack_iterator(dwarf_cfa_stack *stack);
+        dwarf_cfa_state_iterator(dwarf_cfa_state *stack);
         bool next (uint32_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value);
     };
   }

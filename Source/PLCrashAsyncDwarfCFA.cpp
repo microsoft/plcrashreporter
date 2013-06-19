@@ -68,7 +68,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,
                                                       pl_vm_size_t length,
-                                                      plcrash::dwarf_cfa_stack *stack)
+                                                      plcrash::dwarf_cfa_state *stack)
 {
     plcrash::dwarf_opstream opstream;
     plcrash_error_t err;
