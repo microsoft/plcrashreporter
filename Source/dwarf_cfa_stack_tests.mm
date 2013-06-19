@@ -46,28 +46,28 @@ using namespace plcrash;
  * Test setting registers in the current state.
  */
 - (void) testSetRegister {
-    dwarf_cfa_stack<uint32_t, 100> stack;
+    dwarf_cfa_stack stack;
 
     /* Try using all available entries */
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
         STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
     }
 
     /* Ensure that additional requests fail */
-    STAssertFalse(stack.set_register(100, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 100), @"A register was somehow allocated from an empty free list");
+    STAssertFalse(stack.set_register(DWARF_CFA_STACK_MAX_REGISTERS, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 100), @"A register was somehow allocated from an empty free list");
     
     /* Verify that modifying an already-added register succeeds */
     STAssertTrue(stack.set_register(0, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 0), @"Failed to modify existing register");
-    STAssertEquals((uint8_t)100, stack.get_register_count(), @"Register count was bumped when modifying an existing register");
+    STAssertEquals((uint8_t)DWARF_CFA_STACK_MAX_REGISTERS, stack.get_register_count(), @"Register count was bumped when modifying an existing register");
 
     /* Verify the register values that were added */
-    for (uint32_t i = 0; i < 100; i++) {
+    for (uint32_t i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint32_t value;
+        int64_t value;
         
         STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-        STAssertEquals(i, value, @"Incorrect value");
+        STAssertEquals((int64_t)i, value, @"Incorrect value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
 }
@@ -76,7 +76,9 @@ using namespace plcrash;
  * Test enumerating registers in the current state.
  */
 - (void) testEnumerateRegisters {
-    dwarf_cfa_stack<uint32_t, 32> stack;
+    dwarf_cfa_stack stack;
+    
+    STAssertTrue(DWARF_CFA_STACK_MAX_REGISTERS > 32, @"This test assumes a minimum of 32 registers");
 
     /* Allocate all available entries */
     for (int i = 0; i < 32; i++) {
@@ -85,15 +87,15 @@ using namespace plcrash;
     }
     
     /* Enumerate */
-    dwarf_cfa_stack_iterator<uint32_t, 32> iter = dwarf_cfa_stack_iterator<uint32_t, 32>(&stack);
+    dwarf_cfa_stack_iterator iter = dwarf_cfa_stack_iterator(&stack);
     uint32_t found_set = UINT32_MAX;
     uint32_t regnum;
     plcrash_dwarf_cfa_reg_rule_t rule;
-    uint32_t value;
-
+    int64_t value;
+    
     for (int i = 0; i < 32; i++) {
         STAssertTrue(iter.next(&regnum, &rule, &value), @"Iteration failed while additional registers remain");
-        STAssertEquals(regnum, value, @"Unexpected value");
+        STAssertEquals((int64_t)regnum, value, @"Unexpected value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
         
         found_set &= ~(1<<i);
@@ -108,17 +110,17 @@ using namespace plcrash;
  * Test removing register values from the current state.
  */
 - (void) testRemoveRegister {
-    dwarf_cfa_stack<uint32_t, 100> stack;
+    dwarf_cfa_stack stack;
     
     /* Insert rules for all entries */
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
         STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
     }
 
     /* Remove a quarter of the entries */
     uint8_t remove_count = 0;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         if (i % 2) {
             stack.remove_register(i);
             remove_count++;
@@ -128,21 +130,21 @@ using namespace plcrash;
     STAssertEquals(stack.get_register_count(), (uint8_t)(100-remove_count), @"Register count was not correctly updated");
     
     /* Verify the full set of registers (including verifying that the removed registers were, in fact, removed) */
-    for (uint32_t i = 0; i < 100; i++) {
+    for (uint32_t i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint32_t value;
+        int64_t value;
         
         if (i % 2) {
             STAssertFalse(stack.get_register_rule(i, &rule, &value), @"Register info was returned for a removed register");
         } else {
             STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-            STAssertEquals(i, value, @"Incorrect value");
+            STAssertEquals((int64_t)i, value, @"Incorrect value");
             STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
         }
     }
     
     /* Re-add the missing registers (verifying that they were correctly added to the free list) */
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         if (i % 2)
             STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
     }
@@ -150,15 +152,15 @@ using namespace plcrash;
     STAssertEquals(stack.get_register_count(), (uint8_t)100, @"Register count was not correctly updated");
     
     /* Ensure that additional requests fail */
-    STAssertFalse(stack.set_register(101, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 101), @"A register was somehow allocated from an empty free list");
+    STAssertFalse(stack.set_register(DWARF_CFA_STACK_MAX_REGISTERS+1, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, DWARF_CFA_STACK_MAX_REGISTERS+1), @"A register was somehow allocated from an empty free list");
     
     /* Verify the register values that were added */
-    for (uint32_t i = 0; i < 100; i++) {
+    for (uint32_t i = 0; i < DWARF_CFA_STACK_MAX_REGISTERS; i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint32_t value;
+        int64_t value;
         
         STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-        STAssertEquals(i, value, @"Incorrect value");
+        STAssertEquals((int64_t)i, value, @"Incorrect value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
 }
@@ -167,14 +169,14 @@ using namespace plcrash;
  * Test pushing and popping of register state.
  */
 - (void) testPushPopState {
-    dwarf_cfa_stack<uint32_t, 100> stack;
+    dwarf_cfa_stack stack;
 
     /* Verify that popping an empty stack returns an error */
     STAssertFalse(stack.pop_state(), @"Popping succeeded on an empty state stack");
     
     /* Configure initial test state */
-    for (int i = 0; i < 25; i++) {
-        STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
+    for (int i = 0; i < (DWARF_CFA_STACK_MAX_REGISTERS/4); i++) {
+        STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, DWARF_CFA_STACK_MAX_REGISTERS-i), @"Failed to add register");
         STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
     }
     
@@ -182,19 +184,19 @@ using namespace plcrash;
     STAssertTrue(stack.push_state(), @"Failed to push a new state");
     STAssertEquals((uint8_t)0, stack.get_register_count(), @"New state should have a register count of 0");
 
-    for (int i = 25; i < 50; i++) {
+    for (int i = 0; i < (DWARF_CFA_STACK_MAX_REGISTERS/4); i++) {
         STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
-        STAssertEquals((uint8_t)(i-24), stack.get_register_count(), @"Incorrect number of registers");
+        STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
     }
     
     /* Pop the state, verify that our original registers were saved */
     STAssertTrue(stack.pop_state(), @"Failed to pop current state");
-    for (uint32_t i = 0; i < 25; i++) {
+    for (uint32_t i = 0; i < (DWARF_CFA_STACK_MAX_REGISTERS/4); i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint32_t value;
+        int64_t value;
         
         STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-        STAssertEquals(i, value, @"Incorrect value");
+        STAssertEquals((int64_t)(DWARF_CFA_STACK_MAX_REGISTERS-i), value, @"Incorrect value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
     
