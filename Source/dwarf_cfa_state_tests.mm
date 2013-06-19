@@ -52,8 +52,13 @@ using namespace plcrash;
     
     stack.set_cfa_register(10, 20);
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int32_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((dwarf_cfa_state_regnum_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((uint64_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    
+    stack.set_cfa_register_signed(10, -20);
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((dwarf_cfa_state_regnum_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((int64_t)-20, stack.get_cfa_rule().reg.signed_offset, @"Unexpected CFA offset");
     
     stack.set_cfa_expression(25);
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
@@ -107,7 +112,7 @@ using namespace plcrash;
     /* Enumerate */
     dwarf_cfa_state_iterator iter = dwarf_cfa_state_iterator(&stack);
     uint32_t found_set = UINT32_MAX;
-    uint32_t regnum;
+    dwarf_cfa_state_regnum_t regnum;
     plcrash_dwarf_cfa_reg_rule_t rule;
     int64_t value;
     
@@ -226,8 +231,8 @@ using namespace plcrash;
     }
     
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int32_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((dwarf_cfa_state_regnum_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((uint64_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 
     /* Validate state overflow checking; an implicit state already exists at the top of the stack, so we
      * start iteration at 1. */

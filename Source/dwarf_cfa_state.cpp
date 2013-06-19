@@ -99,7 +99,7 @@ dwarf_cfa_state::dwarf_cfa_state (void) {
  * @param rule The DWARF CFA rule for @a regnum.
  * @param value The data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state::set_register (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value) {
+bool dwarf_cfa_state::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value) {
     PLCF_ASSERT(rule <= UINT8_MAX);
     
     /* Check for an existing entry, or find the target entry off which we'll chain our entry */
@@ -160,7 +160,7 @@ bool dwarf_cfa_state::set_register (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_
  * @param rule[out] On success, the DWARF CFA rule for @a regnum.
  * @param value[out] On success, the data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state::get_register_rule (uint32_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
+bool dwarf_cfa_state::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
     /* Search for the entry */
     unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
@@ -190,7 +190,7 @@ bool dwarf_cfa_state::get_register_rule (uint32_t regnum, plcrash_dwarf_cfa_reg_
  *
  * @param regnum The DWARF register number to be removed.
  */
-void dwarf_cfa_state::remove_register (uint32_t regnum) {
+void dwarf_cfa_state::remove_register (dwarf_cfa_state_regnum_t regnum) {
     /* Search for the entry */
     unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
@@ -227,16 +227,27 @@ uint8_t dwarf_cfa_state::get_register_count (void) {
 }
 
 /**
+ * Set a register-based call frame address rule, using a signed register offset.
+ *
+ * @param regnum The base register for the call frame address.
+ * @param offset The signed offset.
+ */
+void dwarf_cfa_state::set_cfa_register_signed (dwarf_cfa_state_regnum_t regnum, int64_t offset) {
+    _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED;
+    _cfa_value[_table_depth].reg.regnum = regnum;
+    _cfa_value[_table_depth].reg.signed_offset = offset;
+}
+
+/**
  * Set a register-based call frame address rule.
  *
  * @param regnum The base register for the call frame address.
- * @param offset The offset 
+ * @param offset The unsigned offset.
  */
-void dwarf_cfa_state::set_cfa_register (uint32_t regnum, int32_t offset) {
+void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, uint64_t offset) {
     _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_REGISTER;
     _cfa_value[_table_depth].reg.regnum = regnum;
     _cfa_value[_table_depth].reg.offset = offset;
-
 }
 
 /**
@@ -275,7 +286,7 @@ dwarf_cfa_state_iterator::dwarf_cfa_state_iterator(dwarf_cfa_state *stack) {
  * @param rule[out] On success, the DWARF CFA rule for @a regnum.
  * @param value[out] On success, the data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state_iterator::next (uint32_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
+bool dwarf_cfa_state_iterator::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
     /* Fetch the next entry in the bucket chain */
     if (_cur_entry_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
         _cur_entry_idx = _stack->_entries[_cur_entry_idx].next;

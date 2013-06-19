@@ -92,6 +92,43 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     } \
     v; \
 })
+    
+    /* A position-advancing DWARF uleb128 register read macro that uses GCC/clang's compound statement value extension, returning an error
+     * if the read fails, or the register value exceeds DWARF_CFA_STATE_REGNUM_MAX */
+#define dw_expr_read_uleb128_regnum() ({ \
+    uint64_t v; \
+    if (!opstream.read_uleb128(&v)) { \
+        PLCF_DEBUG("Read of ULEB128 value failed"); \
+        return PLCRASH_EINVAL; \
+    } \
+    if (v > DWARF_CFA_STATE_REGNUM_MAX) { \
+        PLCF_DEBUG("Register number %" PRIu64 " exceeds DWARF_CFA_STATE_REGNUM_MAX", v); \
+        return PLCRASH_ENOTSUP; \
+    } \
+    (uint32_t) v; \
+})
+    
+    /* A position-advancing uleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
+     * if the read fails. */
+#define dw_expr_read_uleb128() ({ \
+    uint64_t v; \
+    if (!opstream.read_uleb128(&v)) { \
+        PLCF_DEBUG("Read of ULEB128 value failed"); \
+        return PLCRASH_EINVAL; \
+    } \
+    v; \
+})
+
+    /* A position-advancing sleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
+     * if the read fails. */
+#define dw_expr_read_sleb128() ({ \
+    int64_t v; \
+    if (!opstream.read_sleb128(&v)) { \
+        PLCF_DEBUG("Read of SLEB128 value failed"); \
+        return PLCRASH_EINVAL; \
+    } \
+    v; \
+})
 
     /* Iterate the opcode stream until the pc_offset is hit */
     uint8_t opcode;
@@ -136,6 +173,14 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 location += dw_expr_read_int(uint32_t) * cie_info->code_alignment_factor;
                 break;
                 
+            case DW_CFA_def_cfa:
+                stack->set_cfa_register(dw_expr_read_uleb128_regnum(), dw_expr_read_uleb128());
+                break;
+                
+            case DW_CFA_def_cfa_sf:
+                stack->set_cfa_register_signed(dw_expr_read_uleb128_regnum(), dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                break;
+
             case DW_CFA_nop:
                 break;
                 
