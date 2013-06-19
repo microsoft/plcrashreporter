@@ -41,6 +41,10 @@ extern "C" {
  */
 
 namespace plcrash {
+    #define DWARF_CFA_STACK_MAX_STATES 6
+    #define DWARF_CFA_STACK_BUCKET_COUNT 14
+    #define DWARF_CFA_STACK_INVALID_ENTRY_IDX UINT8_MAX
+
     /**
      * Register rules, as defined in DWARF 4 Section 6.4.1.
      */
@@ -84,21 +88,24 @@ namespace plcrash {
         } dwarf_cfa_reg_entry_t;
         
     private:
+        /** Current number of defined register entries */
+        uint8_t _register_count[DWARF_CFA_STACK_MAX_STATES];
+
         /**
          * Active entry lookup table. Maps from regnum to a table index. Most architectures
          * define <20 valid register numbers.
          *
-         * This provides a maximum of 6 saved states (DW_CFA_remember_state), with 15 register buckets
-         * available in each row. Each bucket may hold multiple register entries; the
+         * This provides a maximum of MAX_STATES saved states (DW_CFA_remember_state), with BUCKET_COUNT register
+         * buckets available in each stack entry. Each bucket may hold multiple register entries; the
          * maximum number of register entries depends on the configured size of _entries.
          *
          * The pre-allocated entry set is shared between each saved state, as to decrease total
          * memory cost of unused states.
          */
-        uint8_t _table_stack[6][15];
+        uint8_t _table_stack[DWARF_CFA_STACK_MAX_STATES][DWARF_CFA_STACK_BUCKET_COUNT];
 
         /** Current position in the table stack */
-        uint8_t _table_pos;
+        uint8_t _table_depth;
 
         /** Free list of entries. These are unused records from the entries table. */
         uint8_t _free_list;
@@ -114,6 +121,7 @@ namespace plcrash {
         dwarf_cfa_stack (void);
         bool set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value);
         bool get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value);
+        inline uint8_t get_register_count (void);
     };
     
     
@@ -121,23 +129,29 @@ namespace plcrash {
      * Default constructor.
      */
     template <typename T, uint8_t S> dwarf_cfa_stack<T, S>::dwarf_cfa_stack (void) {
-        /* The size must be smaller than UINT8_MAX, which is used as a NULL flag */
-        PLCF_ASSERT_STATIC(max_size, S < UINT8_MAX);
+        /* The size must be smaller than the invalid entry index, which is used as a NULL flag */
+        PLCF_ASSERT_STATIC(max_size, S < DWARF_CFA_STACK_INVALID_ENTRY_IDX);
 
         /* Initialize the free list */
         for (uint8_t i = 0; i < S; i++)
             _entries[i].next = i+1;
-        
-        _entries[S-1].next = UINT8_MAX;
+
+        /* Set the terminator flag on the last entry */
+        _entries[S-1].next = DWARF_CFA_STACK_INVALID_ENTRY_IDX;
+
+        /* First free entry is _entries[0] */
         _free_list = 0;
         
+        /* Initial register count */
+        plcrash_async_memset(_register_count, 0, sizeof(_register_count));
+        
         /* Set up the table */
-        _table_pos = 0;
-        plcrash_async_memset(_table_stack, UINT8_MAX, sizeof(_table_stack));
+        _table_depth = 0;
+        plcrash_async_memset(_table_stack, DWARF_CFA_STACK_INVALID_ENTRY_IDX, sizeof(_table_stack));
     }
     
     /**
-     * Add a new register for the current row.
+     * Add a new register.
      *
      * @param regnum The DWARF register number.
      * @param rule The DWARF CFA rule for @a regnum.
@@ -150,7 +164,7 @@ namespace plcrash {
         unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
 
         dwarf_cfa_reg_entry_t *parent = NULL;
-        for (uint8_t parent_idx = _table_stack[_table_pos][bucket]; parent_idx != UINT8_MAX; parent_idx = parent->next) {
+        for (uint8_t parent_idx = _table_stack[_table_depth][bucket]; parent_idx != DWARF_CFA_STACK_INVALID_ENTRY_IDX; parent_idx = parent->next) {
             parent = &_entries[parent_idx];
 
             /* If an existing entry is found, we can re-use it directly */
@@ -161,7 +175,7 @@ namespace plcrash {
             }
 
             /* Otherwise, make sure we terminate with parent == last element */
-            if (parent->next == UINT8_MAX)
+            if (parent->next == DWARF_CFA_STACK_INVALID_ENTRY_IDX)
                 break;
         }
         
@@ -171,7 +185,7 @@ namespace plcrash {
         uint8_t entry_idx;
 
         /* Fetch a free entry */
-        if (_free_list == UINT8_MAX) {
+        if (_free_list == DWARF_CFA_STACK_INVALID_ENTRY_IDX) {
             /* No free entries */
             return false;
         }
@@ -183,15 +197,16 @@ namespace plcrash {
         entry->regnum = regnum;
         entry->rule = rule;
         entry->value = value;
-        entry->next = UINT8_MAX;
+        entry->next = DWARF_CFA_STACK_INVALID_ENTRY_IDX;
         
         /* Either insert in the parent, or insert as the first table element */
         if (parent == NULL) {
-            _table_stack[_table_pos][bucket] = entry_idx;
+            _table_stack[_table_depth][bucket] = entry_idx;
         } else {
             parent->next = entry - _entries;
         }
-        
+
+        _register_count[_table_depth]++;
         return true;
     }
 
@@ -208,11 +223,11 @@ namespace plcrash {
         unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
         dwarf_cfa_reg_entry_t *entry = NULL;
-        for (uint8_t entry_idx = _table_stack[_table_pos][bucket]; entry_idx != UINT8_MAX; entry_idx = entry->next) {
+        for (uint8_t entry_idx = _table_stack[_table_depth][bucket]; entry_idx != DWARF_CFA_STACK_INVALID_ENTRY_IDX; entry_idx = entry->next) {
             entry = &_entries[entry_idx];
 
             if (entry->regnum != regnum) {
-                if (entry->next == UINT8_MAX)
+                if (entry->next == DWARF_CFA_STACK_INVALID_ENTRY_IDX)
                     break;
 
                 continue;
@@ -226,6 +241,13 @@ namespace plcrash {
 
         /* Not found? */
         return false;
+    }
+    
+    /**
+     * Return the number of register rules set for the current register state.
+     */
+    template <typename T, uint8_t S> inline uint8_t dwarf_cfa_stack<T,S>::get_register_count (void) {
+        return _register_count[_table_depth];
     }
 }
 
