@@ -126,8 +126,45 @@ namespace plcrash {
         void remove_register (uint32_t regnum);
         inline uint8_t get_register_count (void);
         
+        bool push_state (void);
+        bool pop_state (void);
+        
         friend class dwarf_cfa_stack_iterator<T,S>;
     };
+
+    /**
+     * Push a state onto the state stack; all existing values will be saved on the stack, and registers
+     * will be set to their default state.
+     *
+     * @return Returns true on success, or false if insufficient space is available on the state
+     * stack.
+     */
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::push_state (void) {
+        PLCF_ASSERT(_table_depth+1 <= DWARF_CFA_STACK_MAX_STATES);
+
+        if (_table_depth+1 == DWARF_CFA_STACK_MAX_STATES)
+            return false;
+        
+        _table_depth++;
+        _register_count[_table_depth] = 0;
+        plcrash_async_memset(_table_stack[_table_depth], DWARF_CFA_STACK_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
+
+        return true;
+    }
+
+    /**
+     * Pop a previously saved state from the state stack. All existing values will be discarded on the stack, and registers
+     * will be reinitialized from the saved state.
+     *
+     * @return Returns true on success, or false if no states are available on the state stack.
+     */
+    template <typename T, uint8_t S> bool dwarf_cfa_stack<T, S>::pop_state (void) {
+        if (_table_depth == 0)
+            return false;
+        
+        _table_depth--;
+        return true;
+    }
 
     /**
      * A dwarf_cfa_stack iterator; iterates DWARF CFA register records. The target stack must
@@ -172,11 +209,11 @@ namespace plcrash {
         _free_list = 0;
         
         /* Initial register count */
-        plcrash_async_memset(_register_count, 0, sizeof(_register_count));
+        _register_count[0] = 0;
         
         /* Set up the table */
         _table_depth = 0;
-        plcrash_async_memset(_table_stack, DWARF_CFA_STACK_INVALID_ENTRY_IDX, sizeof(_table_stack));
+        plcrash_async_memset(_table_stack[0], DWARF_CFA_STACK_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
     }
     
     /**
