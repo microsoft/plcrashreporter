@@ -99,7 +99,59 @@ using namespace plcrash;
 }
 
 - (void) testRemoveRegister {
+    dwarf_cfa_stack<uint32_t, 100> stack;
     
+    /* Insert rules for all entries */
+    for (int i = 0; i < 100; i++) {
+        STAssertTrue(stack.set_register(i, DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
+        STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
+    }
+
+    /* Remove a quarter of the entries */
+    uint8_t remove_count = 0;
+    for (int i = 0; i < 100; i++) {
+        if (i % 2) {
+            stack.remove_register(i);
+            remove_count++;
+        }
+    }
+
+    STAssertEquals(stack.get_register_count(), (uint8_t)(100-remove_count), @"Register count was not correctly updated");
+    
+    /* Verify the full set of registers (including verifying that the removed registers were, in fact, removed) */
+    for (uint32_t i = 0; i < 100; i++) {
+        dwarf_cfa_reg_rule_t rule;
+        uint32_t value;
+        
+        if (i % 2) {
+            STAssertFalse(stack.get_register_rule(i, &rule, &value), @"Register info was returned for a removed register");
+        } else {
+            STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
+            STAssertEquals(i, value, @"Incorrect value");
+            STAssertEquals(rule, DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
+        }
+    }
+    
+    /* Re-add the missing registers (verifying that they were correctly added to the free list) */
+    for (int i = 0; i < 100; i++) {
+        if (i % 2)
+            STAssertTrue(stack.set_register(i, DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
+    }
+    
+    STAssertEquals(stack.get_register_count(), (uint8_t)100, @"Register count was not correctly updated");
+    
+    /* Ensure that additional requests fail */
+    STAssertFalse(stack.set_register(101, DWARF_CFA_REG_RULE_OFFSET, 101), @"A register was somehow allocated from an empty free list");
+    
+    /* Verify the register values that were added */
+    for (uint32_t i = 0; i < 100; i++) {
+        dwarf_cfa_reg_rule_t rule;
+        uint32_t value;
+        
+        STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
+        STAssertEquals(i, value, @"Incorrect value");
+        STAssertEquals(rule, DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
+    }
 }
 
 @end

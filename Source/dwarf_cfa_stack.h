@@ -123,6 +123,7 @@ namespace plcrash {
         dwarf_cfa_stack (void);
         bool set_register (uint32_t regnum, dwarf_cfa_reg_rule_t rule, T value);
         bool get_register_rule (uint32_t regnum, dwarf_cfa_reg_rule_t *rule, T *value);
+        void remove_register (uint32_t regnum);
         inline uint8_t get_register_count (void);
         
         friend class dwarf_cfa_stack_iterator<T,S>;
@@ -269,6 +270,40 @@ namespace plcrash {
 
         /* Not found? */
         return false;
+    }
+    
+    /**
+     * Remove a register from the current state.
+     *
+     * @param regnum The DWARF register number to be removed.
+     */
+    template <typename T, uint8_t S> void dwarf_cfa_stack<T, S>::remove_register (uint32_t regnum) {
+        /* Search for the entry */
+        unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
+
+        dwarf_cfa_reg_entry *prev = NULL;
+        dwarf_cfa_reg_entry_t *entry = NULL;
+        for (uint8_t entry_idx = _table_stack[_table_depth][bucket]; entry_idx != DWARF_CFA_STACK_INVALID_ENTRY_IDX; entry_idx = entry->next) {
+            prev = entry;
+            entry = &_entries[entry_idx];
+
+            if (entry->regnum != regnum)
+                continue;
+
+            /* Remove from the bucket chain */
+            if (prev != NULL) {
+                prev->next = entry->next;
+            } else {
+                _table_stack[_table_depth][bucket] = entry->next;
+            }
+
+            /* Re-insert in the free list */
+            entry->next = _free_list;
+            _free_list = entry_idx;
+            
+            /* Decrement the register count */
+            _register_count[_table_depth]--;
+        }
     }
     
     /**
