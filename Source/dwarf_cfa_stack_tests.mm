@@ -27,7 +27,7 @@
 
 #import "PLCrashTestCase.h"
 
-#include "dwarf_cfa_stack.h"
+#include "dwarf_cfa_stack.hpp"
 #include <inttypes.h>
 
 using namespace plcrash;

@@ -28,7 +28,7 @@
 
 #import "PLCrashTestCase.h"
 
-#include "dwarf_opstream.h"
+#include "dwarf_opstream.hpp"
 
 @interface dwarf_opstream_tests : PLCrashTestCase {
 @private

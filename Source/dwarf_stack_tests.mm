@@ -28,7 +28,7 @@
 
 #import "PLCrashTestCase.h"
 
-#include "dwarf_stack.h"
+#include "dwarf_stack.hpp"
 
 using namespace plcrash;
 

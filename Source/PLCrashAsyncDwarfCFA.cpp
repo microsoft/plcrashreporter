@@ -26,7 +26,7 @@
 
 
 #include "PLCrashAsyncDwarfCFA.h"
-#include "dwarf_opstream.h"
+#include "dwarf_opstream.hpp"
 #include <inttypes.h>
 
 /**

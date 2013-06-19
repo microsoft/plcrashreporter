@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "dwarf_stack.h"
+#include "dwarf_stack.hpp"
 
 /**
  * @internal

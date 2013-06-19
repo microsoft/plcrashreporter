@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "dwarf_opstream.h"
+#include "dwarf_opstream.hpp"
 
 namespace plcrash {
 

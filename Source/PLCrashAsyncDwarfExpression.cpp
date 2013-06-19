@@ -30,8 +30,8 @@ extern "C" {
     #include <inttypes.h>
 }
 
-#include "dwarf_stack.h"
-#include "dwarf_opstream.h"
+#include "dwarf_stack.hpp"
+#include "dwarf_opstream.hpp"
 
 /**
  * @internal
