@@ -46,7 +46,7 @@ namespace plcrash {
     #define DWARF_CFA_STACK_BUCKET_COUNT 14
     #define DWARF_CFA_STACK_INVALID_ENTRY_IDX UINT8_MAX
     
-    /* Consumes around 1.5K on 32-bit systems */
+    /* Consumes around 1.65k (on 32-bit and 64-bit systems). */
     #define DWARF_CFA_STACK_MAX_REGISTERS 100
     
     class dwarf_cfa_stack_iterator;
