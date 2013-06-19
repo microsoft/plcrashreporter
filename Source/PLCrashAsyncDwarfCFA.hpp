@@ -24,19 +24,22 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCRASH_ASYNC_DWARF_CFA_H
-#define PLCRASH_ASYNC_DWARF_CFA_H 1
+#ifndef PLCRASH_ASYNC_DWARF_CFA_HPP
+#define PLCRASH_ASYNC_DWARF_CFA_HPP 1
 
-#ifdef __cplusplus
 extern "C" {
-#endif
+    #include "PLCrashAsync.h"
+    #include "PLCrashAsyncMObject.h"
+    #include "PLCrashAsyncThread.h"
 
-#include "PLCrashAsync.h"
-#include "PLCrashAsyncMObject.h"
-#include "PLCrashAsyncThread.h"
+    #include "PLCrashAsyncDwarfCIE.h"
+    #include "PLCrashAsyncDwarfPrimitives.h"
+}
 
-#include "PLCrashAsyncDwarfCIE.h"
-#include "PLCrashAsyncDwarfPrimitives.h"
+/* Ideally, the use of the CFA stack API would be opaque, but our lack of
+ * an async-safe allocator require that we expose internals for stack
+ * allocation. */
+#include "dwarf_cfa_stack.hpp"
 
 /**
  * @internal
@@ -51,14 +54,11 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                                                       const plcrash_async_byteorder_t *byteorder,
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,
-                                                      pl_vm_size_t length);
+                                                      pl_vm_size_t length,
+                                                      plcrash::dwarf_cfa_stack *stack);
 
 /**
  * @}
  */
-    
-#ifdef __cplusplus
-}
-#endif
 
-#endif /* PLCRASH_ASYNC_DWARF_CFA_H */
+#endif /* PLCRASH_ASYNC_DWARF_CFA_HPP */

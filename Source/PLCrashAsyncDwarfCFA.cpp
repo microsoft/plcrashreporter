@@ -25,7 +25,7 @@
  */
 
 
-#include "PLCrashAsyncDwarfCFA.h"
+#include "PLCrashAsyncDwarfCFA.hpp"
 #include "dwarf_opstream.hpp"
 #include <inttypes.h>
 
@@ -51,6 +51,8 @@
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
+ * @param stack The CFA state stack to be used for evaluation of the CFA program. This state
+ * may have been previously initialized by a common CFA initializer program.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
  * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned.
@@ -65,7 +67,8 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                                                       const plcrash_async_byteorder_t *byteorder,
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,
-                                                      pl_vm_size_t length)
+                                                      pl_vm_size_t length,
+                                                      plcrash::dwarf_cfa_stack *stack)
 {
     plcrash::dwarf_opstream opstream;
     plcrash_error_t err;

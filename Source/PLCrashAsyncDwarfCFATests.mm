@@ -28,11 +28,12 @@
 
 #import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfCFA.h"
+#include "PLCrashAsyncDwarfCFA.hpp"
 
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
 
 @interface PLCrashAsyncDwarfCFATests : PLCrashTestCase {
+    plcrash::dwarf_cfa_stack _stack;
     plcrash_async_dwarf_gnueh_ptr_state_t _ptr_state;
     plcrash_async_dwarf_cie_info_t _cie;
 }
@@ -67,9 +68,9 @@
 #define PERFORM_EVAL_TEST(opcodes, pc_offset, expected) do { \
     plcrash_async_mobject_t mobj; \
     plcrash_error_t err; \
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
     \
-        err = plcrash_async_dwarf_eval_cfa_program(&mobj, pc_offset, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes)); \
+        err = plcrash_async_dwarf_eval_cfa_program(&mobj, (pl_vm_address_t)pc_offset, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), &_stack); \
         STAssertEquals(err, expected, @"Evaluation failed"); \
     \
     plcrash_async_mobject_free(&mobj); \
