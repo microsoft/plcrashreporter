@@ -51,6 +51,18 @@ namespace plcrash {
     
     class dwarf_cfa_state_iterator;
 
+    /** Call Frame Address type. */
+    typedef enum {
+        /** CFA is undefined. */
+        DWARF_CFA_STATE_CFA_TYPE_UNDEFINED = 0,
+        
+        /** CFA is defined by a DWARF expression. */
+        DWARF_CFA_STATE_CFA_TYPE_EXPRESSION = 1,
+        
+        /** CFA is defined by a register value + offset. */
+        DWARF_CFA_STATE_CFA_TYPE_REGISTER = 2
+    } dwarf_cfa_state_cfa_type_t;
+
     /**
      * @internal
      *
@@ -81,6 +93,31 @@ namespace plcrash {
             /** Next entry in the list, or NULL */
             uint8_t next;
         } dwarf_cfa_reg_entry_t;
+
+        /** A CFA value rule.*/
+        typedef struct dwarf_cfa_rule {
+            /** The CFA type */
+            dwarf_cfa_state_cfa_type_t cfa_type;
+            
+            union {
+                /**
+                 * CFA register value. (CFA = register + offset). Valid if type is DWARF_CFA_STATE_CFA_TYPE_REGISTER.
+                 */
+                struct {
+                    /** CFA register */
+                    uint32_t regnum;
+                    
+                    /** CFA register offset */
+                    int32_t offset;
+                } reg;
+                
+                /** CFA expression (CFA = expression). Valid if type is DWARF_CFA_STATE_CFA_TYPE_EXPRESSION. */
+                int64_t expression;
+            };
+        } dwarf_cfa_rule_t;
+        
+        /** Current call frame value configuration. */
+        dwarf_cfa_rule_t _cfa_value[DWARF_CFA_STATE_MAX_STATES];
         
         /** Current number of defined register entries */
         uint8_t _register_count[DWARF_CFA_STATE_MAX_STATES];
@@ -118,6 +155,10 @@ namespace plcrash {
         void remove_register (uint32_t regnum);
         uint8_t get_register_count (void);
         
+        void set_cfa_register (uint32_t regnum, int32_t offset);
+        void set_cfa_expression (int64_t expression);
+        dwarf_cfa_rule_t get_cfa_rule (void);
+
         bool push_state (void);
         bool pop_state (void);
         

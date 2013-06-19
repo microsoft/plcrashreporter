@@ -43,6 +43,8 @@ bool dwarf_cfa_state::push_state (void) {
     
     _table_depth++;
     _register_count[_table_depth] = 0;
+    _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_UNDEFINED;
+
     plcrash_async_memset(_table_stack[_table_depth], DWARF_CFA_STATE_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
     
     return true;
@@ -85,6 +87,9 @@ dwarf_cfa_state::dwarf_cfa_state (void) {
     /* Set up the table */
     _table_depth = 0;
     plcrash_async_memset(_table_stack[0], DWARF_CFA_STATE_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
+    
+    /* Default CFA */
+    _cfa_value[0].cfa_type = DWARF_CFA_STATE_CFA_TYPE_UNDEFINED;
 }
 
 /**
@@ -219,6 +224,36 @@ void dwarf_cfa_state::remove_register (uint32_t regnum) {
  */
 uint8_t dwarf_cfa_state::get_register_count (void) {
     return _register_count[_table_depth];
+}
+
+/**
+ * Set a register-based call frame address rule.
+ *
+ * @param regnum The base register for the call frame address.
+ * @param offset The offset 
+ */
+void dwarf_cfa_state::set_cfa_register (uint32_t regnum, int32_t offset) {
+    _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_REGISTER;
+    _cfa_value[_table_depth].reg.regnum = regnum;
+    _cfa_value[_table_depth].reg.offset = offset;
+
+}
+
+/**
+ * Set an expression-based call frame address rule.
+ *
+ * @param expression DW_FORM_block value for the DWARF expression.
+ */
+void dwarf_cfa_state::set_cfa_expression (int64_t expression) {
+    _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_EXPRESSION;
+    _cfa_value[_table_depth].expression = expression;
+}
+
+/**
+ * Return the call frame address rule defined for the current state.
+ */
+dwarf_cfa_state::dwarf_cfa_rule_t dwarf_cfa_state::get_cfa_rule (void) {
+    return _cfa_value[_table_depth];
 }
 
 /**

@@ -43,6 +43,24 @@ using namespace plcrash;
 @implementation dwarf_cfa_state_tests
 
 /**
+ * Test CFA rule handling.
+ */
+- (void) testCFARule {
+    dwarf_cfa_state stack;
+
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_UNDEFINED, stack.get_cfa_rule().cfa_type, @"Unexpected initial CFA value");
+    
+    stack.set_cfa_register(10, 20);
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((uint32_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((int32_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    
+    stack.set_cfa_expression(25);
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((int64_t)25, stack.get_cfa_rule().expression, @"Unexpected CFA expression");
+}
+
+/**
  * Test setting registers in the current state.
  */
 - (void) testSetRegister {
@@ -171,6 +189,9 @@ using namespace plcrash;
 - (void) testPushPopState {
     dwarf_cfa_state stack;
 
+    /* Validate initial CFA state */
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_UNDEFINED, stack.get_cfa_rule().cfa_type, @"Unexpected initial CFA value");
+
     /* Verify that popping an empty stack returns an error */
     STAssertFalse(stack.pop_state(), @"Popping succeeded on an empty state stack");
     
@@ -179,6 +200,8 @@ using namespace plcrash;
         STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, DWARF_CFA_STATE_MAX_REGISTERS-i), @"Failed to add register");
         STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
     }
+
+    stack.set_cfa_register(10, 20);
     
     /* Try pushing and initializing new state */
     STAssertTrue(stack.push_state(), @"Failed to push a new state");
@@ -188,8 +211,10 @@ using namespace plcrash;
         STAssertTrue(stack.set_register(i, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, i), @"Failed to add register");
         STAssertEquals((uint8_t)(i+1), stack.get_register_count(), @"Incorrect number of registers");
     }
+
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_UNDEFINED, stack.get_cfa_rule().cfa_type, @"Unexpected initial CFA value");
     
-    /* Pop the state, verify that our original registers were saved */
+    /* Pop the state, verify that our original state was saved */
     STAssertTrue(stack.pop_state(), @"Failed to pop current state");
     for (uint32_t i = 0; i < (DWARF_CFA_STATE_MAX_REGISTERS/4); i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
@@ -200,6 +225,10 @@ using namespace plcrash;
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
     
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((uint32_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((int32_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+
     /* Validate state overflow checking; an implicit state already exists at the top of the stack, so we
      * start iteration at 1. */
     for (uint8_t i = 1; i < DWARF_CFA_STATE_MAX_STATES; i++) {
