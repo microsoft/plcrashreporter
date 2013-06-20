@@ -127,11 +127,11 @@ using namespace plcrash;
     uint32_t found_set = UINT32_MAX;
     dwarf_cfa_state_regnum_t regnum;
     plcrash_dwarf_cfa_reg_rule_t rule;
-    int64_t value;
+    uint64_t value;
     
     for (int i = 0; i < 32; i++) {
         STAssertTrue(iter.next(&regnum, &rule, &value), @"Iteration failed while additional registers remain");
-        STAssertEquals((int64_t)regnum, value, @"Unexpected value");
+        STAssertEquals((uint64_t)regnum, value, @"Unexpected value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
         
         found_set &= ~(1<<i);

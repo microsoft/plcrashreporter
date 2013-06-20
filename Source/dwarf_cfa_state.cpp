@@ -279,7 +279,7 @@ dwarf_cfa_state_iterator::dwarf_cfa_state_iterator(dwarf_cfa_state *stack) {
  * @param rule[out] On success, the DWARF CFA rule for @a regnum.
  * @param value[out] On success, the data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state_iterator::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
+bool dwarf_cfa_state_iterator::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, uint64_t *value) {
     /* Fetch the next entry in the bucket chain */
     if (_cur_entry_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
         _cur_entry_idx = _stack->_entries[_cur_entry_idx].next;

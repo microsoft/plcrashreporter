@@ -53,8 +53,9 @@ using namespace plcrash;
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
- * @param stack The CFA state stack to be used for evaluation of the CFA program. This state
- * may have been previously initialized by a common CFA initializer program.
+ * @param state The CFA state stack to be used for evaluation of the CFA program. This state
+ * may have been previously initialized by a common CFA initializer program, and will be used
+ * as the initial state when evaluating opcodes such as DW_CFA_restore.
  *
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
  * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned.
@@ -75,6 +76,23 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     dwarf_opstream opstream;
     plcrash_error_t err;
     pl_vm_address_t location = 0;
+
+    /* Save the initial state; this is needed for DW_CFA_restore, et al. */
+    // TODO - It would be preferrable to only allocate the number of registers actually required here.
+    dwarf_cfa_state initial_state;
+    {
+        dwarf_cfa_state_regnum_t regnum;
+        plcrash_dwarf_cfa_reg_rule_t rule;
+        uint64_t value;
+
+        dwarf_cfa_state_iterator iter = dwarf_cfa_state_iterator(stack);
+        while (iter.next(&regnum, &rule, &value)) {
+            if (!initial_state.set_register(regnum, rule, value)) {
+                PLCF_DEBUG("Hit register allocation limit while saving initial state");
+                return PLCRASH_ENOMEM;
+            }
+        }
+    }
 
     /* Default to reading as a standard machine word */
     DW_EH_PE_t gnu_eh_ptr_encoding = DW_EH_PE_absptr;

@@ -197,7 +197,7 @@ namespace plcrash {
         
     public:
         dwarf_cfa_state_iterator(dwarf_cfa_state *stack);
-        bool next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value);
+        bool next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, uint64_t *value);
     };
   }
 
