@@ -86,22 +86,7 @@ namespace plcrash {
      * it may be reasonable to simplify this implementation to use the heap for entries.
      */
     class dwarf_cfa_state {
-    private:
-        /** A single register entry */
-        typedef struct dwarf_cfa_reg_entry {
-            /** Register value */
-            int64_t value;
-
-            /** The DWARF register number */
-            dwarf_cfa_state_regnum_t regnum;
-
-            /** DWARF register rule */
-            uint8_t rule;
-            
-            /** Next entry in the list, or NULL */
-            uint8_t next;
-        } dwarf_cfa_reg_entry_t;
-
+    public:
         /** A CFA value rule.*/
         typedef struct dwarf_cfa_rule {
             /** The CFA type */
@@ -128,6 +113,21 @@ namespace plcrash {
                 int64_t expression;
             };
         } dwarf_cfa_rule_t;
+    private:
+        /** A single register entry */
+        typedef struct dwarf_cfa_reg_entry {
+            /** Register value */
+            int64_t value;
+
+            /** The DWARF register number */
+            dwarf_cfa_state_regnum_t regnum;
+
+            /** DWARF register rule */
+            uint8_t rule;
+            
+            /** Next entry in the list, or NULL */
+            uint8_t next;
+        } dwarf_cfa_reg_entry_t;
         
         /** Current call frame value configuration. */
         dwarf_cfa_rule_t _cfa_value[DWARF_CFA_STATE_MAX_STATES];

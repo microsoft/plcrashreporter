@@ -148,6 +148,34 @@
     STAssertEquals((int64_t)-4, _stack.get_cfa_rule().reg.signed_offset, @"Unexpected CFA offset");
 }
 
+/** Test evaluation of DW_CFA_def_cfa_register */
+- (void) testDefineCFARegister {
+    uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2, DW_CFA_def_cfa_register, 10 };
+    
+    /* Verify unsigned behavior */
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+
+    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((uint64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    
+    /* Verify signed behavior */
+    opcodes[0] = DW_CFA_def_cfa_sf;
+    opcodes[2] = 0x7e; /* -2 */
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    
+    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
+    STAssertEquals((int64_t)-2, _stack.get_cfa_rule().reg.signed_offset, @"Unexpected CFA offset");
+    
+    /* Verify behavior when a non-register CFA rule is present */
+    _stack.set_cfa_expression(0);
+    opcodes[0] = DW_CFA_nop;
+    opcodes[1] = DW_CFA_nop;
+    opcodes[2] = DW_CFA_nop;
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_EINVAL);
+}
+
 - (void) testBadOpcode {
     uint8_t opcodes[] = { DW_CFA_BAD_OPCODE };
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ENOTSUP);

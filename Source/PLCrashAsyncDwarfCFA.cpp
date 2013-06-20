@@ -35,6 +35,8 @@
  * @{
  */
 
+using namespace plcrash;
+
 /**
  * Evaluate a DWARF CFA program, as defined in the DWARF 4 Specification, Section 6.4.2. This
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
@@ -70,7 +72,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                                                       pl_vm_size_t length,
                                                       plcrash::dwarf_cfa_state *stack)
 {
-    plcrash::dwarf_opstream opstream;
+    dwarf_opstream opstream;
     plcrash_error_t err;
     pl_vm_address_t location = 0;
 
@@ -180,6 +182,25 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
             case DW_CFA_def_cfa_sf:
                 stack->set_cfa_register_signed(dw_expr_read_uleb128_regnum(), dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                 break;
+                
+            case DW_CFA_def_cfa_register: {
+                dwarf_cfa_state::dwarf_cfa_rule_t rule = stack->get_cfa_rule();
+                
+                switch (rule.cfa_type) {
+                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
+                        stack->set_cfa_register(dw_expr_read_uleb128_regnum(), rule.reg.offset);
+                        break;
+                        
+                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
+                        stack->set_cfa_register_signed(dw_expr_read_uleb128_regnum(), rule.reg.signed_offset);
+                        break;
+                        
+                    default:
+                        PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
+                        return PLCRASH_EINVAL;
+                }
+                break;
+            }
 
             case DW_CFA_nop:
                 break;
