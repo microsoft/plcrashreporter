@@ -81,6 +81,13 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     if (cie_info->has_eh_augmentation && cie_info->eh_augmentation.has_pointer_encoding && ptr_state != NULL) {
         gnu_eh_ptr_encoding = (DW_EH_PE_t) cie_info->eh_augmentation.pointer_encoding;
     }
+    
+    /* Calculate the absolute (target-relative) address of the start of the stream */
+    pl_vm_address_t opstream_target_address;
+    if (!plcrash_async_address_apply_offset(address, offset, &opstream_target_address)) {
+        PLCF_DEBUG("Offset overflows base address");
+        return PLCRASH_EINVAL;
+    }
 
     /* Configure the opstream */
     if ((err = opstream.init(mobj, byteorder, address, offset, length)) != PLCRASH_ESUCCESS)
@@ -235,6 +242,39 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                         PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
                         return PLCRASH_EINVAL;
                 }
+                break;
+            }
+
+            case DW_CFA_def_cfa_expression: {
+                uint64_t length = dw_expr_read_uleb128();
+                
+                /* Opcodes start immediately after the length value */
+                uintptr_t pos = opstream.get_position();
+
+                /* The returned sizes should always fit within the VM types in valid DWARF data; if they don't, how
+                 * are we debugging the target? */
+                if (length > PL_VM_SIZE_MAX || length > PL_VM_OFF_MAX) {
+                    PLCF_DEBUG("DWARF expression length exceeds PL_VM_SIZE_MAX/PL_VM_OFF_MAX in DW_CFA_def_cfa_expression operand");
+                    return PLCRASH_ENOTSUP;
+                }
+                
+                if (pos > PL_VM_ADDRESS_MAX || pos > PL_VM_OFF_MAX) {
+                    PLCF_DEBUG("DWARF expression position exceeds PL_VM_ADDRESS_MAX/PL_VM_OFF_MAX in CFA opcode stream");
+                    return PLCRASH_ENOTSUP;
+                }
+                
+                /* Calculate the absolute address of the expression opcodes. */
+                pl_vm_address_t abs_addr;
+                if (!plcrash_async_address_apply_offset(opstream_target_address, pos, &abs_addr)) {
+                    PLCF_DEBUG("Offset overflows base address");
+                    return PLCRASH_EINVAL;
+                }
+
+                /* Save the position */
+                stack->set_cfa_expression(abs_addr, (pl_vm_size_t)length);
+                
+                /* Skip the expression opcodes */
+                opstream.skip(length);
                 break;
             }
 

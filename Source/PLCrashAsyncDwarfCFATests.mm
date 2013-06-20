@@ -29,6 +29,7 @@
 #import "PLCrashTestCase.h"
 
 #include "PLCrashAsyncDwarfCFA.hpp"
+#include "PLCrashAsyncDwarfExpression.h"
 
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
 
@@ -169,7 +170,7 @@
     STAssertEquals((int64_t)-2, _stack.get_cfa_rule().reg.signed_offset, @"Unexpected CFA offset");
     
     /* Verify behavior when a non-register CFA rule is present */
-    _stack.set_cfa_expression(0);
+    _stack.set_cfa_expression(0, 0);
     opcodes[0] = DW_CFA_nop;
     opcodes[1] = DW_CFA_nop;
     opcodes[2] = DW_CFA_nop;
@@ -186,7 +187,7 @@
     STAssertEquals((uint64_t)10, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 
     /* Verify behavior when a non-register CFA rule is present */
-    _stack.set_cfa_expression(0);
+    _stack.set_cfa_expression(0, 0);
     opcodes[0] = DW_CFA_nop;
     opcodes[1] = DW_CFA_nop;
     opcodes[2] = DW_CFA_nop;
@@ -206,11 +207,21 @@
     STAssertEquals((int64_t)-4, _stack.get_cfa_rule().reg.signed_offset, @"Unexpected CFA offset");
     
     /* Verify behavior when a non-register CFA rule is present */
-    _stack.set_cfa_expression(0);
+    _stack.set_cfa_expression(0, 0);
     opcodes[0] = DW_CFA_nop;
     opcodes[1] = DW_CFA_nop;
     opcodes[2] = DW_CFA_nop;
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_EINVAL);
+}
+
+/** Test evaluation of DW_CFA_def_cfa_expression */
+- (void) testDefineCFAExpression {    
+    uint8_t opcodes[] = { DW_CFA_def_cfa_expression, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    
+    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals((pl_vm_address_t) &opcodes[2], _stack.get_cfa_rule().expression.address, @"Unexpected expression address");
+    STAssertEquals((pl_vm_size_t)1, _stack.get_cfa_rule().expression.length, @"Unexpected expression length");
 }
 
 - (void) testBadOpcode {

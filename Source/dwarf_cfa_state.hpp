@@ -110,7 +110,14 @@ namespace plcrash {
                 } reg;
                 
                 /** CFA expression (CFA = expression). Valid if type is DWARF_CFA_STATE_CFA_TYPE_EXPRESSION. */
-                int64_t expression;
+                struct {
+                    /** Target-relative absolute address of the DWARF expression, as decoded within the CFA opcode
+                     *  stream. */
+                    pl_vm_address_t address;
+
+                    /** Length of the DWARF expression stream, in bytes. */
+                    pl_vm_size_t length;
+                } expression;
             };
         } dwarf_cfa_rule_t;
     private:
@@ -171,7 +178,7 @@ namespace plcrash {
         void set_cfa_register_signed (dwarf_cfa_state_regnum_t regnum, int64_t offset);
         void set_cfa_register (dwarf_cfa_state_regnum_t regnum, uint64_t offset);
 
-        void set_cfa_expression (int64_t expression);
+        void set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length);
         dwarf_cfa_rule_t get_cfa_rule (void);
 
         bool push_state (void);

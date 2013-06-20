@@ -81,6 +81,7 @@ public:
     inline bool read_sleb128 (int64_t *result);
     inline bool read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state, DW_EH_PE_t encoding, uint64_t *result);
     inline bool skip (pl_vm_off_t offset);
+    inline uintptr_t get_position (void);
 };
 
 
@@ -253,6 +254,13 @@ inline bool dwarf_opstream::skip (pl_vm_off_t offset) {
     return true;
 }
 
+/**
+ * Return the current pointer position within the opcode stream, relative
+ * to the start of the stream.
+ */
+inline uintptr_t dwarf_opstream::get_position (void) {
+    return ((uintptr_t)_p) - ((uintptr_t) _instr);
+}
     
 }
     

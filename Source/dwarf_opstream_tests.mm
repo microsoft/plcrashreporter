@@ -185,4 +185,25 @@
     plcrash_async_mobject_free(&mobj);
 }
 
+/**
+ * Test position getter.
+ */
+- (void) testGetPosition {
+    plcrash_async_mobject_t mobj;
+    uint8_t opcodes[] = { 0x1, 0x2 };
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+    
+    plcrash::dwarf_opstream stream;
+    STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
+    
+    /* Position smoke test. */
+    STAssertEquals(stream.get_position(), (uintptr_t)0, @"Incorrect position");
+    STAssertTrue(stream.skip(1), @"Failed to skip within bounds");
+    STAssertEquals(stream.get_position(), (uintptr_t)1, @"Incorrect position");
+    
+    plcrash_async_mobject_free(&mobj);
+}
+
+
 @end
