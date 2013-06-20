@@ -80,7 +80,7 @@
 /* Validate the rule type and value of a register state in _stack */
 #define TEST_REGISTER_RESULT(_regnum, _type, _expect_val) do { \
     plcrash_dwarf_cfa_reg_rule_t rule; \
-    uint64_t value; \
+    int64_t value; \
     STAssertTrue(_stack.get_register_rule(_regnum, &rule, &value), @"Failed to fetch rule"); \
     STAssertEquals(_type, rule, @"Incorrect rule returned"); \
     STAssertEquals(_expect_val, value, @"Incorrect value returned"); \
@@ -142,7 +142,7 @@
 
     STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((uint64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((int64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 }
 
 /** Test evaluation of DW_CFA_def_cfa_sf */
@@ -167,7 +167,7 @@
 
     STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((uint64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((int64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
     /* Verify modification of signed state */
     opcodes[0] = DW_CFA_def_cfa_sf;
@@ -193,7 +193,7 @@
     
     STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((uint64_t)10, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((int64_t)10, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 
     /* Verify behavior when a non-register CFA rule is present */
     _stack.set_cfa_expression(0);
@@ -235,7 +235,7 @@
 /** Test evaluation of DW_CFA_undefined */
 - (void) testUndefined {
     plcrash_dwarf_cfa_reg_rule_t rule;
-    uint64_t value;
+    int64_t value;
 
     /* Define the register */
     _stack.set_register(1, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 10);
@@ -253,7 +253,7 @@
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
     plcrash_dwarf_cfa_reg_rule_t rule;
-    uint64_t value;
+    int64_t value;
     STAssertTrue(_stack.get_register_rule(1, &rule, &value), @"Failed to fetch rule");
     STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, rule, @"Incorrect rule returned");
 }
@@ -265,7 +265,7 @@
     // This opcode encodes the register value in the low 6 bits
     uint8_t opcodes[] = { DW_CFA_offset|0x4, 0x5 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (int64_t)0xA);
 }
 
 /** Test evaluation of DW_CFA_offset_extended */
@@ -274,16 +274,16 @@
 
     uint8_t opcodes[] = { DW_CFA_offset_extended, 0x4, 0x5 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (int64_t)0xA);
 }
 
 /** Test evaluation of DW_CFA_offset_extended_sf */
 - (void) testOffsetExtendedSF {
-    _cie.data_alignment_factor = 2;
+    _cie.data_alignment_factor = -1;
     
-    uint8_t opcodes[] = { DW_CFA_offset_extended_sf, 0x4, 0x7e /* -2 */ };
+    uint8_t opcodes[] = { DW_CFA_offset_extended_sf, 0x4, 0x4 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)-4);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (int64_t)-4);
 }
 
 - (void) testBadOpcode {

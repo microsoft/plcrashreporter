@@ -53,7 +53,7 @@ using namespace plcrash;
     stack.set_cfa_register(10, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 20);
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((dwarf_cfa_state_regnum_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((uint64_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((int64_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
     stack.set_cfa_register(10, DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, (uint64_t)-20);
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
@@ -87,10 +87,10 @@ using namespace plcrash;
     /* Verify the register values that were added */
     for (uint32_t i = 0; i < DWARF_CFA_STATE_MAX_REGISTERS; i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint64_t value;
+        int64_t value;
         
         STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-        STAssertEquals((uint64_t)i, value, @"Incorrect value");
+        STAssertEquals((int64_t)i, value, @"Incorrect value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
 }
@@ -101,7 +101,7 @@ using namespace plcrash;
 - (void) testSetRegisterUnsigned {
     dwarf_cfa_state stack;
     plcrash_dwarf_cfa_reg_rule_t rule;
-    uint64_t value;
+    int64_t value;
 
     stack.set_register(1, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)INT64_MIN);
     STAssertTrue(stack.get_register_rule(1, &rule, &value), @"Failed to fetch info for entry");
@@ -168,13 +168,13 @@ using namespace plcrash;
     /* Verify the full set of registers (including verifying that the removed registers were, in fact, removed) */
     for (uint32_t i = 0; i < DWARF_CFA_STATE_MAX_REGISTERS; i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint64_t value;
+        int64_t value;
         
         if (i % 2) {
             STAssertFalse(stack.get_register_rule(i, &rule, &value), @"Register info was returned for a removed register");
         } else {
             STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-            STAssertEquals((uint64_t)i, value, @"Incorrect value");
+            STAssertEquals((int64_t)i, value, @"Incorrect value");
             STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
         }
     }
@@ -193,10 +193,10 @@ using namespace plcrash;
     /* Verify the register values that were added */
     for (uint32_t i = 0; i < DWARF_CFA_STATE_MAX_REGISTERS; i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint64_t value;
+        int64_t value;
         
         STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-        STAssertEquals((uint64_t)i, value, @"Incorrect value");
+        STAssertEquals((int64_t)i, value, @"Incorrect value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
 }
@@ -236,16 +236,16 @@ using namespace plcrash;
     STAssertTrue(stack.pop_state(), @"Failed to pop current state");
     for (uint32_t i = 0; i < (DWARF_CFA_STATE_MAX_REGISTERS/4); i++) {
         plcrash_dwarf_cfa_reg_rule_t rule;
-        uint64_t value;
+        int64_t value;
         
         STAssertTrue(stack.get_register_rule(i, &rule, &value), @"Failed to fetch info for entry");
-        STAssertEquals((uint64_t)(DWARF_CFA_STATE_MAX_REGISTERS-i), value, @"Incorrect value");
+        STAssertEquals((int64_t)(DWARF_CFA_STATE_MAX_REGISTERS-i), value, @"Incorrect value");
         STAssertEquals(rule, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, @"Incorrect rule");
     }
     
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((dwarf_cfa_state_regnum_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((uint64_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals((int64_t)20, stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 
     /* Validate state overflow checking; an implicit state already exists at the top of the stack, so we
      * start iteration at 1. */

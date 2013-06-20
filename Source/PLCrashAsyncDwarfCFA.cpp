@@ -205,7 +205,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 break;
                 
             case DW_CFA_def_cfa_sf:
-                stack->set_cfa_register(dw_expr_read_uleb128_regnum(), DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, (uint64_t) (dw_expr_read_sleb128() * cie_info->data_alignment_factor));
+                stack->set_cfa_register(dw_expr_read_uleb128_regnum(), DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                 break;
                 
             case DW_CFA_def_cfa_register: {
@@ -249,7 +249,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is signed, so all register rules are converted to signed here */
-                        stack->set_cfa_register(rule.reg.regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, (uint64_t)(dw_expr_read_sleb128() * cie_info->data_alignment_factor));
+                        stack->set_cfa_register(rule.reg.regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                         break;
 
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -310,7 +310,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 break;
                 
             case DW_CFA_offset_extended_sf:
-                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t) (dw_expr_read_sleb128() * cie_info->data_alignment_factor));
+                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                 break;
 
             case DW_CFA_nop:

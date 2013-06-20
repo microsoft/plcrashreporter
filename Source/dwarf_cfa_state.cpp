@@ -99,7 +99,7 @@ dwarf_cfa_state::dwarf_cfa_state (void) {
  * @param rule The DWARF CFA rule for @a regnum.
  * @param value The data value to be used when interpreting @a rule. May either be signed or unsigned.
  */
-bool dwarf_cfa_state::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, uint64_t value) {
+bool dwarf_cfa_state::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value) {
     PLCF_ASSERT(rule <= UINT8_MAX);
     
     /* Check for an existing entry, or find the target entry off which we'll chain our entry */
@@ -158,10 +158,9 @@ bool dwarf_cfa_state::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwa
  *
  * @param regnum The DWARF register number.
  * @param rule[out] On success, the DWARF CFA rule for @a regnum.
- * @param value[out] On success, the data value to be used when interpreting @a rule. May either be interpreted as a signed
- * or unsigned value, depending on @a rule.
+ * @param value[out] On success, the data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, uint64_t *value) {
+bool dwarf_cfa_state::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
     /* Search for the entry */
     unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
@@ -235,7 +234,7 @@ uint8_t dwarf_cfa_state::get_register_count (void) {
  * @param cfa_type The CFA type. Must be one of DWARF_CFA_STATE_CFA_TYPE_REGISTER or DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED.
  * @param offset The offset.
  */
-void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_cfa_state_cfa_type_t cfa_type, uint64_t offset) {
+void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_cfa_state_cfa_type_t cfa_type, int64_t offset) {
     PLCF_ASSERT(cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER || cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED);
     
     _cfa_value[_table_depth].cfa_type = cfa_type;

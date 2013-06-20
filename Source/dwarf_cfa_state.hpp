@@ -100,8 +100,8 @@ namespace plcrash {
                     /** CFA register */
                     dwarf_cfa_state_regnum_t regnum;
 
-                    /** CFA register signed offset; may either be signed or unsigned, depending on the cfa_type. */
-                    uint64_t offset;
+                    /** CFA register signed offset. */
+                    int64_t offset;
                 } reg;
                 
                 /** CFA expression (CFA = expression). Valid if type is DWARF_CFA_STATE_CFA_TYPE_EXPRESSION. */
@@ -117,8 +117,8 @@ namespace plcrash {
     private:
         /** A single register entry */
         typedef struct dwarf_cfa_reg_entry {
-            /** Associated rule value. May either be signed or unsigned, as defined by the DWARF register rule. */
-            uint64_t value;
+            /** Associated rule value. */
+            int64_t value;
 
             /** The DWARF register number */
             dwarf_cfa_state_regnum_t regnum;
@@ -164,13 +164,13 @@ namespace plcrash {
 
     public:
         dwarf_cfa_state (void);
-        bool set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, uint64_t value);
-        bool get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, uint64_t *value);
+        bool set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value);
+        bool get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value);
 
         void remove_register (dwarf_cfa_state_regnum_t regnum);
         uint8_t get_register_count (void);
         
-        void set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_cfa_state_cfa_type_t cfa_type, uint64_t offset);
+        void set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_cfa_state_cfa_type_t cfa_type, int64_t offset);
         void set_cfa_expression (pl_vm_address_t address);
         dwarf_cfa_rule_t get_cfa_rule (void);
 
