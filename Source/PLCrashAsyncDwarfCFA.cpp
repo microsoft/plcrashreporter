@@ -246,10 +246,10 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
             }
 
             case DW_CFA_def_cfa_expression: {
-                uint64_t length = dw_expr_read_uleb128();
-                
-                /* Opcodes start immediately after the length value */
                 uintptr_t pos = opstream.get_position();
+                
+                /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
+                uint64_t length = dw_expr_read_uleb128();
 
                 /* The returned sizes should always fit within the VM types in valid DWARF data; if they don't, how
                  * are we debugging the target? */
@@ -271,7 +271,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 }
 
                 /* Save the position */
-                stack->set_cfa_expression(abs_addr, (pl_vm_size_t)length);
+                stack->set_cfa_expression(abs_addr);
                 
                 /* Skip the expression opcodes */
                 opstream.skip(length);

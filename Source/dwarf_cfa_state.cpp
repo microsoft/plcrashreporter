@@ -255,10 +255,9 @@ void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, uint64_
  *
  * @param expression DW_FORM_block value for the DWARF expression.
  */
-void dwarf_cfa_state::set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length) {
+void dwarf_cfa_state::set_cfa_expression (pl_vm_address_t address) {
     _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_EXPRESSION;
     _cfa_value[_table_depth].expression.address = address;
-    _cfa_value[_table_depth].expression.length = length;
 }
 
 /**

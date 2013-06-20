@@ -60,10 +60,9 @@ using namespace plcrash;
     STAssertEquals((dwarf_cfa_state_regnum_t)10, stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)-20, stack.get_cfa_rule().reg.signed_offset, @"Unexpected CFA offset");
     
-    stack.set_cfa_expression(25, 50);
+    stack.set_cfa_expression(25);
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((pl_vm_address_t)25, stack.get_cfa_rule().expression.address, @"Unexpected CFA expression address");
-    STAssertEquals((pl_vm_size_t)50, stack.get_cfa_rule().expression.length, @"Unexpected CFA expression length");
 }
 
 /**
