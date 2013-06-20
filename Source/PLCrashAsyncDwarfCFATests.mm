@@ -238,6 +238,17 @@
     STAssertFalse(_stack.get_register_rule(1, &rule, &value), @"No rule should be defined for undef register");
 }
 
+/** Test evaluation of DW_CFA_same_value */
+- (void) testSameValue {
+    uint8_t opcodes[] = { DW_CFA_same_value, 0x1 };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    
+    plcrash_dwarf_cfa_reg_rule_t rule;
+    int64_t value;
+    STAssertTrue(_stack.get_register_rule(1, &rule, &value), @"Failed to fetch rule");
+    STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, rule, @"Incorrect rule specified");
+}
+
 - (void) testBadOpcode {
     uint8_t opcodes[] = { DW_CFA_BAD_OPCODE };
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ENOTSUP);

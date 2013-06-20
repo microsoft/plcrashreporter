@@ -234,6 +234,12 @@ typedef enum {
      * CFA value and N is a signed offset.
      */
     PLCRASH_DWARF_CFA_REG_RULE_OFFSET,
+
+    /**
+     * The register's value may be found in the frame's thread state. For frames other than the first, the
+     * register may not have been restored, and thus may be unavailable.
+     */
+    PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE,
 } plcrash_dwarf_cfa_reg_rule_t;
 
 /**
