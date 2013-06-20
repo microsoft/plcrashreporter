@@ -77,6 +77,15 @@
     plcrash_async_mobject_free(&mobj); \
 } while(0)
 
+/* Validate the rule type and value of a register state in _stack */
+#define TEST_REGISTER_RESULT(_regnum, _type, _expect_val) do { \
+    plcrash_dwarf_cfa_reg_rule_t rule; \
+    uint64_t value; \
+    STAssertTrue(_stack.get_register_rule(_regnum, &rule, &value), @"Failed to fetch rule"); \
+    STAssertEquals(_type, rule, @"Incorrect rule returned"); \
+    STAssertEquals(_expect_val, value, @"Incorrect value returned"); \
+} while (0)
+
 /** Test evaluation of DW_CFA_set_loc */
 - (void) testSetLoc {
     /* This should terminate once our PC offset is hit below; otherwise, it will execute a
@@ -256,12 +265,15 @@
     // This opcode encodes the register value in the low 6 bits
     uint8_t opcodes[] = { DW_CFA_offset|0x4, 0x5 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
+}
 
-    plcrash_dwarf_cfa_reg_rule_t rule;
-    uint64_t value;
-    STAssertTrue(_stack.get_register_rule(0x4, &rule, &value), @"Failed to fetch rule");
-    STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_OFFSET, rule, @"Incorrect rule returned");
-    STAssertEquals((uint64_t)(0x5*2), value, @"Incorrect value returned");
+- (void) testOffsetExtended {
+    _cie.data_alignment_factor = 2;
+
+    uint8_t opcodes[] = { DW_CFA_offset_extended, 0x4, 0x5 };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
 }
 
 - (void) testBadOpcode {
