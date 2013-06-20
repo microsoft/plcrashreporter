@@ -268,12 +268,22 @@
     TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
 }
 
+/** Test evaluation of DW_CFA_offset_extended */
 - (void) testOffsetExtended {
     _cie.data_alignment_factor = 2;
 
     uint8_t opcodes[] = { DW_CFA_offset_extended, 0x4, 0x5 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
+}
+
+/** Test evaluation of DW_CFA_offset_extended_sf */
+- (void) testOffsetExtendedSF {
+    _cie.data_alignment_factor = 2;
+    
+    uint8_t opcodes[] = { DW_CFA_offset_extended_sf, 0x4, 0x7e /* -2 */ };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)-4);
 }
 
 - (void) testBadOpcode {
