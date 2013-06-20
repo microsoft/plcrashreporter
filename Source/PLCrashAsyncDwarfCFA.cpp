@@ -281,6 +281,11 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 
             case DW_CFA_same_value:
                 stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, 0);
+                break;
+                
+            case DW_CFA_offset:
+                stack->set_register(const_operand, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                break;
 
             case DW_CFA_nop:
                 break;

@@ -246,7 +246,22 @@
     plcrash_dwarf_cfa_reg_rule_t rule;
     uint64_t value;
     STAssertTrue(_stack.get_register_rule(1, &rule, &value), @"Failed to fetch rule");
-    STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, rule, @"Incorrect rule specified");
+    STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, rule, @"Incorrect rule returned");
+}
+
+/** Test evaluation of DW_CFA_offset */
+- (void) testOffset {
+    _cie.data_alignment_factor = 2;
+
+    // This opcode encodes the register value in the low 6 bits
+    uint8_t opcodes[] = { DW_CFA_offset|0x4, 0x5 };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+
+    plcrash_dwarf_cfa_reg_rule_t rule;
+    uint64_t value;
+    STAssertTrue(_stack.get_register_rule(0x4, &rule, &value), @"Failed to fetch rule");
+    STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_OFFSET, rule, @"Incorrect rule returned");
+    STAssertEquals((uint64_t)(0x5*2), value, @"Incorrect value returned");
 }
 
 - (void) testBadOpcode {
