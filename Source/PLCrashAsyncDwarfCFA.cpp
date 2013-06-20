@@ -209,7 +209,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is unsigned, so all register rules are converted to unsigned here */
-                        stack->set_cfa_register(rule.reg.regnum, dw_expr_read_uleb128_regnum());
+                        stack->set_cfa_register(rule.reg.regnum, dw_expr_read_uleb128());
                         break;
                         
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -217,6 +217,25 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                         PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
                         return PLCRASH_EINVAL;
                 }
+                break;
+            }
+                
+                
+            case DW_CFA_def_cfa_offset_sf: {
+                dwarf_cfa_state::dwarf_cfa_rule_t rule = stack->get_cfa_rule();
+                switch (rule.cfa_type) {
+                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
+                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
+                        /* Our new offset is signed, so all register rules are converted to signed here */
+                        stack->set_cfa_register_signed(rule.reg.regnum, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                        break;
+        
+                    case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
+                    case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
+                        PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
+                        return PLCRASH_EINVAL;
+                }
+                break;
             }
 
             case DW_CFA_nop:
