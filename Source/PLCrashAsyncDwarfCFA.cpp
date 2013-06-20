@@ -277,6 +277,10 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 opstream.skip(length);
                 break;
             }
+                
+            case DW_CFA_undefined:
+                stack->remove_register(dw_expr_read_uleb128_regnum());
+                break;
 
             case DW_CFA_nop:
                 break;

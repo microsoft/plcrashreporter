@@ -223,6 +223,21 @@
     STAssertEquals((pl_vm_address_t) &opcodes[1], _stack.get_cfa_rule().expression.address, @"Unexpected expression address");
 }
 
+/** Test evaluation of DW_CFA_undefined */
+- (void) testUndefined {
+    plcrash_dwarf_cfa_reg_rule_t rule;
+    int64_t value;
+
+    /* Define the register */
+    _stack.set_register(1, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 10);
+    STAssertTrue(_stack.get_register_rule(1, &rule, &value), @"Rule should be marked as defined");
+
+    /* Perform undef */
+    uint8_t opcodes[] = { DW_CFA_undefined, 0x1 };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    STAssertFalse(_stack.get_register_rule(1, &rule, &value), @"No rule should be defined for undef register");
+}
+
 - (void) testBadOpcode {
     uint8_t opcodes[] = { DW_CFA_BAD_OPCODE };
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ENOTSUP);
