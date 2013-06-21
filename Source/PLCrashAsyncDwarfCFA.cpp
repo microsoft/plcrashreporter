@@ -156,6 +156,14 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     } \
     v; \
 })
+    
+    /* Handle error checking when setting a register on the CFA state */
+#define dw_expr_set_register(_regnum, _rule, _value) do { \
+    if (!stack->set_register(_regnum, _rule, _value)) { \
+        PLCF_DEBUG("Exhausted available register slots while evaluating CFA opcodes"); \
+        return PLCRASH_ENOMEM; \
+    } \
+} while (0)
 
     /* Iterate the opcode stream until the pc_offset is hit */
     uint8_t opcode;
@@ -298,24 +306,96 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 break;
                 
             case DW_CFA_same_value:
-                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, 0);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, 0);
                 break;
                 
             case DW_CFA_offset:
-                stack->set_register(const_operand, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(const_operand, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
                 break;
                 
             case DW_CFA_offset_extended:
-                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
                 break;
                 
             case DW_CFA_offset_extended_sf:
-                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                 break;
                 
             case DW_CFA_val_offset:
-                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
                 break;
+                
+            case DW_CFA_val_offset_sf:
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                break;
+                
+            case DW_CFA_register:
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_REGISTER, dw_expr_read_uleb128());
+                break;
+            
+            case DW_CFA_expression:
+            case DW_CFA_val_expression: {
+                dwarf_cfa_state_regnum_t regnum = dw_expr_read_uleb128_regnum();
+                uintptr_t pos = opstream.get_position();
+                
+                /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
+                uint64_t length = dw_expr_read_uleb128();
+
+                /* Calculate the absolute address of the expression opcodes (including verifying that pos won't overflow when applying the offset). */
+                if (pos > PL_VM_ADDRESS_MAX || pos > PL_VM_OFF_MAX) {
+                    PLCF_DEBUG("DWARF expression position exceeds PL_VM_ADDRESS_MAX/PL_VM_OFF_MAX in DW_CFA_expression evaluation");
+                    return PLCRASH_ENOTSUP;
+                }
+                
+                pl_vm_address_t abs_addr;
+                if (!plcrash_async_address_apply_offset(opstream_target_address, pos, &abs_addr)) {
+                    PLCF_DEBUG("Offset overflows base address");
+                    return PLCRASH_EINVAL;
+                }
+                
+                /* Save the position */
+                if (opcode == DW_CFA_expression) {
+                    dw_expr_set_register(regnum, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)abs_addr);
+                } else {
+                    PLCF_ASSERT(opcode == DW_CFA_val_expression); // If not _expression, must be _val_expression.
+                    dw_expr_set_register(regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t)abs_addr);
+                }
+
+                /* Skip the expression opcodes */
+                opstream.skip(length);
+                break;
+            }
+                
+            case DW_CFA_restore: {
+                plcrash_dwarf_cfa_reg_rule_t rule;
+                int64_t value;
+                
+                /* Either restore the value specified in the initial state, or remove the register
+                 * if the initial state has no associated value */
+                if (initial_state.get_register_rule(const_operand, &rule, &value)) {
+                    dw_expr_set_register(const_operand, rule, value);
+                } else {
+                    stack->remove_register(const_operand);
+                }
+        
+                break;
+            }
+                
+            case DW_CFA_restore_extended: {
+                dwarf_cfa_state_regnum_t regnum = dw_expr_read_uleb128_regnum();
+                plcrash_dwarf_cfa_reg_rule_t rule;
+                int64_t value;
+                
+                /* Either restore the value specified in the initial state, or remove the register
+                 * if the initial state has no associated value */
+                if (initial_state.get_register_rule(regnum, &rule, &value)) {
+                    dw_expr_set_register(regnum, rule, value);
+                } else {
+                    stack->remove_register(const_operand);
+                }
+                
+                break;
+            }
 
             case DW_CFA_nop:
                 break;

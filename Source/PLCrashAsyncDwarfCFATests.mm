@@ -295,6 +295,54 @@
     TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (int64_t)-4);
 }
 
+/** Test evaluation of DW_CFA_val_offset_sf */
+- (void) testValOffsetSF {
+    _cie.data_alignment_factor = -1;
+    
+    uint8_t opcodes[] = { DW_CFA_val_offset_sf, 0x4, 0x7e /* -2 */ };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (int64_t)2);
+}
+
+/** Test evaluation of DW_CFA_register */
+- (void) testRegister {
+    _cie.data_alignment_factor = -1;
+    
+    uint8_t opcodes[] = { DW_CFA_register, 0x4, 0x5};
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_REGISTER, (int64_t)0x5);
+}
+
+/** Test evaluation of DW_CFA_expression */
+- (void) testExpression {
+    uint8_t opcodes[] = { DW_CFA_expression, 0x4, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)&opcodes[2]);
+}
+
+/** Test evaluation of DW_CFA_val_expression */
+- (void) testValExpression {
+    uint8_t opcodes[] = { DW_CFA_val_expression, 0x4, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t)&opcodes[2]);
+}
+
+/** Test evaluation of DW_CFA_restore */
+- (void) testRestore {
+    _stack.set_register(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, 0x20);
+    uint8_t opcodes[] = { DW_CFA_val_offset, 0x4, 0x4, DW_CFA_restore|0x4};
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+}
+
+/** Test evaluation of DW_CFA_restore_extended */
+- (void) testRestoreExtended {
+    _stack.set_register(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, 0x20);
+    uint8_t opcodes[] = { DW_CFA_val_offset, 0x4, 0x4, DW_CFA_restore_extended, 0x4};
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+}
+
 - (void) testBadOpcode {
     uint8_t opcodes[] = { DW_CFA_BAD_OPCODE };
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ENOTSUP);

@@ -117,7 +117,10 @@ namespace plcrash {
     private:
         /** A single register entry */
         typedef struct dwarf_cfa_reg_entry {
-            /** Associated rule value. */
+            /**
+             * Associated rule value. Must be cast to a uint64_t value when evalating PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION and
+             * PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION rules.
+             */
             int64_t value;
 
             /** The DWARF register number */
