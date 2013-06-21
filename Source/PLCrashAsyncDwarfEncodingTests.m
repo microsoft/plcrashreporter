@@ -122,7 +122,7 @@
     plcrash_error_t err;
     plcrash_async_dwarf_fde_info_t fde_info;
 
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, 0x0 /* TODO */, &fde_info);
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE-1, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
     
     /* Should be the second entry in the table, plus the 12 byte length initial length field. */
@@ -132,13 +132,17 @@
     //STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
 
     plcrash_async_dwarf_fde_info_free(&fde_info);
+
+    /* Verify that an unknown PC returns ENOTFOUND. */
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE, &fde_info);
+    STAssertEquals(PLCRASH_ENOTFOUND, err, @"FDE should not have been found");
 }
 
 - (void) testFindDebugFrameDescriptorEntry {
     plcrash_error_t err;
     plcrash_async_dwarf_fde_info_t fde_info;
 
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, 0x0 /* TODO */, &fde_info);
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE-1, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
     
     /* Should be the second entry in the table, plus the 12 byte length initial length field. */
@@ -148,6 +152,10 @@
     //STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
     
     plcrash_async_dwarf_fde_info_free(&fde_info);
+    
+    /* Verify that an unknown PC freturns ENOTFOUND */
+    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE, &fde_info);
+    STAssertEquals(PLCRASH_ENOTFOUND, err, @"FDE should not have been found");
 }
 
 /**

@@ -182,19 +182,20 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         }
 
         /* Decode the FDE */
-        err = plcrash_async_dwarf_fde_info_init(fde_info, reader->mobj, byteorder, reader->address_size, cfi_entry, reader->debug_frame);
+        err = plcrash_async_dwarf_fde_info_init(fde_info, reader->mobj, byteorder, dwarf_word_size, cfi_entry, reader->debug_frame);
         if (err != PLCRASH_ESUCCESS)
             return err;
 
-        // TODO
-        return PLCRASH_ESUCCESS;
+        /* Check if our PC is within range */
+        PLCF_DEBUG("Evaluating entry with start %"PRIx64 " end=%" PRIx64 " pc=%" PRIx64, fde_info->pc_start, fde_info->pc_end, pc);
+        if (pc >= fde_info->pc_start && pc < fde_info->pc_end)
+            return PLCRASH_ESUCCESS;
 
         /* Skip to the next entry */
         cfi_entry = next_cfi_entry;
     }
 
-    // TODO
-    return PLCRASH_ESUCCESS;
+    return PLCRASH_ENOTFOUND;
 }
 
 
