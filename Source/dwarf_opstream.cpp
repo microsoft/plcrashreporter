@@ -30,8 +30,8 @@ namespace plcrash {
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf
- * @defgroup plcrash_async_dwarf_opstream Generic DWARF Opcode Stream
+ * @ingroup plcrash_async_dwarf_private
+ * @defgroup plcrash_async_dwarf_private_opstream Generic DWARF Opcode Stream
  * @{
  */
 

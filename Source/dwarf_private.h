@@ -24,16 +24,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "dwarf_stack.hpp"
+#ifndef PLCRASH_ASYNC_DWARF_PRIVATE_H
+#define PLCRASH_ASYNC_DWARF_PRIVATE_H 1
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf_private
- * @defgroup plcrash_async_dwarf_private_stack DWARF VM stack
- * @{
+ * @ingroup plcrash_async_dwarf
+ * @defgroup plcrash_async_dwarf_private DWARF Internal Utility Classes
  */
 
-
-/**
- * @}
- */
+#endif /* PLCRASH_ASYNC_DWARF_PRIVATE_H */

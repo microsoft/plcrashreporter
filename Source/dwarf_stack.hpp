@@ -31,7 +31,7 @@
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf_stack
+ * @ingroup plcrash_async_dwarf_private_stack
  * @{
  */
 

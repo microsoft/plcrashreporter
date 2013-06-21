@@ -37,7 +37,7 @@ extern "C" {
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf_opstream
+ * @ingroup plcrash_async_dwarf_private_opstream
  * @{
  */
 

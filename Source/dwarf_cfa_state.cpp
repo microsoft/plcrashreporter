@@ -29,6 +29,13 @@
 using namespace plcrash;
 
 /**
+ * @internal
+ * @ingroup plcrash_async_dwarf_private
+ * @defgroup plcrash_async_dwarf_private_cfa_state Generic DWARF Opcode Stream
+ * @{
+ */
+
+/**
  * Push a state onto the state stack; all existing values will be saved on the stack, and registers
  * will be set to their default state.
  *
@@ -312,3 +319,7 @@ bool dwarf_cfa_state_iterator::next (dwarf_cfa_state_regnum_t *regnum, plcrash_d
     *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
     return true;
 }
+
+/**
+ * @}
+ */

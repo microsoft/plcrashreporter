@@ -940,6 +940,7 @@
 		057CD98516CD5D5C0067E670 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		0581B520168FDB280098C103 /* mach_exc.defs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mig; name = mach_exc.defs; path = usr/include/mach/mach_exc.defs; sourceTree = SDKROOT; };
 		058812B91040582D009128FB /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		05920D1C1774E218001E8975 /* dwarf_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dwarf_private.h; sourceTree = "<group>"; };
 		0592C8E6169B899B00209116 /* crash_report_v2.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = crash_report_v2.proto; sourceTree = "<group>"; };
 		059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameWalker.h; sourceTree = "<group>"; };
 		059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameWalker.c; sourceTree = "<group>"; };
@@ -1648,6 +1649,7 @@
 		05E748791760DCCA009B8745 /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				05920D1C1774E218001E8975 /* dwarf_private.h */,
 				052DC863175553DC004335FE /* dwarf_encoding_test.h */,
 				05E748A617616D30009B8745 /* dwarf_stack.hpp */,
 				05E748A517616D30009B8745 /* dwarf_stack.cpp */,
