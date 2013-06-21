@@ -233,13 +233,37 @@ typedef enum {
      * The previous value of this register is saved at the address CFA+N where CFA is the current
      * CFA value and N is a signed offset.
      */
-    PLCRASH_DWARF_CFA_REG_RULE_OFFSET,
+    PLCRASH_DWARF_CFA_REG_RULE_OFFSET = 0,
+    
+    /**
+     * The previous value of this register is the value CFA+N where CFA is the current CFA value and N is a signed offset.
+     */
+    PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET = 1,
+    
+    /**
+     * The previous value of this register is stored in another register numbered R.
+     */
+    PLCRASH_DWARF_CFA_REG_RULE_REGISTER = 2,
+    
+    /**
+     * The previous value of this register is located at the address produced by executing the DWARF expression E.
+     */
+    PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION = 3,
+    
+    
+    /**
+     * The previous value of this register is the value produced by executing the DWARF expression E.
+     */
+    PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION = 4,
 
     /**
+     * This register has not been modified from the previous frame. (By convention, it is preserved by the callee, but
+     * the callee has not modified it.)
+     *
      * The register's value may be found in the frame's thread state. For frames other than the first, the
      * register may not have been restored, and thus may be unavailable.
      */
-    PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE,
+    PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE = 5,
 } plcrash_dwarf_cfa_reg_rule_t;
 
 /**

@@ -312,6 +312,10 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
             case DW_CFA_offset_extended_sf:
                 stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                 break;
+                
+            case DW_CFA_val_offset:
+                stack->set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                break;
 
             case DW_CFA_nop:
                 break;
