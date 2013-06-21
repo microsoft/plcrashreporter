@@ -47,7 +47,7 @@ extern "C" {
  * @{
  */
 
-plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *mobj,
+plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *mobj,
                                                       pl_vm_address_t pc_offset,
                                                       plcrash_async_dwarf_cie_info_t *cie_info,
                                                       plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
@@ -56,6 +56,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                                                       pl_vm_off_t offset,
                                                       pl_vm_size_t length,
                                                       plcrash::async::dwarf_cfa_state *state);
+
 
 /**
  * @}

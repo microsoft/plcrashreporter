@@ -73,7 +73,7 @@ using namespace plcrash::async;
     plcrash_error_t err; \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
     \
-        err = plcrash_async_dwarf_eval_cfa_program(&mobj, (pl_vm_address_t)pc_offset, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), &_stack); \
+        err = plcrash_async_dwarf_cfa_eval_program(&mobj, (pl_vm_address_t)pc_offset, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), &_stack); \
         STAssertEquals(err, expected, @"Evaluation failed"); \
     \
     plcrash_async_mobject_free(&mobj); \

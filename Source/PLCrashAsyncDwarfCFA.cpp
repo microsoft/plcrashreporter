@@ -63,7 +63,7 @@ using namespace plcrash::async;
  * @todo Consider defining updated status codes or error handling to provide more structured
  * error data on failure.
  */
-plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *mobj,
+plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *mobj,
                                                       pl_vm_address_t pc_offset,
                                                       plcrash_async_dwarf_cie_info_t *cie_info,
                                                       plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
