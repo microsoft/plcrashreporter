@@ -890,8 +890,8 @@ void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, pl
 }
 
 /**
- * Apply the decoded @a entry to @a new_thread_state, fetching data from @a task, and populate @a new_state with
- * the result.
+ * Apply the decoded @a entry to @a thread_state, fetching data from @a task, populating @a new_thread_state
+ * with the result.
  *
  * @param task The task containing any data referenced by @a thread_state.
  * @param function_address The task-relative in-memory address of the function containing @a entry. This may be computed
@@ -900,7 +900,7 @@ void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, pl
  * @param entry A CFE unwind entry.
  * @param new_thread_state The new thread state to be initialized.
  *
- * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ * @return Returns PLCRASH_ESUCCESS on success, or a standard plcrash_error_t code if an error occurs.
  *
  * @todo This implementation assumes downwards stack growth.
  */
