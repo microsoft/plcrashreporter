@@ -343,6 +343,34 @@
     TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
 }
 
+/** Test evaluation of DW_CFA_remember_state */
+- (void) testRememberState {
+    /* Set up an initial state that the opcodes can push */
+    _stack.set_register(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, 0x20);
+
+    /* Push our current state, and then tweak register state (to verify that a new state is actually in place). */
+    uint8_t opcodes[] = { DW_CFA_remember_state, DW_CFA_undefined, 0x4 };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+
+    /* Restore our previous state and verify that it is unchanged */
+    STAssertTrue(_stack.pop_state(), @"No new state was pushed");
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+}
+
+/** Test evaluation of DW_CFA_restore_state */
+- (void) testRestoreState {
+    /* Set up an initial state that the opcodes can pop */
+    _stack.set_register(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, 0x20);
+    STAssertTrue(_stack.push_state(), @"Insufficient allocation to push new state");
+
+    /* Tweak register state (to verify that a new state is actually in place), and then restore previous state */
+    uint8_t opcodes[] = { DW_CFA_undefined, 0x4, DW_CFA_restore_state };
+    PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
+    
+    /* Our previous state should have been restored by our CFA program; verify that it is unchanged */
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+}
+
 - (void) testBadOpcode {
     uint8_t opcodes[] = { DW_CFA_BAD_OPCODE };
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ENOTSUP);

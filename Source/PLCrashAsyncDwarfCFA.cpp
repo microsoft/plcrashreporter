@@ -396,6 +396,20 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 
                 break;
             }
+                
+            case DW_CFA_remember_state:
+                if (!stack->push_state()) {
+                    PLCF_DEBUG("DW_CFA_remember_state exeeded the allocated CFA stack size");
+                    return PLCRASH_ENOMEM;
+                }
+                break;
+                
+            case DW_CFA_restore_state:
+                if (!stack->pop_state()) {
+                    PLCF_DEBUG("DW_CFA_restore_state was issued on an empty CFA stack");
+                    return PLCRASH_EINVAL;
+                }
+                break;
 
             case DW_CFA_nop:
                 break;
