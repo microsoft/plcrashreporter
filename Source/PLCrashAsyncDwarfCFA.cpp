@@ -424,5 +424,24 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
 }
 
 /**
+ * Apply the evaluated @a cfa_state to @a thread_state, fetching data from @a task, and
+ * populate @a new_thread_state with the result.
+ *
+ * @param task The task containing any data referenced by @a thread_state.
+ * @param thread_state The current thread state corresponding to @a entry.
+ * @param cfa_state CFA evaluation state as generated from evaluating a CFA program. @sa plcrash_async_dwarf_cfa_eval_program.
+ * @param new_thread_state The new thread state to be initialized.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or a standard pclrash_error_t code if an error occurs.
+ */
+plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
+                                                     const plcrash_async_thread_state_t *thread_state,
+                                                     plcrash::async::dwarf_cfa_state *cfa_state,
+                                                     plcrash_async_thread_state_t *new_thread_state)
+{
+    return PLCRASH_ENOTSUP;
+}
+
+/**
  * @}
  */
