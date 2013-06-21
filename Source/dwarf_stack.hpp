@@ -35,7 +35,7 @@
  * @{
  */
 
-namespace plcrash {
+namespace plcrash { namespace async {
 
 /**
  * @internal
@@ -217,7 +217,7 @@ template <typename T, size_t S> inline bool dwarf_stack<T,S>::rotate (void) {
     return true;
 }
 
-}
+}}
 
 /**
  * @}

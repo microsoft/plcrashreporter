@@ -26,7 +26,7 @@
 
 #include "dwarf_opstream.hpp"
 
-namespace plcrash {
+namespace plcrash { namespace async {
 
 /**
  * @internal
@@ -83,4 +83,4 @@ plcrash_error_t dwarf_opstream::init (plcrash_async_mobject_t *mobj,
  * @}
  */
 
-}
+}}

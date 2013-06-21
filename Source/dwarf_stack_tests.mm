@@ -30,7 +30,7 @@
 
 #include "dwarf_stack.hpp"
 
-using namespace plcrash;
+using namespace plcrash::async;
 
 @interface dwarf_stack_tests : PLCrashTestCase {
 @private

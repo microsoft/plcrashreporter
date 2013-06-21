@@ -41,7 +41,7 @@ extern "C" {
  * @{
  */
 
-namespace plcrash {
+namespace plcrash { namespace async {
 
 /**
  * A simple opcode stream reader for use with DWARF opcode/CFA evaluation.
@@ -262,7 +262,7 @@ inline uintptr_t dwarf_opstream::get_position (void) {
     return ((uintptr_t)_p) - ((uintptr_t) _instr);
 }
     
-}
+}}
     
 /**
  * @}

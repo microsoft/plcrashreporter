@@ -33,6 +33,8 @@ extern "C" {
 #include "dwarf_stack.hpp"
 #include "dwarf_opstream.hpp"
 
+using namespace plcrash::async;
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -73,8 +75,8 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
 {
     // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
     // use of the new async-safe allocator.
-    plcrash::dwarf_stack<machine_ptr, 100> stack;
-    plcrash::dwarf_opstream opstream;
+    dwarf_stack<machine_ptr, 100> stack;
+    dwarf_opstream opstream;
     plcrash_error_t err;
 
     /* Configure the opstream */

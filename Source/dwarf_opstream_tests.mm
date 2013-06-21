@@ -30,6 +30,8 @@
 
 #include "dwarf_opstream.hpp"
 
+using namespace plcrash::async;
+
 @interface dwarf_opstream_tests : PLCrashTestCase {
 @private
 }
@@ -49,7 +51,7 @@
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
     
     uint16_t val1;
@@ -73,7 +75,7 @@
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
     
     uint64_t val1;
@@ -98,7 +100,7 @@
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
     
     uint64_t val;
@@ -117,7 +119,7 @@
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
     
     int64_t val;
@@ -138,7 +140,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
 
     /* Configure the stream */
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
     
     /* Configure the pointer state */
@@ -166,7 +168,7 @@
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
 
     /* Skip one, verify read */
@@ -194,7 +196,7 @@
     
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t)&opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
     
-    plcrash::dwarf_opstream stream;
+    dwarf_opstream stream;
     STAssertEquals(PLCRASH_ESUCCESS, stream.init(&mobj, plcrash_async_byteorder_big_endian(), (pl_vm_address_t)&opcodes, 0, sizeof(opcodes)), @"Failed to initialize opcode stream");
     
     /* Position smoke test. */
