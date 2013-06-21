@@ -35,7 +35,7 @@
  * @{
  */
 
-using namespace plcrash;
+using namespace plcrash::async;
 
 /**
  * Evaluate a DWARF CFA program, as defined in the DWARF 4 Specification, Section 6.4.2. This
@@ -71,9 +71,9 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,
                                                       pl_vm_size_t length,
-                                                      plcrash::dwarf_cfa_state *stack)
+                                                      plcrash::async::dwarf_cfa_state *state)
 {
-    dwarf_opstream opstream;
+    plcrash::dwarf_opstream opstream;
     plcrash_error_t err;
     pl_vm_address_t location = 0;
 
@@ -85,7 +85,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
         plcrash_dwarf_cfa_reg_rule_t rule;
         uint64_t value;
 
-        dwarf_cfa_state_iterator iter = dwarf_cfa_state_iterator(stack);
+        dwarf_cfa_state_iterator iter = dwarf_cfa_state_iterator(state);
         while (iter.next(&regnum, &rule, &value)) {
             if (!initial_state.set_register(regnum, rule, value)) {
                 PLCF_DEBUG("Hit register allocation limit while saving initial state");
@@ -159,7 +159,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
     
     /* Handle error checking when setting a register on the CFA state */
 #define dw_expr_set_register(_regnum, _rule, _value) do { \
-    if (!stack->set_register(_regnum, _rule, _value)) { \
+    if (!state->set_register(_regnum, _rule, _value)) { \
         PLCF_DEBUG("Exhausted available register slots while evaluating CFA opcodes"); \
         return PLCRASH_ENOMEM; \
     } \
@@ -209,20 +209,20 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 break;
                 
             case DW_CFA_def_cfa:
-                stack->set_cfa_register(dw_expr_read_uleb128_regnum(), DWARF_CFA_STATE_CFA_TYPE_REGISTER, dw_expr_read_uleb128());
+                state->set_cfa_register(dw_expr_read_uleb128_regnum(), DWARF_CFA_STATE_CFA_TYPE_REGISTER, dw_expr_read_uleb128());
                 break;
                 
             case DW_CFA_def_cfa_sf:
-                stack->set_cfa_register(dw_expr_read_uleb128_regnum(), DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                state->set_cfa_register(dw_expr_read_uleb128_regnum(), DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                 break;
                 
             case DW_CFA_def_cfa_register: {
-                dwarf_cfa_state::dwarf_cfa_rule_t rule = stack->get_cfa_rule();
+                dwarf_cfa_rule_t rule = state->get_cfa_rule();
                 
                 switch (rule.cfa_type) {
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
-                        stack->set_cfa_register(dw_expr_read_uleb128_regnum(), rule.cfa_type, rule.reg.offset);
+                        state->set_cfa_register(dw_expr_read_uleb128_regnum(), rule.cfa_type, rule.reg.offset);
                         break;
                         
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -234,12 +234,12 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
             }
                 
             case DW_CFA_def_cfa_offset: {
-                dwarf_cfa_state::dwarf_cfa_rule_t rule = stack->get_cfa_rule();
+                dwarf_cfa_rule_t rule = state->get_cfa_rule();
                 switch (rule.cfa_type) {
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is unsigned, so all register rules are converted to unsigned here */
-                        stack->set_cfa_register(rule.reg.regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, dw_expr_read_uleb128());
+                        state->set_cfa_register(rule.reg.regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, dw_expr_read_uleb128());
                         break;
                         
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -252,12 +252,12 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 
                 
             case DW_CFA_def_cfa_offset_sf: {
-                dwarf_cfa_state::dwarf_cfa_rule_t rule = stack->get_cfa_rule();
+                dwarf_cfa_rule_t rule = state->get_cfa_rule();
                 switch (rule.cfa_type) {
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is signed, so all register rules are converted to signed here */
-                        stack->set_cfa_register(rule.reg.regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                        state->set_cfa_register(rule.reg.regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
                         break;
 
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -294,7 +294,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 }
 
                 /* Save the position */
-                stack->set_cfa_expression(abs_addr);
+                state->set_cfa_expression(abs_addr);
                 
                 /* Skip the expression opcodes */
                 opstream.skip(length);
@@ -302,7 +302,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
             }
                 
             case DW_CFA_undefined:
-                stack->remove_register(dw_expr_read_uleb128_regnum());
+                state->remove_register(dw_expr_read_uleb128_regnum());
                 break;
                 
             case DW_CFA_same_value:
@@ -375,7 +375,7 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 if (initial_state.get_register_rule(const_operand, &rule, &value)) {
                     dw_expr_set_register(const_operand, rule, value);
                 } else {
-                    stack->remove_register(const_operand);
+                    state->remove_register(const_operand);
                 }
         
                 break;
@@ -391,21 +391,21 @@ plcrash_error_t plcrash_async_dwarf_eval_cfa_program (plcrash_async_mobject_t *m
                 if (initial_state.get_register_rule(regnum, &rule, &value)) {
                     dw_expr_set_register(regnum, rule, value);
                 } else {
-                    stack->remove_register(const_operand);
+                    state->remove_register(const_operand);
                 }
                 
                 break;
             }
                 
             case DW_CFA_remember_state:
-                if (!stack->push_state()) {
+                if (!state->push_state()) {
                     PLCF_DEBUG("DW_CFA_remember_state exeeded the allocated CFA stack size");
                     return PLCRASH_ENOMEM;
                 }
                 break;
                 
             case DW_CFA_restore_state:
-                if (!stack->pop_state()) {
+                if (!state->pop_state()) {
                     PLCF_DEBUG("DW_CFA_restore_state was issued on an empty CFA stack");
                     return PLCRASH_EINVAL;
                 }

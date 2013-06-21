@@ -24,14 +24,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "dwarf_cfa_state.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 
-using namespace plcrash;
+using namespace plcrash::async;
 
 /**
  * @internal
- * @ingroup plcrash_async_dwarf_private
- * @defgroup plcrash_async_dwarf_private_cfa_state Generic DWARF Opcode Stream
+ * @ingroup plcrash_async_dwarf
+ * @defgroup plcrash_async_dwarf_cfa_state DWARF CFA Register State
  * @{
  */
 
@@ -235,9 +235,9 @@ uint8_t dwarf_cfa_state::get_register_count (void) {
 
 
 /**
- * Set a register-based call frame address rule.
+ * Set a register-based canonical frame address rule.
  *
- * @param regnum The base register for the call frame address.
+ * @param regnum The base register for the canonical frame address.
  * @param cfa_type The CFA type. Must be one of DWARF_CFA_STATE_CFA_TYPE_REGISTER or DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED.
  * @param offset The offset.
  */
@@ -250,7 +250,7 @@ void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_c
 }
 
 /**
- * Set an expression-based call frame address rule.
+ * Set an expression-based canonical frame address rule.
  *
  * @param expression DW_FORM_block value for the DWARF expression.
  */
@@ -260,9 +260,9 @@ void dwarf_cfa_state::set_cfa_expression (pl_vm_address_t address) {
 }
 
 /**
- * Return the call frame address rule defined for the current state.
+ * Return the canonical frame address rule defined for the current state.
  */
-dwarf_cfa_state::dwarf_cfa_rule_t dwarf_cfa_state::get_cfa_rule (void) {
+dwarf_cfa_rule_t dwarf_cfa_state::get_cfa_rule (void) {
     return _cfa_value[_table_depth];
 }
 

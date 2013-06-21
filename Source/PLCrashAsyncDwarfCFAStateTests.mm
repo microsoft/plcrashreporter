@@ -27,10 +27,10 @@
 
 #import "PLCrashTestCase.h"
 
-#include "dwarf_cfa_state.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 #include <inttypes.h>
 
-using namespace plcrash;
+using namespace plcrash::async;
 
 @interface dwarf_cfa_state_tests : PLCrashTestCase {
 @private

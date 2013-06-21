@@ -33,8 +33,10 @@
 
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
 
+using namespace plcrash::async;
+
 @interface PLCrashAsyncDwarfCFATests : PLCrashTestCase {
-    plcrash::dwarf_cfa_state _stack;
+    dwarf_cfa_state _stack;
     plcrash_async_dwarf_gnueh_ptr_state_t _ptr_state;
     plcrash_async_dwarf_cie_info_t _cie;
 }
@@ -140,7 +142,7 @@
     uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
 
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 }
@@ -153,7 +155,7 @@
     uint8_t opcodes[] = { DW_CFA_def_cfa_sf, 0x1, 0x7e /* -2 */};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
 
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 }
@@ -165,7 +167,7 @@
     /* Verify modification of unsigned state */
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
 
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
@@ -174,7 +176,7 @@
     opcodes[2] = 0x7e; /* -2 */
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)-2, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
@@ -191,7 +193,7 @@
     uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2, DW_CFA_def_cfa_offset, 10 };    
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)10, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 
@@ -211,7 +213,7 @@
     uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2, DW_CFA_def_cfa_offset_sf, 0x7e /* -2 */ };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
     STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
@@ -228,7 +230,7 @@
     uint8_t opcodes[] = { DW_CFA_def_cfa_expression, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(plcrash::DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
     STAssertEquals((pl_vm_address_t) &opcodes[1], _stack.get_cfa_rule().expression.address, @"Unexpected expression address");
 }
 
