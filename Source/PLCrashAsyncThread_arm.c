@@ -45,6 +45,47 @@
     break; \
 }
 
+/* Mapping of DWARF register numbers to PLCrashReporter register numbers. */
+struct dwarf_register_table {
+    /** Standard register number. */
+    plcrash_regnum_t regnum;
+    
+    /** DWARF register number. */
+    uint64_t dwarf_value;
+};
+
+/**
+ * DWARF register mappings as defined in ARM's "DWARF for the ARM Architecture", ARM IHI 0040B,
+ * issued November 30th, 2012.
+ *
+ * Note that not all registers have DWARF register numbers allocated, eg, the ARM standard states
+ * in Section 3.1:
+ *
+ *   The CPSR, VFP and FPA control registers are not allocated a numbering above. It is
+ *   considered unlikely that these will be needed for producing a stack back-trace in a
+ *   debugger.
+ */
+static const struct dwarf_register_table arm_dwarf_table [] = {
+    { PLCRASH_ARM_R0, 0 },
+    { PLCRASH_ARM_R1, 1 },
+    { PLCRASH_ARM_R2, 2 },
+    { PLCRASH_ARM_R3, 3 },
+    { PLCRASH_ARM_R4, 4 },
+    { PLCRASH_ARM_R5, 5 },
+    { PLCRASH_ARM_R6, 6 },
+    { PLCRASH_ARM_R7, 7 },
+    { PLCRASH_ARM_R8, 8 },
+    { PLCRASH_ARM_R9, 9 },
+    { PLCRASH_ARM_R10, 10 },
+    { PLCRASH_ARM_R11, 11 },
+    { PLCRASH_ARM_R12, 12 },
+    { PLCRASH_ARM_SP, 13 },
+    { PLCRASH_ARM_LR, 14 },
+    { PLCRASH_ARM_PC, 15 }
+};
+
+
+
 // PLCrashAsyncThread API
 plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
     switch (regnum) {
@@ -229,49 +270,25 @@ char const *plcrash_async_thread_state_get_reg_name (const plcrash_async_thread_
 
 // PLCrashAsyncThread API
 bool plcrash_async_thread_state_map_reg_to_dwarf (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, uint64_t *dwarf_reg) {
-    // TODO
+    for (size_t i = 0; i < sizeof(arm_dwarf_table) / sizeof(arm_dwarf_table[0]); i++) {
+        if (arm_dwarf_table[i].regnum == regnum) {
+            *dwarf_reg = arm_dwarf_table[i].dwarf_value;
+            return true;
+        }
+    }
+    
+    /* Unknown DWARF register.  */
     return false;
 }
 
 // PLCrashAsyncThread API
 bool plcrash_async_thread_state_map_dwarf_to_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg, plcrash_regnum_t *regnum) {
-#define MAPREG(_pl_num, _dwarf_num) do { \
-    case _dwarf_num:\
-        *regnum = _pl_num; \
-        return true; \
-} while (0)
-
-    /*
-     * DWARF register mappings as defined in ARM's "DWARF for the ARM Architecture", ARM IHI 0040B,
-     * issued November 30th, 2012.
-     *
-     * Note that not all registers have DWARF register numbers allocated, eg, the ARM standard states
-     * in Section 3.1:
-     *
-     *   The CPSR, VFP and FPA control registers are not allocated a numbering above. It is
-     *   considered unlikely that these will be needed for producing a stack back-trace in a
-     *   debugger.
-     */
-    switch (dwarf_reg) {
-        MAPREG(PLCRASH_ARM_R0, 0);
-        MAPREG(PLCRASH_ARM_R1, 1);
-        MAPREG(PLCRASH_ARM_R2, 2);
-        MAPREG(PLCRASH_ARM_R3, 3);
-        MAPREG(PLCRASH_ARM_R4, 4);
-        MAPREG(PLCRASH_ARM_R5, 5);
-        MAPREG(PLCRASH_ARM_R6, 6);
-        MAPREG(PLCRASH_ARM_R7, 7);
-        MAPREG(PLCRASH_ARM_R8, 8);
-        MAPREG(PLCRASH_ARM_R9, 9);
-        MAPREG(PLCRASH_ARM_R10, 10);
-        MAPREG(PLCRASH_ARM_R11, 11);
-        MAPREG(PLCRASH_ARM_R12, 12);
-        MAPREG(PLCRASH_ARM_SP, 13);
-        MAPREG(PLCRASH_ARM_LR, 14);
-        MAPREG(PLCRASH_ARM_PC, 15);
+    for (size_t i = 0; i < sizeof(arm_dwarf_table) / sizeof(arm_dwarf_table[0]); i++) {
+        if (arm_dwarf_table[i].dwarf_value == dwarf_reg) {
+            *regnum = arm_dwarf_table[i].regnum;
+            return true;
+        }
     }
-    
-#undef MAPREG
     
     /* Unknown DWARF register.  */
     return false;
