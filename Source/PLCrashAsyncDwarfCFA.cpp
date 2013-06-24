@@ -439,6 +439,34 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                                                      plcrash::async::dwarf_cfa_state *cfa_state,
                                                      plcrash_async_thread_state_t *new_thread_state)
 {
+    /* Initialize the new thread state */
+    plcrash_async_thread_state_copy(new_thread_state, thread_state);
+    plcrash_async_thread_state_clear_all_regs(new_thread_state);
+
+    /* Extract the canonical frame address */
+    dwarf_cfa_rule_t cfa_rule = cfa_state->get_cfa_rule();
+    switch (cfa_rule.cfa_type) {
+        case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
+            /** Missing canonical frame address! */
+            PLCF_DEBUG("No canonical frame address specified in the CFA state; can't apply state");
+            return PLCRASH_EINVAL;
+
+        case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
+            // TODO
+            return PLCRASH_ENOTSUP;
+            break;
+
+        case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
+            // TODO
+            return PLCRASH_ENOTSUP;
+            break;
+
+        case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
+            // TODO
+            return PLCRASH_ENOTSUP;
+            break;
+    }
+
     return PLCRASH_ENOTSUP;
 }
 

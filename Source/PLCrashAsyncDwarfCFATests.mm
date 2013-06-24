@@ -385,4 +385,54 @@ using namespace plcrash::async;
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ESUCCESS);
 }
 
+/**
+ * Walk the given thread state, searching for a valid general purpose register (eg, neither
+ * the FP, SP, or IP) that can be used for test purposes.
+ *
+ * The idea here is to keep this test code non-architecture specific, relying on the thread state
+ * API for any architecture-specific handling.
+ */
+- (plcrash_gen_regnum_t) determineTestRegister: (plcrash_async_thread_state_t *) ts {
+    size_t count = plcrash_async_thread_state_get_reg_count(ts);
+
+    /* Find a valid general purpose register */
+    plcrash_gen_regnum_t reg;
+    for (reg = (plcrash_gen_regnum_t)0; reg < count; reg++) {
+        if (reg != PLCRASH_REG_FP && reg != PLCRASH_REG_SP && reg != PLCRASH_REG_IP)
+            return reg;
+    }
+
+    STFail(@"Could not find register");
+    __builtin_trap();
+}
+
+/**
+ * Test handling of an undefined CFA value.
+ */
+- (void) testApplyCFAUndefined {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_EINVAL, @"Attempt to apply an incomplete CFA state did not return EINVAL");
+}
+
+/**
+ * Test derivation of the CFA value from the given register.
+ */
+- (void) testApplyCFARegister {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+
+}
+
 @end
