@@ -228,10 +228,17 @@ char const *plcrash_async_thread_state_get_reg_name (const plcrash_async_thread_
 }
 
 // PLCrashAsyncThread API
-plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg) {
+bool plcrash_async_thread_state_map_reg_to_dwarf (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, uint64_t *dwarf_reg) {
+    // TODO
+    return false;
+}
+
+// PLCrashAsyncThread API
+bool plcrash_async_thread_state_map_dwarf_to_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg, plcrash_regnum_t *regnum) {
 #define MAPREG(_pl_num, _dwarf_num) do { \
     case _dwarf_num:\
-        return _pl_num; \
+        *regnum = _pl_num; \
+        return true; \
 } while (0)
 
     /*
@@ -267,7 +274,7 @@ plcrash_regnum_t plcrash_async_thread_state_map_dwarf_reg (const plcrash_async_t
 #undef MAPREG
     
     /* Unknown DWARF register.  */
-    return PLCRASH_REG_INVALID;
+    return false;
 }
 
 #endif /* __arm__ */

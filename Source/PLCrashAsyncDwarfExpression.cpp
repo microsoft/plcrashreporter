@@ -124,8 +124,8 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
 
     /* Macro to fetch register valeus; handles unsupported register numbers and missing registers values */
 #define dw_thread_regval(_dw_regnum) ({ \
-    plcrash_regnum_t rn = plcrash_async_thread_state_map_dwarf_reg(thread_state, _dw_regnum); \
-    if (rn == PLCRASH_REG_INVALID) { \
+    plcrash_regnum_t rn; \
+    if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, _dw_regnum, &rn)) { \
         PLCF_DEBUG("Unsupported DWARF register value of 0x%" PRIx64, (uint64_t)_dw_regnum);\
         return PLCRASH_ENOTSUP; \
     } \

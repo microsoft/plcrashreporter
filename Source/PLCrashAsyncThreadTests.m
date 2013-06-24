@@ -98,7 +98,13 @@
     plcrash_async_thread_state_t ts;
     
 #define CHECKREG(plreg, dwreg) do { \
-    STAssertEquals(plreg, plcrash_async_thread_state_map_dwarf_reg(&ts, dwreg), @"Incorrect register mapping for " # plreg); \
+    plcrash_regnum_t regnum; \
+    STAssertTrue(plcrash_async_thread_state_map_dwarf_to_reg(&ts, dwreg, &regnum), @"Failed to map DWARF register"); \
+    STAssertEquals((plcrash_regnum_t)plreg, regnum, @"Incorrect register mapping for " # plreg); \
+\
+    uint64_t dw_result; \
+    STAssertTrue(plcrash_async_thread_state_map_reg_to_dwarf(&ts, plreg, &dw_result), @"Failed to map register to DWARF"); \
+    STAssertEquals((uint64_t)dwreg, dw_result, @"Native register number does not map back to the expected DWARF register number"); \
 } while (0)
 
 #if PLCRASH_ASYNC_THREAD_X86_SUPPORT

@@ -294,7 +294,9 @@
     STAssertTrue([self dwarfTestRegister] <= 31, @"Registers > 31 can't be encoded with DW_OP_bregN");
 
     /* Set up the thread state */
-    plcrash_async_thread_state_set_reg(&_ts, plcrash_async_thread_state_map_dwarf_reg(&_ts, [self dwarfTestRegister]), 0xFF);
+    plcrash_regnum_t regnum;
+    STAssertTrue(plcrash_async_thread_state_map_dwarf_to_reg(&_ts, [self dwarfTestRegister], &regnum), @"Failed to map DWARF register");
+    plcrash_async_thread_state_set_reg(&_ts, regnum, 0xFF);
 
     /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, plus 5 (the value is sleb128 encoded) */
     uint8_t opcodes[] = { DW_OP_breg0 + [self dwarfTestRegister], 0x5 };
@@ -312,7 +314,9 @@
     STAssertTrue([self dwarfTestRegister] <= 0x7F, @"Register won't fit in 7 bits, you need a real ULEB128 encoder here");
     
     /* Set up the thread state */
-    plcrash_async_thread_state_set_reg(&_ts, plcrash_async_thread_state_map_dwarf_reg(&_ts, [self dwarfTestRegister]), 0xFF);
+    plcrash_regnum_t regnum;
+    STAssertTrue(plcrash_async_thread_state_map_dwarf_to_reg(&_ts, [self dwarfTestRegister], &regnum), @"Failed to map DWARF register");
+    plcrash_async_thread_state_set_reg(&_ts, regnum, 0xFF);
 
     /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, plus 5 (the value is sleb128 encoded) */
     uint8_t opcodes[] = { DW_OP_bregx, [self dwarfTestRegister], 0x5 };
