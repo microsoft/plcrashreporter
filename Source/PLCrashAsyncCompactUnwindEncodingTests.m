@@ -646,7 +646,7 @@
  * CFE is only supported on x86/x86-64, and the iOS SDK does not provide the thread state APIs necessary
  * to perform these tests on ARM
  *
- * TODO: Disabe the entire CFE subsystem on ARM, eg, via a configuration system for enabling/disabling
+ * TODO: Disable the entire CFE subsystem on ARM, eg, via a configuration system for enabling/disabling
  * functionality.
  */
 #if PLCRASH_ASYNC_THREAD_X86_SUPPORT
