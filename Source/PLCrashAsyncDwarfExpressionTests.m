@@ -147,12 +147,12 @@
 \
     if (![self is32]) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_eval_expression_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 64-bit result"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"32-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 32-bit result"); \
     } \
@@ -169,11 +169,11 @@
     \
     if (![self is32]) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_eval_expression_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, errval, @"64-bit evaluation did not return expected error code"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_eval_expression_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, errval, @"32-bit evaluation did not return expected error code"); \
     } \
     \

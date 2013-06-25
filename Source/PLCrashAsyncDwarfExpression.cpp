@@ -703,7 +703,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
  * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned. If the stack
  * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  */
-plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t *mobj,
+plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t *mobj,
                                                         task_t task,
                                                         plcrash_async_thread_state_t *thread_state,
                                                         const plcrash_async_byteorder_t *byteorder,
@@ -740,7 +740,7 @@ plcrash_error_t plcrash_async_dwarf_eval_expression_32 (plcrash_async_mobject_t 
  * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned. If the stack
  * is empty upon termination of evaluation, PLCRASH_EINVAL will be returned.
  */
-plcrash_error_t plcrash_async_dwarf_eval_expression_64 (plcrash_async_mobject_t *mobj,
+plcrash_error_t plcrash_async_dwarf_expression_eval_64 (plcrash_async_mobject_t *mobj,
                                                         task_t task,
                                                         plcrash_async_thread_state_t *thread_state,
                                                         const plcrash_async_byteorder_t *byteorder,
