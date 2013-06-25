@@ -35,8 +35,8 @@
  * Configure the test cases for thread states that are supported by the host.
  *
  * The primary test validates 64-bit evaluation (on hosts that only support 32-bit thread
- * states -- such as iOS/ARM -- we account for overflow). The _32 test case subclass variant
- * validates 32-bit operation.
+ * states -- such as iOS/ARM -- we avoid using values that would overflow the thread state gprs,
+ * allowing the tests to succeed). The _32 test case subclass variant validates 32-bit operation.
  *
  * The DWARF register numbers must be <= 31, to permit encoding with a DW_OP_bregN
  * opcode.
@@ -70,6 +70,7 @@
     plcrash_async_thread_state_t _ts;
 }
 
+- (BOOL) is32;
 - (cpu_type_t) targetCPU;
 - (uint64_t) dwarfTestRegister;
 - (uint64_t) dwarfBadRegister;
@@ -79,7 +80,9 @@
 /* Subclass that we use to trigger testing of 32-bit behavior. See also -[PLCrashAsyncDwarfExpressionTests is32]. */
 @interface PLCrashAsyncDwarfExpressionTests_32 : PLCrashAsyncDwarfExpressionTests @end
 
-@implementation PLCrashAsyncDwarfExpressionTests_32 @end
+
+@implementation PLCrashAsyncDwarfExpressionTests_32
+@end
 
 /**
  * Test DWARF expression evaluation.
@@ -100,7 +103,12 @@
 
 /**
  * Return the CPU to be used for the test thread state. This state type may vary based on whether we're testing
- * 32-bit or 64-bit behavior.
+ * 32-bit or 64-bit target behavior.
+ *
+ * On some (eg, iOS/ARM), we're unable to correctly test the behavior of 64-bit evaluation with a 64-bit target, as there
+ * exists no support for representing 64-bit thread state. In those cases, we still run the 64-bit evaluation tests
+ * for completeness; they should pass in the standard case, as we do not use any dereferencing of values > UINT32_MAX from
+ * the 32-bit thread state.
  */
 - (cpu_type_t) targetCPU {
     if ([self is32])
