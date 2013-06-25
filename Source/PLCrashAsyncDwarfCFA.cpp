@@ -75,7 +75,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
 {
     plcrash::async::dwarf_opstream opstream;
     plcrash_error_t err;
-    pl_vm_address_t location = 0;
+    uint64_t location = 0;
 
     /* Save the initial state; this is needed for DW_CFA_restore, et al. */
     // TODO - It would be preferrable to only allocate the number of registers actually required here.
