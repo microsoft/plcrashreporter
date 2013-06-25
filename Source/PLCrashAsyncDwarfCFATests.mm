@@ -519,4 +519,46 @@ using namespace plcrash::async;
     STAssertEquals((plcrash_greg_t)15, result, @"Incorrect stack pointer");
 }
 
+
+/**
+ * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_OFFSET register value.
+ */
+- (void) testApplySignedOffset {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+
+    /* Target value large enough for 64-bit operation */
+    union {
+        uint64_t u64;
+        uint32_t u32;
+    } target_val;
+    target_val.u64 = 0xABABABABABABABABULL;
+
+    /* Initial thread state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts];
+    
+    /* Populate the CFA with the address of 'target_val' +20. We use this combined with signed offset
+     * of -20 below to test signed offset handling. */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, (plcrash_greg_t) &target_val);
+    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 20);
+
+    /* Set the register rule and apply the state change  */
+    cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, -20);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
+    
+    if (plcrash_async_thread_state_get_greg_size(&new_ts) == 8)
+        STAssertEquals((plcrash_greg_t)target_val.u64, result, @"Incorrect register value");
+    else
+        STAssertEquals((plcrash_greg_t)target_val.u32, result, @"Incorrect register value");
+}
+
 @end

@@ -451,7 +451,8 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
     
     /* Determine the register width */
     bool m64 = false;
-    switch (plcrash_async_thread_state_get_greg_size(thread_state)) {
+    pl_vm_address_t greg_size = plcrash_async_thread_state_get_greg_size(thread_state);
+    switch (greg_size) {
         case 4:
             break;
         case 8:
@@ -462,9 +463,11 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
             return PLCRASH_ENOTSUP;
     }
 
-    /* Extract the canonical frame address */
+    /*
+     * Restore the canonical frame address
+     */
     dwarf_cfa_rule_t cfa_rule = cfa_state->get_cfa_rule();
-    plcrash_greg_t cfa_val;
+    pl_vm_address_t cfa_val;
 
     switch (cfa_rule.cfa_type) {
         case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
@@ -526,9 +529,80 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
             break;
         }
     }
-
+    
     /* Apply the CFA to the new state */
     plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, cfa_val);
+    
+    /*
+     * Restore register values
+     */
+    dwarf_cfa_state_iterator iter = dwarf_cfa_state_iterator(cfa_state);
+    dwarf_cfa_state_regnum_t dw_regnum;
+    plcrash_dwarf_cfa_reg_rule_t dw_rule;
+    uint64_t dw_value;
+    
+    while (iter.next(&dw_regnum, &dw_rule, &dw_value)) {
+        union {
+            uint32_t v32;
+            uint64_t v64;
+        } rvalue;
+        void *vptr = &rvalue;
+    
+        /* Map the register number */
+        plcrash_regnum_t pl_regnum;
+        if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_regnum, &pl_regnum)) {
+            PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_regnum);
+            return PLCRASH_EINVAL;
+        }
+        
+        /* Apply the rule */
+        switch (dw_rule) {
+            case PLCRASH_DWARF_CFA_REG_RULE_OFFSET: {
+                if ((err = plcrash_async_safe_memcpy(task, cfa_val, (int64_t)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to read offset(N) register value: %d", err);
+                    return err;
+                }
+                
+                if (m64) {
+                    plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v64);
+                } else {
+                    plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v32);
+                }
+
+                break;
+            }
+
+            case PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET:
+                /* The previous value of this register is the value CFA+N where CFA is the current CFA value and N is a signed offset. */
+                // TODO
+                return PLCRASH_ENOTSUP;
+                
+
+            case PLCRASH_DWARF_CFA_REG_RULE_REGISTER:
+                /* The previous value of this register is stored in another register numbered R. */
+                // TODO
+                return PLCRASH_ENOTSUP;
+                
+            case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION:
+                /* The previous value of this register is located at the address produced by executing the DWARF expression E. */
+                // TODO
+                return PLCRASH_ENOTSUP;
+                
+            case PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION:
+                /* The previous value of this register is the value produced by executing the DWARF expression E. */
+                // TODO
+                return PLCRASH_ENOTSUP;
+                
+            case PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE:
+                /* This register has not been modified from the previous frame. (By convention, it is preserved by the callee, but
+                 * the callee has not modified it.)
+                 *
+                 * The register's value may be found in the frame's thread state. For frames other than the first, the
+                 * register may not have been restored, and thus may be unavailable. */
+                // TODO
+                return PLCRASH_ENOTSUP;
+        }
+    }
 
     return PLCRASH_ESUCCESS;
 }
