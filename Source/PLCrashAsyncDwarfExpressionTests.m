@@ -34,11 +34,12 @@
 /*
  * Configure the test cases for thread states that are supported by the host.
  *
- * The primary test validates the 64-bit variation (on hosts that support it). The
- * _32 test case subclass variant validates 32-bit operation.
+ * The primary test validates 64-bit evaluation (on hosts that only support 32-bit thread
+ * states -- such as iOS/ARM -- we account for overflow). The _32 test case subclass variant
+ * validates 32-bit operation.
  *
  * The DWARF register numbers must be <= 31, to permit encoding with a DW_OP_bregN
- * opcode
+ * opcode.
  */
 #ifdef PLCRASH_ASYNC_THREAD_X86_SUPPORT
 #    define TEST_THREAD_64_CPU CPU_TYPE_X86_64
@@ -75,7 +76,9 @@
 
 @end
 
+/* Subclass that we use to trigger testing of 32-bit behavior. See also -[PLCrashAsyncDwarfExpressionTests is32]. */
 @interface PLCrashAsyncDwarfExpressionTests_32 : PLCrashAsyncDwarfExpressionTests @end
+
 @implementation PLCrashAsyncDwarfExpressionTests_32 @end
 
 /**
@@ -87,12 +90,18 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_init(&_ts, [self targetCPU]), @"Failed to initialize thread state");
 }
 
-/* Return the 32/64 configuration values */
-
+/**
+ * Returns YES if we're testing the 32-bit evaluation case (eg, PLCrashAsyncDwarfExpressionTests_32), or NO if we're testing
+ * the 64-bit case.
+ */
 - (BOOL) is32 {
     return [[self class] isEqual: [PLCrashAsyncDwarfExpressionTests_32 class]];
 }
 
+/**
+ * Return the CPU to be used for the test thread state. This state type may vary based on whether we're testing
+ * 32-bit or 64-bit behavior.
+ */
 - (cpu_type_t) targetCPU {
     if ([self is32])
         return TEST_THREAD_32_CPU;
@@ -100,6 +109,9 @@
         return TEST_THREAD_64_CPU;
 }
 
+/**
+ * Return the DWARF register number to be used for tests.
+ */
 - (uint64_t) dwarfTestRegister {
     if ([self is32])
         return TEST_THREAD_32_DWARF_REG1;
@@ -107,6 +119,9 @@
         return TEST_THREAD_64_DWARF_REG1;
 }
 
+/**
+ * Return a known-bad DWARF register to use for tests.
+ */
 - (uint64_t) dwarfBadRegister {
     if ([self is32])
         return TEST_THREAD_32_DWARF_REG_INVALID;
@@ -122,7 +137,7 @@
     plcrash_error_t err; \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
 \
-    if ([self targetCPU] & CPU_ARCH_ABI64) { \
+    if (![self is32]) { \
         uint64_t result; \
         err = plcrash_async_dwarf_eval_expression_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed"); \
@@ -144,7 +159,7 @@
     plcrash_error_t err; \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
     \
-    if ([self targetCPU] & CPU_ARCH_ABI64) { \
+    if (![self is32]) { \
         uint64_t result; \
         err = plcrash_async_dwarf_eval_expression_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
         STAssertEquals(err, errval, @"64-bit evaluation did not return expected error code"); \
