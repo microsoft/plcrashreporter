@@ -24,6 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "PLCrashAsyncDwarfExpression.h"
 
 #include "PLCrashAsyncDwarfCFA.hpp"
 #include "dwarf_opstream.hpp"
@@ -268,11 +269,12 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
                 break;
             }
 
-            case DW_CFA_def_cfa_expression: {
-                uintptr_t pos = opstream.get_position();
-                
+            case DW_CFA_def_cfa_expression: {                
                 /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
                 uint64_t length = dw_expr_read_uleb128();
+                
+                /* Fetch the opstream position of the DWARF expression */
+                uintptr_t pos = opstream.get_position();
 
                 /* The returned sizes should always fit within the VM types in valid DWARF data; if they don't, how
                  * are we debugging the target? */
@@ -294,7 +296,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
                 }
 
                 /* Save the position */
-                state->set_cfa_expression(abs_addr);
+                state->set_cfa_expression(abs_addr, length);
                 
                 /* Skip the expression opcodes */
                 opstream.skip(length);
@@ -429,6 +431,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
  *
  * @param task The task containing any data referenced by @a thread_state.
  * @param thread_state The current thread state corresponding to @a entry.
+ * @param byteorder The target's byte order.
  * @param cfa_state CFA evaluation state as generated from evaluating a CFA program. @sa plcrash_async_dwarf_cfa_eval_program.
  * @param new_thread_state The new thread state to be initialized.
  *
@@ -436,16 +439,33 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
  */
 plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                                                      const plcrash_async_thread_state_t *thread_state,
+                                                     const plcrash_async_byteorder_t *byteorder,
                                                      plcrash::async::dwarf_cfa_state *cfa_state,
                                                      plcrash_async_thread_state_t *new_thread_state)
 {
+    plcrash_error_t err;
+
     /* Initialize the new thread state */
     plcrash_async_thread_state_copy(new_thread_state, thread_state);
     plcrash_async_thread_state_clear_all_regs(new_thread_state);
+    
+    /* Determine the register width */
+    bool m64 = false;
+    switch (plcrash_async_thread_state_get_greg_size(thread_state)) {
+        case 4:
+            break;
+        case 8:
+            m64 = true;
+            break;
+        default:
+            PLCF_DEBUG("Unsupported register width!");
+            return PLCRASH_ENOTSUP;
+    }
 
-    /* Extract and apply the canonical frame address */
+    /* Extract the canonical frame address */
     dwarf_cfa_rule_t cfa_rule = cfa_state->get_cfa_rule();
     plcrash_greg_t cfa_val;
+
     switch (cfa_rule.cfa_type) {
         case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
             /** Missing canonical frame address! */
@@ -474,16 +494,41 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                 cfa_val += ((uint64_t) cfa_rule.reg.offset);
             else
                 cfa_val += cfa_rule.reg.offset;
- 
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, cfa_val);
             break;
         }
 
-        case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
-            // TODO
-            return PLCRASH_ENOTSUP;
+        case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION: {
+            plcrash_async_mobject_t mobj;
+            if ((err = plcrash_async_mobject_init(&mobj, task, cfa_rule.expression.address, cfa_rule.expression.length, true)) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Could not map CFA expression range");
+                return err;
+            }
+
+            if (m64) {
+                uint64_t result;
+                if ((err = plcrash_async_dwarf_expression_eval_64(&mobj, task, thread_state, byteorder, cfa_rule.expression.address, 0x0, cfa_rule.expression.length, &result)) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("CFA eval_64 failed");
+                    return err;
+                }
+
+                cfa_val = result;
+            } else {
+                uint32_t result;
+                if ((err = plcrash_async_dwarf_expression_eval_32(&mobj, task, thread_state, byteorder, cfa_rule.expression.address, 0x0, cfa_rule.expression.length, &result)) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("CFA eval_32 failed");
+                    return err;
+                }
+                
+                cfa_val = result;
+            }
+            
+            
             break;
+        }
     }
+
+    /* Apply the CFA to the new state */
+    plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, cfa_val);
 
     return PLCRASH_ESUCCESS;
 }

@@ -252,11 +252,13 @@ void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_c
 /**
  * Set an expression-based canonical frame address rule.
  *
- * @param expression DW_FORM_block value for the DWARF expression.
+ * @param expression Target-relative address of the expression opcode stream.
+ * @param length Length in bytes of the opcode stream.
  */
-void dwarf_cfa_state::set_cfa_expression (pl_vm_address_t address) {
+void dwarf_cfa_state::set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length) {
     _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_EXPRESSION;
     _cfa_value[_table_depth].expression.address = address;
+    _cfa_value[_table_depth].expression.length = length;
 }
 
 /**

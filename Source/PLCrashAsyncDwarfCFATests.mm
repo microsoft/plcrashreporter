@@ -66,6 +66,8 @@ using namespace plcrash::async;
     plcrash_async_dwarf_gnueh_ptr_state_free(&_ptr_state);
 }
 
+#pragma mark CFA Evaluation
+
 /* Perform evaluation of the given opcodes, expecting a result of type @a type,
  * with an expected value of @a expected. The data is interpreted as big endian. */
 #define PERFORM_EVAL_TEST(opcodes, pc_offset, expected) do { \
@@ -181,7 +183,7 @@ using namespace plcrash::async;
     STAssertEquals((int64_t)-2, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
     /* Verify behavior when a non-register CFA rule is present */
-    _stack.set_cfa_expression(0);
+    _stack.set_cfa_expression(0, 1);
     opcodes[0] = DW_CFA_nop;
     opcodes[1] = DW_CFA_nop;
     opcodes[2] = DW_CFA_nop;
@@ -198,7 +200,7 @@ using namespace plcrash::async;
     STAssertEquals((int64_t)10, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
 
     /* Verify behavior when a non-register CFA rule is present */
-    _stack.set_cfa_expression(0);
+    _stack.set_cfa_expression(0, 1);
     opcodes[0] = DW_CFA_nop;
     opcodes[1] = DW_CFA_nop;
     opcodes[2] = DW_CFA_nop;
@@ -218,7 +220,7 @@ using namespace plcrash::async;
     STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
     
     /* Verify behavior when a non-register CFA rule is present */
-    _stack.set_cfa_expression(0);
+    _stack.set_cfa_expression(0, 1);
     opcodes[0] = DW_CFA_nop;
     opcodes[1] = DW_CFA_nop;
     opcodes[2] = DW_CFA_nop;
@@ -231,7 +233,8 @@ using namespace plcrash::async;
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
     STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((pl_vm_address_t) &opcodes[1], _stack.get_cfa_rule().expression.address, @"Unexpected expression address");
+    STAssertEquals((pl_vm_address_t) &opcodes[2], _stack.get_cfa_rule().expression.address, @"Unexpected expression address");
+    STAssertEquals((pl_vm_size_t) 1, _stack.get_cfa_rule().expression.length, @"Unexpected expression length");
 }
 
 /** Test evaluation of DW_CFA_undefined */
@@ -385,6 +388,8 @@ using namespace plcrash::async;
     PERFORM_EVAL_TEST(opcodes, 0, PLCRASH_ESUCCESS);
 }
 
+#pragma mark CFA Application
+
 /**
  * Walk the given thread state, searching for a valid general purpose register (eg, neither
  * the FP, SP, or IP, and defined by DWARF) that can be used for test purposes.
@@ -429,7 +434,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
     
     plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
-    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
     STAssertEquals(err, PLCRASH_EINVAL, @"Attempt to apply an incomplete CFA state did not return EINVAL");
 }
 
@@ -451,7 +456,7 @@ using namespace plcrash::async;
     cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts], DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
 
     /* Try to apply the state change */
-    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
 
     /* Verify the result */
@@ -479,13 +484,39 @@ using namespace plcrash::async;
     cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts], DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, -10);
     
     /* Try to apply the state change */
-    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
     
     /* Verify the result */
     STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, PLCRASH_REG_SP), @"No stack pointer was set");
     plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, PLCRASH_REG_SP);
     STAssertEquals((plcrash_greg_t)20, result, @"Incorrect stack pointer");
+}
+
+/**
+ * Test deriviation of the CFA value from a DWARF expression.
+ */
+- (void) testApplyCFAExpression {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    uint8_t opcodes = { DW_OP_lit15 };
+
+    /* Populate initial state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    
+    /* Target our sample opcodes */
+    cfa_state.set_cfa_expression((pl_vm_address_t)&opcodes, sizeof(opcodes));
+    
+    /* Try to apply the state change */
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, PLCRASH_REG_SP), @"No stack pointer was set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, PLCRASH_REG_SP);
+    STAssertEquals((plcrash_greg_t)15, result, @"Incorrect stack pointer");
 }
 
 @end

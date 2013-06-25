@@ -66,7 +66,7 @@ using namespace plcrash::async;
 template <typename machine_ptr, typename machine_ptr_s>
 static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mobject_t *mobj,
                                                                 task_t task,
-                                                                plcrash_async_thread_state_t *thread_state,
+                                                                const plcrash_async_thread_state_t *thread_state,
                                                                 const plcrash_async_byteorder_t *byteorder,
                                                                 pl_vm_address_t address,
                                                                 pl_vm_off_t offset,
@@ -705,7 +705,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
  */
 plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t *mobj,
                                                         task_t task,
-                                                        plcrash_async_thread_state_t *thread_state,
+                                                        const plcrash_async_thread_state_t *thread_state,
                                                         const plcrash_async_byteorder_t *byteorder,
                                                         pl_vm_address_t address,
                                                         pl_vm_off_t offset,
@@ -742,7 +742,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t 
  */
 plcrash_error_t plcrash_async_dwarf_expression_eval_64 (plcrash_async_mobject_t *mobj,
                                                         task_t task,
-                                                        plcrash_async_thread_state_t *thread_state,
+                                                        const plcrash_async_thread_state_t *thread_state,
                                                         const plcrash_async_byteorder_t *byteorder,
                                                         pl_vm_address_t address,
                                                         pl_vm_off_t offset,
