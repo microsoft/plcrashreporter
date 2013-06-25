@@ -387,23 +387,36 @@ using namespace plcrash::async;
 
 /**
  * Walk the given thread state, searching for a valid general purpose register (eg, neither
- * the FP, SP, or IP) that can be used for test purposes.
+ * the FP, SP, or IP, and defined by DWARF) that can be used for test purposes.
  *
  * The idea here is to keep this test code non-architecture specific, relying on the thread state
  * API for any architecture-specific handling.
  */
-- (plcrash_gen_regnum_t) determineTestRegister: (plcrash_async_thread_state_t *) ts {
+- (plcrash_regnum_t) findTestRegister: (plcrash_async_thread_state_t *) ts {
     size_t count = plcrash_async_thread_state_get_reg_count(ts);
 
-    /* Find a valid general purpose register */
-    plcrash_gen_regnum_t reg;
-    for (reg = (plcrash_gen_regnum_t)0; reg < count; reg++) {
-        if (reg != PLCRASH_REG_FP && reg != PLCRASH_REG_SP && reg != PLCRASH_REG_IP)
-            return reg;
+    /* Find a valid general purpose register for which there is also a corresponding DWARF register
+     * name. */
+    plcrash_regnum_t reg;
+    for (reg = (plcrash_regnum_t)0; reg < count; reg++) {
+        if (reg != PLCRASH_REG_FP && reg != PLCRASH_REG_SP && reg != PLCRASH_REG_IP) {
+            uint64_t dw;
+            if (plcrash_async_thread_state_map_reg_to_dwarf(ts, reg, &dw))
+                return reg;
+        }
     }
 
     STFail(@"Could not find register");
     __builtin_trap();
+}
+
+/**
+ * Return the DWARF register value for the register returned by -testRegister:
+ */
+- (uint64_t) findTestDwarfRegister: (plcrash_async_thread_state_t *) ts {
+    uint64_t dw;
+    STAssertTrue(plcrash_async_thread_state_map_reg_to_dwarf(ts, [self findTestRegister: ts], &dw), @"Failed to map to dwarf register");
+    return dw;
 }
 
 /**
@@ -421,7 +434,7 @@ using namespace plcrash::async;
 }
 
 /**
- * Test derivation of the CFA value from the given register.
+ * Test derivation of the CFA value from the given register + unsigned offset.
  */
 - (void) testApplyCFARegister {
     plcrash_async_thread_state_t prev_ts;
@@ -429,10 +442,50 @@ using namespace plcrash::async;
     dwarf_cfa_state cfa_state;
     plcrash_error_t err;
 
+    /* Populate initial state */
     plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+
+    /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
+     * that it actually is interpreted as an */
+    plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts], 30);
+    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts], DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
+
+    /* Try to apply the state change */
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
 
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, PLCRASH_REG_SP), @"No stack pointer was set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, PLCRASH_REG_SP);
+    STAssertEquals((plcrash_greg_t)40, result, @"Incorrect stack pointer");
+}
+
+
+/**
+ * Test derivation of the CFA value from the given register + signed offset.
+ */
+- (void) testApplyCFARegisterUnsigned {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    /* Populate initial state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    
+    /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
+     * that it actually is interpreted as an */
+    plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts], 30);
+    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts], DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, -10);
+    
+    /* Try to apply the state change */
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, PLCRASH_REG_SP), @"No stack pointer was set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, PLCRASH_REG_SP);
+    STAssertEquals((plcrash_greg_t)20, result, @"Incorrect stack pointer");
 }
 
 @end

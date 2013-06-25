@@ -443,8 +443,9 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
     plcrash_async_thread_state_copy(new_thread_state, thread_state);
     plcrash_async_thread_state_clear_all_regs(new_thread_state);
 
-    /* Extract the canonical frame address */
+    /* Extract and apply the canonical frame address */
     dwarf_cfa_rule_t cfa_rule = cfa_state->get_cfa_rule();
+    plcrash_greg_t cfa_val;
     switch (cfa_rule.cfa_type) {
         case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
             /** Missing canonical frame address! */
@@ -452,14 +453,31 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
             return PLCRASH_EINVAL;
 
         case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
-            // TODO
-            return PLCRASH_ENOTSUP;
-            break;
+        case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED: {
+            plcrash_regnum_t regnum;
+            
+            /* Map to a plcrash register number */
+            if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, cfa_rule.reg.regnum, &regnum)) {
+                PLCF_DEBUG("CFA rule references an unsupported DWARF register: 0x%" PRIx32, cfa_rule.reg.regnum);
+                return PLCRASH_ENOTSUP;
+            }
+            
+            /* Verify that the requested register is available */
+            if (!plcrash_async_thread_state_has_reg(thread_state, regnum)) {
+                PLCF_DEBUG("CFA rule references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, regnum));
+                return PLCRASH_ENOTFOUND;
+            }
 
-        case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
-            // TODO
-            return PLCRASH_ENOTSUP;
+            /* Fetch the current value, apply the offset, and save as the new thread's CFA. */
+            cfa_val = plcrash_async_thread_state_get_reg(thread_state, regnum);
+            if (cfa_rule.cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER)
+                cfa_val += ((uint64_t) cfa_rule.reg.offset);
+            else
+                cfa_val += cfa_rule.reg.offset;
+ 
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, cfa_val);
             break;
+        }
 
         case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
             // TODO
@@ -467,7 +485,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
             break;
     }
 
-    return PLCRASH_ENOTSUP;
+    return PLCRASH_ESUCCESS;
 }
 
 /**
