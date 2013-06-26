@@ -379,6 +379,88 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
 #pragma mark Primitive Type Decoding
 
 /**
+ * Read a SLEB128 value directly from @a location within @a task.
+ *
+ * @param mobj The memory object from which the LEB128 data will be read.
+ * @param location A task-relative location within @a mobj.
+ * @param offset Offset to be applied to @a location.
+ * @param result On success, the ULEB128 value.
+ * @param size On success, will be set to the total size of the decoded LEB128 value at @a location, in bytes.
+ *
+ * @warning Reading directly from the task requires performing memory remapping, and will incurs a higher runtime overhead
+ * than plcrash_async_dwarf_read_sleb128().
+ */
+plcrash_error_t plcrash_async_dwarf_read_task_sleb128 (task_t task, pl_vm_address_t location, pl_vm_off_t offset, int64_t *result, pl_vm_size_t *size) {
+    pl_vm_address_t target;
+    plcrash_error_t err;
+    
+    /* Calculate the absolute target */
+    if (!plcrash_async_address_apply_offset(location, offset, &target)) {
+        PLCF_DEBUG("Applying the  offset of 0x%" PRId64 " to base address %" PRIx64 " exceeds PL_VM_ADDRESS_MAX", (int64_t) offset, (uint64_t) location);
+        return PLCRASH_EINVAL;
+    }
+    
+    /*
+     * Map up to PAGE_SIZE of bytes; we allow for shorter allocations, and rely on the sleb128 reader code to determine whether
+     * the mapping is short. We use a page mapping, rather than reading data per-byte, to avoid per-byte syscall overhead.
+     */
+    plcrash_async_mobject_t mobj;
+    if ((err = plcrash_async_mobject_init(&mobj, task, target, PAGE_SIZE, false)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to map uleb128 page");
+        return err;
+    }
+    
+    /* Perform the actual read */
+    err = plcrash_async_dwarf_read_sleb128(&mobj, target, 0x0, result, size);
+    
+    /* Clean up our mapping */
+    plcrash_async_mobject_free(&mobj);
+    
+    return err;
+}
+
+/**
+ * Read a ULEB128 value directly from @a location within @a task.
+ *
+ * @param mobj The memory object from which the LEB128 data will be read.
+ * @param location A task-relative location within @a mobj.
+ * @param offset Offset to be applied to @a location.
+ * @param result On success, the ULEB128 value.
+ * @param size On success, will be set to the total size of the decoded LEB128 value at @a location, in bytes.
+ *
+ * @warning Reading directly from the task requires performing memory remapping, and will incurs a higher runtime overhead
+ * than plcrash_async_dwarf_read_sleb128().
+ */
+plcrash_error_t plcrash_async_dwarf_read_task_uleb128 (task_t task, pl_vm_address_t location, pl_vm_off_t offset, uint64_t *result, pl_vm_size_t *size) {
+    pl_vm_address_t target;
+    plcrash_error_t err;
+
+    /* Calculate the absolute target */
+    if (!plcrash_async_address_apply_offset(location, offset, &target)) {
+        PLCF_DEBUG("Applying the  offset of 0x%" PRId64 " to base address %" PRIx64 " exceeds PL_VM_ADDRESS_MAX", (int64_t) offset, (uint64_t) location);
+        return PLCRASH_EINVAL;
+    }
+
+    /*
+     * Map up to PAGE_SIZE of bytes; we allow for shorter allocations, and rely on the uleb128 reader code to determine whether
+     * the mapping is short. We use a page mapping, rather than reading data per-byte, to avoid per-byte syscall overhead.
+     */
+    plcrash_async_mobject_t mobj;
+    if ((err = plcrash_async_mobject_init(&mobj, task, target, PAGE_SIZE, false)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to map uleb128 page");
+        return err;
+    }
+
+    /* Perform the actual read */
+    err = plcrash_async_dwarf_read_uleb128(&mobj, target, 0x0, result, size);
+
+    /* Clean up our mapping */
+    plcrash_async_mobject_free(&mobj);
+    
+    return err;
+}
+
+/**
  * Read a ULEB128 value from @a location within @a mobj.
  *
  * @param mobj The memory object from which the LEB128 data will be read.
