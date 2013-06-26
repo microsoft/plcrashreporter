@@ -666,8 +666,14 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                  *
                  * The register's value may be found in the frame's thread state. For frames other than the first, the
                  * register may not have been restored, and thus may be unavailable. */
-                // TODO
-                return PLCRASH_ENOTSUP;
+                if (!plcrash_async_thread_state_has_reg(thread_state, pl_regnum)) {
+                    PLCF_DEBUG("Same-value rule references a register that is not available from the current thread state");
+                    return PLCRASH_ENOTFOUND;
+                }
+
+                /* Copy the register value from the previous state */
+                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, pl_regnum));
+                break;
         }
     }
 

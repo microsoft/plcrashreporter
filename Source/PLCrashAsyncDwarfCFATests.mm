@@ -686,7 +686,6 @@ using namespace plcrash::async;
     cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t) opcodes);
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
-    return;
     
     /* Verify the result */
     STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
@@ -731,12 +730,40 @@ using namespace plcrash::async;
     cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t) opcodes);
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
-    return;
     
     /* Verify the result */
     STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
     plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
-    STAssertEquals(20 /* CFA + 10 */, result, @"Incorrect register value");
+    STAssertEquals((plcrash_greg_t)20 /* CFA + 10 */, result, @"Incorrect register value");
+}
+
+/**
+ * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE register value.
+ */
+- (void) testApplyRegisterSameValue {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    /* Initial thread state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);
+
+    /* Populate an (unused) CFA rule */
+    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    
+    /* Set the register rule and apply the state change  */
+    cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, 0);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
+    STAssertEquals((plcrash_greg_t)20, result, @"Incorrect register value");
 }
 
 
