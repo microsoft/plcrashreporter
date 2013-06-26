@@ -573,15 +573,25 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
             }
 
             case PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET:
-                /* The previous value of this register is the value CFA+N where CFA is the current CFA value and N is a signed offset. */
-                // TODO
-                return PLCRASH_ENOTSUP;
-                
+                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, cfa_val + ((int64_t) dw_value));
+                break;
 
-            case PLCRASH_DWARF_CFA_REG_RULE_REGISTER:
+            case PLCRASH_DWARF_CFA_REG_RULE_REGISTER: {
                 /* The previous value of this register is stored in another register numbered R. */
-                // TODO
-                return PLCRASH_ENOTSUP;
+                plcrash_regnum_t src_pl_regnum;
+                if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_value, &src_pl_regnum)) {
+                    PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_regnum);
+                    return PLCRASH_EINVAL;
+                }
+                
+                if (!plcrash_async_thread_state_has_reg(thread_state, src_pl_regnum)) {
+                    PLCF_DEBUG("Register rule references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, src_pl_regnum));
+                    return PLCRASH_ENOTFOUND;
+                }
+                
+                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, src_pl_regnum));
+                break;
+            }
                 
             case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION:
                 /* The previous value of this register is located at the address produced by executing the DWARF expression E. */

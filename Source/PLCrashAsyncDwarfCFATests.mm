@@ -396,8 +396,12 @@ using namespace plcrash::async;
  *
  * The idea here is to keep this test code non-architecture specific, relying on the thread state
  * API for any architecture-specific handling.
+ *
+ * @param ts The thread-state to use for register name lookups.
+ * @param skip The number of valid registers to skip before returning a register. This may be used to fetch
+ * multiple general purpose registers.
  */
-- (plcrash_regnum_t) findTestRegister: (plcrash_async_thread_state_t *) ts {
+- (plcrash_regnum_t) findTestRegister: (plcrash_async_thread_state_t *) ts skip: (NSUInteger) skip {
     size_t count = plcrash_async_thread_state_get_reg_count(ts);
 
     /* Find a valid general purpose register for which there is also a corresponding DWARF register
@@ -406,8 +410,12 @@ using namespace plcrash::async;
     for (reg = (plcrash_regnum_t)0; reg < count; reg++) {
         if (reg != PLCRASH_REG_FP && reg != PLCRASH_REG_SP && reg != PLCRASH_REG_IP) {
             uint64_t dw;
-            if (plcrash_async_thread_state_map_reg_to_dwarf(ts, reg, &dw))
+            if (plcrash_async_thread_state_map_reg_to_dwarf(ts, reg, &dw)) {
+                if (skip-- != 0)
+                    continue;
+
                 return reg;
+            }
         }
     }
 
@@ -417,10 +425,14 @@ using namespace plcrash::async;
 
 /**
  * Return the DWARF register value for the register returned by -testRegister:
+ *
+ * @param ts The thread-state to use for register name lookups.
+ * @param skip The number of valid registers to skip before returning a register. This may be used to fetch
+ * multiple general purpose registers.
  */
-- (uint64_t) findTestDwarfRegister: (plcrash_async_thread_state_t *) ts {
+- (uint64_t) findTestDwarfRegister: (plcrash_async_thread_state_t *) ts skip: (NSUInteger) skip {
     uint64_t dw;
-    STAssertTrue(plcrash_async_thread_state_map_reg_to_dwarf(ts, [self findTestRegister: ts], &dw), @"Failed to map to dwarf register");
+    STAssertTrue(plcrash_async_thread_state_map_reg_to_dwarf(ts, [self findTestRegister: ts skip: skip], &dw), @"Failed to map to dwarf register");
     return dw;
 }
 
@@ -452,8 +464,8 @@ using namespace plcrash::async;
 
     /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
      * that it actually is interpreted as an */
-    plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts], 30);
-    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts], DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
+    plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts skip: 0], 30);
+    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts skip: 0], DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
 
     /* Try to apply the state change */
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
@@ -480,8 +492,8 @@ using namespace plcrash::async;
     
     /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
      * that it actually is interpreted as an */
-    plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts], 30);
-    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts], DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, -10);
+    plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts skip: 0], 30);
+    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts skip: 0], DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, -10);
     
     /* Try to apply the state change */
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
@@ -523,7 +535,7 @@ using namespace plcrash::async;
 /**
  * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_OFFSET register value.
  */
-- (void) testApplySignedOffset {
+- (void) testApplyRegisterSignedOffset {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
     dwarf_cfa_state cfa_state;
@@ -538,8 +550,8 @@ using namespace plcrash::async;
 
     /* Initial thread state */
     plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
-    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts];
-    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts];
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
     
     /* Populate the CFA with the address of 'target_val' +20. We use this combined with signed offset
      * of -20 below to test signed offset handling. */
@@ -559,6 +571,76 @@ using namespace plcrash::async;
         STAssertEquals((plcrash_greg_t)target_val.u64, result, @"Incorrect register value");
     else
         STAssertEquals((plcrash_greg_t)target_val.u32, result, @"Incorrect register value");
+}
+
+/**
+ * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET register value.
+ */
+- (void) testApplyRegisterSignedOffsetValue {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    /* Initial thread state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+    
+    /* Populate the CFA with a test address. */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, (plcrash_greg_t) 30);
+    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    
+    /* Set the register rule and apply the state change  */
+    cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, -20);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
+
+    STAssertEquals((plcrash_greg_t)10, result, @"Incorrect register value");
+}
+
+/**
+ * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_REGISTER register value.
+ */
+- (void) testApplyRegisterFromRegister {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    /* Initial thread state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    
+    /* Find a set of two GP registers for the target architecture */
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+    
+    dwarf_cfa_state_regnum_t dw_regnum_src = [self findTestDwarfRegister: &prev_ts skip: 1];
+    plcrash_regnum_t pl_regnum_src = [self findTestRegister: &prev_ts skip: 1];
+
+    /* Populate the required CFA rule; the value doesn't matter for this test. We use
+     * 'dw_regnum_src' as the CFA register, but this value does not matter for our test. */
+    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, dw_regnum_src);
+
+    /*
+     * Populate the source register value from which the rule will fetch  the target
+     * register's value.
+     */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum_src, 30);
+
+    /* Set the register rule and apply the state change  */
+    cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_REGISTER, dw_regnum_src);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
+    STAssertEquals((plcrash_greg_t)30, result, @"Incorrect register value");
 }
 
 @end
