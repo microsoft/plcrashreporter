@@ -361,6 +361,28 @@
 }
 
 /**
+ * Test direct task-based reading of a ULEB128 value. This uses the same ULEB128 parser as the plcrash_async_dwarf_read_uleb128() code,
+ * so we only test that the out-of-process memory read works as expected.
+ */
+- (void) readTaskULEB128 {
+    /* Configure test */
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    uint64_t result;
+    pl_vm_size_t size;
+    
+    /* Test offset handling */
+    uint8_t buffer[] = { 2 };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_task_uleb128(mach_task_self(), buffer+1, -1, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uleb128");
+    STAssertEquals(result, (uint64_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+}
+
+/**
  * Test uintmax64 reading.
  */
 - (void) testReadUintMax64 {
@@ -501,5 +523,28 @@
     STAssertEquals(err, PLCRASH_EINVAL, @"SLEB128 should not be decodable");
     plcrash_async_mobject_free(&mobj);
 }
+
+/**
+ * Test direct task-based reading of a SLEB128 value. This uses the same SLEB128 parser as the plcrash_async_dwarf_read_sleb128() code,
+ * so we only test that the out-of-process memory read works as expected.
+ */
+- (void) readTaskSLEB128 {
+    /* Configure test */
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    int64_t result;
+    pl_vm_size_t size;
+    
+    /* Test offset handling */
+    uint8_t buffer[] = { 2 };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), buffer, sizeof(buffer), true), @"Failed to initialize mobj mapping");
+    
+    err = plcrash_async_dwarf_read_sleb128(&mobj, buffer+1, -1, &result, &size);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
+    STAssertEquals(result, (int64_t)2, @"Incorrect value decoded");
+    STAssertEquals(size, (pl_vm_size_t)1, @"Incorrect byte length");
+    plcrash_async_mobject_free(&mobj);
+}
+
 
 @end
