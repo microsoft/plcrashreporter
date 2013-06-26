@@ -592,17 +592,74 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                 plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, src_pl_regnum));
                 break;
             }
-                
-            case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION:
-                /* The previous value of this register is located at the address produced by executing the DWARF expression E. */
-                // TODO
-                return PLCRASH_ENOTSUP;
-                
+
             case PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION:
-                /* The previous value of this register is the value produced by executing the DWARF expression E. */
-                // TODO
-                return PLCRASH_ENOTSUP;
+            case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION: {
+                pl_vm_address_t expr_addr = (pl_vm_address_t) dw_value;
+                /* Fetch the expression's length */
+                uint64_t expr_len;
+                pl_vm_size_t uleb128_len;
+                if ((err = plcrash_async_dwarf_read_task_uleb128(task, expr_addr, 0, &expr_len, &uleb128_len)) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to read uleb128 length header for rule expression");
+                    return err;
+                }
                 
+                /* Skip the ULEB128 length header; expr_addr will not point at the expression opcodes. */ 
+                if (!plcrash_async_address_apply_offset(expr_addr, uleb128_len, &expr_addr)) {
+                    PLCF_DEBUG("Overflow applying the ULEB128 length to our expression base address");
+                    return PLCRASH_EINVAL;
+                }
+
+                /* Map the expression data  */
+                plcrash_async_mobject_t mobj;
+                if ((err = plcrash_async_mobject_init(&mobj, task, expr_addr, expr_len, true)) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Could not map CFA expression range");
+                    return err;
+                }
+
+                /* Perform the evaluation */
+                plcrash_greg_t regval;
+                if (m64) {
+                    uint64_t initial_state[] = { cfa_val };
+                    if ((err = plcrash_async_dwarf_expression_eval_64(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v64)) != PLCRASH_ESUCCESS) {
+                        plcrash_async_mobject_free(&mobj);
+                        PLCF_DEBUG("CFA eval_64 failed");
+                        return err;
+                    }
+                    
+                    regval = rvalue.v64;
+                } else {
+                    uint32_t initial_state[] = { cfa_val };
+                    if ((err = plcrash_async_dwarf_expression_eval_32(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
+                        plcrash_async_mobject_free(&mobj);
+                        PLCF_DEBUG("CFA eval_32 failed");
+                        return err;
+                    }
+                    
+                    regval = rvalue.v32;
+                }
+                
+                /* Clean up the memory mapping */
+                plcrash_async_mobject_free(&mobj);
+                
+                /* Dereference the target address, if using the non-value EXPRESSION rule */
+                if (dw_rule == PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION) {
+                    if ((err = plcrash_async_safe_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                        PLCF_DEBUG("Failed to read register value from expression result: %d", err);
+                        return err;
+                    }
+                    
+                    if (m64) {
+                        regval = rvalue.v64;
+                    } else {
+                        regval = rvalue.v32;
+                    }
+                }
+                
+                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, regval);
+                break;
+            }
+
             case PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE:
                 /* This register has not been modified from the previous frame. (By convention, it is preserved by the callee, but
                  * the callee has not modified it.)

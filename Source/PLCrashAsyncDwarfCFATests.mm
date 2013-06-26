@@ -643,4 +643,101 @@ using namespace plcrash::async;
     STAssertEquals((plcrash_greg_t)30, result, @"Incorrect register value");
 }
 
+/**
+ * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION register value.
+ */
+- (void) testApplyRegisterFromExpression {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    /* Target value for 32-bit/64-bit dereferencing */
+    union {
+        uint64_t u64;
+        uint32_t u32;
+    } target_val;
+    target_val.u64 = 0xABABABABABABABABULL;
+    
+    /* Initial thread state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());    
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+
+    /* Populate the CFA rule; since the CFA is pushed onto the expression stack, we'll exploit
+     * this fact to push the address of our target_val into an expression-accessible location. To verify
+     * that the expression is actually evaluated, we apply an offset that we'll remove in the opcode
+     * stream. */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, ((intptr_t) &target_val) + sizeof(target_val));
+    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    
+    /*
+     * Configure the register rule to use our expression opcodes. Note that the first opcode value is the uleb128-encoded
+     * size of the opcode stream.
+     *
+     * This opcode stream will take the CFA value on the stack, subtract the sizeof(target_val) that was added to it
+     * above, and push the result back onto the expression stack. The result of evaluation will be a pointer to our
+     * target_val data.
+     */
+    STAssertTrue(sizeof(target_val) <= UINT8_MAX, @"The offset can't be encoded in a single byte");
+    uint8_t opcodes[] = { 3 /* uleb128 expression length */, DW_OP_const1u, sizeof(target_val), DW_OP_minus };
+
+    /* Set the register rule and apply the state change  */
+    cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t) opcodes);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    return;
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
+    
+    if (plcrash_async_thread_state_get_greg_size(&new_ts) == 8)
+        STAssertEquals((plcrash_greg_t)target_val.u64, result, @"Incorrect register value");
+    else
+        STAssertEquals((plcrash_greg_t)target_val.u32, result, @"Incorrect register value");
+}
+
+/**
+ * Test deriviation of a PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION register value.
+ */
+- (void) testApplyRegisterValueFromExpression {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state cfa_state;
+    plcrash_error_t err;
+    
+    /* Initial thread state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+    
+    /* Populate the CFA rule; since the CFA is pushed onto the expression stack, we store a test
+     * value here that we'll then modify as part of our expression. This allows us to verify that the CFA
+     * value was correctly pushed onto the stack. */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 10);
+    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    
+    /*
+     * Configure the register rule to use our expression opcodes. Note that the first opcode value is the uleb128-encoded
+     * size of the opcode stream.
+     *
+     * This opcode stream will take the CFA value on the stack, add 10, and push the result back onto the expression
+     * stack. The target register will be set to the result of our evaluation.
+     */
+    uint8_t opcodes[] = { 2 /* uleb128 expression length */, DW_OP_lit10, DW_OP_plus };
+    
+    /* Set the register rule and apply the state change  */
+    cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t) opcodes);
+    err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    return;
+    
+    /* Verify the result */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, pl_regnum), @"The target register was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, pl_regnum);
+    STAssertEquals(20 /* CFA + 10 */, result, @"Incorrect register value");
+}
+
+
 @end
