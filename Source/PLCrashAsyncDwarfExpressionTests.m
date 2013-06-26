@@ -147,12 +147,12 @@
 \
     if (![self is32]) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 64-bit result"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"32-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 32-bit result"); \
     } \
@@ -169,11 +169,11 @@
     \
     if (![self is32]) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, errval, @"64-bit evaluation did not return expected error code"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), &result); \
+        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, errval, @"32-bit evaluation did not return expected error code"); \
     } \
     \
@@ -748,6 +748,46 @@
     
     uint8_t opcodes[] = { DW_OP_bregx, [self dwarfBadRegister], 0x01 };
     PERFORM_EVAL_TEST_ERROR(opcodes, PLCRASH_ENOTSUP);
+}
+
+/**
+ * Test population of an initial stack.
+ */
+- (void) testInitialState {
+    plcrash_async_mobject_t mobj;
+    plcrash_error_t err;
+    
+    /*
+     * For this test, we populate the stack with an initial state of two items, and then issue a DW_OP_swap,
+     * verifying that the initial_state[0] value has been swapped to the top of the stack. This verifies both that the
+     * state is correctly populated, and that ordering is implemented as defined in the API documentation (eg,
+     * that the array of initial state is pushed, in order, such that the last element is at the top of the stack).
+     */
+
+    uint8_t opcodes[] = { DW_OP_swap };
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj");
+
+    if (![self is32]) {
+        uint64_t result;
+        uint64_t initial_state[] = { 0xFA, 0xAF };
+        size_t initial_count = sizeof(initial_state) / sizeof(initial_state[0]);
+        
+        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes),
+                                                     initial_state, initial_count, &result);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed");
+        STAssertEquals((uint64_t)0xFA, result, @"Incorrect 64-bit result");
+    } else {
+        uint32_t result;
+        uint32_t initial_state[] = { 0xFA, 0xAF };
+        size_t initial_count = sizeof(initial_state) / sizeof(initial_state[0]);
+        
+        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), &opcodes, 0, sizeof(opcodes),
+                                                     initial_state, initial_count, &result);
+        STAssertEquals(err, PLCRASH_ESUCCESS, @"32-bit evaluation failed");
+        STAssertEquals((uint32_t)0xFA, result, @"Incorrect 32-bit result");
+    }
+
+    plcrash_async_mobject_free(&mobj);
 }
 
 /**

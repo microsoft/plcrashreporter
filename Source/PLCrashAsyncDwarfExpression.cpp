@@ -52,6 +52,10 @@ using namespace plcrash::async;
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
+ * @param initial_state Initial set of values to be pushed onto the evaluation stack. The values will be pushed
+ * on their natural order; eg, the top of the stack will be the last value in this array. If the initial stack
+ * state should be empty, this value may be NULL, and @a initial_count should be 0.
+ * @param initial_count Number of values in the @a initial_state array.
  * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
  * the top-most element on the evaluation stack. If the stack is empty, an error will be returned
  * and no value will be written to this parameter.
@@ -71,6 +75,8 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                                                                 pl_vm_address_t address,
                                                                 pl_vm_off_t offset,
                                                                 pl_vm_size_t length,
+                                                                machine_ptr initial_state[],
+                                                                size_t initial_count,
                                                                 machine_ptr *result)
 {
     // TODO: Review the use of an up-to-800 byte stack allocation; we may want to replace this with
@@ -150,6 +156,10 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
     PLCF_DEBUG("Pop on an empty stack"); \
     return PLCRASH_EINTERNAL; \
 }
+    
+    /* Populate the initial state */
+    for (size_t i = 0; i < initial_count; i++)
+        dw_expr_push(initial_state[i]);
 
     uint8_t opcode;
     while (opstream.read_intU(&opcode)) {
@@ -695,6 +705,10 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
+ * @param initial_state Initial set of values to be pushed onto the evaluation stack. The values will be pushed
+ * on their natural order; eg, the top of the stack will be the last value in this array. If the initial stack
+ * state should be empty, this value may be NULL, and @a initial_count should be 0.
+ * @param initial_count Number of values in the @a initial_state array.
  * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
  * the top-most element on the evaluation stack. If the stack is empty, an error will be returned
  * and no value will be written to this parameter.
@@ -710,13 +724,18 @@ plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t 
                                                         pl_vm_address_t address,
                                                         pl_vm_off_t offset,
                                                         pl_vm_size_t length,
+                                                        uint32_t initial_state[],
+                                                        size_t initial_count,
                                                         uint32_t *result)
 {
     plcrash_error_t err;
 
     uint32_t v;
-    if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t, int32_t>(mobj, task, thread_state, byteorder, address, offset, length, &v)) == PLCRASH_ESUCCESS)
+    if ((err = plcrash_async_dwarf_eval_expression_int<uint32_t, int32_t>(mobj, task, thread_state, byteorder, address, offset,
+                                                                          length, initial_state, initial_count, &v)) == PLCRASH_ESUCCESS)
+    {
         *result = v;
+    }
 
     return err;
 }
@@ -732,6 +751,10 @@ plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t 
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.
+ * @param initial_state Initial set of values to be pushed onto the evaluation stack. The values will be pushed
+ * on their natural order; eg, the top of the stack will be the last value in this array. If the initial stack
+ * state should be empty, this value may be NULL, and @a initial_count should be 0.
+ * @param initial_count Number of values in the @a initial_state array.
  * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
  * the top-most element on the evaluation stack. If the stack is empty, an error will be returned
  * and no value will be written to this parameter.
@@ -747,13 +770,18 @@ plcrash_error_t plcrash_async_dwarf_expression_eval_64 (plcrash_async_mobject_t 
                                                         pl_vm_address_t address,
                                                         pl_vm_off_t offset,
                                                         pl_vm_size_t length,
+                                                        uint64_t initial_state[],
+                                                        size_t initial_count,
                                                         uint64_t *result)
 {
     plcrash_error_t err;
     
     uint64_t v;
-    if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t, int64_t>(mobj, task, thread_state, byteorder, address, offset, length, &v)) == PLCRASH_ESUCCESS)
+    if ((err = plcrash_async_dwarf_eval_expression_int<uint64_t, int64_t>(mobj, task, thread_state, byteorder, address, offset,
+                                                                          length, initial_state, initial_count, &v)) == PLCRASH_ESUCCESS)
+    {
         *result = v;
+    }
 
     return err;
 }

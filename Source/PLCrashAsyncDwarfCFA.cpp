@@ -509,7 +509,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
 
             if (m64) {
                 uint64_t result;
-                if ((err = plcrash_async_dwarf_expression_eval_64(&mobj, task, thread_state, byteorder, cfa_rule.expression.address, 0x0, cfa_rule.expression.length, &result)) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_dwarf_expression_eval_64(&mobj, task, thread_state, byteorder, cfa_rule.expression.address, 0x0, cfa_rule.expression.length, NULL, 0, &result)) != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("CFA eval_64 failed");
                     return err;
                 }
@@ -517,7 +517,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                 cfa_val = result;
             } else {
                 uint32_t result;
-                if ((err = plcrash_async_dwarf_expression_eval_32(&mobj, task, thread_state, byteorder, cfa_rule.expression.address, 0x0, cfa_rule.expression.length, &result)) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_dwarf_expression_eval_32(&mobj, task, thread_state, byteorder, cfa_rule.expression.address, 0x0, cfa_rule.expression.length, NULL, 0, &result)) != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("CFA eval_32 failed");
                     return err;
                 }

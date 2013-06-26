@@ -564,6 +564,8 @@ plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t 
                                                         pl_vm_address_t address,
                                                         pl_vm_off_t offset,
                                                         pl_vm_size_t length,
+                                                        uint32_t initial_state[],
+                                                        size_t initial_count,
                                                         uint32_t *result);
 
 plcrash_error_t plcrash_async_dwarf_expression_eval_64 (plcrash_async_mobject_t *mobj,
@@ -573,6 +575,8 @@ plcrash_error_t plcrash_async_dwarf_expression_eval_64 (plcrash_async_mobject_t 
                                                         pl_vm_address_t address,
                                                         pl_vm_off_t offset,
                                                         pl_vm_size_t length,
+                                                        uint64_t initial_state[],
+                                                        size_t initial_count,
                                                         uint64_t *result);
 
 /**
