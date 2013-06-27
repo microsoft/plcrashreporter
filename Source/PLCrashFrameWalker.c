@@ -186,11 +186,11 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     plframe_stackframe_t frame;
     plframe_error_t ferr;
     
-    if ((ferr = plframe_cursor_read_compact_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLCRASH_ESUCCESS) {
+    if ((ferr = plframe_cursor_read_compact_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLFRAME_ESUCCESS) {
         // Finished
-    } else if ((ferr = plframe_cursor_read_dwarf_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLCRASH_ESUCCESS) {
+    } else if ((ferr = plframe_cursor_read_dwarf_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLFRAME_ESUCCESS) {
         // Finished
-    } else if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, prev_frame, &frame)) != PLCRASH_ESUCCESS) {
+    } else if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, prev_frame, &frame)) != PLFRAME_ESUCCESS) {
         return ferr;
     }
 
