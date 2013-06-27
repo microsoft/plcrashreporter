@@ -25,6 +25,10 @@
  */
 
 #include "PLCrashFrameDWARFUnwind.h"
+#include "PLCrashAsyncMachOImage.h"
+
+#include "PLCrashAsyncDwarfCFA.hpp"
+
 #include <inttypes.h>
 
 /**
@@ -44,8 +48,16 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
                                                   const plframe_stackframe_t *previous_frame,
                                                   plframe_stackframe_t *next_frame)
 {
-    plframe_error_t result;
+    plcrash_async_mobject_t eh_frame;
+    plcrash_async_mobject_t debug_frame;
+    plcrash_async_mobject_t *dwarf_section = NULL;
+    bool is_debug_frame = false;
+
+    plcrash::async::dwarf_cfa_state state;
     
+    plframe_error_t result;
+    plcrash_error_t err;
+
     /* Fetch the IP. It should always be available */
     if (!plcrash_async_thread_state_has_reg(&current_frame->thread_state, PLCRASH_REG_IP)) {
         PLCF_DEBUG("Frame is missing a valid IP register, skipping compact unwind encoding");
@@ -62,10 +74,91 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         goto cleanup;
     }
     
+    /*
+     * Map the eh_frame or debug_frame DWARF sections. Apple doesn't seem to use debug_frame at all;
+     * as such, we prefer eh_frame, but allow falling back on debug_frame.
+     */
+    err = plcrash_async_macho_map_section(&image->macho_image, "__DWARF", "__eh_frame", &eh_frame);
+    if (err == PLCRASH_ESUCCESS) {
+        dwarf_section = &eh_frame;
+    }
+
+    if (dwarf_section == NULL) {
+        err = plcrash_async_macho_map_section(&image->macho_image, "__DWARF", "__debug_frame", &debug_frame);
+        if (err == PLCRASH_ESUCCESS) {
+            dwarf_section = &debug_frame;
+            is_debug_frame = true;
+        }
+    }
+
+    /* If neither, there's nothing to do */
+    if (dwarf_section == NULL) {
+        PLCF_DEBUG("Could not find a debug_frame or eh_frame section for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
+        result = PLFRAME_ENOFRAME;
+        goto cleanup;
+    }
+
+    /* Initialize the reader. */
+    plcrash_async_dwarf_frame_reader_t reader;
+    uint8_t address_size;
+
+    address_size = image->macho_image.m64 ? 8 : 4;
+    if ((err = plcrash_async_dwarf_frame_reader_init(&reader, dwarf_section, image->macho_image.byteorder, address_size, is_debug_frame)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Could not initialize a %s DWARF parser for the current frame pc: 0x%" PRIx64 " %d", (is_debug_frame ? "debug_frame" : "eh_frame"), (uint64_t) pc, err);
+        result = PLFRAME_EINVAL;
+        goto cleanup;
+    }
+    
+    /* Find the FDE (if any) and free the reader */
+    plcrash_async_dwarf_fde_info_t fde_info;
+    err = plcrash_async_dwarf_frame_reader_find_fde(&reader, 0x0 /* offset hint */, pc - image->macho_image.header_addr, &fde_info);
+    plcrash_async_dwarf_frame_reader_free(&reader);
+
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Did not find CFE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
+        result = PLFRAME_ENOTSUP;
+        goto cleanup;
+    }
+
+    /* Initialize pointer state */
+    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
+    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, address_size);
+    // TODO - configure the pointer state */
+
+    /* Parse CIE info */
+    plcrash_async_dwarf_cie_info_t cie_info;
+    err = plcrash_async_dwarf_cie_info_init(&cie_info, dwarf_section, image->macho_image.byteorder, &ptr_state, plcrash_async_mobject_base_address(dwarf_section) + fde_info.cie_offset);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to parse CIE at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.cie_offset, err);
+        result = PLFRAME_ENOTSUP;
+        
+        plcrash_async_dwarf_fde_info_free(&fde_info);
+        plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
+        goto cleanup;
+    }
+
+    err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc - image->macho_image.header_addr, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instruction_offset, fde_info.fde_length, &state);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instruction_offset, err);
+        result = PLFRAME_ENOTSUP;
+        
+        plcrash_async_dwarf_fde_info_free(&fde_info);
+        plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
+        goto cleanup;
+    }
+
+    
+
+    /* Clean up the FDE record */
+    plcrash_async_dwarf_fde_info_free(&fde_info);
+    plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
+
     // TODO
-    result = PLFRAME_INTERNAL;
+    result = PLFRAME_ESUCCESS;
 
 cleanup:
-    // TODO
+    if (dwarf_section != NULL)
+        plcrash_async_mobject_free(dwarf_section);
+
     return result;
 }

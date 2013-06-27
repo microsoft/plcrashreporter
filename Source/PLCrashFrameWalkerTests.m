@@ -33,6 +33,8 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashTestThread.h"
 
+#import "unwind_test_harness.h"
+
 @interface PLCrashFrameWalkerTests : SenTestCase {
 @private
     plcrash_test_thread_t _thr_args;
@@ -172,6 +174,14 @@
         plcrash_greg_t val;
         STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_get_reg(&cursor, i, &val), @"Could not fetch register value");
     }
+}
+
+/*
+ * Perform stack walking regression tests.
+ */
+- (void) testStackWalkerRegression {
+    // TODO
+    // STAssertTrue(unwind_test_harness(), @"Regression tests failed");
 }
 
 @end
