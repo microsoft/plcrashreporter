@@ -110,11 +110,16 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     if (!plcrash_async_address_apply_offset(image->macho_image.header_addr, function_base, &function_address)) {
         PLCF_DEBUG("The provided function base (0x%" PRIx64 ") plus header address (0x%" PRIx64 ") will overflow pl_vm_address_t",
                    (uint64_t) function_base, (uint64_t) image->macho_image.header_addr);
-        return false;
+        return PLFRAME_EINVAL;
     }
 
     /* Apply the frame delta -- this may fail. */
-    result = plcrash_async_cfe_entry_apply(task, function_address, &current_frame->thread_state, &entry, &next_frame->thread_state) != PLCRASH_ESUCCESS;
+    if ((err = plcrash_async_cfe_entry_apply(task, function_address, &current_frame->thread_state, &entry, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
+        result = PLFRAME_ESUCCESS;
+    } else {
+        PLCF_DEBUG("Failed to apply CFE encoding 0x%" PRIx32 " for PC 0x%" PRIx64 ": %d", encoding, (uint64_t) pc, err);
+        result = PLFRAME_ENOFRAME;
+    }
 
     plcrash_async_cfe_entry_free(&entry);
 
