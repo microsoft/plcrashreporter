@@ -72,6 +72,10 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
                                                    uint8_t address_size,
                                                    pl_vm_address_t fde_address,
                                                    bool debug_frame);
+
+pl_vm_address_t plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_dwarf_fde_info_t *info);
+pl_vm_size_t plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwarf_fde_info_t *info);
+
 void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info);
 
 

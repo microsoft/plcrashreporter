@@ -371,6 +371,26 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
 }
 
 /**
+ * Return the task relative address to the sequence of rules to be interpreted to create the initial setting of
+ * each column in the table during DWARF interpretation. This address is relative to the start of the
+ * eh_frame/debug_frame section base (eg, the mobj base address).
+ *
+ * @param info The CIE info for which the initial instruction offset should be returned.
+ */
+pl_vm_address_t plcrash_async_dwarf_cie_info_initial_instructions_offset (plcrash_async_dwarf_cie_info_t *info) {
+    return info->initial_instructions_offset;
+}
+
+/**
+ * Return the size of the initial instruction data, in bytes.
+ *
+ * @param info The CIE info for which the initial instruction length should be returned.
+ */
+pl_vm_size_t plcrash_async_dwarf_cie_info_initial_instructions_length (plcrash_async_dwarf_cie_info_t *info) {
+    return info->initial_instructions_length;
+}
+
+/**
  * Free all resources associated with @a info.
  *
  * @param info A previously initialized info instance.

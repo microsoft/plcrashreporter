@@ -153,8 +153,8 @@ struct __attribute__((packed)) cie_data {
     STAssertTrue(cie.eh_augmentation.signal_frame, @"Did not parse signal frame flag");
     
     /* Instructions */
-    STAssertEquals(cie.initial_instructions_offset, ((pl_vm_address_t)_cie_data.initial_instructions) - (pl_vm_address_t) &_cie_data, @"Incorrect initial instruction offset");
-    STAssertEquals(cie.initial_instructions_length, (pl_vm_size_t) sizeof(_cie_data.initial_instructions), @"Incorrect instruction length");
+    STAssertEquals(plcrash_async_dwarf_cie_info_initial_instructions_offset(&cie), ((pl_vm_address_t)_cie_data.initial_instructions) - (pl_vm_address_t) &_cie_data, @"Incorrect initial instruction offset");
+    STAssertEquals(plcrash_async_dwarf_cie_info_initial_instructions_length(&cie), (pl_vm_size_t) sizeof(_cie_data.initial_instructions), @"Incorrect instruction length");
 
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);

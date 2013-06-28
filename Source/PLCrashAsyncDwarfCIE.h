@@ -160,6 +160,9 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
                                                    plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                    pl_vm_address_t address);
 
+pl_vm_address_t plcrash_async_dwarf_cie_info_initial_instructions_offset (plcrash_async_dwarf_cie_info_t *info);
+pl_vm_size_t plcrash_async_dwarf_cie_info_initial_instructions_length (plcrash_async_dwarf_cie_info_t *info);
+
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 
 

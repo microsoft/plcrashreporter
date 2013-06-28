@@ -217,6 +217,24 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
 }
 
 /**
+ * Return the offset of the FDE instructions, relative to the eh_frame/debug_frame section base.
+ *
+ * @param info The FDE info record for which the instruction offset should be returned.
+ */
+pl_vm_address_t plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_dwarf_fde_info_t *info) {
+    return info->instructions_offset;
+}
+
+/**
+ * The length, in bytes, of the FDE instructions referenced by plcrash_async_dwarf_fde_info_instructions_length().
+ *
+ * @param info The FDE info record for which the instruction length should be returned.
+ */
+pl_vm_size_t plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwarf_fde_info_t *info) {
+    return info->instructions_length;
+}
+
+/**
  * Free all resources associated with @a fde_info.
  *
  * @param fde_info A previously initialized FDE info instance.
