@@ -93,7 +93,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
 
     /* If neither, there's nothing to do */
     if (dwarf_section == NULL) {
-        PLCF_DEBUG("Could not find a debug_frame or eh_frame section for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
+        /* The lack of debug_frame/eh_frame is not an error, but we can't proceed. */
         result = PLFRAME_ENOFRAME;
         goto cleanup;
     }
