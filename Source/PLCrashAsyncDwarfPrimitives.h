@@ -273,10 +273,6 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
     /**  The pointer size of the target system, in bytes. Must be one of 1, 2, 4, or 8. */
     uint8_t address_size;
     
-    /** PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PL_VM_ADDRESS_INVALID. In the case of FDE
-     * entries, this should be the address of the FDE entry itself. */
-    uint64_t pc_rel_base;
-    
     /**
      * The base address (in-memory) of the loaded debug_frame or eh_frame section, or PL_VM_ADDRESS_INVALID. This is
      * used to calculate the offset of DW_EH_PE_aligned from the start of the frame section.
@@ -308,7 +304,6 @@ typedef struct plcrash_async_dwarf_gnueh_ptr_state {
 #define PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR UINT64_MAX
 
 void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint8_t address_size);
-void plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t pc_rel_base);
 void plcrash_async_dwarf_gnueh_ptr_state_set_frame_section_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t frame_section_base, uint64_t frame_section_vm_addr);
 void plcrash_async_dwarf_gnueh_ptr_state_set_text_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t text_base);
 void plcrash_async_dwarf_gnueh_ptr_state_set_data_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t data_base);

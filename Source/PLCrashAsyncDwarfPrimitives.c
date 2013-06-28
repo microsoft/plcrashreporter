@@ -49,21 +49,9 @@ void plcrash_async_dwarf_gnueh_ptr_state_init (plcrash_async_dwarf_gnueh_ptr_sta
     state->address_size = address_size;
     state->frame_section_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
     state->frame_section_vm_addr = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
-    state->pc_rel_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
     state->text_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
     state->data_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
     state->func_base = PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR;
-}
-
-/**
- * Set the DW_EH_PE_pcrel base address.
- *
- * @param state State instance to modify.
- * @param pc_rel_base PC-relative base address to be applied to DW_EH_PE_pcrel offsets, or PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR. In the case of FDE
- * entries, this should be the address of the FDE entry itself.
- */
-void plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base (plcrash_async_dwarf_gnueh_ptr_state_t *state, uint64_t pc_rel_base) {
-    state->pc_rel_base = pc_rel_base;
 }
 
 /**
@@ -166,12 +154,12 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
     uint64_t base;
     switch (encoding & 0x70) {
         case DW_EH_PE_pcrel:
-            if (state->pc_rel_base == PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR) {
-                PLCF_DEBUG("Cannot decode DW_EH_PE_pcrel value with PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR pc_rel_base");
-                return PLCRASH_ENOTSUP;
-            }
-            
-            base = state->pc_rel_base;
+            /*
+             * Set the ptr PC relative base to our current read offset. The LSB specification does not define what value should
+             * be used for the DW_EH_PE_pcrel base address; reviewing the available implementations demonstrates that
+             * the current read buffer position should be used.
+             */
+            base = location;
             break;
             
         case DW_EH_PE_absptr:

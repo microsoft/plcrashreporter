@@ -157,12 +157,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
         DW_EH_PE_t pc_encoding = DW_EH_PE_absptr;
         if (cie.has_eh_augmentation && cie.eh_augmentation.has_pointer_encoding)
             pc_encoding = cie.eh_augmentation.pointer_encoding;
-        
-        /* Set the ptr PC relative base to our current read offset. The LSB specification does not define what value should
-         * be used for the DW_EH_PE_pcrel base address; reviewing the available implementations demonstrates that
-         * the current read buffer position should be used. */
-        plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&ptr_state, offset);
-        
+
         /* Fetch the base PC address */
         if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, pc_encoding, &ptr_state, &info->pc_start, &ptr_size)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to read FDE initial_location");

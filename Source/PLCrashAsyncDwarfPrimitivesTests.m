@@ -118,7 +118,6 @@
 #define T_DATA_BASE 2
 #define T_FUNC_BASE 3
     plcrash_async_dwarf_gnueh_ptr_state_init(&state, sizeof(uint64_t));
-    plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&state, &test_data);
     plcrash_async_dwarf_gnueh_ptr_state_set_text_base(&state, T_TEXT_BASE);
     plcrash_async_dwarf_gnueh_ptr_state_set_data_base(&state, T_DATA_BASE);
     plcrash_async_dwarf_gnueh_ptr_state_set_func_base(&state, T_FUNC_BASE);
@@ -199,7 +198,6 @@
     
     /* Default state */
     plcrash_async_dwarf_gnueh_ptr_state_init(&state, sizeof(uint64_t));
-    plcrash_async_dwarf_gnueh_ptr_state_set_pc_rel_base(&state, &test_data);
     
     /* We use an -1 +1 offset below to verify the address+offset handling for all data types */
     
@@ -251,7 +249,7 @@
     
     err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t)&test_data-1, 1, DW_EH_PE_pcrel|DW_EH_PE_sleb128, &state, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sleb128");
-    STAssertEquals(result, ((uint64_t) &test_data) - 2, @"Incorrect value decoded");
+    STAssertEquals(result, ((uint64_t) &test_data) - 3, @"Incorrect value decoded");
     STAssertEquals(size, (uint64_t)1, @"Incorrect byte length");
     
     plcrash_async_mobject_free(&mobj);
@@ -262,7 +260,7 @@
     
     err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t)&test_data-1, 1, DW_EH_PE_pcrel|DW_EH_PE_sdata2, &state, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata2");
-    STAssertEquals(result, ((uint64_t) &test_data) - 256, @"Incorrect value decoded");
+    STAssertEquals(result, ((uint64_t) &test_data) - 257, @"Incorrect value decoded");
     STAssertEquals(size, (uint64_t)2, @"Incorrect byte length");
     
     plcrash_async_mobject_free(&mobj);
@@ -273,7 +271,7 @@
     
     err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t)&test_data-1, 1, DW_EH_PE_pcrel|DW_EH_PE_sdata4, &state, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode sdata4");
-    STAssertEquals(result, ((uint64_t) &test_data) - 256, @"Incorrect value decoded");
+    STAssertEquals(result, ((uint64_t) &test_data) - 257, @"Incorrect value decoded");
     STAssertEquals(size, (uint64_t)4, @"Incorrect byte length");
     
     plcrash_async_mobject_free(&mobj);
@@ -284,7 +282,7 @@
     
     err = plcrash_async_dwarf_read_gnueh_ptr(&mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t)&test_data-1, 1, DW_EH_PE_pcrel|DW_EH_PE_sdata8, &state, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode udata8");
-    STAssertEquals(result, ((uint64_t) &test_data) - 256, @"Incorrect value decoded");
+    STAssertEquals(result, ((uint64_t) &test_data) - 257, @"Incorrect value decoded");
     STAssertEquals(size, (uint64_t)8, @"Incorrect byte length");
     
     plcrash_async_mobject_free(&mobj);
