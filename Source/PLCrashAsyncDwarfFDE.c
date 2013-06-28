@@ -119,12 +119,12 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
             }
         } else {
             /* First, verify that the below subtraction won't overflow */
-            if (raw_offset > fde_address) {
+            if (raw_offset > (fde_address+length_size)) {
                 PLCF_DEBUG("CIE offset 0x%" PRIx64 " would place the CIE value outside of the .eh_frame section", raw_offset);
                 return PLCRASH_EINVAL;
             }
             
-            cie_target_address = fde_address - raw_offset;
+            cie_target_address = (fde_address+length_size) - raw_offset;
             info->cie_offset = cie_target_address - sect_addr;
         }
         
@@ -134,8 +134,6 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
      * Set up default pointer state. TODO: Mac OS X and iOS do not currently use any relative-based encodings other
      * than pcrel. This matches libunwind-35.1, but we should ammend our API to support supplying the remainder of
      * the supported base addresses.
-     *
-     * We use the base of the eh_frame/debug_frame as the PC-relative base address (why?).
      */
     plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
     plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, address_size);

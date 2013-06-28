@@ -47,9 +47,13 @@ typedef struct pl_cfi_entry {
 	};
 } pl_cfi_entry;
 
+/* Initial length field size */
+#define PL_CFI_LEN_SIZE_64 (sizeof(uint32_t) + sizeof(uint64_t))
+#define PL_CFI_LEN_SIZE_32 (sizeof(uint32_t))
+
 /* CFE lengths, minus the initial length field. */
-#define PL_CFI_LEN_64 (sizeof(pl_cfi_entry) - sizeof(uint32_t) - sizeof(uint64_t))
-#define PL_CFI_LEN_32 (sizeof(pl_cfi_entry) - sizeof(uint32_t))
+#define PL_CFI_SIZE_64 (sizeof(pl_cfi_entry) - sizeof(uint32_t) - sizeof(uint64_t))
+#define PL_CFI_SIZE_32 (sizeof(pl_cfi_entry) - sizeof(uint32_t))
 
 /* PC values to be used when searching for FDE entries. */
 #define PL_CFI_EH_FRAME_PC 0x60

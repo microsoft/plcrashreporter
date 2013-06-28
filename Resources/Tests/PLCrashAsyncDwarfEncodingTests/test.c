@@ -8,7 +8,7 @@ pl_cfi_entry ef[] __attribute__((section("__PL_DWARF,__eh_frame"))) = {
     {
         .hdr_64 = {
             .flag64 = UINT32_MAX,
-            .length = PL_CFI_LEN_64,
+            .length = PL_CFI_SIZE_64,
             .cie_id = 0,
         },
         
@@ -31,8 +31,8 @@ pl_cfi_entry ef[] __attribute__((section("__PL_DWARF,__eh_frame"))) = {
     {
         .hdr_64 = {
             .flag64 = UINT32_MAX,
-            .length = PL_CFI_LEN_64,
-            .cie_id = sizeof(ef[0]), // Offset to the first CIE entry
+            .length = PL_CFI_SIZE_64,
+            .cie_id = sizeof(ef[0]) + PL_CFI_LEN_SIZE_64, // Offset to the first CIE entry
         },
         .fde_64 = {
             .initial_location = PL_CFI_EH_FRAME_PC,
@@ -55,7 +55,7 @@ pl_cfi_entry df[] __attribute__((section("__PL_DWARF,__debug_frame"))) = {
     {
         .hdr_64 = {
             .flag64 = UINT32_MAX,
-            .length = PL_CFI_LEN_64,
+            .length = PL_CFI_SIZE_64,
             .cie_id = UINT64_MAX,
         },
         
@@ -78,7 +78,7 @@ pl_cfi_entry df[] __attribute__((section("__PL_DWARF,__debug_frame"))) = {
     {
         .hdr_64 = {
             .flag64 = UINT32_MAX,
-            .length = PL_CFI_LEN_64,
+            .length = PL_CFI_SIZE_64,
             .cie_id = 0, // Offset to the first CIE entry
         },
         .fde_64 = {

@@ -186,7 +186,7 @@ struct __attribute__((packed)) fde_data {
     plcrash_error_t err;
     
     /* Set up test data; we enable indirect encoding as to verify that the specified encoding is used. */
-    _data.fde.cie_ptr = (uintptr_t)&_data.fde - (uintptr_t)&_data; // use an eh_frame-style offset.
+    _data.fde.cie_ptr = (uintptr_t)&_data.fde.cie_ptr - (uintptr_t)&_data; // use an eh_frame-style offset.
 
     err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_data, sizeof(_data), false);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize memory mapping");
