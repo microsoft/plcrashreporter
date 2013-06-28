@@ -180,8 +180,7 @@
  * Perform stack walking regression tests.
  */
 - (void) testStackWalkerRegression {
-    // TODO
-    // STAssertTrue(unwind_test_harness(), @"Regression tests failed");
+    STAssertTrue(unwind_test_harness(), @"Regression tests failed");
 }
 
 @end

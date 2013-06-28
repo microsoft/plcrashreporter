@@ -66,47 +66,56 @@ bool unwind_test_harness (void) {
     } \
 } while (0)
 
-// called by test function
-// we unwind through the test function
-// and resume at caller (unwind_tester)
-void uwind_to_main () {
+plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
     plframe_cursor_t cursor;
-    plcrash_async_thread_state_t uc;
     plcrash_async_image_list_t image_list;
-    
+
     /* Initialize the image list */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
     for (uint32_t i = 0; i < _dyld_image_count(); i++)
         plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
-    
-    plcrash_async_thread_state_mach_thread_init(&uc, mach_thread_self());
-    plframe_cursor_init(&cursor, mach_task_self(), &uc, &image_list);
+
+    /* Initialie our cursor */
+    plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
     
     if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
-        // now in test function
+        // now in unwind_to_main
         if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
-			// now in unwind_tester
-            
-            /*
-             * Verify that non-volatile registers have been restored. This replaces the
-             * use of thread state restoration in the original libunwind tests; rather
-             * than letting the unwind_tester() perform these register value tests,
-             * we just do so ourselves
-             */
+            // now in test function
+            if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
+                // now in unwind_tester
+                
+                /*
+                 * Verify that non-volatile registers have been restored. This replaces the
+                 * use of thread state restoration in the original libunwind tests; rather
+                 * than letting the unwind_tester() perform these register value tests,
+                 * we just do so ourselves
+                 */
 #ifdef __x86_64__
-            VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
-            VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
-            VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
-            VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
-            VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
 #else
-            // TODO
+                // TODO
 #endif
-            return;
+                return PLCRASH_ESUCCESS;
+            }
         }
     }
+    
+    return PLCRASH_EINVAL;
+}
 
-    // error if we got here
-    __builtin_trap();
+// called by test function
+// we unwind through the test function
+// and resume at caller (unwind_tester)
+void uwind_to_main () {
+    /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
+     * and verify that the expected registers are restored. */
+    if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
+        __builtin_trap();
+    }
 }
 
