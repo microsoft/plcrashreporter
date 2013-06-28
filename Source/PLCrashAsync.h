@@ -202,14 +202,6 @@ const char *plcrash_async_strerror (plcrash_error_t error);
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len);
 
 bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off_t offset, pl_vm_address_t *result);
-plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_off_t offset, void *dest, pl_vm_size_t len);
-
-int plcrash_async_strcmp(const char *s1, const char *s2);
-int plcrash_async_strncmp(const char *s1, const char *s2, size_t n);
-void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
-void *plcrash_async_memset(void *dest, uint8_t value, size_t n);
-
-ssize_t plcrash_async_writen (int fd, const void *data, size_t len);
 
 /**
  * @ingroup plcrash_async
@@ -233,6 +225,27 @@ extern const plcrash_async_byteorder_t plcrash_async_byteorder_direct;
 
 extern const plcrash_async_byteorder_t *plcrash_async_byteorder_little_endian (void);
 extern const plcrash_async_byteorder_t *plcrash_async_byteorder_big_endian (void);
+
+
+plcrash_error_t plcrash_async_task_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_off_t offset, void *dest, pl_vm_size_t len);
+
+plcrash_error_t plcrash_async_task_read_uint8 (task_t task, pl_vm_address_t address, pl_vm_off_t offset, uint8_t *result);
+
+plcrash_error_t plcrash_async_task_read_uint16 (task_t task, const plcrash_async_byteorder_t *byteorder,
+                                                pl_vm_address_t address, pl_vm_off_t offset, uint16_t *result);
+
+plcrash_error_t plcrash_async_task_read_uint32 (task_t task, const plcrash_async_byteorder_t *byteorder,
+                                                pl_vm_address_t address, pl_vm_off_t offset, uint32_t *result);
+
+plcrash_error_t plcrash_async_task_read_uint64 (task_t task, const plcrash_async_byteorder_t *byteorder,
+                                                pl_vm_address_t address, pl_vm_off_t offset, uint64_t *result);
+
+int plcrash_async_strcmp(const char *s1, const char *s2);
+int plcrash_async_strncmp(const char *s1, const char *s2, size_t n);
+void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
+void *plcrash_async_memset(void *dest, uint8_t value, size_t n);
+
+ssize_t plcrash_async_writen (int fd, const void *data, size_t len);
 
 /**
  * @internal

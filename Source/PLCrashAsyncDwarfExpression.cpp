@@ -341,7 +341,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 machine_ptr value;
 
                 dw_expr_pop(&addr);
-                if ((err = plcrash_async_safe_memcpy(task, addr, 0, &value, sizeof(value))) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_task_memcpy(task, addr, 0, &value, sizeof(value))) != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("DW_OP_deref referenced an invalid target address 0x%" PRIx64, (uint64_t) addr);
                     return err;
                 }
@@ -380,7 +380,7 @@ static plcrash_error_t plcrash_async_dwarf_eval_expression_int (plcrash_async_mo
                 /* Perform the read */
                 #define readval(_type) case sizeof(_type): { \
                     _type r; \
-                    if ((err = plcrash_async_safe_memcpy(task, (pl_vm_address_t)addr, 0, &r, sizeof(_type))) != PLCRASH_ESUCCESS) { \
+                    if ((err = plcrash_async_task_memcpy(task, (pl_vm_address_t)addr, 0, &r, sizeof(_type))) != PLCRASH_ESUCCESS) { \
                         PLCF_DEBUG("DW_OP_deref_size referenced an invalid target address 0x%" PRIx64, (uint64_t) addr); \
                         return err; \
                     } \

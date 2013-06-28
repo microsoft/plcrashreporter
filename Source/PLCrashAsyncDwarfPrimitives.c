@@ -369,7 +369,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
 /**
  * Read a SLEB128 value directly from @a location within @a task.
  *
- * @param mobj The memory object from which the LEB128 data will be read.
+ * @param task The task from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
  * @param offset Offset to be applied to @a location.
  * @param result On success, the ULEB128 value.
@@ -410,7 +410,7 @@ plcrash_error_t plcrash_async_dwarf_read_task_sleb128 (task_t task, pl_vm_addres
 /**
  * Read a ULEB128 value directly from @a location within @a task.
  *
- * @param mobj The memory object from which the LEB128 data will be read.
+ * @param task The task from which the LEB128 data will be read.
  * @param location A task-relative location within @a mobj.
  * @param offset Offset to be applied to @a location.
  * @param result On success, the ULEB128 value.

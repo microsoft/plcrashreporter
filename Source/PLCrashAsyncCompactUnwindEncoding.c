@@ -968,7 +968,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, new_sp);
 
             /* Read the saved fp and retaddr */
-            err = plcrash_async_safe_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size * 2);
+            err = plcrash_async_task_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size * 2);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read frame data at address 0x%" PRIx64 ": %d", (uint64_t) fp, err);
                 return err;
@@ -1005,7 +1005,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                  * stack size. */
                 uint32_t indirect;
 
-                err = plcrash_async_safe_memcpy(task, function_address, stack_size, &indirect, sizeof(indirect));
+                err = plcrash_async_task_memcpy(task, function_address, stack_size, &indirect, sizeof(indirect));
                 if (err != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("Failed to read indirect stack size from 0x%" PRIx64 " + 0x%" PRIx64 ": %d",
                                (uint64_t) function_address, (uint64_t)stack_size, err);
@@ -1024,7 +1024,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp+greg_pop_offset);
 
             /* Read the saved return address */
-            err = plcrash_async_safe_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size);
+            err = plcrash_async_task_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) fp, err);
                 return err;
@@ -1057,7 +1057,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 
         /* Fetch and save register data */
         plcrash_error_t err;
-        err = plcrash_async_safe_memcpy(task, (pl_vm_address_t) saved_reg_addr, i*greg_size, dest, greg_size);
+        err = plcrash_async_task_memcpy(task, (pl_vm_address_t) saved_reg_addr, i*greg_size, dest, greg_size);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to read register data for index %s: %d", plcrash_async_thread_state_get_reg_name(thread_state, register_list[i]), err);
             return err;

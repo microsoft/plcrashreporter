@@ -106,19 +106,44 @@
     STAssertFalse(plcrash_async_address_apply_offset(1, -2, &result), @"Bad adddress was accepted");
 }
 
-- (void) testSafeMemcpyAddr {
+- (void) testTaskMemcpyAddr {
     const char bytes[] = "Hello";
     char dest[sizeof(bytes)];
     
     // Verify that a good read succeeds
-    plcrash_async_safe_memcpy(mach_task_self(), (pl_vm_address_t) bytes, 1, dest, sizeof(dest));
+    plcrash_async_task_memcpy(mach_task_self(), (pl_vm_address_t) bytes, 1, dest, sizeof(dest));
     STAssertTrue(strcmp(bytes+1, dest) == 0, @"Read was not performed");
     
     // Verify that reading off the page at 0x0 fails
-    STAssertNotEquals(PLCRASH_ESUCCESS, plcrash_async_safe_memcpy(mach_task_self(), 0, 0, dest, sizeof(bytes)), @"Bad read was performed");
+    STAssertNotEquals(PLCRASH_ESUCCESS, plcrash_async_task_memcpy(mach_task_self(), 0, 0, dest, sizeof(bytes)), @"Bad read was performed");
     
     // Verify that overflow is safely handled
-    STAssertEquals(PLCRASH_ENOMEM, plcrash_async_safe_memcpy(mach_task_self(), PL_VM_ADDRESS_MAX, 1, dest, sizeof(bytes)), @"Bad read was performed");
+    STAssertEquals(PLCRASH_ENOMEM, plcrash_async_task_memcpy(mach_task_self(), PL_VM_ADDRESS_MAX, 1, dest, sizeof(bytes)), @"Bad read was performed");
+}
+
+- (void) testTaskReadInt {
+    const plcrash_async_byteorder_t *byteorder = &plcrash_async_byteorder_swapped;
+    union test_data {
+        uint8_t u8;
+        uint16_t u16;
+        uint32_t u32;
+        uint64_t u64;
+    };
+    union test_data src;
+    union test_data dest;
+    src.u64 = 0xCAFEF00DDEADBEEFULL;
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint64(mach_task_self(), byteorder, &src, 0, &dest.u64), @"Failed to read value");
+    STAssertEquals(byteorder->swap64(dest.u64), src.u64, @"Incorrect value read");
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint32(mach_task_self(), byteorder, &src, 0, &dest.u32), @"Failed to read value");
+    STAssertEquals(byteorder->swap32(dest.u32), src.u32, @"Incorrect value read");
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint16(mach_task_self(), byteorder, &src, 0, &dest.u16), @"Failed to read value");
+    STAssertEquals(byteorder->swap16(dest.u16), src.u16, @"Incorrect value read");
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint8(mach_task_self(), &src, 0, &dest.u8), @"Failed to read value");
+    STAssertEquals(dest.u8, src.u8, @"Incorrect value read");
 }
 
 - (void) testStrcmp {

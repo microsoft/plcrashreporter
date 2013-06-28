@@ -189,7 +189,9 @@ bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off
 }
 
 /**
- * (Safely) copy len bytes from @a task, at @a address + @a offset, storing in @a dest.
+ * Copy @a len bytes from @a task, at @a address + @a offset, storing in @a dest. If the page(s) at the
+ * given @a address + @a offset are unmapped or unreadable, no copy will be performed and an error will
+ * be returned.
  *
  * @param task The task from which data from address @a source will be read.
  * @param address The base address within @a task from which the data will be read.
@@ -201,7 +203,7 @@ bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off
  * will be returned. If the pages can not be read due to access restrictions, PLCRASH_EACCESS will be returned. If
  * the proivded address + offset would overflow pl_vm_address_t, PLCRASH_ENOMEM is returned.
  */
-plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_off_t offset, void *dest, pl_vm_size_t len) {
+plcrash_error_t plcrash_async_task_memcpy (mach_port_t task, pl_vm_address_t address, pl_vm_off_t offset, void *dest, pl_vm_size_t len) {
     pl_vm_address_t target;
     kern_return_t kt;
 
@@ -234,6 +236,95 @@ plcrash_error_t plcrash_async_safe_memcpy (mach_port_t task, pl_vm_address_t add
             return PLCRASH_EUNKNOWN;
             break;
     }
+}
+
+/**
+ * Read an 8-bit value from @a task, at @a address + @a offset, storing in @a dest. If the page(s) at the
+ * given @a address + @a offset are unmapped or unreadable, no copy will be performed and an error will
+ * be returned.
+ *
+ * @param task Task from which to read the value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_task_read_uint8 (task_t task, pl_vm_address_t address, pl_vm_off_t offset, uint8_t *result) {
+    return plcrash_async_task_memcpy(task, address, offset, result, sizeof(*result));
+}
+
+/**
+ * Read a 16-bit value from @a task, at @a address + @a offset, performing byte-swapping using @a byteorder,
+ * and store in @a dest.
+ *
+ * If the page(s) at the given @a address + @a offset are unmapped or unreadable, no copy will be performed and an error will
+ * be returned.
+ *
+ * @param task Task from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_task_read_uint16 (task_t task, const plcrash_async_byteorder_t *byteorder,
+                                                pl_vm_address_t address, pl_vm_off_t offset, uint16_t *result)
+{
+    plcrash_error_t err = plcrash_async_task_memcpy(task, address, offset, result, sizeof(*result));
+    *result = byteorder->swap16(*result);
+    return err;
+}
+
+/**
+ * Read a 32-bit value from @a task, at @a address + @a offset, performing byte-swapping using @a byteorder,
+ * and store in @a dest.
+ *
+ * If the page(s) at the given @a address + @a offset are unmapped or unreadable, no copy will be performed and an error will
+ * be returned.
+ *
+ * @param task Task from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_task_read_uint32 (task_t task, const plcrash_async_byteorder_t *byteorder,
+                                                pl_vm_address_t address, pl_vm_off_t offset, uint32_t *result)
+{
+    plcrash_error_t err = plcrash_async_task_memcpy(task, address, offset, result, sizeof(*result));
+    *result = byteorder->swap32(*result);
+    return err;
+}
+
+/**
+ * Read a 64-bit value from @a task, at @a address + @a offset, performing byte-swapping using @a byteorder,
+ * and store in @a dest.
+ *
+ * If the page(s) at the given @a address + @a offset are unmapped or unreadable, no copy will be performed and an error will
+ * be returned.
+ *
+ * @param task Task from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param address The base address to be read. This address should be relative to the target task's address space.
+ * @param offset An offset to be applied to @a address.
+ * @param result The destination to which the data will be written, after @a byteorder has been applied.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_EINVAL if the target address does not fall within the @a mobj address
+ * range, or one of the plcrash_error_t constants for other error conditions.
+ */
+plcrash_error_t plcrash_async_task_read_uint64 (task_t task, const plcrash_async_byteorder_t *byteorder,
+                                                pl_vm_address_t address, pl_vm_off_t offset, uint64_t *result)
+{
+    plcrash_error_t err = plcrash_async_task_memcpy(task, address, offset, result, sizeof(*result));
+    *result = byteorder->swap64(*result);
+    return err;
 }
 
 /**

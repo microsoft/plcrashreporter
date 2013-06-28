@@ -558,7 +558,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
         /* Apply the rule */
         switch (dw_rule) {
             case PLCRASH_DWARF_CFA_REG_RULE_OFFSET: {
-                if ((err = plcrash_async_safe_memcpy(task, cfa_val, (int64_t)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_task_memcpy(task, cfa_val, (int64_t)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("Failed to read offset(N) register value: %d", err);
                     return err;
                 }
@@ -644,7 +644,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                 
                 /* Dereference the target address, if using the non-value EXPRESSION rule */
                 if (dw_rule == PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION) {
-                    if ((err = plcrash_async_safe_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                    if ((err = plcrash_async_task_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to read register value from expression result: %d", err);
                         return err;
                     }
