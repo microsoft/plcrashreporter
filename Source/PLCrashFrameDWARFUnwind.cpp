@@ -137,7 +137,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         err = plcrash_async_dwarf_frame_reader_find_fde(&reader, 0x0 /* offset hint */, pc - image->macho_image.header_addr, &fde_info);
 
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Did not find CFE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
+            PLCF_DEBUG("Did not find FDE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
             result = PLFRAME_ENOTSUP;
             goto cleanup;
         }
