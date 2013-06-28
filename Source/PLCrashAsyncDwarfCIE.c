@@ -350,8 +350,22 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     /* Skip all (possibly partially parsed) augmentation data */
     offset += augment_data_size;
     
-    /* Save the initial instructions offset */
-    info->initial_instructions_offset = offset;
+    /* Save the initial instructions offset and length. We compute this based on the current offset from the start of the CIE
+     * value, not including the initial length field.
+     *
+     * We also validate the lengths/offsets here to prevent overflow/underflow. By this point, offset + cie_offset
+     * must be valid, as well as offset >= lengthsize, or the read would have failed. It's possible that the declared
+     * CIE length is short, however, which we validate here.
+     */
+    info->initial_instructions_offset = info->cie_offset + (offset - length_size);
+    
+    if (info->cie_length < (info->initial_instructions_offset - info->cie_offset)) {
+        PLCF_DEBUG("CIE length of 0x%" PRIu64 "declared to be less than the actual read length of 0x%" PRIu64, (uint64_t) info->cie_length,
+                   (uint64_t)(info->initial_instructions_offset - info->cie_offset));
+        return PLCRASH_EINVAL;
+    }
+
+    info->initial_instructions_length = info->cie_length - (info->initial_instructions_offset - info->cie_offset);
     
     return PLCRASH_ESUCCESS;
 }

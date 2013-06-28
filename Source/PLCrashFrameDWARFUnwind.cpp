@@ -137,9 +137,9 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         goto cleanup;
     }
 
-    err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc - image->macho_image.header_addr, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instruction_offset, fde_info.fde_length, &state);
+    err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc - image->macho_image.header_addr, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length, &state);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instruction_offset, err);
+        PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
         result = PLFRAME_ENOTSUP;
         
         plcrash_async_dwarf_fde_info_free(&fde_info);

@@ -52,8 +52,9 @@ struct __attribute__((packed)) cie_data {
     uint8_t return_address_register;
     
     uint8_t augmentation_data[6];
-    
-    uint8_t initial_instructions[0];
+
+    /* We don't supply any instructions below; this array exists to test the initial_instruction_length handling */
+    uint8_t initial_instructions[4]; 
 };
 
 @interface PLCrashAsyncDwarfCIETests : PLCrashTestCase {
@@ -118,10 +119,11 @@ struct __attribute__((packed)) cie_data {
     
     
     /* Try to parse the CIE */
+    pl_vm_size_t cie_length = sizeof(_cie_data) - sizeof(_cie_data.length);
     err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, &_cie_data);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
     STAssertEquals(cie.cie_offset, (uint64_t)sizeof(_cie_data.length), @"Incorrect offset");
-    STAssertEquals(cie.cie_length, (uint64_t) sizeof(_cie_data) - sizeof(_cie_data.length), @"Incorrect length");
+    STAssertEquals(cie.cie_length, (uint64_t)cie_length, @"Incorrect length");
     
     /* Test basics */
     STAssertEquals(cie.cie_id, _cie_data.cie_id, @"Incorrect ID");
@@ -152,7 +154,8 @@ struct __attribute__((packed)) cie_data {
     
     /* Instructions */
     STAssertEquals(cie.initial_instructions_offset, ((pl_vm_address_t)_cie_data.initial_instructions) - (pl_vm_address_t) &_cie_data, @"Incorrect initial instruction offset");
-    
+    STAssertEquals(cie.initial_instructions_length, (pl_vm_size_t) sizeof(_cie_data.initial_instructions), @"Incorrect instruction length");
+
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);
     plcrash_async_mobject_free(&mobj);

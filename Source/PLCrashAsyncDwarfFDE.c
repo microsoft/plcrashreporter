@@ -192,9 +192,24 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
         offset += ptr_size;
     }
     
-    /* The remainder of the FDE data is comprised of call frame instructions */
-    info->instruction_offset = (fde_address+offset) - sect_addr;
+    /* The remainder of the FDE data is comprised of call frame instructions; we calculate the offset to the instructions,
+     * as well as their length.
+     *
+     * This requires validating the lengths/offsets here to prevent overflow/underflow. Most values here have been calculated
+     * as part of reading the data, and must be valid; hoever, it's possible that the declared FDE length itself short,
+     * however, which we validate here.
+     */
+    info->instructions_offset = (fde_address+offset) - sect_addr;
 
+    if (info->fde_length < (info->instructions_offset - info->fde_offset)) {
+        PLCF_DEBUG("FDE length of 0x%" PRIu64 "declared to be less than the actual read length of 0x%" PRIu64, (uint64_t) info->fde_length,
+                   (uint64_t)(info->instructions_offset - info->fde_offset));
+        return PLCRASH_EINVAL;
+    }
+
+    info->instructions_length = info->fde_length - (info->instructions_offset - info->fde_offset);
+
+    /* Clean up */
     plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
     plcrash_async_dwarf_cie_info_free(&cie);
     

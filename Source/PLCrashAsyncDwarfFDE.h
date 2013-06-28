@@ -60,7 +60,10 @@ typedef struct plcrash_async_dwarf_fde_info {
     uint64_t pc_end;
     
     /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */
-    pl_vm_address_t instruction_offset;
+    pl_vm_address_t instructions_offset;
+    
+    /** The length, in bytes, of the FDE instructions. */
+    pl_vm_size_t instructions_length;
 } plcrash_async_dwarf_fde_info_t;
 
 plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,

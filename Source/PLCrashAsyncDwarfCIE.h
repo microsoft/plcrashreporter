@@ -149,6 +149,9 @@ typedef struct plcrash_async_dwarf_cie_info {
      * eh_frame/debug_frame section base (eg, the mobj base address).
      */
     pl_vm_address_t initial_instructions_offset;
+
+    /** The size of the initial instruction data, in bytes. */
+    pl_vm_size_t initial_instructions_length;
 } plcrash_async_dwarf_cie_info_t;
 
 plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,

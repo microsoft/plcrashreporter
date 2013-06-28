@@ -141,8 +141,8 @@ struct __attribute__((packed)) fde_data {
     STAssertEquals(info.pc_start, _data.fde.pc_start, @"Incorrect PC start value");
     STAssertEquals(info.pc_end, (uint64_t)_data.fde.pc_start + _data.fde.pc_length, @"Incorrect PC end value");
     
-    STAssertEquals(info.instruction_offset, (pl_vm_address_t) ((uint64_t)&_data.fde.instructions - (uint64_t)&_data), @"Incorrect instruction offset");
-
+    STAssertEquals(info.instructions_offset, (pl_vm_address_t) ((uint64_t)&_data.fde.instructions - (uint64_t)&_data), @"Incorrect instruction offset");
+    STAssertEquals(info.instructions_length, (pl_vm_size_t) sizeof(_data.fde.instructions), @"Incorrect instruction offset");
 
     /* Clean up */
     plcrash_async_dwarf_fde_info_free(&info);
