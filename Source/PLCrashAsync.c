@@ -154,7 +154,7 @@ const char *plcrash_async_strerror (plcrash_error_t error) {
  * will be returned. If the pages can not be read due to access restrictions, KERN_PROTECTION_FAILURE will be returned.
  *
  * @warning Unlike all other plcrash_* functions, plcrash_async_read_addr returns a kern_return_t value.
- * @deprecated New code should make use of plcrash_async_safe_memcpy().
+ * @deprecated New code should make use of plcrash_async_task_memcpy().
  */
 kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len) {
 #ifdef PL_HAVE_MACH_VM
