@@ -187,7 +187,6 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
             return err;
 
         /* Check if our PC is within range */
-        PLCF_DEBUG("Evaluating entry with start %"PRIx64 " end=%" PRIx64 " pc=%" PRIx64, fde_info->pc_start, fde_info->pc_end, (uint64_t) pc);
         if (pc >= fde_info->pc_start && pc < fde_info->pc_end)
             return PLCRASH_ESUCCESS;
 
