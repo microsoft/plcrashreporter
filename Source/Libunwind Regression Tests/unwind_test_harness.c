@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include <mach-o/dyld.h>
 
@@ -30,6 +31,8 @@
 extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 
 extern int unwind_tester (void *);
+extern void unwind_tester_target_ip (void);
+
 static void **unwind_tester_list[] = {
 #ifdef __x86_64__
     unwind_tester_list_x86_64_disable_compact_frame,
@@ -77,14 +80,26 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
 
     /* Initialie our cursor */
     plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
-    
+
     if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
         // now in unwind_to_main
         if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
             // now in test function
+            
             if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
                 // now in unwind_tester
                 
+                /* Verify that we unwound to the correct IP */
+                plcrash_greg_t ip;
+                if (plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &ip) != PLFRAME_ESUCCESS) {
+                    PLCF_DEBUG("Could not fetch IP from register state");
+                    return PLCRASH_EINTERNAL;
+                }
+                if (ip != (plcrash_greg_t) unwind_tester_target_ip) {
+                    PLCF_DEBUG("Incorrect IP. ip=%" PRIx64 " target_ip=%" PRIx64, (uint64_t) ip, (uint64_t) unwind_tester_target_ip);
+                    return PLCRASH_EINTERNAL;
+                }
+
                 /*
                  * Verify that non-volatile registers have been restored. This replaces the
                  * use of thread state restoration in the original libunwind tests; rather

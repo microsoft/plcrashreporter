@@ -51,6 +51,8 @@ movq	$0x1122334455667788, %r14
 movq	$0x0022446688AACCEE, %r15
 # call test function which will invoke unwinder which "returns" here
 call	*%rdi
+.globl _unwind_tester_target_ip # IP that we'll unwind to
+_unwind_tester_target_ip:
 # verify that non-volatile registers still contain magic values
 movq	$0x1234567887654321, %rax
 cmpq	%rax, %rbx

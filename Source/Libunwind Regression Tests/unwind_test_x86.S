@@ -45,6 +45,8 @@ movl	$0x56788765, %esi
 movl	$0xABCDDCBA, %edi
 # call test function which will invoke unwinder which "returns" here
 call	*8(%ebp)
+.globl _unwind_tester_target_ip # IP that we'll unwind to
+_unwind_tester_target_ip:
 # verify that non-volatile registers still contain magic values
 cmpl	$0x12344321, %ebx
 jne	L2
