@@ -157,10 +157,6 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
     
     /* Save the task-relative address */
     mobj->task_address = task_addr;
-    
-    /* Save the task reference */
-    mobj->task = task;
-    mach_port_mod_refs(mach_task_self(), mobj->task, MACH_PORT_RIGHT_SEND, 1);
 
     return PLCRASH_ESUCCESS;
 }
@@ -184,14 +180,6 @@ pl_vm_address_t plcrash_async_mobject_length (plcrash_async_mobject_t *mobj) {
     return mobj->length;
 }
 
-/**
- * Return a borrowed reference to the backing task for this mapping.
- *
- * @param mobj An initialized memory object.
- */
-task_t plcrash_async_mobject_task (plcrash_async_mobject_t *mobj) {
-    return mobj->task;
-}
 
 /**
  * Verify that @a length bytes starting at local @a address is within @a mobj's mapped range.
@@ -351,9 +339,6 @@ void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
     kern_return_t kt;
     if ((kt = vm_deallocate(mach_task_self(), mobj->address, mobj->length)) != KERN_SUCCESS)
         PLCF_DEBUG("vm_deallocate() failure: %d", kt);
-
-    /* Decrement our task refcount */
-    mach_port_mod_refs(mach_task_self(), mobj->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
 /**

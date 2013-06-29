@@ -39,9 +39,6 @@
  * An async-accessible memory mapped object.
  */
 typedef struct plcrash_async_mobject {
-    /** The task from which the memory was mapped */
-    task_t task;
-
     /** The in-memory address at which the target address has been mapped. This address is offset
      * from the actual starting address, to account for the rounding of mappings to whole pages. */
     uintptr_t address;
@@ -66,8 +63,6 @@ plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_
 
 pl_vm_address_t plcrash_async_mobject_base_address (plcrash_async_mobject_t *mobj);
 pl_vm_address_t plcrash_async_mobject_length (plcrash_async_mobject_t *mobj);
-
-task_t plcrash_async_mobject_task (plcrash_async_mobject_t *mobj);
 
 bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, uintptr_t address, pl_vm_off_t offset, size_t length);
 void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_off_t offset, size_t length);
