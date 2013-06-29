@@ -443,6 +443,50 @@
 }
 
 /**
+ * Test task-based uintmax64 reading.
+ */
+- (void) testReadTaskUintMax64 {
+    plcrash_error_t err;
+    uint64_t result;
+    
+    /* Test data */
+    union {
+        uint8_t udata1;
+        uint16_t udata2;
+        uint32_t udata4;
+        uint64_t udata8;
+    } test_data;
+    
+    /* uint8_t */
+    test_data.udata1 = UINT8_MAX;    
+    err = plcrash_async_dwarf_read_task_uintmax64(mach_task_self(), &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 1, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint8_t");
+    STAssertEquals(result, (uint64_t)UINT8_MAX, @"Incorrect value decoded");
+        
+    /* uint16_t */
+    test_data.udata2 = UINT16_MAX;    
+    err = plcrash_async_dwarf_read_task_uintmax64(mach_task_self(), &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 2, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint16_t");
+    STAssertEquals(result, (uint64_t)UINT16_MAX, @"Incorrect value decoded");
+    
+    /* uint32_t */
+    test_data.udata4 = UINT32_MAX;    
+    err = plcrash_async_dwarf_read_task_uintmax64(mach_task_self(), &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 4, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint32_t");
+    STAssertEquals(result, (uint64_t)UINT32_MAX, @"Incorrect value decoded");
+    
+    /* uint64_t */
+    test_data.udata8 = UINT64_MAX;    
+    err = plcrash_async_dwarf_read_task_uintmax64(mach_task_self(), &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 8, &result);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode uint64_t");
+    STAssertEquals(result, (uint64_t)UINT64_MAX, @"Incorrect value decoded");
+    
+    /* Invalid size */
+    err = plcrash_async_dwarf_read_task_uintmax64(mach_task_self(), &plcrash_async_byteorder_direct, ((pl_vm_address_t)&test_data)-1, 1, 3, &result);
+    STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Expected error with invalid byte size of 3");
+}
+
+/**
  * Test SLEB128 parsing.
  */
 - (void) testReadSLEB128 {

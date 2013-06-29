@@ -598,5 +598,65 @@ plcrash_error_t plcrash_async_dwarf_read_uintmax64 (plcrash_async_mobject_t *mob
 }
 
 /**
+ * @internal
+ *
+ * Read a value that is either 1, 2, 4, or 8 bytes in size from @a task. Returns true on success, false on failure.
+ *
+ * @param task Task from which to read the value.
+ * @param byteorder Byte order of the target value.
+ * @param base_addr The base address (within @a mobj's address space) from which to perform the read.
+ * @param offset An offset to be applied to base_addr.
+ * @param data_size The size of the value to be read. If an unsupported size is supplied, false will be returned.
+ * @param dest The destination value.
+ */
+plcrash_error_t plcrash_async_dwarf_read_task_uintmax64 (task_t task,
+                                                         const plcrash_async_byteorder_t *byteorder,
+                                                         pl_vm_address_t base_addr,
+                                                         pl_vm_off_t offset,
+                                                         uint8_t data_size,
+                                                         uint64_t *dest)
+{
+    plcrash_error_t err;
+    union {
+        uint8_t u8;
+        uint16_t u16;
+        uint32_t u32;
+        uint64_t u64;
+    } data;
+    
+    switch (data_size) {
+        case 1:
+            if ((err = plcrash_async_task_read_uint8(task, base_addr, offset, &data.u8)) != PLCRASH_ESUCCESS)
+                return err;
+            *dest = data.u8;
+            break;
+            
+        case 2:
+            if ((err = plcrash_async_task_read_uint16(task, byteorder, base_addr, offset, &data.u16)) != PLCRASH_ESUCCESS)
+                return err;
+            *dest = data.u16;
+            break;
+            
+        case 4:
+            if ((err = plcrash_async_task_read_uint32(task, byteorder, base_addr, offset, &data.u32)) != PLCRASH_ESUCCESS)
+                return err;
+            *dest = data.u32;
+            break;
+            
+        case 8:
+            if ((err = plcrash_async_task_read_uint64(task, byteorder, base_addr, offset, &data.u64)) != PLCRASH_ESUCCESS)
+                return err;
+            *dest = data.u64;
+            break;
+            
+        default:
+            PLCF_DEBUG("Unhandled data width %" PRIu64, (uint64_t) data_size);
+            return PLCRASH_EINVAL;
+    }
+    
+    return PLCRASH_ESUCCESS;
+}
+
+/**
  * @}
  */
