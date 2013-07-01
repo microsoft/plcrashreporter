@@ -125,10 +125,14 @@
     err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE-1, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
     
-    /* Should be the second entry in the table, plus the 12 byte length initial length field. */
-    STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + 12, @"Incorrect offset");
-
-    STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
+    /* Should be the second entry in the table, plus the initial length field. */
+    if (_eh_reader.address_size == 8) {
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
+    } else {
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_32, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_32, @"Incorrect length");
+    }
     //STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
 
     plcrash_async_dwarf_fde_info_free(&fde_info);
@@ -145,10 +149,15 @@
     err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE-1, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
     
-    /* Should be the second entry in the table, plus the 12 byte length initial length field. */
-    STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + 12, @"Incorrect offset");
+    /* Should be the second entry in the table, plus the initial length field. */
+    if (_eh_reader.address_size == 8) {
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
+    } else {
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_32, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_32, @"Incorrect length");
+    }
 
-    STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
     //STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
     
     plcrash_async_dwarf_fde_info_free(&fde_info);

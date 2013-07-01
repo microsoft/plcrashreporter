@@ -122,7 +122,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     }
     
     if (info->cie_version != 1 && info->cie_version != 3 && info->cie_version != 4) {
-        PLCF_DEBUG("CIE id is not one of 1 (eh_frame) or 3 (DWARF3) or 4 (DWARF4): %" PRIu8, info->cie_version);
+        PLCF_DEBUG("CIE version is not one of 1 (eh_frame) or 3 (DWARF3) or 4 (DWARF4): %" PRIu8, info->cie_version);
         return PLCRASH_EINVAL;
     }
     

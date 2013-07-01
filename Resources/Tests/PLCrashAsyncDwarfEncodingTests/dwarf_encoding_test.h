@@ -2,7 +2,7 @@
 
 /* Constants and structures used to generate the CFI test binaries. See also: Resources/Tests/PLCrashAsyncDwarfEncodingTests */
 
-struct __attribute__((packed)) pl_cie_data_64 {
+struct __attribute__((packed)) pl_cie_data {
     uint8_t version; /* Must be set to 1 or 3 -- 1=eh_frame, 3=DWARF3, 4=DWARF4 */
     
     uint8_t augmentation[7];
@@ -22,6 +22,13 @@ struct __attribute__((packed)) pl_fde_data_64 {
     uint8_t instructions[];
 };
 
+struct __attribute__((packed)) pl_fde_data_32 {
+    uint32_t initial_location;
+    uint32_t address_range;
+    uint8_t instructions[];
+};
+
+
 /* 32-bit and 64-bit length headers */
 struct pl_cfi_header_32 {
     uint32_t length;
@@ -35,16 +42,21 @@ struct pl_cfi_header_64 {
 } __attribute__((packed));
 
 /* Mock entry */
-typedef struct pl_cfi_entry {
-    union {
-        struct pl_cfi_header_32 hdr_32;
-        struct pl_cfi_header_64 hdr_64;
-    };
-
-	union {
-		struct pl_cie_data_64 cie_64;
-        struct pl_fde_data_64 fde_64;
-	};
+typedef union pl_cfi_entry {
+    struct {
+        struct pl_cfi_header_64 hdr;
+        union {
+	        struct pl_cie_data cie;
+            struct pl_fde_data_64 fde;
+        };
+    } e64;
+    struct {
+        struct pl_cfi_header_32 hdr;
+        union {
+	        struct pl_cie_data cie;
+            struct pl_fde_data_32 fde;
+        };
+    } e32;
 } pl_cfi_entry;
 
 /* Initial length field size */
@@ -52,8 +64,8 @@ typedef struct pl_cfi_entry {
 #define PL_CFI_LEN_SIZE_32 (sizeof(uint32_t))
 
 /* CFE lengths, minus the initial length field. */
-#define PL_CFI_SIZE_64 (sizeof(pl_cfi_entry) - sizeof(uint32_t) - sizeof(uint64_t))
-#define PL_CFI_SIZE_32 (sizeof(pl_cfi_entry) - sizeof(uint32_t))
+#define PL_CFI_SIZE_64 (sizeof(pl_cfi_entry) - PL_CFI_LEN_SIZE_64)
+#define PL_CFI_SIZE_32 (sizeof(pl_cfi_entry) - PL_CFI_LEN_SIZE_32)
 
 /* PC values to be used when searching for FDE entries. */
 #define PL_CFI_EH_FRAME_PC 0x60
