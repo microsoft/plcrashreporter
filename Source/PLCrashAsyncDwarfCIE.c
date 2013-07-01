@@ -267,7 +267,8 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
         }
         
         /* Determine the read position for the augmentation data */
-        pl_vm_size_t data_offset = offset + leb_size;
+        offset += leb_size;
+        pl_vm_size_t data_offset = offset;
         
         /* Iterate the entries, skipping the initial 'z' */
         for (pl_vm_size_t i = 1; i < augment_size; i++) {
@@ -360,7 +361,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
     info->initial_instructions_offset = info->cie_offset + (offset - length_size);
     
     if (info->cie_length < (info->initial_instructions_offset - info->cie_offset)) {
-        PLCF_DEBUG("CIE length of 0x%" PRIu64 "declared to be less than the actual read length of 0x%" PRIu64, (uint64_t) info->cie_length,
+        PLCF_DEBUG("CIE length of 0x%" PRIu64 " declared to be less than the actual read length of 0x%" PRIu64, (uint64_t) info->cie_length,
                    (uint64_t)(info->initial_instructions_offset - info->cie_offset));
         return PLCRASH_EINVAL;
     }

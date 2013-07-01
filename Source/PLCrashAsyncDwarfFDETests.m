@@ -94,7 +94,7 @@ struct __attribute__((packed)) fde_data {
     _data.cie.augmentation[2] = '\0';
     
     /* NOTE: This is a ULEB128 value, and thus will fail if it's not representable in the first 7 bits */
-    _data.cie.augmentation_data.length = sizeof(_data.cie.augmentation_data);
+    _data.cie.augmentation_data.length = sizeof(_data.cie.augmentation_data) - 1; /* size of the augmentation data, minus the actual length field */
     STAssertEquals((uint8_t)(_data.cie.augmentation_data.length & 0x7f), _data.cie.augmentation_data.length, @"ULEB128 encoding will not fit in the available byte");
     
     _data.cie.augmentation_data.ptr_encoding = DW_EH_PE_udata8; // FDE address pointer encoding.

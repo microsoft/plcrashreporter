@@ -85,7 +85,7 @@ struct __attribute__((packed)) cie_data {
     
     
     /* NOTE: This is a ULEB128 value, and thus will fail if it's not representable in the first 7 bits */
-    _cie_data.augmentation_data[0] = sizeof(_cie_data.augmentation_data);
+    _cie_data.augmentation_data[0] = sizeof(_cie_data.augmentation_data ) - 1 /* size, minus this field */;
     STAssertEquals((uint8_t)(_cie_data.augmentation_data[0] & 0x7f), _cie_data.augmentation_data[0], @"ULEB128 encoding will not fit in the available byte");
     
     _cie_data.augmentation_data[1] = DW_EH_PE_udata4; // LSDA encoding
