@@ -43,9 +43,10 @@ using namespace plcrash::async;
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
  *
  * @param mobj The memory object from which the expression opcodes will be read.
- * @param pc_offset The PC offset at which evaluation of the CFA program should terminate. If 0, 
- * the program will be executed to completion. This offset should be relative to the executable image's
- * base address.
+ * @param pc The PC offset at which evaluation of the CFA program should terminate. If 0, 
+ * the program will be executed to completion. This value should be the absolute address at which the code is loaded
+ * into the target process, as the current implementation utilizes relative addressing to perform address
+ * lookups.
  * @param cie_info The CIE info data for this opcode stream.
  * @param ptr_state GNU EH pointer state configuration; this defines the base addresses and other
  * information required to decode pointers in the CFA opcode stream. May be NULL if eh_frame
@@ -65,7 +66,7 @@ using namespace plcrash::async;
  * error data on failure.
  */
 plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *mobj,
-                                                      pl_vm_address_t pc_offset,
+                                                      pl_vm_address_t pc,
                                                       plcrash_async_dwarf_cie_info_t *cie_info,
                                                       plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
                                                       const plcrash_async_byteorder_t *byteorder,

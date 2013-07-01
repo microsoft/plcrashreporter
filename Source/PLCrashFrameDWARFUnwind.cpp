@@ -134,7 +134,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
 
     /* Find the FDE (if any) */
     {
-        err = plcrash_async_dwarf_frame_reader_find_fde(&reader, 0x0 /* offset hint */, pc - image->macho_image.header_addr, &fde_info);
+        err = plcrash_async_dwarf_frame_reader_find_fde(&reader, 0x0 /* offset hint */, pc, &fde_info);
 
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Did not find FDE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
@@ -169,7 +169,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     /* Evaluate the CFA instruction opcodes */
     {
         /* Initial instructions */
-        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc - image->macho_image.header_addr, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length, &cfa_state);
+        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length, &cfa_state);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -177,7 +177,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         }
 
         /*  FDE instructions */
-        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc - image->macho_image.header_addr, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length, &cfa_state);
+        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length, &cfa_state);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;

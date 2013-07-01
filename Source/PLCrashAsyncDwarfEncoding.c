@@ -70,8 +70,9 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
  * @param offset A section-relative offset at which the FDE search will be initiated. This is primarily useful in combination with the compact unwind
  * encoding, in cases where the unwind instructions can not be expressed, and instead a FDE offset is provided by the encoding. Pass an offset of 0
  * to begin searching at the beginning of the unwind data.
- * @param pc The PC value to search for within the frame data. Note that this value must be relative to
- * the target Mach-O image's __TEXT vmaddr.
+ * @param pc The PC value to search for within the frame data. Note that this value should be the absolute address at which
+ * the code is loaded into the target process, as the current implementation utilizes relative addressing to perform address
+ * lookups.
  * @param fde_info If the FDE is found, PLFRAME_ESUCCESS will be returned and @a fde_info will be initialized with the
  * FDE data. The caller is responsible for freeing the returned FDE record via plcrash_async_dwarf_fde_info_free().
  *
