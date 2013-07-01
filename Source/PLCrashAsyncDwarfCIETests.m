@@ -100,6 +100,11 @@ struct __attribute__((packed)) cie_data {
     _cie_data.code_alignment_factor = 1;
     _cie_data.data_alignment_factor = 2;
     _cie_data.return_address_register = 3;
+    
+    _cie_data.initial_instructions[0] = 0xA;
+    _cie_data.initial_instructions[1] = 0xB;
+    _cie_data.initial_instructions[2] = 0xC;
+    _cie_data.initial_instructions[3] = 0xD;
 }
 
 - (void) tearDown {
@@ -155,6 +160,11 @@ struct __attribute__((packed)) cie_data {
     /* Instructions */
     STAssertEquals(plcrash_async_dwarf_cie_info_initial_instructions_offset(&cie), ((pl_vm_address_t)_cie_data.initial_instructions) - (pl_vm_address_t) &_cie_data, @"Incorrect initial instruction offset");
     STAssertEquals(plcrash_async_dwarf_cie_info_initial_instructions_length(&cie), (pl_vm_size_t) sizeof(_cie_data.initial_instructions), @"Incorrect instruction length");
+    for (int i = 0; i < sizeof(_cie_data.initial_instructions) / sizeof(_cie_data.initial_instructions[0]); i++) {
+        uint8_t opcode;
+        STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint8(&mobj, &_cie_data, plcrash_async_dwarf_cie_info_initial_instructions_offset(&cie)+i, &opcode), @"Failed to read instruction");
+        STAssertEquals((uint8_t)(0xA+i), opcode, @"Incorrect opcode");
+    }
 
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);
