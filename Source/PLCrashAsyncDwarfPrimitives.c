@@ -159,7 +159,7 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
              * be used for the DW_EH_PE_pcrel base address; reviewing the available implementations demonstrates that
              * the current read buffer position should be used.
              */
-            base = location;
+            base = location + offset;
             break;
             
         case DW_EH_PE_absptr:
