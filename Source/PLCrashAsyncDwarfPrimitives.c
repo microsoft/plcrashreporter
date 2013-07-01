@@ -355,10 +355,13 @@ plcrash_error_t plcrash_async_dwarf_read_gnueh_ptr (plcrash_async_mobject_t *mob
     /* Handle indirection; the target value may only be an absptr; there is no way to define an
      * encoding for the indirected target. */
     if (encoding & DW_EH_PE_indirect) {
-        /* The size of the target doesn't matter; the caller only needs to know how many bytes were read from
-         * @a location */
-        uint64_t target_size;
-        return plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, *result, 0, DW_EH_PE_absptr, state, result, &target_size);
+        /*
+         * An indirect read may refer to memory outside of the eh_frame/debug_section; as such, we use task-based reading to handle
+         * indirect reads.
+         *
+         * TODO: This implementation should provide a resolvable GNUEHPtr value, rather than requiring resolution occur here.
+         */
+        return plcrash_async_dwarf_read_task_uintmax64(plcrash_async_mobject_task(mobj), byteorder, *result, 0, state->address_size, result);
     }
     
     return PLCRASH_ESUCCESS;
