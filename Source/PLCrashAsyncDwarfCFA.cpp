@@ -169,7 +169,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
 
     /* Iterate the opcode stream until the pc_offset is hit */
     uint8_t opcode;
-    while ((pc_offset == 0 || location < pc_offset) && opstream.read_intU(&opcode)) {
+    while ((pc == 0 || location < pc) && opstream.read_intU(&opcode)) {
         uint8_t const_operand = 0;
 
         /* Check for opcodes encoded in the top two bits, with an operand
