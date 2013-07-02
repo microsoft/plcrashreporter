@@ -938,7 +938,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 
     /* Initialize the new thread state */
     *new_thread_state = *thread_state;
-    plcrash_async_thread_state_clear_all_regs(new_thread_state);
+    plcrash_async_thread_state_clear_volatile_regs(new_thread_state);
 
     pl_vm_address_t saved_reg_addr = 0x0;
     plcrash_async_cfe_entry_type_t entry_type = plcrash_async_cfe_entry_type(entry);

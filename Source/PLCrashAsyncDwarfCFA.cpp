@@ -458,7 +458,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
 
     /* Initialize the new thread state */
     plcrash_async_thread_state_copy(new_thread_state, thread_state);
-    plcrash_async_thread_state_clear_all_regs(new_thread_state);
+    plcrash_async_thread_state_clear_volatile_regs(new_thread_state);
     
     /* Determine the register width */
     bool m64 = false;
