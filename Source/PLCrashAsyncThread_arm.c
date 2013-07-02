@@ -54,6 +54,21 @@ struct dwarf_register_table {
     uint64_t dwarf_value;
 };
 
+
+/*
+ * ARM GP registers defined as callee-preserved, as per Apple's iOS ARM
+ * Function Call Guide
+ */
+static const plcrash_regnum_t arm_nonvolatile_registers[] = {
+    PLCRASH_ARM_R4,
+    PLCRASH_ARM_R5,
+    PLCRASH_ARM_R6,
+    PLCRASH_ARM_R7,
+    PLCRASH_ARM_R8,
+    PLCRASH_ARM_R10,
+    PLCRASH_ARM_R11,
+};
+
 /**
  * DWARF register mappings as defined in ARM's "DWARF for the ARM Architecture", ARM IHI 0040B,
  * issued November 30th, 2012.
@@ -266,6 +281,31 @@ char const *plcrash_async_thread_state_get_reg_name (const plcrash_async_thread_
     /* Unsupported register is an implementation error (checked in unit tests) */
     PLCF_DEBUG("Missing register name for register id: %d", regnum);
     abort();
+}
+
+// PLCrashAsyncThread API
+void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_t *thread_state) {
+    size_t table_count = sizeof(arm_nonvolatile_registers) / sizeof(arm_nonvolatile_registers[0]);;
+    
+    size_t reg_count = plcrash_async_thread_state_get_reg_count(thread_state);
+    for (size_t reg = 0; reg < reg_count; reg++) {
+        /* Skip unset registers */
+        if (!plcrash_async_thread_state_has_reg(thread_state, reg))
+            continue;
+        
+        /* Check for the register in the preservation table */
+        bool preserved = false;
+        for (size_t i = 0; i < table_count; i++) {
+            if (arm_nonvolatile_registers[i] == reg) {
+                preserved = true;
+                break;
+            }
+        }
+        
+        /* If not preserved, clear */
+        if (!preserved)
+            plcrash_async_thread_state_clear_reg(thread_state, reg);
+    }
 }
 
 // PLCrashAsyncThread API

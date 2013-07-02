@@ -204,6 +204,13 @@ plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_st
 void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg);
 
 /**
+ * Clear all non-callee saved volatile registers in @a thread_state. The exact registers preserved depend on the target ABI.
+ *
+ * @param thread_state The thread state to clear.
+ */
+void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_t *thread_state);
+
+/**
  * Map a plcrash_regnum_t to its corresponding DWARF register value. Returns true if a mapping is available
  * for @regnum, or false if no DWARF register value is available for @a regnum.
  *

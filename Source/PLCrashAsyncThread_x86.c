@@ -54,6 +54,33 @@ struct dwarf_register_table {
     uint64_t dwarf_value;
 };
 
+
+/*
+ * i386 GP registers defined as callee-preserved, as per Apple's Mac OS X IA-32
+ * Function Call Guide
+ */
+static const plcrash_regnum_t x86_32_nonvolatile_registers[] = {
+    PLCRASH_X86_EBX,
+    PLCRASH_X86_EBP,
+    PLCRASH_X86_ESI,
+    PLCRASH_X86_EDI,
+    PLCRASH_X86_ESP
+};
+
+/*
+ * x86-64 GP registers defined as callee-preserved, as per System V Application Binary Interface,
+ * AMD64 Architecture Processor Supplement - Draft Version 0.99.6
+ */
+static const plcrash_regnum_t x86_64_nonvolatile_registers[] = {
+    PLCRASH_X86_64_RBX,
+    PLCRASH_X86_64_RSP,
+    PLCRASH_X86_64_RBP,
+    PLCRASH_X86_64_R12,
+    PLCRASH_X86_64_R13,
+    PLCRASH_X86_64_R14,
+    PLCRASH_X86_64_R15
+};
+
 /*
  * i386 DWARF register mappings as defined by GCC and LLVM/clang. These mappings
  * appear to have originally been defined by the SVR4 reference port C compiler,
@@ -157,6 +184,40 @@ size_t plcrash_async_thread_state_get_reg_count (const plcrash_async_thread_stat
         return PLCRASH_X86_LAST_REG+1;
     } else {
         return PLCRASH_X86_64_LAST_REG+1;
+    }
+}
+
+// PLCrashAsyncThread API
+void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_t *thread_state) {
+    const plcrash_regnum_t *table;
+    size_t table_count = 0;
+    
+    if (thread_state->x86_state.thread.tsh.flavor == x86_THREAD_STATE32) {
+        table = x86_32_nonvolatile_registers;
+        table_count = sizeof(x86_32_nonvolatile_registers) / sizeof(x86_32_nonvolatile_registers[0]);
+    } else {
+        table = x86_64_nonvolatile_registers;
+        table_count = sizeof(x86_64_nonvolatile_registers) / sizeof(x86_64_nonvolatile_registers[0]);
+    }
+    
+    size_t reg_count = plcrash_async_thread_state_get_reg_count(thread_state);
+    for (size_t reg = 0; reg < reg_count; reg++) {
+        /* Skip unset registers */
+        if (!plcrash_async_thread_state_has_reg(thread_state, reg))
+            continue;
+        
+        /* Check for the register in the preservation table */
+        bool preserved = false;
+        for (size_t i = 0; i < table_count; i++) {
+            if (table[i] == reg) {
+                preserved = true;
+                break;
+            }
+        }
+
+        /* If not preserved, clear */
+        if (!preserved)
+            plcrash_async_thread_state_clear_reg(thread_state, reg);
     }
 }
 

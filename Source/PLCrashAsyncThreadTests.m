@@ -63,6 +63,64 @@
     }
 }
 
+- (void) testClearVolatileRegisters {
+    plcrash_async_thread_state_t ts;
+    plcrash_async_thread_state_mach_thread_init(&ts, pthread_mach_thread_np(_thr_args.thread));
+
+    /* Verify that clearing volatile registers clears some, but not all, registers */
+    size_t live_count = 0;
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
+        if (plcrash_async_thread_state_has_reg(&ts, i))
+            live_count++;
+    };
+    
+    plcrash_async_thread_state_clear_volatile_regs(&ts);
+
+    size_t nv_count = 0;
+    for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
+        if (plcrash_async_thread_state_has_reg(&ts, i))
+            nv_count++;
+    };
+    
+    /* In theory, these tests could fail if ALL or NONE registers are callee-preserved. I can't think of an ABI
+     * on the planet where that is true, but in such a case, this test will fail and require updating */
+    STAssertLessThan(nv_count, live_count, @"Failed to clear any registers");
+    STAssertGreaterThan(nv_count, (size_t)0, @"Cleared all registers");
+    
+#define REQ_REG(_reg) STAssertTrue(plcrash_async_thread_state_has_reg(&ts, _reg), @"Missing required register");
+    
+#ifdef __arm__
+    REQ_REG(PLCRASH_ARM_R4);
+    REQ_REG(PLCRASH_ARM_R5);
+    REQ_REG(PLCRASH_ARM_R6);
+    REQ_REG(PLCRASH_ARM_R7);
+    REQ_REG(PLCRASH_ARM_R8);
+    REQ_REG(PLCRASH_ARM_R10);
+    REQ_REG(PLCRASH_ARM_R11);
+    STAssertEquals((size_t)7, nv_count, @"Incorrect number of registers preserved");
+#elif defined(__i386__)
+    REQ_REG(PLCRASH_X86_EBX);
+    REQ_REG(PLCRASH_X86_EBP);
+    REQ_REG(PLCRASH_X86_ESI);
+    REQ_REG(PLCRASH_X86_EDI);
+    REQ_REG(PLCRASH_X86_ESP);
+    STAssertEquals((size_t)5, nv_count, @"Incorrect number of registers preserved");
+#elif defined(__x86_64__)
+    REQ_REG(PLCRASH_X86_64_RBX);
+    REQ_REG(PLCRASH_X86_64_RSP);
+    REQ_REG(PLCRASH_X86_64_RBP);
+    REQ_REG(PLCRASH_X86_64_R12);
+    REQ_REG(PLCRASH_X86_64_R13);
+    REQ_REG(PLCRASH_X86_64_R14);
+    REQ_REG(PLCRASH_X86_64_R15);
+    STAssertEquals((size_t)7, nv_count, @"Incorrect number of registers preserved");
+#else
+#error Add architecture support
+#endif
+    
+#undef REQ_REG
+}
+
 - (void) testGetSetRegister {
     plcrash_async_thread_state_t ts;
     plcrash_async_thread_state_mach_thread_init(&ts, pthread_mach_thread_np(_thr_args.thread));
