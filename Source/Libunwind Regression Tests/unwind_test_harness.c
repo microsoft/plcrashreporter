@@ -30,16 +30,46 @@
 
 extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 
+extern void *unwind_tester_list_x86_64_frame[];
+extern void *unwind_tester_list_x86_64_frame_compact[];
+extern void *unwind_tester_list_x86_64_frame_eh_frame[];
+extern void *unwind_tester_list_x86_64_frame_compact_eh_frame[];
+
 extern int unwind_tester (void *);
 extern void unwind_tester_target_ip (void);
 
-static void **unwind_tester_list[] = {
+struct unwind_test_case {
+    /* A list of targetable test cases */
+    void *test_list;
+
+    /* If true, the test cases vends eh_frame/compact unwind data,
+     * and we should validate that callee-preserved registers were
+     * correctly restored */
+    bool restores_callee_registers;
+};
+
+static struct unwind_test_case unwind_test_cases[] = {
 #ifdef __x86_64__
-    unwind_tester_list_x86_64_disable_compact_frame,
+    { unwind_tester_list_x86_64_disable_compact_frame, true },  /* DWARF unwinding (no compact frame data) */
+    { unwind_tester_list_x86_64_frame, false },                 /* frame-based unwinding, no eh_frame/compact unwind data */
+    { unwind_tester_list_x86_64_frame_compact, true },          /* frame-based compact unwinding */
+    { unwind_tester_list_x86_64_frame_eh_frame, true },         /* frame-based eh_frame unwinding */
+    { unwind_tester_list_x86_64_frame_compact_eh_frame, true }, /* frame-based eh_fame+compact unwinding */
 #elif defined(__i386__)
 #endif
-    NULL
+    { NULL, false }
 };
+
+
+/*
+ * We abuse global state to pass configuration down to the test result handling
+ * without having to modify all the existing test cases. This means the tests
+ * are not re-entrant, but somehow I suspect that's OK.
+ */
+struct  {
+    /** The current test case */
+    struct unwind_test_case *test_case;
+} global_harness_state;
 
 /*
  * Loop over all function pointers in unwind_tester_list
@@ -47,13 +77,14 @@ static void **unwind_tester_list[] = {
  * false, then that test failed.
  */
 bool unwind_test_harness (void) {
-    for (void ***suite = unwind_tester_list; *suite != NULL; suite++) {
-        for (void **tests = *suite; *tests != NULL; tests++) {
-            PLCF_DEBUG("Running %p", *tests);
+    for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
+        global_harness_state.test_case = tc;
+        for (void **tests = tc->test_list; *tests != NULL; tests++) {
             if (unwind_tester(*tests))
                 return false;
         }
     }
+    
 	return true;
 }
 
@@ -101,11 +132,14 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
                 }
 
                 /*
-                 * Verify that non-volatile registers have been restored. This replaces the
-                 * use of thread state restoration in the original libunwind tests; rather
+                 * For tests using DWARF or compact unwinding, verify that non-volatile registers have been restored.
+                 * This replaces the use of thread state restoration in the original libunwind tests; rather
                  * than letting the unwind_tester() perform these register value tests,
                  * we just do so ourselves
                  */
+                if (!global_harness_state.test_case->restores_callee_registers)
+                    return PLCRASH_ESUCCESS;
+
 #ifdef __x86_64__
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
