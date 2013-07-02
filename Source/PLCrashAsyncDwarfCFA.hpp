@@ -59,6 +59,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
 
 
 plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
+                                                     plcrash_async_dwarf_cie_info_t *cie_info,
                                                      const plcrash_async_thread_state_t *thread_state,
                                                      const plcrash_async_byteorder_t *byteorder,
                                                      plcrash::async::dwarf_cfa_state *cfa_state,

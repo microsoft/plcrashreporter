@@ -186,7 +186,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     }
     
     /* Apply the frame delta -- this may fail. */
-    if ((err = plcrash_async_dwarf_cfa_state_apply(task, &current_frame->thread_state, image->macho_image.byteorder, &cfa_state, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
+    if ((err = plcrash_async_dwarf_cfa_state_apply(task, &cie_info, &current_frame->thread_state, image->macho_image.byteorder, &cfa_state, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
         result = PLFRAME_ESUCCESS;
     } else {
         PLCF_DEBUG("Failed to apply CFA state for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);

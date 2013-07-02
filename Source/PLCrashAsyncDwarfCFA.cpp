@@ -38,6 +38,14 @@
 
 using namespace plcrash::async;
 
+static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task,
+                                                                     const plcrash_async_thread_state_t *thread_state,
+                                                                     const plcrash_async_byteorder_t *byteorder,
+                                                                     plcrash_async_thread_state_t *new_thread_state,
+                                                                     pl_vm_address_t cfa_val,
+                                                                     plcrash_regnum_t pl_regnum,
+                                                                     plcrash_dwarf_cfa_reg_rule_t dw_rule,
+                                                                     uint64_t dw_value);
 /**
  * Evaluate a DWARF CFA program, as defined in the DWARF 4 Specification, Section 6.4.2. This
  * internal implementation is templated to support 32-bit and 64-bit evaluation.
@@ -431,6 +439,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
  * populate @a new_thread_state with the result.
  *
  * @param task The task containing any data referenced by @a thread_state.
+ * @param cie_info The CIE from which @a cfa_state was derived.
  * @param thread_state The current thread state corresponding to @a entry.
  * @param byteorder The target's byte order.
  * @param cfa_state CFA evaluation state as generated from evaluating a CFA program. @sa plcrash_async_dwarf_cfa_eval_program.
@@ -439,6 +448,7 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
  * @return Returns PLCRASH_ESUCCESS on success, or a standard pclrash_error_t code if an error occurs.
  */
 plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
+                                                     plcrash_async_dwarf_cie_info_t *cie_info,
                                                      const plcrash_async_thread_state_t *thread_state,
                                                      const plcrash_async_byteorder_t *byteorder,
                                                      plcrash::async::dwarf_cfa_state *cfa_state,
@@ -543,141 +553,188 @@ plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
     uint64_t dw_value;
     
     while (iter.next(&dw_regnum, &dw_rule, &dw_value)) {
-        union {
-            uint32_t v32;
-            uint64_t v64;
-        } rvalue;
-        void *vptr = &rvalue;
-    
         /* Map the register number */
         plcrash_regnum_t pl_regnum;
         if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_regnum, &pl_regnum)) {
-            PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_regnum);
-            return PLCRASH_EINVAL;
+            /* Some DWARF ABIs (such as x86-64) define the return address using a pseudo-register. In that case, the
+             * register will not have a vaid DWARF -> PLCrashReporter mapping; we simply target the IP in this case,
+             * which results in the expected behavior of setting the IP in the new thread state. */
+            if (cie_info->return_address_register == dw_regnum) {
+                pl_regnum = PLCRASH_REG_IP;
+            } else {
+                PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_regnum);
+                return PLCRASH_EINVAL;
+            }
         }
         
-        /* Apply the rule */
-        switch (dw_rule) {
-            case PLCRASH_DWARF_CFA_REG_RULE_OFFSET: {
-                if ((err = plcrash_async_task_memcpy(task, cfa_val, (int64_t)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("Failed to read offset(N) register value: %d", err);
-                    return err;
-                }
-                
-                if (m64) {
-                    plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v64);
-                } else {
-                    plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v32);
-                }
-
-                break;
-            }
-
-            case PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET:
-                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, cfa_val + ((int64_t) dw_value));
-                break;
-
-            case PLCRASH_DWARF_CFA_REG_RULE_REGISTER: {
-                /* The previous value of this register is stored in another register numbered R. */
-                plcrash_regnum_t src_pl_regnum;
-                if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_value, &src_pl_regnum)) {
-                    PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_regnum);
-                    return PLCRASH_EINVAL;
-                }
-                
-                if (!plcrash_async_thread_state_has_reg(thread_state, src_pl_regnum)) {
-                    PLCF_DEBUG("Register rule references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, src_pl_regnum));
-                    return PLCRASH_ENOTFOUND;
-                }
-                
-                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, src_pl_regnum));
-                break;
-            }
-
-            case PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION:
-            case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION: {
-                pl_vm_address_t expr_addr = (pl_vm_address_t) dw_value;
-                /* Fetch the expression's length */
-                uint64_t expr_len;
-                pl_vm_size_t uleb128_len;
-                if ((err = plcrash_async_dwarf_read_task_uleb128(task, expr_addr, 0, &expr_len, &uleb128_len)) != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("Failed to read uleb128 length header for rule expression");
-                    return err;
-                }
-                
-                /* Skip the ULEB128 length header; expr_addr will not point at the expression opcodes. */ 
-                if (!plcrash_async_address_apply_offset(expr_addr, uleb128_len, &expr_addr)) {
-                    PLCF_DEBUG("Overflow applying the ULEB128 length to our expression base address");
-                    return PLCRASH_EINVAL;
-                }
-
-                /* Map the expression data  */
-                plcrash_async_mobject_t mobj;
-                if ((err = plcrash_async_mobject_init(&mobj, task, expr_addr, expr_len, true)) != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("Could not map CFA expression range");
-                    return err;
-                }
-
-                /* Perform the evaluation */
-                plcrash_greg_t regval;
-                if (m64) {
-                    uint64_t initial_state[] = { cfa_val };
-                    if ((err = plcrash_async_dwarf_expression_eval_64(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v64)) != PLCRASH_ESUCCESS) {
-                        plcrash_async_mobject_free(&mobj);
-                        PLCF_DEBUG("CFA eval_64 failed");
-                        return err;
-                    }
-                    
-                    regval = rvalue.v64;
-                } else {
-                    uint32_t initial_state[] = { cfa_val };
-                    if ((err = plcrash_async_dwarf_expression_eval_32(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
-                        plcrash_async_mobject_free(&mobj);
-                        PLCF_DEBUG("CFA eval_32 failed");
-                        return err;
-                    }
-                    
-                    regval = rvalue.v32;
-                }
-                
-                /* Clean up the memory mapping */
-                plcrash_async_mobject_free(&mobj);
-                
-                /* Dereference the target address, if using the non-value EXPRESSION rule */
-                if (dw_rule == PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION) {
-                    if ((err = plcrash_async_task_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
-                        PLCF_DEBUG("Failed to read register value from expression result: %d", err);
-                        return err;
-                    }
-                    
-                    if (m64) {
-                        regval = rvalue.v64;
-                    } else {
-                        regval = rvalue.v32;
-                    }
-                }
-                
-                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, regval);
-                break;
-            }
-
-            case PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE:
-                /* This register has not been modified from the previous frame. (By convention, it is preserved by the callee, but
-                 * the callee has not modified it.)
-                 *
-                 * The register's value may be found in the frame's thread state. For frames other than the first, the
-                 * register may not have been restored, and thus may be unavailable. */
-                if (!plcrash_async_thread_state_has_reg(thread_state, pl_regnum)) {
-                    PLCF_DEBUG("Same-value rule references a register that is not available from the current thread state");
-                    return PLCRASH_ENOTFOUND;
-                }
-
-                /* Copy the register value from the previous state */
-                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, pl_regnum));
-                break;
+        /* Apply the register rule */
+        if ((err = plcrash_async_dwarf_cfa_state_apply_register(task, thread_state, byteorder, new_thread_state, cfa_val, pl_regnum, dw_rule, dw_value)) != PLCRASH_ESUCCESS)
+            return err;
+        
+        /* If the target register is defined as the return address (and is not already the IP), copy the value to the IP.  */
+        if (cie_info->return_address_register == dw_regnum && pl_regnum != PLCRASH_REG_IP) {
+            PLCF_ASSERT(plcrash_async_thread_state_has_reg(new_thread_state, pl_regnum));
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, plcrash_async_thread_state_get_reg(new_thread_state, pl_regnum));
         }
     }
 
+    return PLCRASH_ESUCCESS;
+}
+
+/**
+ * Apply a single register rule to @a new_thread_state.
+ *
+ * @param task The task containing any data referenced by @a thread_state.
+ * @param thread_state The current thread state corresponding to @a entry.
+ * @param byteorder The target's byte order.
+ * @param new_thread_state The new thread state to be initialized.
+ * @param cfa_val The base canonical frame address to be used when applying @a dw_rule
+ * @param pl_regnum The register to which @a dw_rule and @a dw_value will be applied.
+ * @param dw_rule The DWARF register rule to be used to derive the value for @a pl_regnum.
+ * @param dw_value The DWARF value to be used with @a dw_rule
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or a standard pclrash_error_t code if an error occurs.
+ */
+static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task,
+                                                                     const plcrash_async_thread_state_t *thread_state,
+                                                                     const plcrash_async_byteorder_t *byteorder,
+                                                                     plcrash_async_thread_state_t *new_thread_state,
+                                                                     pl_vm_address_t cfa_val,
+                                                                     plcrash_regnum_t pl_regnum,
+                                                                     plcrash_dwarf_cfa_reg_rule_t dw_rule,
+                                                                     uint64_t dw_value)
+{
+    plcrash_error_t err;
+    uint8_t greg_size = plcrash_async_thread_state_get_greg_size(thread_state);
+    bool m64 = (greg_size == 8);
+    
+    union {
+        uint32_t v32;
+        uint64_t v64;
+    } rvalue;
+    void *vptr = &rvalue;
+    
+    /* Apply the rule */
+    switch (dw_rule) {
+        case PLCRASH_DWARF_CFA_REG_RULE_OFFSET: {
+            if ((err = plcrash_async_task_memcpy(task, cfa_val, (int64_t)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Failed to read offset(N) register value: %d", err);
+                return err;
+            }
+            
+            if (m64) {
+                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v64);
+            } else {
+                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v32);
+            }
+            
+            break;
+        }
+            
+        case PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET:
+            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, cfa_val + ((int64_t) dw_value));
+            break;
+            
+        case PLCRASH_DWARF_CFA_REG_RULE_REGISTER: {
+            /* The previous value of this register is stored in another register numbered R. */
+            plcrash_regnum_t src_pl_regnum;
+            if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_value, &src_pl_regnum)) {
+                PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_value);
+                return PLCRASH_EINVAL;
+            }
+            
+            if (!plcrash_async_thread_state_has_reg(thread_state, src_pl_regnum)) {
+                PLCF_DEBUG("Register rule references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, src_pl_regnum));
+                return PLCRASH_ENOTFOUND;
+            }
+            
+            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, src_pl_regnum));
+            break;
+        }
+            
+        case PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION:
+        case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION: {
+            pl_vm_address_t expr_addr = (pl_vm_address_t) dw_value;
+            /* Fetch the expression's length */
+            uint64_t expr_len;
+            pl_vm_size_t uleb128_len;
+            if ((err = plcrash_async_dwarf_read_task_uleb128(task, expr_addr, 0, &expr_len, &uleb128_len)) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Failed to read uleb128 length header for rule expression");
+                return err;
+            }
+            
+            /* Skip the ULEB128 length header; expr_addr will not point at the expression opcodes. */
+            if (!plcrash_async_address_apply_offset(expr_addr, uleb128_len, &expr_addr)) {
+                PLCF_DEBUG("Overflow applying the ULEB128 length to our expression base address");
+                return PLCRASH_EINVAL;
+            }
+            
+            /* Map the expression data  */
+            plcrash_async_mobject_t mobj;
+            if ((err = plcrash_async_mobject_init(&mobj, task, expr_addr, expr_len, true)) != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Could not map CFA expression range");
+                return err;
+            }
+            
+            /* Perform the evaluation */
+            plcrash_greg_t regval;
+            if (m64) {
+                uint64_t initial_state[] = { cfa_val };
+                if ((err = plcrash_async_dwarf_expression_eval_64(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v64)) != PLCRASH_ESUCCESS) {
+                    plcrash_async_mobject_free(&mobj);
+                    PLCF_DEBUG("CFA eval_64 failed");
+                    return err;
+                }
+                
+                regval = rvalue.v64;
+            } else {
+                uint32_t initial_state[] = { cfa_val };
+                if ((err = plcrash_async_dwarf_expression_eval_32(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
+                    plcrash_async_mobject_free(&mobj);
+                    PLCF_DEBUG("CFA eval_32 failed");
+                    return err;
+                }
+                
+                regval = rvalue.v32;
+            }
+            
+            /* Clean up the memory mapping */
+            plcrash_async_mobject_free(&mobj);
+            
+            /* Dereference the target address, if using the non-value EXPRESSION rule */
+            if (dw_rule == PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION) {
+                if ((err = plcrash_async_task_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to read register value from expression result: %d", err);
+                    return err;
+                }
+                
+                if (m64) {
+                    regval = rvalue.v64;
+                } else {
+                    regval = rvalue.v32;
+                }
+            }
+            
+            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, regval);
+            break;
+        }
+            
+        case PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE:
+            /* This register has not been modified from the previous frame. (By convention, it is preserved by the callee, but
+             * the callee has not modified it.)
+             *
+             * The register's value may be found in the frame's thread state. For frames other than the first, the
+             * register may not have been restored, and thus may be unavailable. */
+            if (!plcrash_async_thread_state_has_reg(thread_state, pl_regnum)) {
+                PLCF_DEBUG("Same-value rule references a register that is not available from the current thread state");
+                return PLCRASH_ENOTFOUND;
+            }
+            
+            /* Copy the register value from the previous state */
+            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, pl_regnum));
+            break;
+    }
+    
     return PLCRASH_ESUCCESS;
 }
 
