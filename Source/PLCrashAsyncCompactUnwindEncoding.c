@@ -1017,7 +1017,6 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                     return err;
                 }
 
-                PLCF_DEBUG("stack_size=0x%" PRIx64 " indirected=0x%" PRIx32 " adjustment=0x%" PRIx32 " result=0x%" PRIx32, stack_size, indirect, entry->stack_adjust, indirect + entry->stack_adjust);
                 stack_size = indirect + entry->stack_adjust;
             }
 
