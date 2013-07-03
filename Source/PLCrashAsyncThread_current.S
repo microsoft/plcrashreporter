@@ -120,8 +120,13 @@ MOVL    (ecx,   20);
 MOVL    (edx,   24);
 MOVL    (edi,   28);
 MOVL    (esi,   32);
-MOVL    (ebp,   36);
-MOVL    (esp,   40);
+
+/* ->ebp: Use our saved copy of the caller's frame pointer */
+movl    (%ebp), %ecx
+MOVL    (ecx,    36)
+
+/* ->esp: Use our saved copy of the caller's stack pointer. */
+MOVL    (ebp,   40);
 
 /* ss.eflags */
 pushf
