@@ -1012,8 +1012,8 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             pl_vm_address_t retaddr = sp + stack_size - greg_size;
             saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
 
-            /* Original SP is the stack position at which the return address was pushed */
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr);
+            /* Original SP is found just before the return address. */
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr + greg_size);
 
             /* Read the saved return address */
             err = plcrash_async_task_memcpy(task, (pl_vm_address_t) retaddr, 0, dest, greg_size);

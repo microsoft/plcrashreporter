@@ -49,6 +49,8 @@ movq	$0x02468ACEECA86420, %r12
 movq	$0x13579BDFFDB97531, %r13
 movq	$0x1122334455667788, %r14
 movq	$0x0022446688AACCEE, %r15
+# save the RSP value for use by our tests.
+movq    %rsp, (%rsi)
 # call test function which will invoke unwinder which "returns" here
 call	*%rdi
 .globl _unwind_tester_target_ip # IP that we'll unwind to

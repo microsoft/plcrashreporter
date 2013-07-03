@@ -36,7 +36,7 @@ extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];
 extern void *unwind_tester_list_x86_64_frameless[];
 
-extern int unwind_tester (void *);
+extern int unwind_tester (void *test, void **sp);
 extern void unwind_tester_target_ip (void);
 
 plframe_cursor_frame_reader_t *frame_readers_frame[] = {
@@ -65,6 +65,10 @@ struct unwind_test_case {
 
     /** Frame reader(s) to use for this test, or NULL to use the default set */
     plframe_cursor_frame_reader_t **frame_readers_dwarf;
+
+    /** The stack pointer value that should be restored. This is populated by
+     * the unwind_tester() */
+    void *expected_sp;
 };
 
 static struct unwind_test_case unwind_test_cases[] = {
@@ -91,7 +95,7 @@ static struct unwind_test_case unwind_test_cases[] = {
 
 /*
  * We abuse global state to pass configuration down to the test result handling
- * without having to modify all the existing test cases. This means the tests
+ * without having to modify all of Apple's test cases. This means the tests
  * are not re-entrant, but somehow I suspect that's OK.
  */
 struct  {
@@ -108,7 +112,7 @@ bool unwind_test_harness (void) {
     for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
-            if (unwind_tester(*tests))
+            if (unwind_tester(*tests, &tc->expected_sp))
                 return false;
         }
     }
@@ -188,6 +192,8 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
                     return PLCRASH_ESUCCESS;
 
 #ifdef __x86_64__
+                VERIFY_NV_REG(&cursor, PLCRASH_REG_SP, (plcrash_greg_t)global_harness_state.test_case->expected_sp);
+                
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);

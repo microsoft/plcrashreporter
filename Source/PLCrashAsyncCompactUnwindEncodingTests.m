@@ -820,7 +820,7 @@
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R13), @"Missing expected register");
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R14), @"Missing expected register");
     
-    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)&stackframe[4], @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)&stackframe[5], @"Incorrect register value");
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RIP), (plcrash_greg_t)2, @"Incorrect register value");
     
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RBP), (plcrash_greg_t)10, @"Incorrect register value");
@@ -884,7 +884,7 @@
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R13), @"Missing expected register");
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R14), @"Missing expected register");
     
-    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)&stackframe[4], @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)&stackframe[5], @"Incorrect register value");
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RIP), (plcrash_greg_t)2, @"Incorrect register value");
     
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RBP), (plcrash_greg_t)10, @"Incorrect register value");
