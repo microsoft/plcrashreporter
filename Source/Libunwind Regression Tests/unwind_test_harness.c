@@ -38,6 +38,8 @@ extern void *unwind_tester_list_x86_64_frameless[];
 extern void *unwind_tester_list_x86_64_frameless_big[];
 extern void *unwind_tester_list_x86_64_unusual[];
 
+extern void *unwind_tester_list_x86_frame[];
+
 extern int unwind_tester (void *test, void **sp);
 extern void unwind_tester_target_ip (void);
 
@@ -100,6 +102,11 @@ static struct unwind_test_case unwind_test_cases[] = {
     { unwind_tester_list_x86_64_unusual,      true,   NULL },
 
 #elif defined(__i386__)
+    /* frame-based unwinding */
+    { unwind_tester_list_x86_frame,      false,  frame_readers_frame },
+    { unwind_tester_list_x86_frame,      true,   frame_readers_compact },
+    { unwind_tester_list_x86_frame,      true,   frame_readers_dwarf },
+    { unwind_tester_list_x86_frame,      true,   NULL },
 #endif
     { NULL, false }
 };
@@ -202,16 +209,17 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
                 if (!global_harness_state.test_case->restores_callee_registers)
                     return PLCRASH_ESUCCESS;
 
-#ifdef __x86_64__
                 VERIFY_NV_REG(&cursor, PLCRASH_REG_SP, (plcrash_greg_t)global_harness_state.test_case->expected_sp);
-                
+#ifdef __x86_64__
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
 #else
-                // TODO
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_EBX, 0x12344321);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_ESI, 0x56788765);
+                VERIFY_NV_REG(&cursor, PLCRASH_X86_EDI, 0xABCDDCBA);
 #endif
                 return PLCRASH_ESUCCESS;
             }
