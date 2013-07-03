@@ -28,15 +28,30 @@
 
 #include "PLCrashFrameWalker.h"
 
-extern void *unwind_tester_list_x86_64_disable_compact_frame[];
+#include "PLCrashFrameStackUnwind.h"
+#include "PLCrashFrameCompactUnwind.h"
+#include "PLCrashFrameDWARFUnwind.h"
 
+extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];
-extern void *unwind_tester_list_x86_64_frame_compact[];
-extern void *unwind_tester_list_x86_64_frame_eh_frame[];
-extern void *unwind_tester_list_x86_64_frame_compact_eh_frame[];
 
 extern int unwind_tester (void *);
 extern void unwind_tester_target_ip (void);
+
+plframe_cursor_frame_reader_t *frame_readers_frame[] = {
+    plframe_cursor_read_frame_ptr,
+    NULL
+};
+
+plframe_cursor_frame_reader_t *frame_readers_compact[] = {
+    plframe_cursor_read_compact_unwind,
+    NULL
+};
+
+plframe_cursor_frame_reader_t *frame_readers_dwarf[] = {
+    plframe_cursor_read_dwarf_unwind,
+    NULL
+};
 
 struct unwind_test_case {
     /* A list of targetable test cases */
@@ -46,15 +61,22 @@ struct unwind_test_case {
      * and we should validate that callee-preserved registers were
      * correctly restored */
     bool restores_callee_registers;
+
+    /** Frame reader(s) to use for this test, or NULL to use the default set */
+    plframe_cursor_frame_reader_t **frame_readers_dwarf;
 };
 
 static struct unwind_test_case unwind_test_cases[] = {
 #ifdef __x86_64__
-    { unwind_tester_list_x86_64_disable_compact_frame, true },  /* DWARF unwinding (no compact frame data) */
-    { unwind_tester_list_x86_64_frame, false },                 /* frame-based unwinding, no eh_frame/compact unwind data */
-    { unwind_tester_list_x86_64_frame_compact, true },          /* frame-based compact unwinding */
-    { unwind_tester_list_x86_64_frame_eh_frame, true },         /* frame-based eh_frame unwinding */
-    { unwind_tester_list_x86_64_frame_compact_eh_frame, true }, /* frame-based eh_fame+compact unwinding */
+    /* DWARF unwinding (no compact frame data) */
+    { unwind_tester_list_x86_64_disable_compact_frame, true, frame_readers_dwarf },
+
+    /* frame-based unwinding (all variants) */
+    { unwind_tester_list_x86_64_frame,  false,  frame_readers_frame }, /* Unwind using only frame data */
+    { unwind_tester_list_x86_64_frame,  true,   frame_readers_compact }, /* Compact frame unwind */
+    { unwind_tester_list_x86_64_frame,  true,   frame_readers_dwarf }, /* Compact frame unwind */
+    { unwind_tester_list_x86_64_frame,  true,   NULL }, /* Standard unwind */
+
 #elif defined(__i386__)
 #endif
     { NULL, false }
@@ -103,6 +125,16 @@ bool unwind_test_harness (void) {
 plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
     plframe_cursor_t cursor;
     plcrash_async_image_list_t image_list;
+    plframe_cursor_frame_reader_t **readers = global_harness_state.test_case->frame_readers_dwarf;
+    size_t reader_count = 0;
+    plframe_error_t err;
+
+    /* Determine the number of frame readers */
+    if (readers != NULL) {
+        for (reader_count = 0; readers[reader_count] != NULL; reader_count++) {
+            
+        }
+    }
 
     /* Initialize the image list */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
@@ -113,11 +145,20 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
     plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
 
     if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
-        // now in unwind_to_main
+
         if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
             // now in test function
             
-            if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
+            /* Unwind using the specified readers */
+            if (readers != NULL) {
+                /* Issue the read */
+                err = plframe_cursor_next_with_readers(&cursor, global_harness_state.test_case->frame_readers_dwarf, reader_count);
+            } else {
+                /* Use default readers */
+                err = plframe_cursor_next(&cursor);
+            }
+            
+            if (err == PLFRAME_ESUCCESS) {
                 // now in unwind_tester
                 
                 /* Verify that we unwound to the correct IP */

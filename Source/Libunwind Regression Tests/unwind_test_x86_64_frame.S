@@ -26,6 +26,9 @@
 # TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64 -DUSE_COMPACT_UNWIND=1 -DUSE_EH_FRAME=1
 # TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64 -DUSE_EH_FRAME=1 -Wl,-no_compact_unwind
 
+#define USE_EH_FRAME 1
+#define USE_COMPACT_UNWIND 1
+
 .data
 .globl _unwind_tester_list_x86_64_frame
 _unwind_tester_list_x86_64_frame:
