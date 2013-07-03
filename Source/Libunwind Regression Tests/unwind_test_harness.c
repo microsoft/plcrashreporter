@@ -36,6 +36,7 @@ extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];
 extern void *unwind_tester_list_x86_64_frameless[];
 extern void *unwind_tester_list_x86_64_frameless_big[];
+extern void *unwind_tester_list_x86_64_unusual[];
 
 extern int unwind_tester (void *test, void **sp);
 extern void unwind_tester_target_ip (void);
@@ -93,6 +94,11 @@ static struct unwind_test_case unwind_test_cases[] = {
     { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_dwarf },
     { unwind_tester_list_x86_64_frameless,      true,   NULL },
 
+    /* Unusual test cases. These can't be run with /only/ the compact unwinder, as
+     * some of the tests rely on constructs that cannot be represented with DWARF. */
+    { unwind_tester_list_x86_64_unusual,      true,   frame_readers_dwarf },
+    { unwind_tester_list_x86_64_unusual,      true,   NULL },
+
 #elif defined(__i386__)
 #endif
     { NULL, false }
@@ -118,8 +124,7 @@ bool unwind_test_harness (void) {
     for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
-            if (unwind_tester(*tests, &tc->expected_sp))
-                return false;
+            unwind_tester(*tests, &tc->expected_sp);
         }
     }
     
@@ -181,11 +186,11 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
                 plcrash_greg_t ip;
                 if (plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &ip) != PLFRAME_ESUCCESS) {
                     PLCF_DEBUG("Could not fetch IP from register state");
-                    return PLCRASH_EINTERNAL;
+                    __builtin_trap();
                 }
                 if (ip != (plcrash_greg_t) unwind_tester_target_ip) {
                     PLCF_DEBUG("Incorrect IP. ip=%" PRIx64 " target_ip=%" PRIx64, (uint64_t) ip, (uint64_t) unwind_tester_target_ip);
-                    return PLCRASH_EINTERNAL;
+                    __builtin_trap();
                 }
 
                 /*
