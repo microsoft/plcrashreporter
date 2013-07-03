@@ -39,12 +39,13 @@ movl	%esi, -8(%ebp)
 LCFI4:
 movl	%edi, -4(%ebp)
 LCFI5:
+# save the ESP value for use by our tests.
+movl    12(%ebp), %esi
+movl    %esp, (%esi)
 # load magic values into non-volatile registers
 movl	$0x12344321, %ebx
 movl	$0x56788765, %esi
 movl	$0xABCDDCBA, %edi
-# save the ESP value for use by our tests.
-movl    %esp, 12(%ebp)
 # call test function which will invoke unwinder which "returns" here
 call	*8(%ebp)
 .globl _unwind_tester_target_ip # IP that we'll unwind to
