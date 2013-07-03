@@ -142,6 +142,14 @@ typedef struct plcrash_async_cfe_entry {
     intptr_t stack_offset;
 
     /**
+     * Stack adjustment offset. This is an offset to be applied to the final stack value read via
+     * PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT.
+     *
+     * This value is unused for all other CFE types.
+     */
+    uint32_t stack_adjust;
+
+    /**
      * The number of non-volatile registers that need to be restored from the stack.
      */
     uint32_t register_count;
@@ -166,6 +174,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
 
 plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_entry_t *entry);
 intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry);
+uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *entry);
 uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry);
 void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, plcrash_regnum_t register_list[]);
 

@@ -649,6 +649,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
     
     /* Target-neutral initialization */
     entry->cpu_type = cpu_type;
+    entry->stack_adjust = 0;
 
     /* Perform target-specific decoding */
     if (cpu_type == CPU_TYPE_X86) {
@@ -687,15 +688,16 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
 
             case UNWIND_X86_MODE_STACK_IMMD:
             case UNWIND_X86_MODE_STACK_IND: {
-                /* These two types are identical except for the interpretation of the stack offset value */
-                if (mode == UNWIND_X86_MODE_STACK_IMMD)
+                /* These two types are identical except for the interpretation of the stack offset and adjustment values */
+                if (mode == UNWIND_X86_MODE_STACK_IMMD) {
                     entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
-                else
+                    entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_SIZE) * sizeof(uint32_t);
+                } else {
                     entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT;
+                    entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_SIZE);
+                    entry->stack_adjust = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_ADJUST) * sizeof(uint32_t);
+                }
 
-                /* Extract the register frame offset */
-                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_SIZE) * sizeof(uint32_t);
-                
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
@@ -777,14 +779,15 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
     
             case UNWIND_X86_64_MODE_STACK_IMMD:
             case UNWIND_X86_64_MODE_STACK_IND: {
-                /* These two types are identical except for the interpretation of the stack offset value */
-                if (mode == UNWIND_X86_64_MODE_STACK_IMMD)
+                /* These two types are identical except for the interpretation of the stack offset and adjustment values */
+                if (mode == UNWIND_X86_64_MODE_STACK_IMMD) {
                     entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
-                else
+                    entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * sizeof(uint64_t);
+                } else {
                     entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT;
-                
-                /* Extract the register frame offset */
-                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_SIZE) * sizeof(uint64_t);
+                    entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_SIZE);
+                    entry->stack_adjust = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_ADJUST) * sizeof(uint64_t);
+                }
                 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
@@ -865,6 +868,16 @@ plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_e
  */
 intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry) {
     return entry->stack_offset;
+}
+
+/**
+ * Return the stack adjustment value. This is an offset to be applied to the final stack value read via
+ * PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT.
+ *
+ * This value is unused for all other CFE types.
+ */
+uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *entry) {
+    return entry->stack_adjust;
 }
 
 /**
@@ -1004,7 +1017,8 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                     return err;
                 }
 
-                stack_size = indirect;
+                PLCF_DEBUG("stack_size=0x%" PRIx64 " indirected=0x%" PRIx32 " adjustment=0x%" PRIx32 " result=0x%" PRIx32, stack_size, indirect, entry->stack_adjust, indirect + entry->stack_adjust);
+                stack_size = indirect + entry->stack_adjust;
             }
 
             /* Compute the address of the saved registers */

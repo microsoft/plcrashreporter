@@ -286,29 +286,33 @@
  * Decode an x86 indirect 'frameless' encoding.
  */
 - (void) testX86DecodeFramelessIndirect {
-    /* Create a frame encoding, with registers saved at ebp-1020 bytes */
-    const uint32_t encoded_stack_size = 1020;
+    /* Create a frame encoding, with registers saved at ebp-24 bytes */
+    const uint32_t encoded_stack_size = 20;
     const uint32_t encoded_regs[] = { UNWIND_X86_REG_ESI, UNWIND_X86_REG_EDX, UNWIND_X86_REG_ECX };
     const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
     const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
-    
+    const uint32_t encoded_stack_adjust = 4;
+
     uint32_t encoding = UNWIND_X86_MODE_STACK_IND |
-    INSERT_BITS(encoded_stack_size/4, UNWIND_X86_FRAMELESS_STACK_SIZE) |
-    INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
-    INSERT_BITS(encoded_regs_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
-    
+        INSERT_BITS(encoded_stack_size, UNWIND_X86_FRAMELESS_STACK_SIZE) |
+        INSERT_BITS(encoded_regs_count, UNWIND_X86_FRAMELESS_STACK_REG_COUNT) |
+        INSERT_BITS(encoded_regs_permutation, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION) |
+        INSERT_BITS(encoded_stack_adjust/4, UNWIND_X86_FRAMELESS_STACK_ADJUST);
+
     /* Try decoding it */
     plcrash_async_cfe_entry_t entry;
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
-    
+
     uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
-    
+    uint32_t stack_adjust = plcrash_async_cfe_entry_stack_adjustment(&entry);
+
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
-    
+    STAssertEquals(stack_adjust, encoded_stack_adjust, @"Incorrect stack adjustment decoded");
+
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
     
@@ -473,16 +477,16 @@
  * Decode an x86-64 indirect 'frameless' encoding.
  */
 - (void) testX86_64DecodeFramelessIndirect {
-    /* Create a frame encoding, with registers saved at ebp-1020 bytes */
-    const uint32_t encoded_stack_size = 1016;
+    /* Create a frame encoding, with registers saved at ebp-24 bytes */
+    const uint32_t encoded_stack_size = 20;
     const uint32_t encoded_regs[] = { UNWIND_X86_64_REG_R12, UNWIND_X86_64_REG_R13, UNWIND_X86_64_REG_R14 };
     const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
     const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
     
     uint32_t encoding = UNWIND_X86_64_MODE_STACK_IND |
-    INSERT_BITS(encoded_stack_size/8, UNWIND_X86_64_FRAMELESS_STACK_SIZE) |
-    INSERT_BITS(encoded_regs_count, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT) |
-    INSERT_BITS(encoded_regs_permutation, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
+        INSERT_BITS(encoded_stack_size, UNWIND_X86_64_FRAMELESS_STACK_SIZE) |
+        INSERT_BITS(encoded_regs_count, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT) |
+        INSERT_BITS(encoded_regs_permutation, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
     
     /* Try decoding it */
     plcrash_async_cfe_entry_t entry;
@@ -856,14 +860,17 @@
     const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
     
     /* Indirect address target */
-    uint32_t indirect_encoded_stack_size = 40;
+    uint32_t indirect_encoded_stack_size = 32;
+    uint32_t encoded_stack_adjust = 8;
+
     pl_vm_address_t function_address = ((pl_vm_address_t) &indirect_encoded_stack_size) - encoded_stack_size;
     
     uint32_t encoding = UNWIND_X86_64_MODE_STACK_IND |
-    INSERT_BITS(encoded_stack_size/8, UNWIND_X86_64_FRAMELESS_STACK_SIZE) |
-    INSERT_BITS(encoded_regs_count, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT) |
-    INSERT_BITS(encoded_regs_permutation, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
-    
+        INSERT_BITS(encoded_stack_size, UNWIND_X86_64_FRAMELESS_STACK_SIZE) |
+        INSERT_BITS(encoded_regs_count, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT) |
+        INSERT_BITS(encoded_regs_permutation, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION) |
+        INSERT_BITS(encoded_stack_adjust/8, UNWIND_X86_64_FRAMELESS_STACK_ADJUST);
+
     STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), PLCRASH_ESUCCESS, @"Failed to decode entry");
     
     /* Initialize default thread state */
