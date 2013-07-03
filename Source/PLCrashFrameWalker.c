@@ -165,32 +165,36 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t tas
 }
 
 /**
- * Fetch the next frame.
+ * Fetch the next frame using the provided frame readers.
  *
  * @param cursor A cursor instance initialized with plframe_cursor_init();
+ * @param readers Frame readers to be used to fetch the next frame. Each reader will be executed in the provided order until a valid frame is read.
+ * @param reader_count The number of readers provided in @a readers.
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
  */
-plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
+plframe_error_t plframe_cursor_next_with_readers (plframe_cursor_t *cursor, plframe_cursor_frame_reader_t *readers[], size_t reader_count) {
     /* The first frame is already available via existing thread state. */
     if (cursor->depth == 0) {
         cursor->depth++;
         return PLFRAME_ESUCCESS;
     }
-
+    
     /* A previous frame is only available if we're on the second frame */
     plframe_stackframe_t *prev_frame = NULL;
     if (cursor->depth >= 2)
         prev_frame = &cursor->prev_frame;
-
-    /* Read in the next frame. */
-    plframe_stackframe_t frame;
-    plframe_error_t ferr;
     
-    if ((ferr = plframe_cursor_read_compact_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLFRAME_ESUCCESS) {
-        // Finished
-    } else if ((ferr = plframe_cursor_read_dwarf_unwind(cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame)) == PLFRAME_ESUCCESS) {
-        // Finished
-    } else if ((ferr = plframe_cursor_read_frame_ptr(cursor->task, &cursor->frame, prev_frame, &frame)) != PLFRAME_ESUCCESS) {
+    /* Read in the next frame using the first successful frame reader. */
+    plframe_stackframe_t frame;
+    plframe_error_t ferr = PLFRAME_EINVAL; // default return value if reader_count is 0.
+    
+    for (size_t i = 0; i < reader_count; i++) {
+        ferr = readers[i](cursor->task, cursor->image_list, &cursor->frame, prev_frame, &frame);
+        if (ferr == PLFRAME_ESUCCESS)
+            break;
+    }
+    
+    if (ferr != PLFRAME_ESUCCESS) {
         return ferr;
     }
 
@@ -199,18 +203,34 @@ plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
         PLCF_DEBUG("Missing expected IP value in successfully read frame");
         return PLFRAME_ENOFRAME;
     }
-
+    
     /* A NULL pc is a terminating frame */
     plcrash_greg_t ip = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_IP);
     if (ip == 0x0)
         return PLFRAME_ENOFRAME;
-
+    
     /* Save the newly fetched frame */
     cursor->prev_frame = cursor->frame;
     cursor->frame = frame;
     cursor->depth++;
     
     return PLFRAME_ESUCCESS;
+}
+
+/**
+ * Fetch the next frame.
+ *
+ * @param cursor A cursor instance initialized with plframe_cursor_init();
+ * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ */
+plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
+    plframe_cursor_frame_reader_t *readers[] = {
+        plframe_cursor_read_compact_unwind,
+        plframe_cursor_read_dwarf_unwind,
+        plframe_cursor_read_frame_ptr
+    };
+
+    return plframe_cursor_next_with_readers(cursor, readers, sizeof(readers)/sizeof(readers[0]));
 }
 
 

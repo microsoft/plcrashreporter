@@ -40,6 +40,7 @@
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
  */
 plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
+                                               plcrash_async_image_list_t *image_list,
                                                const plframe_stackframe_t *current_frame,
                                                const plframe_stackframe_t *previous_frame,
                                                plframe_stackframe_t *next_frame)

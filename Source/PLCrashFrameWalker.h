@@ -133,8 +133,23 @@ typedef struct plframe_cursor {
     plframe_stackframe_t frame;
 } plframe_cursor_t;
 
+/**
+ * Fetch the caller's stack frame, based on the current state in @a current_frame and @a previous_frame.
+ *
+ * @param task The task containing the target frame stack.
+ * @param image_list The list of images loaded in the target @a task.
+ * @param current_frame The current stack frame.
+ * @param previous_frame The previous stack frame, or NULL if this is the first frame.
+ * @param next_frame The new frame to be initialized.
+ *
+ * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ */
+typedef plframe_error_t plframe_cursor_frame_reader_t (task_t task,
+                                                       plcrash_async_image_list_t *image_list,
+                                                       const plframe_stackframe_t *current_frame,
+                                                       const plframe_stackframe_t *previous_frame,
+                                                       plframe_stackframe_t *next_frame);
 
-/* Shared functions */
 const char *plframe_strerror (plframe_error_t error);
 
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state, plcrash_async_image_list_t *image_list);
@@ -145,6 +160,7 @@ size_t plframe_cursor_get_regcount (plframe_cursor_t *cursor);
 plframe_error_t plframe_cursor_get_reg (plframe_cursor_t *cursor, plcrash_regnum_t regnum, plcrash_greg_t *reg);
 
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor);
+plframe_error_t plframe_cursor_next_with_readers (plframe_cursor_t *cursor, plframe_cursor_frame_reader_t *readers[], size_t reader_count);
 
 void plframe_cursor_free(plframe_cursor_t *cursor);
 
