@@ -928,14 +928,6 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
     /* Sanity check: We'll use this buffer for popping the fp and pc, as well as restoring the saved registers. */
     PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 2);
 
-    /* Compute the offset to the apply to the stack pointer when popping values */
-    int32_t greg_pop_offset;
-    if (plcrash_async_thread_state_get_stack_direction(thread_state) == PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN) {
-        greg_pop_offset = greg_size;
-    } else {
-        greg_pop_offset = -greg_size;
-    }
-
     /* Initialize the new thread state */
     *new_thread_state = *thread_state;
     plcrash_async_thread_state_clear_volatile_regs(new_thread_state);
@@ -1017,16 +1009,16 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 
             /* Compute the address of the saved registers */
             plcrash_greg_t sp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
-            pl_vm_address_t fp = sp + stack_size;
-            saved_reg_addr = fp - (greg_size * entry->register_count); /* fp - [retval] - [saved registers] */
+            pl_vm_address_t retaddr = sp + stack_size - greg_size;
+            saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
 
-            /* Original SP is just before the return address */
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, fp+greg_pop_offset);
+            /* Original SP is the stack position at which the return address was pushed */
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr);
 
             /* Read the saved return address */
-            err = plcrash_async_task_memcpy(task, (pl_vm_address_t) fp, 0, dest, greg_size);
+            err = plcrash_async_task_memcpy(task, (pl_vm_address_t) retaddr, 0, dest, greg_size);
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) fp, err);
+                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) retaddr, err);
                 return err;
             }
             

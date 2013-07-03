@@ -785,12 +785,12 @@
         12, // r12
         13, // r13
         14, // r14
-
+        
         2,  // ret addr
     };
 
     /* Create a frame encoding, with registers saved at esp-32 bytes */
-    const uint32_t encoded_stack_size = 32;
+    const uint32_t encoded_stack_size = 40;
     const uint32_t encoded_regs[] = { UNWIND_X86_64_REG_RBP, UNWIND_X86_64_REG_R12, UNWIND_X86_64_REG_R13, UNWIND_X86_64_REG_R14 };
     const uint32_t encoded_regs_count = sizeof(encoded_regs) / sizeof(encoded_regs[0]);
     const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
@@ -803,9 +803,8 @@
     STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), PLCRASH_ESUCCESS, @"Failed to decode entry");
     
     /* Initialize default thread state */
-    plcrash_greg_t stack_addr = &stackframe[4]; // return address
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
-    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, stack_addr - encoded_stack_size);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, &stackframe);
 
     /* Apply */
     plcrash_async_thread_state_t nts;
@@ -821,7 +820,7 @@
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R13), @"Missing expected register");
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R14), @"Missing expected register");
     
-    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)stack_addr+8, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)&stackframe[4], @"Incorrect register value");
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RIP), (plcrash_greg_t)2, @"Incorrect register value");
     
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RBP), (plcrash_greg_t)10, @"Incorrect register value");
@@ -857,7 +856,7 @@
     const uint32_t encoded_regs_permutation = plcrash_async_cfe_register_encode(encoded_regs, encoded_regs_count);
     
     /* Indirect address target */
-    uint32_t indirect_encoded_stack_size = 32;
+    uint32_t indirect_encoded_stack_size = 40;
     pl_vm_address_t function_address = ((pl_vm_address_t) &indirect_encoded_stack_size) - encoded_stack_size;
     
     uint32_t encoding = UNWIND_X86_64_MODE_STACK_IND |
@@ -868,9 +867,8 @@
     STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), PLCRASH_ESUCCESS, @"Failed to decode entry");
     
     /* Initialize default thread state */
-    plcrash_greg_t stack_addr = &stackframe[4]; // return address
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
-    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, stack_addr - indirect_encoded_stack_size);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, &stackframe);
     
     /* Apply */
     plcrash_async_thread_state_t nts;
@@ -886,7 +884,7 @@
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R13), @"Missing expected register");
     STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_X86_64_R14), @"Missing expected register");
     
-    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)stack_addr+8, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RSP), (plcrash_greg_t)&stackframe[4], @"Incorrect register value");
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RIP), (plcrash_greg_t)2, @"Incorrect register value");
     
     STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_X86_64_RBP), (plcrash_greg_t)10, @"Incorrect register value");
