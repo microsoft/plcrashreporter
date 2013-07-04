@@ -101,7 +101,7 @@ static struct unwind_test_case unwind_test_cases[] = {
     { unwind_tester_list_x86_64_unusual,      true,   frame_readers_dwarf },
     { unwind_tester_list_x86_64_unusual,      true,   NULL },
 
-#elif defined(__i386__)
+#elif defined(__disabled_i386__)
     /* frame-based unwinding */
     { unwind_tester_list_x86_frame,      false,  frame_readers_frame },
     { unwind_tester_list_x86_frame,      true,   frame_readers_compact },
