@@ -147,12 +147,12 @@
 \
     if (![self is32]) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
+        err = plcrash_async_dwarf_expression_eval<uint64_t, int64_t>(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 64-bit result"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
+        err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, PLCRASH_ESUCCESS, @"32-bit evaluation failed"); \
         STAssertEquals((type)result, (type)expected, @"Incorrect 32-bit result"); \
     } \
@@ -169,11 +169,11 @@
     \
     if (![self is32]) { \
         uint64_t result; \
-        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
+        err = plcrash_async_dwarf_expression_eval<uint64_t, int64_t>(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, errval, @"64-bit evaluation did not return expected error code"); \
     } else { \
         uint32_t result; \
-        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
+        err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes), NULL, 0, &result); \
         STAssertEquals(err, errval, @"32-bit evaluation did not return expected error code"); \
     } \
     \
@@ -772,8 +772,8 @@
         uint64_t initial_state[] = { 0xFA, 0xAF };
         size_t initial_count = sizeof(initial_state) / sizeof(initial_state[0]);
         
-        err = plcrash_async_dwarf_expression_eval_64(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes),
-                                                     initial_state, initial_count, &result);
+        err = plcrash_async_dwarf_expression_eval<uint64_t, int64_t>(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes),
+                                                                     initial_state, initial_count, &result);
         STAssertEquals(err, PLCRASH_ESUCCESS, @"64-bit evaluation failed");
         STAssertEquals((uint64_t)0xFA, result, @"Incorrect 64-bit result");
     } else {
@@ -781,8 +781,8 @@
         uint32_t initial_state[] = { 0xFA, 0xAF };
         size_t initial_count = sizeof(initial_state) / sizeof(initial_state[0]);
         
-        err = plcrash_async_dwarf_expression_eval_32(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes),
-                                                     initial_state, initial_count, &result);
+        err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, mach_task_self(), &_ts, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes),
+                                                                     initial_state, initial_count, &result);
         STAssertEquals(err, PLCRASH_ESUCCESS, @"32-bit evaluation failed");
         STAssertEquals((uint32_t)0xFA, result, @"Incorrect 32-bit result");
     }

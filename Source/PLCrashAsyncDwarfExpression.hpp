@@ -27,10 +27,6 @@
 #ifndef PLCRASH_ASYNC_DWARF_EXPRESSION_H
 #define PLCRASH_ASYNC_DWARF_EXPRESSION_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-    
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncThread.h"
@@ -557,34 +553,20 @@ typedef enum DW_OP {
     DW_OP_hi_user = 0xff,
 } DW_OP_t;
 
-plcrash_error_t plcrash_async_dwarf_expression_eval_32 (plcrash_async_mobject_t *mobj,
-                                                        task_t task,
-                                                        const plcrash_async_thread_state_t *thread_state,
-                                                        const plcrash_async_byteorder_t *byteorder,
-                                                        pl_vm_address_t address,
-                                                        pl_vm_off_t offset,
-                                                        pl_vm_size_t length,
-                                                        uint32_t initial_state[],
-                                                        size_t initial_count,
-                                                        uint32_t *result);
-
-plcrash_error_t plcrash_async_dwarf_expression_eval_64 (plcrash_async_mobject_t *mobj,
-                                                        task_t task,
-                                                        const plcrash_async_thread_state_t *thread_state,
-                                                        const plcrash_async_byteorder_t *byteorder,
-                                                        pl_vm_address_t address,
-                                                        pl_vm_off_t offset,
-                                                        pl_vm_size_t length,
-                                                        uint64_t initial_state[],
-                                                        size_t initial_count,
-                                                        uint64_t *result);
+template <typename machine_ptr, typename machine_ptr_s>
+plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mobj,
+                                                     task_t task,
+                                                     const plcrash_async_thread_state_t *thread_state,
+                                                     const plcrash_async_byteorder_t *byteorder,
+                                                     pl_vm_address_t address,
+                                                     pl_vm_off_t offset,
+                                                     pl_vm_size_t length,
+                                                     machine_ptr initial_state[],
+                                                     size_t initial_count,
+                                                     machine_ptr *result);
 
 /**
  * @}
  */
-    
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PLCRASH_ASYNC_DWARF_CFA_H */
