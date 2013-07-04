@@ -32,7 +32,6 @@ extern "C" {
 #endif
 
 #include "PLCrashFrameWalker.h"
-#include "PLCrashAsyncDwarfEncoding.h"
 
 plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
                                                   plcrash_async_image_list_t *image_list,
