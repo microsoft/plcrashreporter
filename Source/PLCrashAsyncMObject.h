@@ -26,8 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCrashAsyncMObject_h
-#define PLCrashAsyncMObject_h
+#ifndef PLCRASH_ASYNC_MOBJECT_H
+#define PLCRASH_ASYNC_MOBJECT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 #include "PLCrashAsync.h"
@@ -81,5 +85,9 @@ plcrash_error_t plcrash_async_mobject_read_uint64 (plcrash_async_mobject_t *mobj
                                                    pl_vm_address_t address, pl_vm_off_t offset, uint64_t *result);
 
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj);
+    
+#ifdef __cplusplus
+}
+#endif
 
-#endif // PLCrashAsyncMObject_h
+#endif /* PLCRASH_ASYNC_MOBJECT_H */

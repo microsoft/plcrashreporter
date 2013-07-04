@@ -28,9 +28,9 @@
 
 #import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfEncoding.h"
-#include "PLCrashAsyncDwarfPrimitives.h"
-#include "PLCrashAsyncDwarfFDE.h"
+#include "PLCrashAsyncDwarfEncoding.hpp"
+#include "PLCrashAsyncDwarfPrimitives.hpp"
+#include "PLCrashAsyncDwarfFDE.hpp"
 
 
 struct __attribute__((packed)) cie_data {
@@ -126,11 +126,11 @@ struct __attribute__((packed)) fde_data {
     plcrash_error_t err;
     
     /* Set up test data */
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_data, sizeof(_data), true);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_data, sizeof(_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize memory mapping");
 
     /* Test decoding */
-    err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, &_data.fde, true);
+    err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, (pl_vm_address_t) &_data.fde, true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
 
     STAssertEquals(info.fde_offset, (pl_vm_address_t) ((uintptr_t)&_data.fde - (uintptr_t)&_data + sizeof(_data.fde.length)), @"Incorrect FDE offset");
@@ -159,14 +159,14 @@ struct __attribute__((packed)) fde_data {
     
     /* Set up test data; we enable indirect encoding as to verify that the specified encoding is used. */
     _data.indirect_pc_target = 0xFF;
-    _data.fde.pc_start = &_data.indirect_pc_target;
+    _data.fde.pc_start = (uint64_t) &_data.indirect_pc_target;
     _data.cie.augmentation_data.ptr_encoding = DW_EH_PE_indirect|DW_EH_PE_absptr;
 
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_data, sizeof(_data), true);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_data, sizeof(_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize memory mapping");
 
     /* Test decoding */
-    err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, &_data.fde, true);
+    err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, (pl_vm_address_t) &_data.fde, true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
     
     STAssertEquals(info.pc_start, (uint64_t)0xFF, @"Incorrect PC start value");
@@ -188,12 +188,12 @@ struct __attribute__((packed)) fde_data {
     /* Set up test data; we enable indirect encoding as to verify that the specified encoding is used. */
     _data.fde.cie_ptr = (uintptr_t)&_data.fde.cie_ptr - (uintptr_t)&_data; // use an eh_frame-style offset.
 
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_data, sizeof(_data), false);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_data, sizeof(_data), false);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize memory mapping");
     
     /* Test decoding; if it succeeds, it means the CIE was correctly dereferenced using the ehframe CIE
      * offset rules. */
-    err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, &_data.fde, false);
+    err = plcrash_async_dwarf_fde_info_init(&info, &mobj, &plcrash_async_byteorder_direct, 8, (pl_vm_address_t) &_data.fde, false);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
         
     /* Clean up */

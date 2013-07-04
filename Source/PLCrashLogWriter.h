@@ -26,6 +26,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_LOG_WRITER_H
+#define PLCRASH_LOG_WRITER_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #import <TargetConditionals.h>
 #import <Foundation/Foundation.h>
 
@@ -153,3 +160,9 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer);
 /**
  * @} plcrash_log_writer
  */
+    
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PLCRASH_LOG_WRITER_H */

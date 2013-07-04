@@ -29,6 +29,10 @@
 #ifndef PLCRASH_ASYNC_THREAD_X86_H
 #define PLCRASH_ASYNC_THREAD_X86_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(__i386__) || defined(__x86_64__)
 
 // Large enough for 64-bit or 32-bit
@@ -181,5 +185,9 @@ typedef enum {
     /** Last register */
     PLCRASH_X86_64_LAST_REG = PLCRASH_X86_64_GS
 } plcrash_x86_64_regnum_t;
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_ASYNC_THREAD_X86_H */

@@ -24,14 +24,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-    #include "PLCrashAsyncDwarfExpression.h"
-    #include "PLCrashAsyncDwarfPrimitives.h"
-    #include <inttypes.h>
-}
+#include <inttypes.h>
 
 #include "dwarf_stack.hpp"
 #include "dwarf_opstream.hpp"
+
+#include "PLCrashAsyncDwarfExpression.hpp"
+#include "PLCrashAsyncDwarfPrimitives.hpp"
 
 using namespace plcrash::async;
 

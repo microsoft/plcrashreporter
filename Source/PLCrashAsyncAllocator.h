@@ -26,8 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCrashAsyncAllocator_h
-#define PLCrashAsyncAllocator_h
+#ifndef PLCRASH_ASYNC_ALLOCATOR_H
+#define PLCRASH_ASYNC_ALLOCATOR_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @internal
@@ -69,5 +73,9 @@ void *plcrash_async_allocator_alloc (plcrash_async_allocator_t *allocator, size_
 /**
  * @}
  */
+    
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* PLCrashAsyncAllocator_h */
+#endif /* PLCRASH_ASYNC_ALLOCATOR_H */

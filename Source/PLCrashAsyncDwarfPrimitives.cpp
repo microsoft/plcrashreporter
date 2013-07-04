@@ -24,8 +24,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfPrimitives.h"
-#include "PLCrashAsyncDwarfEncoding.h"
+#include "PLCrashAsyncDwarfPrimitives.hpp"
+#include "PLCrashAsyncDwarfEncoding.hpp"
 
 #include <inttypes.h>
 
@@ -466,7 +466,7 @@ plcrash_error_t plcrash_async_dwarf_read_uleb128 (plcrash_async_mobject_t *mobj,
     *result = 0;
     
     uint8_t *p;
-    while ((p = plcrash_async_mobject_remap_address(mobj, location, position + offset, 1)) != NULL) {
+    while ((p = (uint8_t *) plcrash_async_mobject_remap_address(mobj, location, position + offset, 1)) != NULL) {
         /* LEB128 uses 7 bits for the number, the final bit to signal completion */
         uint8_t byte = *p;
         *result |= ((uint64_t) (byte & 0x7f)) << shift;
@@ -511,7 +511,7 @@ plcrash_error_t plcrash_async_dwarf_read_sleb128 (plcrash_async_mobject_t *mobj,
     *result = 0;
     
     uint8_t *p;
-    while ((p = plcrash_async_mobject_remap_address(mobj, location, position + offset, 1)) != NULL) {
+    while ((p = (uint8_t *) plcrash_async_mobject_remap_address(mobj, location, position + offset, 1)) != NULL) {
         /* LEB128 uses 7 bits for the number, the final bit to signal completion */
         uint8_t byte = *p;
         *result |= ((uint64_t) (byte & 0x7f)) << shift;
@@ -564,14 +564,14 @@ plcrash_error_t plcrash_async_dwarf_read_uintmax64 (plcrash_async_mobject_t *mob
                                                     uint8_t data_size,
                                                     uint64_t *dest)
 {
-    union {
+    union udata {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
         uint64_t u64;
     } *data;
     
-    data = plcrash_async_mobject_remap_address(mobj, base_addr, offset, data_size);
+    data = (union udata *) plcrash_async_mobject_remap_address(mobj, base_addr, offset, data_size);
     if (data == NULL)
         return PLCRASH_EINVAL;
     

@@ -28,10 +28,10 @@
 
 #import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfEncoding.h"
-#include "PLCrashAsyncDwarfPrimitives.h"
-#include "PLCrashAsyncDwarfCIE.h"
-#include "PLCrashAsyncDwarfFDE.h"
+#include "PLCrashAsyncDwarfEncoding.hpp"
+#include "PLCrashAsyncDwarfPrimitives.hpp"
+#include "PLCrashAsyncDwarfCIE.hpp"
+#include "PLCrashAsyncDwarfFDE.hpp"
 
 struct __attribute__((packed)) cie_data {
     struct __attribute__((packed)) {
@@ -119,13 +119,13 @@ struct __attribute__((packed)) cie_data {
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_cie_data, sizeof(_cie_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
     
     
     /* Try to parse the CIE */
     pl_vm_size_t cie_length = sizeof(_cie_data) - sizeof(_cie_data.length);
-    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, &_cie_data);
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, (pl_vm_address_t) &_cie_data);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
     STAssertEquals(cie.cie_offset, (uint64_t)sizeof(_cie_data.length), @"Incorrect offset");
     STAssertEquals(cie.cie_length, (uint64_t)cie_length, @"Incorrect length");
@@ -162,7 +162,7 @@ struct __attribute__((packed)) cie_data {
     STAssertEquals(plcrash_async_dwarf_cie_info_initial_instructions_length(&cie), (pl_vm_size_t) sizeof(_cie_data.initial_instructions), @"Incorrect instruction length");
     for (int i = 0; i < sizeof(_cie_data.initial_instructions) / sizeof(_cie_data.initial_instructions[0]); i++) {
         uint8_t opcode;
-        STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint8(&mobj, &_cie_data, plcrash_async_dwarf_cie_info_initial_instructions_offset(&cie)+i, &opcode), @"Failed to read instruction");
+        STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_read_uint8(&mobj, (pl_vm_address_t) &_cie_data, plcrash_async_dwarf_cie_info_initial_instructions_offset(&cie)+i, &opcode), @"Failed to read instruction");
         STAssertEquals((uint8_t)(0xA+i), opcode, @"Incorrect opcode");
     }
 
@@ -180,11 +180,11 @@ struct __attribute__((packed)) cie_data {
     plcrash_error_t err;
     
     _cie_data.augmentation[0] = 'P';
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_cie_data, sizeof(_cie_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
     
     /* Try to parse the CIE, verify failure */
-    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, &_cie_data);
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, (pl_vm_address_t) &_cie_data);
     STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
     
     /* Clean up */
@@ -201,11 +201,11 @@ struct __attribute__((packed)) cie_data {
     plcrash_error_t err;
     
     _cie_data.cie_id = 5; // invalid id
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_cie_data, sizeof(_cie_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
     
     /* Try to parse the CIE, verify failure */
-    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, &_cie_data);
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, (pl_vm_address_t) &_cie_data);
     STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
     
     /* Clean up */
@@ -222,11 +222,11 @@ struct __attribute__((packed)) cie_data {
     plcrash_error_t err;
     
     _cie_data.cie_version = 9999; // invalid version
-    err = plcrash_async_mobject_init(&mobj, mach_task_self(), &_cie_data, sizeof(_cie_data), true);
+    err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_cie_data, sizeof(_cie_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
     
     /* Try to parse the CIE, verify failure */
-    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, &_cie_data);
+    err = plcrash_async_dwarf_cie_info_init(&cie, &mobj, &plcrash_async_byteorder_direct, &_ptr_state, (pl_vm_address_t) &_cie_data);
     STAssertNotEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize CIE info");
     
     /* Clean up */

@@ -14,6 +14,13 @@
  * under the License.
  */
 
+#ifndef PLCRASH_LOG_WRITER_ENCODING_H
+#define PLCRASH_LOG_WRITER_ENCODING_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #import "PLCrashAsync.h"
 
 typedef enum {
@@ -43,3 +50,9 @@ typedef struct PLProtobufCBinaryData {
 } PLProtobufCBinaryData;
 
 size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value);
+    
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PLCRASH_LOG_WRITER_ENCODING_H */

@@ -29,6 +29,10 @@
 #ifndef PLCRASH_ASYNC_THREAD_ARM_H
 #define PLCRASH_ASYNC_THREAD_ARM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __arm__
 
 // 32-bit
@@ -79,5 +83,8 @@ typedef enum {
     PLCRASH_ARM_LAST_REG = PLCRASH_ARM_CPSR
 } plcrash_arm_regnum_t;
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_ASYNC_THREAD_ARM_H */

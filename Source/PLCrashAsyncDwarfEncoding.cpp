@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfEncoding.h"
+#include "PLCrashAsyncDwarfEncoding.hpp"
 
 #include <inttypes.h>
 
@@ -106,14 +106,14 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         uint8_t dwarf_word_size;
 
         {
-            uint32_t *length32 = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, 0x0, sizeof(uint32_t));
+            uint32_t *length32 = (uint32_t *) plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, 0x0, sizeof(uint32_t));
             if (length32 == NULL) {
                 PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) cfi_entry);
                 return PLCRASH_EINVAL;
             }
             
             if (byteorder->swap32(*length32) == UINT32_MAX) {
-                uint64_t *length64 = plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, sizeof(uint32_t), sizeof(uint64_t));
+                uint64_t *length64 = (uint64_t *) plcrash_async_mobject_remap_address(reader->mobj, cfi_entry, sizeof(uint32_t), sizeof(uint64_t));
                 if (length64 == NULL) {
                     PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " header lies outside the mapped range", (uint64_t) cfi_entry);
                     return PLCRASH_EINVAL;

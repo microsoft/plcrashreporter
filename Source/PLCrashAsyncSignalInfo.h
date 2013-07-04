@@ -26,6 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_ASYNC_SIGNAL_INFO_H
+#define PLCRASH_ASYNC_SIGNAL_INFO_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @internal
@@ -44,3 +50,9 @@ const char *plcrash_async_signal_sigcode (int signal, int si_code);
 /**
  * @} plcrash_async_signal_info
  */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PLCRASH_ASYNC_SIGNAL_INFO_H */

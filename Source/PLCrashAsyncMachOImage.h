@@ -26,8 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCrashAsyncMachOImage_h
-#define PLCrashAsyncMachOImage_h
+#ifndef PLCRASH_ASYNC_MACHO_IMAGE_H
+#define PLCRASH_ASYNC_MACHO_IMAGE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 #include <mach/mach.h>
@@ -206,5 +210,9 @@ void plcrash_nasync_macho_free (plcrash_async_macho_t *image);
 /**
  * @}
  */
+    
+#ifdef __cplusplus
+}
+#endif
 
-#endif // PLCrashAsyncMachOImage_h
+#endif /* PLCRASH_ASYNC_MACHO_IMAGE_H */

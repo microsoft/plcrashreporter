@@ -28,7 +28,7 @@
 
 #import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfEncoding.h"
+#include "PLCrashAsyncDwarfEncoding.hpp"
 
 #include "dwarf_encoding_test.h"
 
@@ -83,7 +83,7 @@
     NSData *mappedImage = [self nativeBinaryFromTestResource: TEST_BINARY];
     STAssertNotNil(mappedImage, @"Failed to map image: %@", error);
     
-    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], [mappedImage bytes]);
+    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], (pl_vm_address_t) [mappedImage bytes]);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
     
     /* Map the eh/debug frame sections. We use our own fake __PL_DWARF segment to avoid toolchain interference with our test data. */

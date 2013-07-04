@@ -26,8 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef CrashReporter_PLCrashAsyncLocalSymbolication_h
-#define CrashReporter_PLCrashAsyncLocalSymbolication_h
+#ifndef PLCRASH_ASYNC_SYMBOLICATION_H
+#define PLCRASH_ASYNC_SYMBOLICATION_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncObjCSection.h"
@@ -59,5 +63,9 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache);
 typedef void (*plcrash_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
 plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *cache, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx);
-
+    
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* PLCRASH_ASYNC_SYMBOLICATION_H */

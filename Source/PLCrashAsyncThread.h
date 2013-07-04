@@ -29,6 +29,10 @@
 #ifndef PLCRASH_ASYNC_THREAD_H
 #define PLCRASH_ASYNC_THREAD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/ucontext.h>
 #include "PLCrashAsync.h"
 
@@ -240,5 +244,9 @@ bool plcrash_async_thread_state_map_dwarf_to_reg (const plcrash_async_thread_sta
 /**
  * @}
  */
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_ASYNC_THREAD_H */

@@ -29,6 +29,10 @@
 #ifndef PLCRASH_ASYNC_IMAGE_LIST_H
 #define PLCRASH_ASYNC_IMAGE_LIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <libkern/OSAtomic.h>
 #include <stdbool.h>
@@ -89,5 +93,9 @@ void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, boo
 
 plcrash_async_image_t *plcrash_async_image_containing_address (plcrash_async_image_list_t *list, pl_vm_address_t address);
 plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t *list, plcrash_async_image_t *current);
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_ASYNC_IMAGE_LIST_H */

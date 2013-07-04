@@ -26,6 +26,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_ASYNC_THREAD_CURRENT_DEFS_H
+#define PLCRASH_ASYNC_THREAD_CURRENT_DEFS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if __x86_64__
 
 /* sizeof(struct ucontext) */
@@ -55,3 +62,9 @@
 #error Unsupported Platform
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PLCRASH_ASYNC_THREAD_CURRENT_DEFS_H */

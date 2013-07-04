@@ -26,8 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCrashAsyncObjCSection_h
-#define PLCrashAsyncObjCSection_h
+#ifndef PLCRASH_ASYNC_OBJC_SECTION_H
+#define PLCRASH_ASYNC_OBJC_SECTION_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncMachOString.h"
@@ -95,5 +99,9 @@ void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *context);
 typedef void (*plcrash_async_objc_found_method_cb)(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx);
 
 plcrash_error_t plcrash_async_objc_find_method (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *cache, pl_vm_address_t imp, plcrash_async_objc_found_method_cb callback, void *ctx);
+    
+#ifdef __cplusplus
+}
+#endif
 
-#endif // PLCrashAsyncObjCSection_h
+#endif /* PLCRASH_ASYNC_OBJECT_SECTION_H */

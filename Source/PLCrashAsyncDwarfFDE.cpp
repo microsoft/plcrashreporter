@@ -24,8 +24,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfFDE.h"
-#include "PLCrashAsyncDwarfCIE.h"
+#include "PLCrashAsyncDwarfFDE.hpp"
+#include "PLCrashAsyncDwarfCIE.hpp"
 
 #include <inttypes.h>
 
@@ -156,7 +156,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
          * (as per the LSB 4.1.0 eh_frame specification). */
         DW_EH_PE_t pc_encoding = DW_EH_PE_absptr;
         if (cie.has_eh_augmentation && cie.eh_augmentation.has_pointer_encoding)
-            pc_encoding = cie.eh_augmentation.pointer_encoding;
+            pc_encoding = (DW_EH_PE_t) cie.eh_augmentation.pointer_encoding;
 
         /* Fetch the base PC address */
         if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, pc_encoding, &ptr_state, &info->pc_start, &ptr_size)) != PLCRASH_ESUCCESS) {
@@ -171,7 +171,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
          * other independent implementations), demonstrates that this value uses the FDE pointer encoding with all indirection
          * flags cleared. */
         uint64_t pc_length;
-        if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, pc_encoding&DW_EH_PE_MASK_ENCODING, &ptr_state, &pc_length, &ptr_size))) {
+        if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, (DW_EH_PE_t) (pc_encoding & DW_EH_PE_MASK_ENCODING), &ptr_state, &pc_length, &ptr_size))) {
             PLCF_DEBUG("Failed to read FDE address_length");
             return err;
         }

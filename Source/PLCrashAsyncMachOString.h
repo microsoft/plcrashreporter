@@ -26,8 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCrashAsyncMachOString_h
-#define PLCrashAsyncMachOString_h
+#ifndef PLCRASH_ASYNC_MACHO_STRING_H
+#define PLCRASH_ASYNC_MACHO_STRING_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncMObject.h"
@@ -58,5 +62,9 @@ plcrash_error_t plcrash_async_macho_string_get_length (plcrash_async_macho_strin
 plcrash_error_t plcrash_async_macho_string_get_pointer (plcrash_async_macho_string_t *string, const char **outPointer);
 
 void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string);
+    
+#ifdef __cplusplus
+}
+#endif
 
-#endif // PLCrashAsyncMachOString_h
+#endif /* PLCRASH_ASYNC_MACHO_STRING_H */

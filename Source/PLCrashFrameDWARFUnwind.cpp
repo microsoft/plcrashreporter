@@ -26,11 +26,10 @@
 
 #include "PLCrashFrameDWARFUnwind.h"
 
-extern "C" {
-    #include "PLCrashAsyncMachOImage.h"
-    #include "PLCrashAsyncDwarfEncoding.h"
-}
 
+#include "PLCrashAsyncMachOImage.h"
+
+#include "PLCrashAsyncDwarfEncoding.hpp"
 #include "PLCrashAsyncDwarfCFA.hpp"
 
 #include <inttypes.h>

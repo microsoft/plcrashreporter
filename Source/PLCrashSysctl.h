@@ -26,6 +26,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_SYSCTL_H
+#define PLCRASH_SYSCTL_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -45,3 +52,9 @@ bool plcrash_sysctl_int (const char *name, int *result);
 /**
  * @}
  */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PLCRASH_SYSCTL_H */

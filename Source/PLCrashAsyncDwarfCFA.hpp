@@ -27,14 +27,12 @@
 #ifndef PLCRASH_ASYNC_DWARF_CFA_HPP
 #define PLCRASH_ASYNC_DWARF_CFA_HPP 1
 
-extern "C" {
-    #include "PLCrashAsync.h"
-    #include "PLCrashAsyncMObject.h"
-    #include "PLCrashAsyncThread.h"
+#include "PLCrashAsync.h"
+#include "PLCrashAsyncMObject.h"
+#include "PLCrashAsyncThread.h"
 
-    #include "PLCrashAsyncDwarfCIE.h"
-    #include "PLCrashAsyncDwarfPrimitives.h"
-}
+#include "PLCrashAsyncDwarfCIE.hpp"
+#include "PLCrashAsyncDwarfPrimitives.hpp"
 
 /* Ideally, the use of the CFA stack API would be opaque, but our lack of
  * an async-safe allocator require that we expose internals for stack

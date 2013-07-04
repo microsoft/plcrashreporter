@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfExpression.h"
+#include "PLCrashAsyncDwarfExpression.hpp"
 
 #include "PLCrashAsyncDwarfCFA.hpp"
 #include "dwarf_opstream.hpp"

@@ -29,6 +29,10 @@
 #ifndef PLCRASH_FRAMEWALKER_H
 #define PLCRASH_FRAMEWALKER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #import <sys/ucontext.h>
 #import <pthread.h>
 
@@ -167,5 +171,9 @@ void plframe_cursor_free(plframe_cursor_t *cursor);
 /**
  * @} plcrash_framewalker
  */
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_FRAMEWALKER_H */

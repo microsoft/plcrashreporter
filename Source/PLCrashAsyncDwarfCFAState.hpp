@@ -30,10 +30,8 @@
 #include <cstddef>
 #include <stdint.h>
 
-extern "C" {
-    #include "PLCrashAsync.h"
-    #include "PLCrashAsyncDwarfPrimitives.h"
-}
+#include "PLCrashAsync.h"
+#include "PLCrashAsyncDwarfPrimitives.hpp"
 
 /**
  * @internal

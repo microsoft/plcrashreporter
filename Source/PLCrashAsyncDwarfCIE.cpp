@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfCIE.h"
+#include "PLCrashAsyncDwarfCIE.hpp"
 
 #include <inttypes.h>
 
@@ -306,7 +306,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
                     data_offset += sizeof(uint8_t);
                     
                     /* Read the actual pointer value */
-                    err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, address, data_offset, ptr_enc, ptr_state,
+                    err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, address, data_offset, (DW_EH_PE_t) ptr_enc, ptr_state,
                                                              &info->eh_augmentation.personality_address, &size);
                     if (err != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to read the personality routine pointer value");

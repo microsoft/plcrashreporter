@@ -22,6 +22,14 @@
 #ifndef PLCRASH_UNWIND_TEST_HARNESS_H
 #define PLCRASH_UNWIND_TEST_HARNESS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool unwind_test_harness (void);
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_UNWIND_TEST_HARNESS_H */

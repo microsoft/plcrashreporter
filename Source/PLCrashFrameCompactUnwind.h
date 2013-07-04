@@ -27,6 +27,10 @@
 #ifndef PLCRASH_FRAME_COMPACTUNWIND_H
 #define PLCRASH_FRAME_COMPACTUNWIND_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 
@@ -35,5 +39,9 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
                                                     const plframe_stackframe_t *current_frame,
                                                     const plframe_stackframe_t *previous_frame,
                                                     plframe_stackframe_t *next_frame);
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_FRAME_COMPACTUNWIND_H */

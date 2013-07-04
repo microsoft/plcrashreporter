@@ -29,6 +29,10 @@
 #ifndef PLCRASH_ASYNC_TEST_THREAD_H
 #define PLCRASH_ASYNC_TEST_THREAD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @internal
  * @ingroup plcrash_test_thread
@@ -58,5 +62,9 @@ void plcrash_test_thread_stop (plcrash_test_thread_t *thread);
 /**
  * @}
  */
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PLCRASH_ASYNC_TEST_THREAD_H */
