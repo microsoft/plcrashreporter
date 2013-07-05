@@ -96,7 +96,7 @@
 		054627BC11D99D06007891C7 /* PLCrashReportFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627B811D99D06007891C7 /* PLCrashReportFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		054627BD11D99D06007891C7 /* PLCrashReportFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627B811D99D06007891C7 /* PLCrashReportFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
+		05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
 		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
 		05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
@@ -114,7 +114,7 @@
 		05507A4F1784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */; };
 		05507A501784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */; };
 		05507A511784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */; };
-		05507A531784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
+		05507A531784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A541784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
 		05507A551784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
 		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
