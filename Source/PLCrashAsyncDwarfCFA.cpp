@@ -24,732 +24,326 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfExpression.hpp"
-
 #include "PLCrashAsyncDwarfCFA.hpp"
-#include "dwarf_opstream.hpp"
-#include <inttypes.h>
+
+using namespace plcrash::async;
 
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
+ * @defgroup plcrash_async_dwarf_cfa_state DWARF CFA Register State
  * @{
  */
 
-using namespace plcrash::async;
-
-template <typename machine_ptr, typename machine_ptr_s>
-static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task,
-                                                                     const plcrash_async_thread_state_t *thread_state,
-                                                                     const plcrash_async_byteorder_t *byteorder,
-                                                                     plcrash_async_thread_state_t *new_thread_state,
-                                                                     machine_ptr cfa_val,
-                                                                     plcrash_regnum_t pl_regnum,
-                                                                     plcrash_dwarf_cfa_reg_rule_t dw_rule,
-                                                                     machine_ptr dw_value);
 /**
- * Evaluate a DWARF CFA program, as defined in the DWARF 4 Specification, Section 6.4.2. This
- * internal implementation is templated to support 32-bit and 64-bit evaluation.
+ * Push a state onto the state stack; all existing values will be saved on the stack, and registers
+ * will be set to their default state.
  *
- * @param mobj The memory object from which the expression opcodes will be read.
- * @param pc The PC offset at which evaluation of the CFA program should terminate. If 0, 
- * the program will be executed to completion. This value should be the absolute address at which the code is loaded
- * into the target process, as the current implementation utilizes relative addressing to perform address
- * lookups.
- * @param cie_info The CIE info data for this opcode stream.
- * @param ptr_state GNU EH pointer state configuration; this defines the base addresses and other
- * information required to decode pointers in the CFA opcode stream. May be NULL if eh_frame
- * augmentation data is not available in @a cie_info.
- * @param byteoder The byte order of the data referenced by @a mobj.
- * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
- * @param offset An offset to be applied to @a address.
- * @param length The total length of the opcodes readable at @a address + @a offset.
- * @param state The CFA state stack to be used for evaluation of the CFA program. This state
- * may have been previously initialized by a common CFA initializer program, and will be used
- * as the initial state when evaluating opcodes such as DW_CFA_restore.
- *
- * @return Returns PLCRASH_ESUCCESS on success, or an appropriate plcrash_error_t values
- * on failure. If an invalid opcode is detected, PLCRASH_ENOTSUP will be returned.
- *
- * @todo Consider defining updated status codes or error handling to provide more structured
- * error data on failure.
+ * @return Returns true on success, or false if insufficient space is available on the state
+ * stack.
  */
 template <typename machine_ptr, typename machine_ptr_s>
-plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *mobj,
-                                                      pl_vm_address_t pc,
-                                                      plcrash_async_dwarf_cie_info_t *cie_info,
-                                                      plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
-                                                      const plcrash_async_byteorder_t *byteorder,
-                                                      pl_vm_address_t address,
-                                                      pl_vm_off_t offset,
-                                                      pl_vm_size_t length,
-                                                      plcrash::async::dwarf_cfa_state<machine_ptr, machine_ptr_s> *state)
-{
-    plcrash::async::dwarf_opstream opstream;
-    plcrash_error_t err;
-    uint64_t location = 0;
-
-    /* Save the initial state; this is needed for DW_CFA_restore, et al. */
-    // TODO - It would be preferrable to only allocate the number of registers actually required here.
-    dwarf_cfa_state<machine_ptr, machine_ptr_s> initial_state;
-    {
-        dwarf_cfa_state_regnum_t regnum;
-        plcrash_dwarf_cfa_reg_rule_t rule;
-        machine_ptr value;
-
-        dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s> iter = dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>(state);
-        while (iter.next(&regnum, &rule, &value)) {
-            if (!initial_state.set_register(regnum, rule, value)) {
-                PLCF_DEBUG("Hit register allocation limit while saving initial state");
-                return PLCRASH_ENOMEM;
-            }
-        }
-    }
-
-    /* Default to reading as a standard machine word */
-    DW_EH_PE_t gnu_eh_ptr_encoding = DW_EH_PE_absptr;
-    if (cie_info->has_eh_augmentation && cie_info->eh_augmentation.has_pointer_encoding && ptr_state != NULL) {
-        gnu_eh_ptr_encoding = (DW_EH_PE_t) cie_info->eh_augmentation.pointer_encoding;
-    }
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::push_state (void) {
+    PLCF_ASSERT(_table_depth+1 <= DWARF_CFA_STATE_MAX_STATES);
     
-    /* Calculate the absolute (target-relative) address of the start of the stream */
-    pl_vm_address_t opstream_target_address;
-    if (!plcrash_async_address_apply_offset(address, offset, &opstream_target_address)) {
-        PLCF_DEBUG("Offset overflows base address");
-        return PLCRASH_EINVAL;
-    }
-
-    /* Configure the opstream */
-    if ((err = opstream.init(mobj, byteorder, address, offset, length)) != PLCRASH_ESUCCESS)
-        return err;
+    if (_table_depth+1 == DWARF_CFA_STATE_MAX_STATES)
+        return false;
     
-#define dw_expr_read_int(_type) ({ \
-    _type v; \
-    if (!opstream.read_intU<_type>(&v)) { \
-        PLCF_DEBUG("Read of size %zu exceeds mapped range", sizeof(v)); \
-        return PLCRASH_EINVAL; \
-    } \
-    v; \
-})
+    _table_depth++;
+    _register_count[_table_depth] = 0;
+    _cfa_value[_table_depth].set_undefined_rule();
+
+    plcrash_async_memset(_table_stack[_table_depth], DWARF_CFA_STATE_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
     
-    /* A position-advancing DWARF uleb128 register read macro that uses GCC/clang's compound statement value extension, returning an error
-     * if the read fails, or the register value exceeds DWARF_CFA_STATE_REGNUM_MAX */
-#define dw_expr_read_uleb128_regnum() ({ \
-    uint64_t v; \
-    if (!opstream.read_uleb128(&v)) { \
-        PLCF_DEBUG("Read of ULEB128 value failed"); \
-        return PLCRASH_EINVAL; \
-    } \
-    if (v > DWARF_CFA_STATE_REGNUM_MAX) { \
-        PLCF_DEBUG("Register number %" PRIu64 " exceeds DWARF_CFA_STATE_REGNUM_MAX", v); \
-        return PLCRASH_ENOTSUP; \
-    } \
-    (uint32_t) v; \
-})
-    
-    /* A position-advancing uleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
-     * if the read fails. */
-#define dw_expr_read_uleb128() ({ \
-    uint64_t v; \
-    if (!opstream.read_uleb128(&v)) { \
-        PLCF_DEBUG("Read of ULEB128 value failed"); \
-        return PLCRASH_EINVAL; \
-    } \
-    v; \
-})
-
-    /* A position-advancing sleb128 read macro that uses GCC/clang's compound statement value extension, returning an error
-     * if the read fails. */
-#define dw_expr_read_sleb128() ({ \
-    int64_t v; \
-    if (!opstream.read_sleb128(&v)) { \
-        PLCF_DEBUG("Read of SLEB128 value failed"); \
-        return PLCRASH_EINVAL; \
-    } \
-    v; \
-})
-    
-    /* Handle error checking when setting a register on the CFA state */
-#define dw_expr_set_register(_regnum, _rule, _value) do { \
-    if (!state->set_register(_regnum, _rule, _value)) { \
-        PLCF_DEBUG("Exhausted available register slots while evaluating CFA opcodes"); \
-        return PLCRASH_ENOMEM; \
-    } \
-} while (0)
-
-    /* Iterate the opcode stream until the pc_offset is hit */
-    uint8_t opcode;
-    while ((pc == 0 || location < pc) && opstream.read_intU(&opcode)) {
-        uint8_t const_operand = 0;
-
-        /* Check for opcodes encoded in the top two bits, with an operand
-         * in the bottom 6 bits. */
-        
-        if ((opcode & 0xC0) != 0) {
-            const_operand = opcode & 0x3F;
-            opcode &= 0xC0;
-        }
-        
-        switch (opcode) {
-            case DW_CFA_set_loc:
-                if (cie_info->segment_size != 0) {
-                    PLCF_DEBUG("Segment support has not been implemented");
-                    return PLCRASH_ENOTSUP;
-                }
-
-                /* Try reading an eh_frame encoded pointer */
-                if (!opstream.read_gnueh_ptr(ptr_state, gnu_eh_ptr_encoding, &location)) {
-                    PLCF_DEBUG("DW_CFA_set_loc failed to read the target pointer value");
-                    return PLCRASH_EINVAL;
-                }
-                break;
-                
-            case DW_CFA_advance_loc:
-                location += const_operand * cie_info->code_alignment_factor;
-                break;
-                
-            case DW_CFA_advance_loc1:
-                location += dw_expr_read_int(uint8_t) * cie_info->code_alignment_factor;
-                break;
-                
-            case DW_CFA_advance_loc2:
-                location += dw_expr_read_int(uint16_t) * cie_info->code_alignment_factor;
-                break;
-                
-            case DW_CFA_advance_loc4:
-                location += dw_expr_read_int(uint32_t) * cie_info->code_alignment_factor;
-                break;
-                
-            case DW_CFA_def_cfa:
-                state->set_cfa_register(dw_expr_read_uleb128_regnum(), dw_expr_read_uleb128());
-                break;
-                
-            case DW_CFA_def_cfa_sf:
-                state->set_cfa_register_signed(dw_expr_read_uleb128_regnum(), dw_expr_read_sleb128() * cie_info->data_alignment_factor);
-                break;
-                
-            case DW_CFA_def_cfa_register: {
-                dwarf_cfa_rule<machine_ptr, machine_ptr_s> rule = state->get_cfa_rule();
-                
-                switch (rule.type()) {
-                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
-                        state->set_cfa_register(dw_expr_read_uleb128_regnum(), rule.register_offset());
-                        break;
-                        
-                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
-                        state->set_cfa_register_signed(dw_expr_read_uleb128_regnum(), rule.register_offset_signed());
-                        break;
-                        
-                    case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
-                    case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
-                        PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
-                        return PLCRASH_EINVAL;
-                }
-                break;
-            }
-                
-            case DW_CFA_def_cfa_offset: {
-                dwarf_cfa_rule<machine_ptr, machine_ptr_s> rule = state->get_cfa_rule();
-                switch (rule.type()) {
-                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
-                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
-                        /* Our new offset is unsigned, so all register rules are converted to unsigned here */
-                        state->set_cfa_register(rule.register_number(), dw_expr_read_uleb128());
-                        break;
-                        
-                    case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
-                    case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
-                        PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
-                        return PLCRASH_EINVAL;
-                }
-                break;
-            }
-                
-                
-            case DW_CFA_def_cfa_offset_sf: {
-                dwarf_cfa_rule<machine_ptr, machine_ptr_s> rule = state->get_cfa_rule();
-                switch (rule.type()) {
-                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
-                    case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
-                        /* Our new offset is signed, so all register rules are converted to signed here */
-                        state->set_cfa_register_signed(rule.register_number(), dw_expr_read_sleb128() * cie_info->data_alignment_factor);
-                        break;
-
-                    case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
-                    case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
-                        PLCF_DEBUG("DW_CFA_def_cfa_register emitted for a non-register CFA rule state");
-                        return PLCRASH_EINVAL;
-                }
-                break;
-            }
-
-            case DW_CFA_def_cfa_expression: {                
-                /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
-                uint64_t length = dw_expr_read_uleb128();
-                
-                /* Fetch the opstream position of the DWARF expression */
-                uintptr_t pos = opstream.get_position();
-
-                /* The returned sizes should always fit within the VM types in valid DWARF data; if they don't, how
-                 * are we debugging the target? */
-                if (length > PL_VM_SIZE_MAX || length > PL_VM_OFF_MAX) {
-                    PLCF_DEBUG("DWARF expression length exceeds PL_VM_SIZE_MAX/PL_VM_OFF_MAX in DW_CFA_def_cfa_expression operand");
-                    return PLCRASH_ENOTSUP;
-                }
-                
-                if (pos > PL_VM_ADDRESS_MAX || pos > PL_VM_OFF_MAX) {
-                    PLCF_DEBUG("DWARF expression position exceeds PL_VM_ADDRESS_MAX/PL_VM_OFF_MAX in CFA opcode stream");
-                    return PLCRASH_ENOTSUP;
-                }
-                
-                /* Calculate the absolute address of the expression opcodes. */
-                pl_vm_address_t abs_addr;
-                if (!plcrash_async_address_apply_offset(opstream_target_address, pos, &abs_addr)) {
-                    PLCF_DEBUG("Offset overflows base address");
-                    return PLCRASH_EINVAL;
-                }
-
-                /* Save the position */
-                state->set_cfa_expression(abs_addr, length);
-                
-                /* Skip the expression opcodes */
-                opstream.skip(length);
-                break;
-            }
-                
-            case DW_CFA_undefined:
-                state->remove_register(dw_expr_read_uleb128_regnum());
-                break;
-                
-            case DW_CFA_same_value:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, 0);
-                break;
-                
-            case DW_CFA_offset:
-                dw_expr_set_register(const_operand, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
-                break;
-                
-            case DW_CFA_offset_extended:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
-                break;
-                
-            case DW_CFA_offset_extended_sf:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
-                break;
-                
-            case DW_CFA_val_offset:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
-                break;
-                
-            case DW_CFA_val_offset_sf:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
-                break;
-                
-            case DW_CFA_register:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_REGISTER, dw_expr_read_uleb128());
-                break;
-            
-            case DW_CFA_expression:
-            case DW_CFA_val_expression: {
-                dwarf_cfa_state_regnum_t regnum = dw_expr_read_uleb128_regnum();
-                uintptr_t pos = opstream.get_position();
-                
-                /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
-                uint64_t length = dw_expr_read_uleb128();
-
-                /* Calculate the absolute address of the expression opcodes (including verifying that pos won't overflow when applying the offset). */
-                if (pos > PL_VM_ADDRESS_MAX || pos > PL_VM_OFF_MAX) {
-                    PLCF_DEBUG("DWARF expression position exceeds PL_VM_ADDRESS_MAX/PL_VM_OFF_MAX in DW_CFA_expression evaluation");
-                    return PLCRASH_ENOTSUP;
-                }
-                
-                pl_vm_address_t abs_addr;
-                if (!plcrash_async_address_apply_offset(opstream_target_address, pos, &abs_addr)) {
-                    PLCF_DEBUG("Offset overflows base address");
-                    return PLCRASH_EINVAL;
-                }
-                
-                /* Save the position */
-                if (opcode == DW_CFA_expression) {
-                    dw_expr_set_register(regnum, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (machine_ptr)abs_addr);
-                } else {
-                    PLCF_ASSERT(opcode == DW_CFA_val_expression); // If not _expression, must be _val_expression.
-                    dw_expr_set_register(regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (machine_ptr)abs_addr);
-                }
-
-                /* Skip the expression opcodes */
-                opstream.skip(length);
-                break;
-            }
-                
-            case DW_CFA_restore: {
-                plcrash_dwarf_cfa_reg_rule_t rule;
-                machine_ptr value;
-                
-                /* Either restore the value specified in the initial state, or remove the register
-                 * if the initial state has no associated value */
-                if (initial_state.get_register_rule(const_operand, &rule, &value)) {
-                    dw_expr_set_register(const_operand, rule, value);
-                } else {
-                    state->remove_register(const_operand);
-                }
-        
-                break;
-            }
-                
-            case DW_CFA_restore_extended: {
-                dwarf_cfa_state_regnum_t regnum = dw_expr_read_uleb128_regnum();
-                plcrash_dwarf_cfa_reg_rule_t rule;
-                machine_ptr value;
-                
-                /* Either restore the value specified in the initial state, or remove the register
-                 * if the initial state has no associated value */
-                if (initial_state.get_register_rule(regnum, &rule, &value)) {
-                    dw_expr_set_register(regnum, rule, value);
-                } else {
-                    state->remove_register(const_operand);
-                }
-                
-                break;
-            }
-                
-            case DW_CFA_remember_state:
-                if (!state->push_state()) {
-                    PLCF_DEBUG("DW_CFA_remember_state exeeded the allocated CFA stack size");
-                    return PLCRASH_ENOMEM;
-                }
-                break;
-                
-            case DW_CFA_restore_state:
-                if (!state->pop_state()) {
-                    PLCF_DEBUG("DW_CFA_restore_state was issued on an empty CFA stack");
-                    return PLCRASH_EINVAL;
-                }
-                break;
-
-            case DW_CFA_nop:
-                break;
-                
-            default:
-                PLCF_DEBUG("Unsupported opcode 0x%" PRIx8, opcode);
-                return PLCRASH_ENOTSUP;
-        }
-    }
-
-    return PLCRASH_ESUCCESS;
+    return true;
 }
 
 /**
- * Apply the evaluated @a cfa_state to @a thread_state, fetching data from @a task, and
- * populate @a new_thread_state with the result.
+ * Pop a previously saved state from the state stack. All existing values will be discarded on the stack, and registers
+ * will be reinitialized from the saved state.
  *
- * @param task The task containing any data referenced by @a thread_state.
- * @param cie_info The CIE from which @a cfa_state was derived.
- * @param thread_state The current thread state corresponding to @a entry.
- * @param byteorder The target's byte order.
- * @param cfa_state CFA evaluation state as generated from evaluating a CFA program. @sa plcrash_async_dwarf_cfa_eval_program.
- * @param new_thread_state The new thread state to be initialized.
- *
- * @return Returns PLCRASH_ESUCCESS on success, or a standard pclrash_error_t code if an error occurs.
+ * @return Returns true on success, or false if no states are available on the state stack.
  */
 template <typename machine_ptr, typename machine_ptr_s>
-plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
-                                                     plcrash_async_dwarf_cie_info_t *cie_info,
-                                                     const plcrash_async_thread_state_t *thread_state,
-                                                     const plcrash_async_byteorder_t *byteorder,
-                                                     plcrash::async::dwarf_cfa_state<machine_ptr, machine_ptr_s> *cfa_state,
-                                                     plcrash_async_thread_state_t *new_thread_state)
-{
-    plcrash_error_t err;
-
-    /* Initialize the new thread state */
-    plcrash_async_thread_state_copy(new_thread_state, thread_state);
-    plcrash_async_thread_state_clear_volatile_regs(new_thread_state);
-
-    /*
-     * Restore the canonical frame address
-     */
-    dwarf_cfa_rule<machine_ptr, machine_ptr_s> cfa_rule = cfa_state->get_cfa_rule();
-    machine_ptr cfa_val;
-
-    switch (cfa_rule.type()) {
-        case DWARF_CFA_STATE_CFA_TYPE_UNDEFINED:
-            /** Missing canonical frame address! */
-            PLCF_DEBUG("No canonical frame address specified in the CFA state; can't apply state");
-            return PLCRASH_EINVAL;
-
-        case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
-        case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED: {
-            plcrash_regnum_t regnum;
-            
-            /* Map to a plcrash register number */
-            if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, cfa_rule.register_number(), &regnum)) {
-                PLCF_DEBUG("CFA rule references an unsupported DWARF register: 0x%" PRIx32, cfa_rule.register_number());
-                return PLCRASH_ENOTSUP;
-            }
-            
-            /* Verify that the requested register is available */
-            if (!plcrash_async_thread_state_has_reg(thread_state, regnum)) {
-                PLCF_DEBUG("CFA rule references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, regnum));
-                return PLCRASH_ENOTFOUND;
-            }
-
-            /* Fetch the current value, apply the offset, and save as the new thread's CFA. */
-            cfa_val = plcrash_async_thread_state_get_reg(thread_state, regnum);
-            if (cfa_rule.type() == DWARF_CFA_STATE_CFA_TYPE_REGISTER)
-                cfa_val += cfa_rule.register_offset();
-            else
-                cfa_val += cfa_rule.register_offset_signed();
-            break;
-        }
-
-        case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION: {
-            plcrash_async_mobject_t mobj;
-            if ((err = plcrash_async_mobject_init(&mobj, task, cfa_rule.expression_address(), cfa_rule.expression_length(), true)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Could not map CFA expression range");
-                return err;
-            }
-            
-            if ((err = plcrash_async_dwarf_expression_eval<machine_ptr, machine_ptr_s>(&mobj, task, thread_state, byteorder, cfa_rule.expression_address(), 0x0, cfa_rule.expression_length(), NULL, 0, &cfa_val)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("CFA eval_64 failed");
-                return err;
-            }
-            
-            break;
-        }
-    }
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::pop_state (void) {
+    if (_table_depth == 0)
+        return false;
     
-    /* Apply the CFA to the new state */
-    plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, cfa_val);
-    
-    /*
-     * Restore register values
-     */
-    dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s> iter = dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>(cfa_state);
-    dwarf_cfa_state_regnum_t dw_regnum;
-    plcrash_dwarf_cfa_reg_rule_t dw_rule;
-    machine_ptr dw_value;
-    
-    while (iter.next(&dw_regnum, &dw_rule, &dw_value)) {
-        /* Map the register number */
-        plcrash_regnum_t pl_regnum;
-        if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_regnum, &pl_regnum)) {
-            /* Some DWARF ABIs (such as x86-64) define the return address using a pseudo-register. In that case, the
-             * register will not have a vaid DWARF -> PLCrashReporter mapping; we simply target the IP in this case,
-             * which results in the expected behavior of setting the IP in the new thread state. */
-            if (cie_info->return_address_register == dw_regnum) {
-                pl_regnum = PLCRASH_REG_IP;
-            } else {
-                PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_regnum);
-                return PLCRASH_EINVAL;
-            }
-        }
-        
-        /* Apply the register rule */
-        if ((err = plcrash_async_dwarf_cfa_state_apply_register<machine_ptr, machine_ptr_s>(task, thread_state, byteorder, new_thread_state, cfa_val, pl_regnum, dw_rule, dw_value)) != PLCRASH_ESUCCESS)
-            return err;
-        
-        /* If the target register is defined as the return address (and is not already the IP), copy the value to the IP.  */
-        if (cie_info->return_address_register == dw_regnum && pl_regnum != PLCRASH_REG_IP) {
-            PLCF_ASSERT(plcrash_async_thread_state_has_reg(new_thread_state, pl_regnum));
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, plcrash_async_thread_state_get_reg(new_thread_state, pl_regnum));
-        }
-    }
+    _table_depth--;
+    return true;
+}
 
-    return PLCRASH_ESUCCESS;
+/*
+ * Default constructor.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+dwarf_cfa_state<machine_ptr, machine_ptr_s>::dwarf_cfa_state (void) {
+    /* The size must be smaller than the invalid entry index, which is used as a NULL flag */
+    PLCF_ASSERT_STATIC(max_size, DWARF_CFA_STATE_MAX_REGISTERS < DWARF_CFA_STATE_INVALID_ENTRY_IDX);
+    
+    /* Initialize the free list */
+    for (uint8_t i = 0; i < DWARF_CFA_STATE_MAX_REGISTERS; i++)
+        _entries[i].next = i+1;
+    
+    /* Set the terminator flag on the last entry */
+    _entries[DWARF_CFA_STATE_MAX_REGISTERS-1].next = DWARF_CFA_STATE_INVALID_ENTRY_IDX;
+    
+    /* First free entry is _entries[0] */
+    _free_list = 0;
+    
+    /* Initial register count */
+    _register_count[0] = 0;
+    
+    /* Set up the table */
+    _table_depth = 0;
+    plcrash_async_memset(_table_stack[0], DWARF_CFA_STATE_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
+    
+    /* Default CFA */
+    _cfa_value[0].set_undefined_rule();
 }
 
 /**
- * Apply a single register rule to @a new_thread_state.
+ * Add a new register.
  *
- * @param task The task containing any data referenced by @a thread_state.
- * @param thread_state The current thread state corresponding to @a entry.
- * @param byteorder The target's byte order.
- * @param new_thread_state The new thread state to be initialized.
- * @param cfa_val The base canonical frame address to be used when applying @a dw_rule
- * @param pl_regnum The register to which @a dw_rule and @a dw_value will be applied.
- * @param dw_rule The DWARF register rule to be used to derive the value for @a pl_regnum.
- * @param dw_value The DWARF value to be used with @a dw_rule
- *
- * @return Returns PLCRASH_ESUCCESS on success, or a standard pclrash_error_t code if an error occurs.
+ * @param regnum The DWARF register number.
+ * @param rule The DWARF CFA rule for @a regnum.
+ * @param value The data value to be used when interpreting @a rule. May either be signed or unsigned.
  */
 template <typename machine_ptr, typename machine_ptr_s>
-static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task,
-                                                                     const plcrash_async_thread_state_t *thread_state,
-                                                                     const plcrash_async_byteorder_t *byteorder,
-                                                                     plcrash_async_thread_state_t *new_thread_state,
-                                                                     machine_ptr cfa_val,
-                                                                     plcrash_regnum_t pl_regnum,
-                                                                     plcrash_dwarf_cfa_reg_rule_t dw_rule,
-                                                                     machine_ptr dw_value)
-{
-    plcrash_error_t err;
-    uint8_t greg_size = plcrash_async_thread_state_get_greg_size(thread_state);
-    bool m64 = (greg_size == 8);
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, machine_ptr value) {
+    PLCF_ASSERT(rule <= UINT8_MAX);
     
-    union {
-        uint32_t v32;
-        uint64_t v64;
-    } rvalue;
-    void *vptr = &rvalue;
+    /* Check for an existing entry, or find the target entry off which we'll chain our entry */
+    unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
-    /* Apply the rule */
-    switch (dw_rule) {
-        case PLCRASH_DWARF_CFA_REG_RULE_OFFSET: {
-            if ((err = plcrash_async_task_memcpy(task, cfa_val, (int64_t)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Failed to read offset(N) register value: %d", err);
-                return err;
-            }
-            
-            if (m64) {
-                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v64);
-            } else {
-                plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, rvalue.v32);
-            }
-            
-            break;
+    dwarf_cfa_reg_entry_t *parent = NULL;
+    for (uint8_t parent_idx = _table_stack[_table_depth][bucket]; parent_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX; parent_idx = parent->next) {
+        parent = &_entries[parent_idx];
+        
+        /* If an existing entry is found, we can re-use it directly */
+        if (parent->regnum == regnum) {
+            parent->value = value;
+            parent->rule = rule;
+            return true;
         }
-            
-        case PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET:
-            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, cfa_val + ((int64_t) dw_value));
-            break;
-            
-        case PLCRASH_DWARF_CFA_REG_RULE_REGISTER: {
-            /* The previous value of this register is stored in another register numbered R. */
-            plcrash_regnum_t src_pl_regnum;
-            if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, dw_value, &src_pl_regnum)) {
-                PLCF_DEBUG("Register rule references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) dw_value);
-                return PLCRASH_EINVAL;
-            }
-            
-            if (!plcrash_async_thread_state_has_reg(thread_state, src_pl_regnum)) {
-                PLCF_DEBUG("Register rule references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, src_pl_regnum));
-                return PLCRASH_ENOTFOUND;
-            }
-            
-            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, src_pl_regnum));
-            break;
-        }
-            
-        case PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION:
-        case PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION: {
-            pl_vm_address_t expr_addr = (pl_vm_address_t) dw_value;
-            /* Fetch the expression's length */
-            uint64_t expr_len;
-            pl_vm_size_t uleb128_len;
-            if ((err = plcrash_async_dwarf_read_task_uleb128(task, expr_addr, 0, &expr_len, &uleb128_len)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Failed to read uleb128 length header for rule expression");
-                return err;
-            }
-            
-            /* Skip the ULEB128 length header; expr_addr will not point at the expression opcodes. */
-            if (!plcrash_async_address_apply_offset(expr_addr, uleb128_len, &expr_addr)) {
-                PLCF_DEBUG("Overflow applying the ULEB128 length to our expression base address");
-                return PLCRASH_EINVAL;
-            }
-            
-            /* Map the expression data  */
-            plcrash_async_mobject_t mobj;
-            if ((err = plcrash_async_mobject_init(&mobj, task, expr_addr, expr_len, true)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Could not map CFA expression range");
-                return err;
-            }
-            
-            /* Perform the evaluation */
-            plcrash_greg_t regval;
-            if (m64) {
-                uint64_t initial_state[] = { cfa_val };
-                if ((err = plcrash_async_dwarf_expression_eval<uint64_t, int64_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v64)) != PLCRASH_ESUCCESS) {
-                    plcrash_async_mobject_free(&mobj);
-                    PLCF_DEBUG("CFA eval_64 failed");
-                    return err;
-                }
-                
-                regval = rvalue.v64;
-            } else {
-                uint32_t initial_state[] = { cfa_val };
-                if ((err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
-                    plcrash_async_mobject_free(&mobj);
-                    PLCF_DEBUG("CFA eval_32 failed");
-                    return err;
-                }
-                
-                regval = rvalue.v32;
-            }
-            
-            /* Clean up the memory mapping */
-            plcrash_async_mobject_free(&mobj);
-            
-            /* Dereference the target address, if using the non-value EXPRESSION rule */
-            if (dw_rule == PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION) {
-                if ((err = plcrash_async_task_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
-                    PLCF_DEBUG("Failed to read register value from expression result: %d", err);
-                    return err;
-                }
-                
-                if (m64) {
-                    regval = rvalue.v64;
-                } else {
-                    regval = rvalue.v32;
-                }
-            }
-            
-            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, regval);
-            break;
-        }
-            
-        case PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE:
-            /* This register has not been modified from the previous frame. (By convention, it is preserved by the callee, but
-             * the callee has not modified it.)
-             *
-             * The register's value may be found in the frame's thread state. For frames other than the first, the
-             * register may not have been restored, and thus may be unavailable. */
-            if (!plcrash_async_thread_state_has_reg(thread_state, pl_regnum)) {
-                PLCF_DEBUG("Same-value rule references a register that is not available from the current thread state");
-                return PLCRASH_ENOTFOUND;
-            }
-            
-            /* Copy the register value from the previous state */
-            plcrash_async_thread_state_set_reg(new_thread_state, pl_regnum, plcrash_async_thread_state_get_reg(thread_state, pl_regnum));
+        
+        /* Otherwise, make sure we terminate with parent == last element */
+        if (parent->next == DWARF_CFA_STATE_INVALID_ENTRY_IDX)
             break;
     }
     
-    return PLCRASH_ESUCCESS;
+    /* 'parent' now either points to the end of the list, or is NULL (in which case the table
+     * slot was empty */
+    dwarf_cfa_reg_entry *entry = NULL;
+    uint8_t entry_idx;
+    
+    /* Fetch a free entry */
+    if (_free_list == DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
+        /* No free entries */
+        return false;
+    }
+    entry_idx = _free_list;
+    entry = &_entries[entry_idx];
+    _free_list = entry->next;
+    
+    /* Intialize the entry */
+    entry->regnum = regnum;
+    entry->rule = rule;
+    entry->value = value;
+    entry->next = DWARF_CFA_STATE_INVALID_ENTRY_IDX;
+    
+    /* Either insert in the parent, or insert as the first table element */
+    if (parent == NULL) {
+        _table_stack[_table_depth][bucket] = entry_idx;
+    } else {
+        parent->next = entry - _entries;
+    }
+    
+    _register_count[_table_depth]++;
+    return true;
+}
+
+/**
+ * Fetch the register entry data for a given DWARF register number, returning
+ * true on success, or false if no entry has been added for the register.
+ *
+ * @param regnum The DWARF register number.
+ * @param rule[out] On success, the DWARF CFA rule for @a regnum.
+ * @param value[out] On success, the data value to be used when interpreting @a rule.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value) {
+    /* Search for the entry */
+    unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
+    
+    dwarf_cfa_reg_entry_t *entry = NULL;
+    for (uint8_t entry_idx = _table_stack[_table_depth][bucket]; entry_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX; entry_idx = entry->next) {
+        entry = &_entries[entry_idx];
+        
+        if (entry->regnum != regnum) {
+            if (entry->next == DWARF_CFA_STATE_INVALID_ENTRY_IDX)
+                break;
+            
+            continue;
+        }
+        
+        /* Existing entry found, we can re-use it directly */
+        *value = entry->value;
+        *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
+        return true;
+    }
+    
+    /* Not found? */
+    return false;
+}
+
+/**
+ * Remove a register from the current state.
+ *
+ * @param regnum The DWARF register number to be removed.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::remove_register (dwarf_cfa_state_regnum_t regnum) {
+    /* Search for the entry */
+    unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
+    
+    dwarf_cfa_reg_entry *prev = NULL;
+    dwarf_cfa_reg_entry_t *entry = NULL;
+    for (uint8_t entry_idx = _table_stack[_table_depth][bucket]; entry_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX; entry_idx = entry->next) {
+        prev = entry;
+        entry = &_entries[entry_idx];
+        
+        if (entry->regnum != regnum)
+            continue;
+        
+        /* Remove from the bucket chain */
+        if (prev != NULL) {
+            prev->next = entry->next;
+        } else {
+            _table_stack[_table_depth][bucket] = entry->next;
+        }
+        
+        /* Re-insert in the free list */
+        entry->next = _free_list;
+        _free_list = entry_idx;
+        
+        /* Decrement the register count */
+        _register_count[_table_depth]--;
+    }
+}
+
+/**
+ * Return the number of register rules set for the current register state.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+uint8_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_register_count (void) {
+    return _register_count[_table_depth];
+}
+
+
+/**
+ * Set a register-based DWARF_CFA_STATE_CFA_TYPE_REGISTER rule.
+ *
+ * @param regnum The base register for the canonical frame address.
+ * @param offset The unsigned offset.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_register (dwarf_cfa_state_regnum_t regnum, machine_ptr offset) {
+    _cfa_value[_table_depth].set_register_rule(regnum, offset);
+}
+
+/**
+ * Set a register-based DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED rule.
+ *
+ * @param regnum The base register for the canonical frame address.
+ * @param offset The unsigned offset.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_register_signed (dwarf_cfa_state_regnum_t regnum, machine_ptr_s offset) {
+    _cfa_value[_table_depth].set_register_rule_signed(regnum, offset);
+}
+
+/**
+ * Set an expression-based canonical frame address rule.
+ *
+ * @param expression Target-relative address of the expression opcode stream.
+ * @param length Length in bytes of the opcode stream.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length) {
+    _cfa_value[_table_depth].set_expression_rule(address, length);
+}
+
+/**
+ * Return the canonical frame address rule defined for the current state.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+dwarf_cfa_rule<machine_ptr, machine_ptr_s> dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_cfa_rule (void) {
+    return _cfa_value[_table_depth];
+}
+
+/**
+ * Construct an iterator for @a stack. The @a stack <em>must not</em> be mutated
+ * during iteration.
+ *
+ * @param stack The stack to be iterated.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::dwarf_cfa_state_iterator(dwarf_cfa_state<machine_ptr, machine_ptr_s> *stack) {
+    _stack = stack;
+    _bucket_idx = 0;
+    _cur_entry_idx = DWARF_CFA_STATE_INVALID_ENTRY_IDX;
+}
+
+/**
+ * Enumerate the next register entry. Returns true on success, or false if no additional entries are available.
+ *
+ * @param regnum[out] On success, the DWARF register number.
+ * @param rule[out] On success, the DWARF CFA rule for @a regnum.
+ * @param value[out] On success, the data value to be used when interpreting @a rule.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value) {
+    /* Fetch the next entry in the bucket chain */
+    if (_cur_entry_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
+        _cur_entry_idx = _stack->_entries[_cur_entry_idx].next;
+        
+        /* Advance to the next bucket if we've reached the end of the current chain */
+        if (_cur_entry_idx == DWARF_CFA_STATE_INVALID_ENTRY_IDX)
+            _bucket_idx++;
+    }
+    
+    /*
+     * On the first iteration, or after the end of a bucket chain has been reached, find the next valid bucket chain.
+     * Otherwise, we have a valid bucket chain and simply need the next entry.
+     */
+    if (_cur_entry_idx == DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
+        for (; _bucket_idx < DWARF_CFA_STATE_BUCKET_COUNT; _bucket_idx++) {
+            if (_stack->_table_stack[_stack->_table_depth][_bucket_idx] != DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
+                _cur_entry_idx = _stack->_table_stack[_stack->_table_depth][_bucket_idx];
+                break;
+            }
+        }
+        
+        /* If we get here without a valid entry, we've hit the end of all bucket chains. */
+        if (_cur_entry_idx == DWARF_CFA_STATE_INVALID_ENTRY_IDX)
+            return false;
+    }
+    
+    
+    typename dwarf_cfa_state<machine_ptr, machine_ptr_s>::dwarf_cfa_reg_entry_t *entry = &_stack->_entries[_cur_entry_idx];
+    *regnum = entry->regnum;
+    *value = entry->value;
+    *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
+    return true;
 }
 
 /* Provide explicit 32/64-bit instantiations */
-template plcrash_error_t plcrash_async_dwarf_cfa_eval_program<uint32_t, int32_t> (plcrash_async_mobject_t *mobj,
-                                                                                  pl_vm_address_t pc,
-                                                                                  plcrash_async_dwarf_cie_info_t *cie_info,
-                                                                                  plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
-                                                                                  const plcrash_async_byteorder_t *byteorder,
-                                                                                  pl_vm_address_t address,
-                                                                                  pl_vm_off_t offset,
-                                                                                  pl_vm_size_t length,
-                                                                                  plcrash::async::dwarf_cfa_state<uint32_t, int32_t> *state);
-template plcrash_error_t plcrash_async_dwarf_cfa_eval_program<uint64_t, int64_t> (plcrash_async_mobject_t *mobj,
-                                                                                  pl_vm_address_t pc,
-                                                                                  plcrash_async_dwarf_cie_info_t *cie_info,
-                                                                                  plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
-                                                                                  const plcrash_async_byteorder_t *byteorder,
-                                                                                  pl_vm_address_t address,
-                                                                                  pl_vm_off_t offset,
-                                                                                  pl_vm_size_t length,
-                                                                                  plcrash::async::dwarf_cfa_state<uint64_t, int64_t> *state);
+template class dwarf_cfa_state<uint32_t, int32_t>;
+template class dwarf_cfa_state_iterator<uint32_t, int32_t>;
 
-template plcrash_error_t plcrash_async_dwarf_cfa_state_apply<uint32_t, int32_t> (task_t task,
-                                                                                 plcrash_async_dwarf_cie_info_t *cie_info,
-                                                                                 const plcrash_async_thread_state_t *thread_state,
-                                                                                 const plcrash_async_byteorder_t *byteorder,
-                                                                                 plcrash::async::dwarf_cfa_state<uint32_t, int32_t> *cfa_state,
-                                                                                 plcrash_async_thread_state_t *new_thread_state);
-template
-plcrash_error_t plcrash_async_dwarf_cfa_state_apply<uint64_t, int64_t> (task_t task,
-                                                                                 plcrash_async_dwarf_cie_info_t *cie_info,
-                                                                                 const plcrash_async_thread_state_t *thread_state,
-                                                                                 const plcrash_async_byteorder_t *byteorder,
-                                                                                 plcrash::async::dwarf_cfa_state<uint64_t, int64_t> *cfa_state,
-                                                                                 plcrash_async_thread_state_t *new_thread_state);
+template class dwarf_cfa_state<uint64_t, int64_t>;
+template class dwarf_cfa_state_iterator<uint64_t, int64_t>;
 
 /**
  * @}

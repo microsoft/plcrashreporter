@@ -159,7 +159,7 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     /* Evaluate the CFA instruction opcodes */
     {
         /* Initial instructions */
-        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length, &cfa_state);
+        err = cfa_state.eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -167,7 +167,7 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
         }
         
         /*  FDE instructions */
-        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length, &cfa_state);
+        err = cfa_state.eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -176,7 +176,7 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     }
     
     /* Apply the frame delta -- this may fail. */
-    if ((err = plcrash_async_dwarf_cfa_state_apply(task, &cie_info, &current_frame->thread_state, image->byteorder, &cfa_state, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
+    if ((err = cfa_state.apply_state(task, &cie_info, &current_frame->thread_state, image->byteorder, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
         result = PLFRAME_ESUCCESS;
     } else {
         PLCF_DEBUG("Failed to apply CFA state for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
