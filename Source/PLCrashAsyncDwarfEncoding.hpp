@@ -34,6 +34,8 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 #include "PLCrashAsyncDwarfFDE.hpp"
 
+namespace plcrash { namespace async {
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -70,6 +72,8 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
                                                            plcrash_async_dwarf_fde_info_t *fde_info);
 
 void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader);
+    
+}}
 
 /**
  * @}

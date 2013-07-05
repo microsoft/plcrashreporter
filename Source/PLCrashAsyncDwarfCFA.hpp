@@ -304,7 +304,7 @@ public:
     plcrash_error_t eval_program (plcrash_async_mobject_t *mobj,
                                   pl_vm_address_t pc,
                                   plcrash_async_dwarf_cie_info_t *cie_info,
-                                  plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
+                                  gnu_ehptr_reader<machine_ptr> *ptr_reader,
                                   const plcrash_async_byteorder_t *byteorder,
                                   pl_vm_address_t address,
                                   pl_vm_off_t offset,

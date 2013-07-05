@@ -32,6 +32,8 @@
 
 #include "dwarf_encoding_test.h"
 
+using namespace plcrash::async;
+
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
 #  define TEST_BINARY @"test.macosx"
 #elif TARGET_IPHONE_SIMULATOR

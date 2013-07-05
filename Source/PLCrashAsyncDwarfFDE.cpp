@@ -29,6 +29,8 @@
 
 #include <inttypes.h>
 
+using namespace plcrash::async;
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -50,12 +52,13 @@
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
  * frame reader will assume eh_frame data.
  */
-plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
-                                                   plcrash_async_mobject_t *mobj,
-                                                   const plcrash_async_byteorder_t *byteorder,
-                                                   uint8_t address_size,
-                                                   pl_vm_address_t fde_address,
-                                                   bool debug_frame)
+template <typename machine_ptr>
+plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
+                                                                   plcrash_async_mobject_t *mobj,
+                                                                   const plcrash_async_byteorder_t *byteorder,
+                                                                   uint8_t address_size,
+                                                                   pl_vm_address_t fde_address,
+                                                                   bool debug_frame)
 {
     const pl_vm_address_t sect_addr = plcrash_async_mobject_base_address(mobj);
     plcrash_error_t err;
@@ -135,12 +138,11 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
      * than pcrel. This matches libunwind-35.1, but we should ammend our API to support supplying the remainder of
      * the supported base addresses.
      */
-    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
-    plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, address_size);
+    gnu_ehptr_reader<machine_ptr> ptr_reader(byteorder);
     
     /* Parse the CIE */
     plcrash_async_dwarf_cie_info_t cie;
-    if ((err = plcrash_async_dwarf_cie_info_init(&cie, mobj, byteorder, &ptr_state, cie_target_address)) != PLCRASH_ESUCCESS) {
+    if ((err = plcrash_async_dwarf_cie_info_init(&cie, mobj, byteorder, &ptr_reader, cie_target_address)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to parse CFE for FDE");
         return err;
     }
@@ -149,7 +151,8 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
      * Fetch the address range described by this entry
      */
     {
-        uint64_t ptr_size;
+        machine_ptr value;
+        size_t ptr_size;
         
         /* Determine the correct encoding to use. This will either be encoded using the standard plaform
          * pointer size (as per DWARF), or using the encoding defined in the augmentation string
@@ -159,19 +162,20 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
             pc_encoding = (DW_EH_PE_t) cie.eh_augmentation.pointer_encoding;
 
         /* Fetch the base PC address */
-        if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, pc_encoding, &ptr_state, &info->pc_start, &ptr_size)) != PLCRASH_ESUCCESS) {
+        if ((err = ptr_reader.read(mobj, fde_address, offset, pc_encoding, &value, &ptr_size)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to read FDE initial_location");
             return err;
         }
-        
+
+        info->pc_start = value;
         offset += ptr_size;
         
         /* Fetch the PC length. In DWARF 3&4 specifications, this value is defined to use the standard platform pointer size. The
          * LSB 4.1.0 specification does not define the expected format, but a review of GNU's GDB implementation (along with
          * other independent implementations), demonstrates that this value uses the FDE pointer encoding with all indirection
          * flags cleared. */
-        uint64_t pc_length;
-        if ((err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, fde_address, offset, (DW_EH_PE_t) (pc_encoding & DW_EH_PE_MASK_ENCODING), &ptr_state, &pc_length, &ptr_size))) {
+        machine_ptr pc_length;
+        if ((err = ptr_reader.read(mobj, fde_address, offset, (DW_EH_PE_t) (pc_encoding & DW_EH_PE_MASK_ENCODING), &pc_length, &ptr_size))) {
             PLCF_DEBUG("Failed to read FDE address_length");
             return err;
         }
@@ -203,7 +207,6 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
     info->instructions_length = info->fde_length - (info->instructions_offset - info->fde_offset);
 
     /* Clean up */
-    plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
     plcrash_async_dwarf_cie_info_free(&cie);
     
     return PLCRASH_ESUCCESS;
@@ -214,7 +217,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
  *
  * @param info The FDE info record for which the instruction offset should be returned.
  */
-pl_vm_address_t plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_dwarf_fde_info_t *info) {
+pl_vm_address_t plcrash::async::plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_dwarf_fde_info_t *info) {
     return info->instructions_offset;
 }
 
@@ -223,7 +226,7 @@ pl_vm_address_t plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_
  *
  * @param info The FDE info record for which the instruction length should be returned.
  */
-pl_vm_size_t plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwarf_fde_info_t *info) {
+pl_vm_size_t plcrash::async::plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwarf_fde_info_t *info) {
     return info->instructions_length;
 }
 
@@ -232,9 +235,26 @@ pl_vm_size_t plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwa
  *
  * @param fde_info A previously initialized FDE info instance.
  */
-void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info) {
+void plcrash::async::plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info) {
     // noop
 }
+
+/* Provide explicit 32/64-bit instantiations */
+template
+plcrash_error_t plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
+                                                             plcrash_async_mobject_t *mobj,
+                                                             const plcrash_async_byteorder_t *byteorder,
+                                                             uint8_t address_size,
+                                                             pl_vm_address_t fde_address,
+                                                             bool debug_frame);
+
+template
+plcrash_error_t plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
+                                                             plcrash_async_mobject_t *mobj,
+                                                             const plcrash_async_byteorder_t *byteorder,
+                                                             uint8_t address_size,
+                                                             pl_vm_address_t fde_address,
+                                                             bool debug_frame);
 
 /**
  * @}

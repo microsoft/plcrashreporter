@@ -34,6 +34,8 @@
 
 #include <inttypes.h>
 
+using namespace plcrash::async;
+
 /**
  * @internal
  *
@@ -59,6 +61,8 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
                                                              const plframe_stackframe_t *previous_frame,
                                                              plframe_stackframe_t *next_frame)
 {
+    gnu_ehptr_reader<machine_ptr> ptr_state(image->byteorder);
+
     /* Mapped DWARF sections; only one of eh_frame/debug_frame will be mapped */
     plcrash_async_mobject_t eh_frame;
     plcrash_async_mobject_t debug_frame;
@@ -69,8 +73,6 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     plcrash_async_dwarf_frame_reader_t reader;
     bool did_init_reader = false;
     
-    plcrash_async_dwarf_gnueh_ptr_state_t ptr_state;
-    bool did_init_ptr_state = false;
     
     plcrash_async_dwarf_fde_info_t fde_info;
     bool did_init_fde = false;
@@ -136,9 +138,6 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     
     /* Initialize pointer state */
     {
-        plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, address_size);
-        did_init_ptr_state = true;
-        
         // TODO - configure the pointer state */
     }
     
@@ -150,7 +149,6 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
             result = PLFRAME_ENOTSUP;
             
             plcrash_async_dwarf_fde_info_free(&fde_info);
-            plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
             goto cleanup;
         }
         did_init_cie = true;
@@ -197,9 +195,6 @@ cleanup:
     
     if (did_init_fde)
         plcrash_async_dwarf_fde_info_free(&fde_info);
-    
-    if (did_init_ptr_state)
-        plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
     
     return result;
 }

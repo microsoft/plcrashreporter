@@ -28,6 +28,8 @@
 
 #include <inttypes.h>
 
+using namespace plcrash::async;
+
 /**
  * @internal
  * @ingroup plcrash_async
@@ -49,11 +51,11 @@
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
  * frame reader will assume eh_frame data.
  */
-plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
-                                                       plcrash_async_mobject_t *mobj,
-                                                       const plcrash_async_byteorder_t *byteorder,
-                                                       uint8_t address_size,
-                                                       bool debug_frame)
+plcrash_error_t plcrash::async::plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
+                                                                       plcrash_async_mobject_t *mobj,
+                                                                       const plcrash_async_byteorder_t *byteorder,
+                                                                       uint8_t address_size,
+                                                                       bool debug_frame)
 {
     reader->mobj = mobj;
     reader->byteorder = byteorder;
@@ -79,7 +81,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame
  * @return Returns PLFRAME_ESUCCCESS on success, or one of the remaining error codes if a DWARF parsing error occurs. If
  * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
  */
-plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_off_t offset, pl_vm_address_t pc, plcrash_async_dwarf_fde_info_t *fde_info) {
+plcrash_error_t plcrash::async::plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader, pl_vm_off_t offset, pl_vm_address_t pc, plcrash_async_dwarf_fde_info_t *fde_info) {
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
     const pl_vm_address_t end_addr = base_addr + plcrash_async_mobject_length(reader->mobj);
@@ -183,7 +185,12 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
         }
 
         /* Decode the FDE */
-        err = plcrash_async_dwarf_fde_info_init(fde_info, reader->mobj, byteorder, reader->address_size, cfi_entry, reader->debug_frame);
+        // TODO - template this.
+        if (reader->address_size == 8) {
+            err = plcrash_async_dwarf_fde_info_init<uint64_t>(fde_info, reader->mobj, byteorder, reader->address_size, cfi_entry, reader->debug_frame);
+        } else {
+            err = plcrash_async_dwarf_fde_info_init<uint32_t>(fde_info, reader->mobj, byteorder, reader->address_size, cfi_entry, reader->debug_frame);
+        }
         if (err != PLCRASH_ESUCCESS)
             return err;
 
@@ -203,7 +210,7 @@ plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_f
 /**
  * Free all resources associated with @a reader.
  */
-void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader) {
+void plcrash::async::plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader) {
     // noop
 }
 

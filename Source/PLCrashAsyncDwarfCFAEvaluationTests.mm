@@ -37,7 +37,7 @@ using namespace plcrash::async;
 
 @interface PLCrashAsyncDwarfCFAEvaluationTests : PLCrashTestCase {
     dwarf_cfa_state<uint64_t, int64_t> _stack;
-    plcrash_async_dwarf_gnueh_ptr_state_t _ptr_state;
+    gnu_ehptr_reader<uint64_t> *_ptr_state;
     plcrash_async_dwarf_cie_info_t _cie;
 }
 @end
@@ -49,7 +49,7 @@ using namespace plcrash::async;
 
 - (void) setUp {
     /* Initialize required configuration for pointer dereferencing */
-    plcrash_async_dwarf_gnueh_ptr_state_init(&_ptr_state, 4);
+    _ptr_state = new gnu_ehptr_reader<uint64_t>(plcrash_async_byteorder_big_endian());
 
     _cie.segment_size = 0x0; // we don't use segments
     _cie.has_eh_augmentation = true;
@@ -59,11 +59,11 @@ using namespace plcrash::async;
     _cie.code_alignment_factor = 1;
     _cie.data_alignment_factor = 1;
     
-    _cie.address_size = _ptr_state.address_size;
+    _cie.address_size = 8;
 }
 
 - (void) tearDown {
-    plcrash_async_dwarf_gnueh_ptr_state_free(&_ptr_state);
+    delete _ptr_state;
 }
 
 #pragma mark CFA Evaluation
@@ -75,7 +75,7 @@ using namespace plcrash::async;
     plcrash_error_t err; \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
     \
-        err = _stack.eval_program(&mobj, (pl_vm_address_t)pc_offset, &_cie, &_ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes)); \
+        err = _stack.eval_program(&mobj, (pl_vm_address_t)pc_offset, &_cie, _ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes)); \
         STAssertEquals(err, expected, @"Evaluation failed"); \
     \
     plcrash_async_mobject_free(&mobj); \
@@ -94,12 +94,12 @@ using namespace plcrash::async;
 - (void) testSetLoc {
     /* This should terminate once our PC offset is hit below; otherwise, it will execute a
      * bad CFA instruction and return falure */
-    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4, DW_CFA_BAD_OPCODE};
-    PERFORM_EVAL_TEST(opcodes, 0x1020304, PLCRASH_ESUCCESS);
+    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST(opcodes, 0x102030405060708, PLCRASH_ESUCCESS);
     
     /* Test evaluation without GNU EH agumentation data (eg, using direct word sized pointers) */
     _cie.has_eh_augmentation = false;
-    PERFORM_EVAL_TEST(opcodes, 0x1020304, PLCRASH_ESUCCESS);
+    PERFORM_EVAL_TEST(opcodes, 0x102030405060708, PLCRASH_ESUCCESS);
 }
 
 /** Test evaluation of DW_CFA_advance_loc */

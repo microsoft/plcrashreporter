@@ -77,7 +77,7 @@ public:
     inline bool read_uintmax64 (uint8_t data_size, uint64_t *result);
     inline bool read_uleb128 (uint64_t *result);
     inline bool read_sleb128 (int64_t *result);
-    inline bool read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state, DW_EH_PE_t encoding, uint64_t *result);
+    template <typename machine_ptr> inline bool read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reader, DW_EH_PE_t encoding, machine_ptr *result);
     inline bool skip (pl_vm_off_t offset);
     inline uintptr_t get_position (void);
 };
@@ -206,20 +206,22 @@ inline bool dwarf_opstream::read_sleb128 (int64_t *result) {
  * Read a GNU DWARF encoded pointer value from the stream, verifying that the read does not overrun
  * the mapped range and advancing the stream position past the read value.
  *
- * @param state The base GNU eh_frame pointer state with which the encoded pointer value will be evaluated.
- * If a value is read that is relative to a @state-supplied base address of PLCRASH_ASYNC_DWARF_INVALID_BASE_ADDR, PLCRASH_ENOTSUP will be returned.
+ * @param reader The GNU eh_frame pointer reader to be used for reading.
  * @param DW_EH_PE_t The pointer encoding to use when decoding the pointer value.
  * @param result On success, the pointer value.
+ *
+ * @tparam machine_ptr The native pointer word size of the target.
  */
-inline bool dwarf_opstream::read_gnueh_ptr (plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state, DW_EH_PE_t encoding, uint64_t *result)
+template <typename machine_ptr>
+inline bool dwarf_opstream::read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reader, DW_EH_PE_t encoding, machine_ptr *result)
 {
     pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
     plcrash_error_t err;
-    uint64_t size;
+    size_t size;
 
     /* Perform the read; this will safely handle the case where the target falls outside
      * of the maximum range */
-    if ((err = plcrash_async_dwarf_read_gnueh_ptr(_mobj, _byteorder, _start, offset, encoding, ptr_state, result, &size)) != PLCRASH_ESUCCESS) {
+    if ((err = reader->read(_mobj, _start, offset, encoding, result, &size)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Read of GNU EH pointer value failed with %u", err);
         return false;
     }

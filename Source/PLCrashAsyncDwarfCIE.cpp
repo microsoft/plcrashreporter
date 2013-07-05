@@ -28,6 +28,8 @@
 
 #include <inttypes.h>
 
+using namespace plcrash::async;
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -47,11 +49,12 @@
  * @param ptr_state The pointer state to be used when decoding GNU eh_frame pointer values.
  * @param address The task-relative address within @a mobj of the CIE to be decoded.
  */
-plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
-                                                   plcrash_async_mobject_t *mobj,
-                                                   const plcrash_async_byteorder_t *byteorder,
-                                                   plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
-                                                   pl_vm_address_t address)
+template <typename machine_ptr>
+plcrash_error_t plcrash::async::plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
+                                                                   plcrash_async_mobject_t *mobj,
+                                                                   const plcrash_async_byteorder_t *byteorder,
+                                                                   gnu_ehptr_reader<machine_ptr> *ptr_reader,
+                                                                   pl_vm_address_t address)
 {
     pl_vm_address_t base_addr = plcrash_async_mobject_base_address(mobj);
     pl_vm_address_t offset = 0;
@@ -294,8 +297,9 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
                     break;
                     
                 case 'P': {
+                    machine_ptr value;
                     uint8_t ptr_enc;
-                    uint64_t size;
+                    size_t size;
                     
                     /* Read the personality routine pointer encoding */
                     if ((err = plcrash_async_mobject_read_uint8(mobj, address, data_offset, &ptr_enc)) != PLCRASH_ESUCCESS) {
@@ -306,13 +310,13 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
                     data_offset += sizeof(uint8_t);
                     
                     /* Read the actual pointer value */
-                    err = plcrash_async_dwarf_read_gnueh_ptr(mobj, byteorder, address, data_offset, (DW_EH_PE_t) ptr_enc, ptr_state,
-                                                             &info->eh_augmentation.personality_address, &size);
+                    err = ptr_reader->read(mobj, address, data_offset, (DW_EH_PE_t) ptr_enc, &value, &size);
                     if (err != PLCRASH_ESUCCESS) {
                         PLCF_DEBUG("Failed to read the personality routine pointer value");
                         return err;
                     }
-                    
+
+                    info->eh_augmentation.personality_address = value;
                     info->eh_augmentation.has_personality_address = true;
                     data_offset += size;
                     break;
@@ -378,7 +382,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
  *
  * @param info The CIE info for which the initial instruction offset should be returned.
  */
-pl_vm_address_t plcrash_async_dwarf_cie_info_initial_instructions_offset (plcrash_async_dwarf_cie_info_t *info) {
+pl_vm_address_t plcrash::async::plcrash_async_dwarf_cie_info_initial_instructions_offset (plcrash_async_dwarf_cie_info_t *info) {
     return info->initial_instructions_offset;
 }
 
@@ -387,7 +391,7 @@ pl_vm_address_t plcrash_async_dwarf_cie_info_initial_instructions_offset (plcras
  *
  * @param info The CIE info for which the initial instruction length should be returned.
  */
-pl_vm_size_t plcrash_async_dwarf_cie_info_initial_instructions_length (plcrash_async_dwarf_cie_info_t *info) {
+pl_vm_size_t plcrash::async::plcrash_async_dwarf_cie_info_initial_instructions_length (plcrash_async_dwarf_cie_info_t *info) {
     return info->initial_instructions_length;
 }
 
@@ -396,9 +400,24 @@ pl_vm_size_t plcrash_async_dwarf_cie_info_initial_instructions_length (plcrash_a
  *
  * @param info A previously initialized info instance.
  */
-void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info) {
+void plcrash::async::plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info) {
     // No-op
 }
+
+/* Provide explicit 32/64-bit instantiations */
+template
+plcrash_error_t plcrash_async_dwarf_cie_info_init<uint32_t> (plcrash_async_dwarf_cie_info_t *info,
+                                                             plcrash_async_mobject_t *mobj,
+                                                             const plcrash_async_byteorder_t *byteorder,
+                                                             gnu_ehptr_reader<uint32_t> *ptr_reader,
+                                                             pl_vm_address_t address);
+
+template
+plcrash_error_t plcrash_async_dwarf_cie_info_init<uint64_t> (plcrash_async_dwarf_cie_info_t *info,
+                                                             plcrash_async_mobject_t *mobj,
+                                                             const plcrash_async_byteorder_t *byteorder,
+                                                             gnu_ehptr_reader<uint64_t> *ptr_reader,
+                                                             pl_vm_address_t address);
 
 /**
  * @}

@@ -31,6 +31,8 @@
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
+namespace plcrash { namespace async {
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -154,10 +156,11 @@ typedef struct plcrash_async_dwarf_cie_info {
     pl_vm_size_t initial_instructions_length;
 } plcrash_async_dwarf_cie_info_t;
 
+template <typename machine_ptr>
 plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_t *info,
                                                    plcrash_async_mobject_t *mobj,
                                                    const plcrash_async_byteorder_t *byteorder,
-                                                   plcrash_async_dwarf_gnueh_ptr_state_t *ptr_state,
+                                                   gnu_ehptr_reader<machine_ptr> *ptr_reader,
                                                    pl_vm_address_t address);
 
 pl_vm_address_t plcrash_async_dwarf_cie_info_initial_instructions_offset (plcrash_async_dwarf_cie_info_t *info);
@@ -169,5 +172,7 @@ void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 /**
  * @}
  */
+
+}}
 
 #endif /* PLCRASH_ASYNC_DWARF_CIE_H */

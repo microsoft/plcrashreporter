@@ -31,6 +31,8 @@
 #include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
 
+namespace plcrash { namespace async {
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -66,6 +68,7 @@ typedef struct plcrash_async_dwarf_fde_info {
     pl_vm_size_t instructions_length;
 } plcrash_async_dwarf_fde_info_t;
 
+template <typename machine_ptr>
 plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
                                                    plcrash_async_mobject_t *mobj,
                                                    const plcrash_async_byteorder_t *byteorder,
@@ -83,5 +86,6 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  * @}
  */
 
+}}
 
 #endif /* !PLCRASH_ASYNC_DWARF_FDE_H */
