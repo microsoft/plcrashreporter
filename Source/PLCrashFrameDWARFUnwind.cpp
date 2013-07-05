@@ -70,10 +70,8 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     bool is_debug_frame = false;
     
     /* Reader state */
-    plcrash_async_dwarf_frame_reader_t reader;
-    bool did_init_reader = false;
-    
-    
+    dwarf_frame_reader reader;
+
     plcrash_async_dwarf_fde_info_t fde_info;
     bool did_init_fde = false;
     
@@ -113,20 +111,15 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     }
     
     /* Initialize the reader. */
-    uint8_t address_size;
-    {
-        address_size = image->m64 ? 8 : 4;
-        if ((err = plcrash_async_dwarf_frame_reader_init(&reader, dwarf_section, image->byteorder, address_size, is_debug_frame)) != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Could not initialize a %s DWARF parser for the current frame pc: 0x%" PRIx64 " %d", (is_debug_frame ? "debug_frame" : "eh_frame"), (uint64_t) pc, err);
-            result = PLFRAME_EINVAL;
-            goto cleanup;
-        }
-        did_init_reader = true;
+    if ((err = reader.init(dwarf_section, image->byteorder, image->m64, is_debug_frame)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Could not initialize a %s DWARF parser for the current frame pc: 0x%" PRIx64 " %d", (is_debug_frame ? "debug_frame" : "eh_frame"), (uint64_t) pc, err);
+        result = PLFRAME_EINVAL;
+        goto cleanup;
     }
     
     /* Find the FDE (if any) */
     {
-        err = plcrash_async_dwarf_frame_reader_find_fde(&reader, 0x0 /* offset hint */, pc, &fde_info);
+        err = reader.find_fde(0x0 /* offset hint */, pc, &fde_info);
         
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Did not find FDE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
@@ -186,9 +179,6 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
 cleanup:
     if (dwarf_section != NULL)
         plcrash_async_mobject_free(dwarf_section);
-    
-    if (did_init_reader)
-        plcrash_async_dwarf_frame_reader_free(&reader);
     
     if (did_init_cie)
         plcrash_async_dwarf_cie_info_free(&cie_info);

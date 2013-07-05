@@ -53,8 +53,11 @@ using namespace plcrash::async;
     plcrash_async_mobject_t _debug_frame;
 
     /* Frame readers */
-    plcrash_async_dwarf_frame_reader_t _eh_reader;
-    plcrash_async_dwarf_frame_reader_t _debug_reader;
+    dwarf_frame_reader _eh_reader;
+    dwarf_frame_reader _debug_reader;
+
+    /* True if using 64-bit test data, false otherwise */
+    bool _m64;
 }
 @end
 
@@ -98,22 +101,25 @@ using namespace plcrash::async;
     /* Determine the address size */
     const plcrash_async_byteorder_t *byteorder = plcrash_async_macho_byteorder(&_image);
     cpu_type_t cputype = byteorder->swap32(_image.header.cputype);
-    uint8_t address_size = 4;
-    if (cputype & CPU_ARCH_ABI64)
+    uint8_t address_size;
+
+    if (cputype & CPU_ARCH_ABI64) {
+        _m64 = true;
         address_size = 8;
+    } else {
+        _m64 = false;
+        address_size = 4;
+    }
 
     /* Initialize eh/debug readers */
-    err = plcrash_async_dwarf_frame_reader_init(&_eh_reader, &_eh_frame, byteorder, address_size, false);
+    err = _eh_reader.init(&_eh_frame, byteorder, _m64, false);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 
-    err = plcrash_async_dwarf_frame_reader_init(&_debug_reader, &_debug_frame, byteorder, address_size, true);
+    err = _debug_reader.init(&_debug_frame, byteorder, _m64, true);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize reader");
 }
 
 - (void) tearDown {
-    plcrash_async_dwarf_frame_reader_free(&_eh_reader);
-    plcrash_async_dwarf_frame_reader_free(&_debug_reader);
-
     plcrash_async_mobject_free(&_eh_frame);
     plcrash_async_mobject_free(&_debug_frame);
 
@@ -124,11 +130,11 @@ using namespace plcrash::async;
     plcrash_error_t err;
     plcrash_async_dwarf_fde_info_t fde_info;
 
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_eh_reader, 0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE-1, &fde_info);
+    err = _eh_reader.find_fde(0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE-1, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
     
     /* Should be the second entry in the table, plus the initial length field. */
-    if (_eh_reader.address_size == 8) {
+    if (_m64) {
         STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64, @"Incorrect offset");
         STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
     } else {
@@ -140,7 +146,7 @@ using namespace plcrash::async;
     plcrash_async_dwarf_fde_info_free(&fde_info);
 
     /* Verify that an unknown PC returns ENOTFOUND. */
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE, &fde_info);
+    err = _debug_reader.find_fde(0x0, PL_CFI_EH_FRAME_PC+PL_CFI_EH_FRAME_PC_RANGE, &fde_info);
     STAssertEquals(PLCRASH_ENOTFOUND, err, @"FDE should not have been found");
 }
 
@@ -148,11 +154,11 @@ using namespace plcrash::async;
     plcrash_error_t err;
     plcrash_async_dwarf_fde_info_t fde_info;
 
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE-1, &fde_info);
+    err = _debug_reader.find_fde(0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE-1, &fde_info);
     STAssertEquals(PLCRASH_ESUCCESS, err, @"FDE search failed");
     
     /* Should be the second entry in the table, plus the initial length field. */
-    if (_eh_reader.address_size == 8) {
+    if (_m64) {
         STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64, @"Incorrect offset");
         STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
     } else {
@@ -165,7 +171,7 @@ using namespace plcrash::async;
     plcrash_async_dwarf_fde_info_free(&fde_info);
     
     /* Verify that an unknown PC freturns ENOTFOUND */
-    err = plcrash_async_dwarf_frame_reader_find_fde(&_debug_reader, 0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE, &fde_info);
+    err = _debug_reader.find_fde(0x0, PL_CFI_DEBUG_FRAME_PC+PL_CFI_DEBUG_FRAME_PC_RANGE, &fde_info);
     STAssertEquals(PLCRASH_ENOTFOUND, err, @"FDE should not have been found");
 }
 

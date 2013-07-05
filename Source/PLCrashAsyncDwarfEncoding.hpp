@@ -43,35 +43,35 @@ namespace plcrash { namespace async {
  */
 
 /**
- * A DWARF frame reader instance. Performs DWARF eh_frame/debug_frame parsing from a backing memory object.
+ * A DWARF frame reader. Performs DWARF eh_frame/debug_frame parsing from a backing memory object.
+ *
+ * @tparam machine_ptr The target machine's unsigned native pointer type.
+ * @tparam machine_ptr_s The target machine's signed native pointer type.
  */
-typedef struct plcrash_async_dwarf_frame_reader {
-    /** A memory object containing the DWARF data at the starting address. */
-    plcrash_async_mobject_t *mobj;
-
-    /** The byte order of the encoded data. */
-    const plcrash_async_byteorder_t *byteorder;
+class dwarf_frame_reader {
+public:
+    plcrash_error_t init (plcrash_async_mobject_t *mobj,
+                          const plcrash_async_byteorder_t *byteorder,
+                          bool m64,
+                          bool debug_frame);
     
-    /** The pointer size of the target system, in bytes. Must be one of 1, 2, 4, or 8. */
-    uint8_t address_size;
+    plcrash_error_t find_fde (pl_vm_off_t offset,
+                              pl_vm_address_t pc,
+                              plcrash_async_dwarf_fde_info_t *fde_info);
 
+private:
+    /** A memory object containing the DWARF data at the starting address. */
+    plcrash_async_mobject_t *_mobj;
+    
+    /** The byte order of the encoded data. */
+    const plcrash_async_byteorder_t *_byteorder;
+
+    /** True if the target system uses 64-bit pointers, false if it uses 32-bit pointers. */
+    bool _m64;
+    
     /** True if this is a debug_frame section */
-    bool debug_frame;
-} plcrash_async_dwarf_frame_reader_t;
-
-
-plcrash_error_t plcrash_async_dwarf_frame_reader_init (plcrash_async_dwarf_frame_reader_t *reader,
-                                                       plcrash_async_mobject_t *mobj,
-                                                       const plcrash_async_byteorder_t *byteorder,
-                                                       uint8_t address_size,
-                                                       bool debug_frame);
-
-plcrash_error_t plcrash_async_dwarf_frame_reader_find_fde (plcrash_async_dwarf_frame_reader_t *reader,
-                                                           pl_vm_off_t offset,
-                                                           pl_vm_address_t pc,
-                                                           plcrash_async_dwarf_fde_info_t *fde_info);
-
-void plcrash_async_dwarf_frame_reader_free (plcrash_async_dwarf_frame_reader_t *reader);
+    bool _debug_frame;
+};
     
 }}
 
