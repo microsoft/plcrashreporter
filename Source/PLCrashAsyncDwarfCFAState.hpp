@@ -47,7 +47,7 @@ namespace plcrash { namespace async {
 /* Consumes around 1.65k (on 32-bit and 64-bit systems). */
 #define DWARF_CFA_STATE_MAX_REGISTERS 100
 
-class dwarf_cfa_state_iterator;
+template <typename machine_ptr, typename machine_ptr_s> class dwarf_cfa_state_iterator;
 
 /** DWARF CFA-defined register number .*/
 typedef uint32_t dwarf_cfa_state_regnum_t;
@@ -89,9 +89,10 @@ typedef enum {
  * The invariants for applying a DWARF CFA rule are defined in the @a dwarf_cfa_state_cfa_type_t documentation,
  * as well as the relevant DWARF specification sections listed above.
  */
-typedef struct dwarf_cfa_rule {
+template <typename machine_ptr, typename machine_ptr_s> class dwarf_cfa_rule {
+private:
     /** The CFA type */
-    dwarf_cfa_state_cfa_type_t cfa_type;
+    dwarf_cfa_state_cfa_type_t _cfa_type;
     
     union {
         /**
@@ -101,9 +102,14 @@ typedef struct dwarf_cfa_rule {
             /** CFA register */
             dwarf_cfa_state_regnum_t regnum;
             
-            /** CFA register signed offset. Should be cast to uint64_t when evaluating non-signed register rule
-             * (DWARF_CFA_STATE_CFA_TYPE_REGISTER) */
-            int64_t offset;
+            /** CFA register offset. */
+            union {
+                /** The unsigned offset to be used with DWARF_CFA_STATE_CFA_TYPE_REGISTER rules. */
+                machine_ptr u_off;
+                
+                /** The signed offset to be used with DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED rules. */
+                machine_ptr_s s_off;
+            } offset;
         } reg;
         
         /** CFA expression (CFA = expression). Valid if type is DWARF_CFA_STATE_CFA_TYPE_EXPRESSION. */
@@ -118,8 +124,105 @@ typedef struct dwarf_cfa_rule {
              */
             pl_vm_size_t length;
         } expression;
-    };
-} dwarf_cfa_rule_t;
+    } _cfa_data;
+
+public:
+    /**
+     * Configure the target as a DWARF_CFA_STATE_CFA_TYPE_REGISTER register rule.
+     *
+     * @param regnum The DWARF register number.
+     * @param offset The unsigned register offset.
+     */
+    void set_register_rule (dwarf_cfa_state_regnum_t regnum, machine_ptr offset) {
+        _cfa_type = DWARF_CFA_STATE_CFA_TYPE_REGISTER;
+        _cfa_data.reg.regnum = regnum;
+        _cfa_data.reg.offset.u_off = offset;
+    }
+    
+    /**
+     * Configure the target as a DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED register rule.
+     *
+     * @param type DWARF register rule type (eg, one of DWARF_CFA_STATE_CFA_TYPE_REGISTER or DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED).
+     * @param offset The signed register offset.
+     */
+    void set_register_rule_signed (dwarf_cfa_state_regnum_t regnum, machine_ptr offset) {
+        _cfa_type = DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED;
+        _cfa_data.reg.regnum = regnum;
+        _cfa_data.reg.offset.s_off = offset;
+    }
+    
+    /**
+     * Configure the target as a DWARF_CFA_STATE_CFA_TYPE_EXPRESSION rule.
+     *
+     * @param Target-relative absolute address of the expression opcode stream.
+     * @param length Total length of the opcode stream, in bytes.
+     */
+    void set_expression_rule (pl_vm_address_t address, pl_vm_address_t length) {
+        _cfa_type = DWARF_CFA_STATE_CFA_TYPE_EXPRESSION;
+        _cfa_data.expression.address = address;
+        _cfa_data.expression.length = length;
+    }
+    
+    /**
+     * Configure the target as a DWARF_CFA_STATE_CFA_TYPE_UNDEFINED rule.
+     */
+    void set_undefined_rule (void) {
+        _cfa_type = DWARF_CFA_STATE_CFA_TYPE_UNDEFINED;
+    }
+    
+    /**
+     * Return the CFA rule type.
+     */
+    dwarf_cfa_state_cfa_type_t type (void) {
+        return _cfa_type;
+    }
+    
+    /**
+     * Return the register number for this rule. This method is only applicable to and may only be called on
+     * DWARF_CFA_STATE_CFA_TYPE_REGISTER and DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED rules.
+     */
+    dwarf_cfa_state_regnum_t register_number (void) {
+        PLCF_ASSERT(_cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER || _cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED);
+        return _cfa_data.reg.regnum;
+    }
+    
+    /**
+     * Return the unsigned register offset for this rule. This method is only applicable to and may only be called on
+     * DWARF_CFA_STATE_CFA_TYPE_REGISTER rules.
+     */
+    machine_ptr register_offset (void) {
+        PLCF_ASSERT(_cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER);
+        return _cfa_data.reg.offset.u_off;
+    }
+    
+    /**
+     * Return the signed register offset for this rule. This method is only applicable to and may only be called on
+     * DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED rules.
+     */
+    machine_ptr_s register_offset_signed (void) {
+        PLCF_ASSERT(_cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED);
+        return _cfa_data.reg.offset.s_off;
+    }
+    
+    
+    /**
+     * Return the target-relative absolute address of the expression opcode stream for this rule. This method is only applicable to and may only be called on
+     * DWARF_CFA_STATE_CFA_TYPE_EXPRESSION rules.
+     */
+    pl_vm_address_t expression_address (void) {
+        PLCF_ASSERT(_cfa_type == DWARF_CFA_STATE_CFA_TYPE_EXPRESSION);
+        return _cfa_data.expression.address;
+    }
+    
+    /**
+     * Rethrn the otal length of the opcode stream, in bytes, for this rule. This method is only applicable to and may only be called on
+     * DWARF_CFA_STATE_CFA_TYPE_EXPRESSION rules.
+     */
+    pl_vm_size_t expression_length (void) {
+        PLCF_ASSERT(_cfa_type == DWARF_CFA_STATE_CFA_TYPE_EXPRESSION);
+        return _cfa_data.expression.length;
+    }
+};
 
 /**
  * Manages CFA register table row, using sparsely allocated register column entries. The class represents
@@ -136,6 +239,7 @@ typedef struct dwarf_cfa_rule {
  *
  * @todo If we introduce our own async-safe heap allocator, it may be preferrable to use the heap for entries.
  */
+template <typename machine_ptr, typename machine_ptr_s>
 class dwarf_cfa_state {
 private:
     /* Private configuration defines */
@@ -162,7 +266,7 @@ private:
     } dwarf_cfa_reg_entry_t;
     
     /** Current call frame value configuration. */
-    dwarf_cfa_rule_t _cfa_value[DWARF_CFA_STATE_MAX_STATES];
+    dwarf_cfa_rule<machine_ptr,machine_ptr_s> _cfa_value[DWARF_CFA_STATE_MAX_STATES];
     
     /** Current number of defined register entries */
     uint8_t _register_count[DWARF_CFA_STATE_MAX_STATES];
@@ -195,26 +299,28 @@ private:
 
 public:
     dwarf_cfa_state (void);
-    bool set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value);
-    bool get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value);
+    bool set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, machine_ptr value);
+    bool get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value);
 
     void remove_register (dwarf_cfa_state_regnum_t regnum);
     uint8_t get_register_count (void);
     
-    void set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_cfa_state_cfa_type_t cfa_type, int64_t offset);
+    void set_cfa_register (dwarf_cfa_state_regnum_t regnum, machine_ptr offset);
+    void set_cfa_register_signed (dwarf_cfa_state_regnum_t regnum, machine_ptr_s offset);
     void set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length);
-    dwarf_cfa_rule_t get_cfa_rule (void);
+    dwarf_cfa_rule<machine_ptr,machine_ptr_s> get_cfa_rule (void);
 
     bool push_state (void);
     bool pop_state (void);
     
-    friend class dwarf_cfa_state_iterator;
+    friend class dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>;
 };
 
 /**
  * A dwarf_cfa_state iterator; iterates DWARF CFA register records. The target stack must
  * not be modified while iteration is performed.
  */
+template <typename machine_ptr, typename machine_ptr_s>
 class dwarf_cfa_state_iterator {
 private:
     /** Current bucket index */
@@ -224,11 +330,11 @@ private:
     uint8_t _cur_entry_idx;
     
     /** Borrowed reference to the backing DWARF CFA state */
-    dwarf_cfa_state *_stack;
+    dwarf_cfa_state<machine_ptr, machine_ptr_s> *_stack;
     
 public:
-    dwarf_cfa_state_iterator(dwarf_cfa_state *stack);
-    bool next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, uint64_t *value);
+    dwarf_cfa_state_iterator(dwarf_cfa_state<machine_ptr, machine_ptr_s> *stack);
+    bool next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value);
 };
 
 }

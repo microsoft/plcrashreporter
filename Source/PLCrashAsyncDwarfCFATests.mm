@@ -36,7 +36,7 @@
 using namespace plcrash::async;
 
 @interface PLCrashAsyncDwarfCFATests : PLCrashTestCase {
-    dwarf_cfa_state _stack;
+    dwarf_cfa_state<uint64_t, int64_t> _stack;
     plcrash_async_dwarf_gnueh_ptr_state_t _ptr_state;
     plcrash_async_dwarf_cie_info_t _cie;
 }
@@ -84,7 +84,7 @@ using namespace plcrash::async;
 /* Validate the rule type and value of a register state in _stack */
 #define TEST_REGISTER_RESULT(_regnum, _type, _expect_val) do { \
     plcrash_dwarf_cfa_reg_rule_t rule; \
-    int64_t value; \
+    uint64_t value; \
     STAssertTrue(_stack.get_register_rule(_regnum, &rule, &value), @"Failed to fetch rule"); \
     STAssertEquals(_type, rule, @"Incorrect rule returned"); \
     STAssertEquals(_expect_val, value, @"Incorrect value returned"); \
@@ -144,9 +144,9 @@ using namespace plcrash::async;
     uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
 
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().register_number(), @"Unexpected CFA register");
+    STAssertEquals((uint64_t)2, _stack.get_cfa_rule().register_offset(), @"Unexpected CFA offset");
 }
 
 /** Test evaluation of DW_CFA_def_cfa_sf */
@@ -157,9 +157,9 @@ using namespace plcrash::async;
     uint8_t opcodes[] = { DW_CFA_def_cfa_sf, 0x1, 0x7e /* -2 */};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
 
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().register_number(), @"Unexpected CFA register");
+    STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().register_offset_signed(), @"Unexpected CFA offset");
 }
 
 /** Test evaluation of DW_CFA_def_cfa_register */
@@ -169,18 +169,18 @@ using namespace plcrash::async;
     /* Verify modification of unsigned state */
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
 
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int64_t)2, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((uint32_t)10, _stack.get_cfa_rule().register_number(), @"Unexpected CFA register");
+    STAssertEquals((uint64_t)2, _stack.get_cfa_rule().register_offset(), @"Unexpected CFA offset");
     
     /* Verify modification of signed state */
     opcodes[0] = DW_CFA_def_cfa_sf;
     opcodes[2] = 0x7e; /* -2 */
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)10, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int64_t)-2, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((uint32_t)10, _stack.get_cfa_rule().register_number(), @"Unexpected CFA register");
+    STAssertEquals((int64_t)-2, (int64_t)_stack.get_cfa_rule().register_offset_signed(), @"Unexpected CFA offset");
     
     /* Verify behavior when a non-register CFA rule is present */
     _stack.set_cfa_expression(0, 1);
@@ -195,9 +195,9 @@ using namespace plcrash::async;
     uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2, DW_CFA_def_cfa_offset, 10 };    
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int64_t)10, _stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().register_number(), @"Unexpected CFA register");
+    STAssertEquals((uint64_t)10, _stack.get_cfa_rule().register_offset(), @"Unexpected CFA offset");
 
     /* Verify behavior when a non-register CFA rule is present */
     _stack.set_cfa_expression(0, 1);
@@ -215,9 +215,9 @@ using namespace plcrash::async;
     uint8_t opcodes[] = { DW_CFA_def_cfa, 0x1, 0x2, DW_CFA_def_cfa_offset_sf, 0x7e /* -2 */ };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().reg.regnum, @"Unexpected CFA register");
-    STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().reg.offset, @"Unexpected CFA offset");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((uint32_t)1, _stack.get_cfa_rule().register_number(), @"Unexpected CFA register");
+    STAssertEquals((int64_t)-4, (int64_t)_stack.get_cfa_rule().register_offset_signed(), @"Unexpected CFA offset");
     
     /* Verify behavior when a non-register CFA rule is present */
     _stack.set_cfa_expression(0, 1);
@@ -232,15 +232,15 @@ using namespace plcrash::async;
     uint8_t opcodes[] = { DW_CFA_def_cfa_expression, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
-    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, _stack.get_cfa_rule().cfa_type, @"Unexpected CFA type");
-    STAssertEquals((pl_vm_address_t) &opcodes[2], _stack.get_cfa_rule().expression.address, @"Unexpected expression address");
-    STAssertEquals((pl_vm_size_t) 1, _stack.get_cfa_rule().expression.length, @"Unexpected expression length");
+    STAssertEquals(DWARF_CFA_STATE_CFA_TYPE_EXPRESSION, _stack.get_cfa_rule().type(), @"Unexpected CFA type");
+    STAssertEquals((pl_vm_address_t) &opcodes[2], _stack.get_cfa_rule().expression_address(), @"Unexpected expression address");
+    STAssertEquals((pl_vm_size_t) 1, _stack.get_cfa_rule().expression_length(), @"Unexpected expression length");
 }
 
 /** Test evaluation of DW_CFA_undefined */
 - (void) testUndefined {
     plcrash_dwarf_cfa_reg_rule_t rule;
-    int64_t value;
+    uint64_t value;
 
     /* Define the register */
     _stack.set_register(1, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, 10);
@@ -258,7 +258,7 @@ using namespace plcrash::async;
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
     plcrash_dwarf_cfa_reg_rule_t rule;
-    int64_t value;
+    uint64_t value;
     STAssertTrue(_stack.get_register_rule(1, &rule, &value), @"Failed to fetch rule");
     STAssertEquals(PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, rule, @"Incorrect rule returned");
 }
@@ -270,7 +270,7 @@ using namespace plcrash::async;
     // This opcode encodes the register value in the low 6 bits
     uint8_t opcodes[] = { DW_CFA_offset|0x4, 0x5 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (int64_t)0xA);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
 }
 
 /** Test evaluation of DW_CFA_offset_extended */
@@ -279,7 +279,7 @@ using namespace plcrash::async;
 
     uint8_t opcodes[] = { DW_CFA_offset_extended, 0x4, 0x5 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (int64_t)0xA);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)0xA);
 }
 
 /** Test evaluation of DW_CFA_offset_extended_sf */
@@ -288,7 +288,7 @@ using namespace plcrash::async;
     
     uint8_t opcodes[] = { DW_CFA_offset_extended_sf, 0x4, 0x4 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (int64_t)-4);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (uint64_t)-4);
 }
 
 /** Test evaluation of DW_CFA_val_offset */
@@ -297,7 +297,7 @@ using namespace plcrash::async;
 
     uint8_t opcodes[] = { DW_CFA_val_offset, 0x4, 0x4 };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (int64_t)-4);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (uint64_t)-4);
 }
 
 /** Test evaluation of DW_CFA_val_offset_sf */
@@ -306,7 +306,7 @@ using namespace plcrash::async;
     
     uint8_t opcodes[] = { DW_CFA_val_offset_sf, 0x4, 0x7e /* -2 */ };
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (int64_t)2);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (uint64_t)2);
 }
 
 /** Test evaluation of DW_CFA_register */
@@ -315,21 +315,21 @@ using namespace plcrash::async;
     
     uint8_t opcodes[] = { DW_CFA_register, 0x4, 0x5};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_REGISTER, (int64_t)0x5);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_REGISTER, (uint64_t)0x5);
 }
 
 /** Test evaluation of DW_CFA_expression */
 - (void) testExpression {
     uint8_t opcodes[] = { DW_CFA_expression, 0x4, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)&opcodes[2]);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (uint64_t)&opcodes[2]);
 }
 
 /** Test evaluation of DW_CFA_val_expression */
 - (void) testValExpression {
     uint8_t opcodes[] = { DW_CFA_val_expression, 0x4, 0x1 /* 1 byte long */, DW_OP_nop /* expression opcodes */};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t)&opcodes[2]);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (uint64_t)&opcodes[2]);
 }
 
 /** Test evaluation of DW_CFA_restore */
@@ -337,7 +337,7 @@ using namespace plcrash::async;
     _stack.set_register(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, 0x20);
     uint8_t opcodes[] = { DW_CFA_val_offset, 0x4, 0x4, DW_CFA_restore|0x4};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (uint64_t)0x20);
 }
 
 /** Test evaluation of DW_CFA_restore_extended */
@@ -345,7 +345,7 @@ using namespace plcrash::async;
     _stack.set_register(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, 0x20);
     uint8_t opcodes[] = { DW_CFA_val_offset, 0x4, 0x4, DW_CFA_restore_extended, 0x4};
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (uint64_t)0x20);
 }
 
 /** Test evaluation of DW_CFA_remember_state */
@@ -359,7 +359,7 @@ using namespace plcrash::async;
 
     /* Restore our previous state and verify that it is unchanged */
     STAssertTrue(_stack.pop_state(), @"No new state was pushed");
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (uint64_t)0x20);
 }
 
 /** Test evaluation of DW_CFA_restore_state */
@@ -373,7 +373,7 @@ using namespace plcrash::async;
     PERFORM_EVAL_TEST(opcodes, 0x0, PLCRASH_ESUCCESS);
     
     /* Our previous state should have been restored by our CFA program; verify that it is unchanged */
-    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (int64_t)0x20);
+    TEST_REGISTER_RESULT(0x4, PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION, (uint64_t)0x20);
 }
 
 - (void) testBadOpcode {
@@ -442,7 +442,7 @@ using namespace plcrash::async;
 - (void) testApplyReturnRegister {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     uint8_t opcodes[] = { 1, DW_OP_lit15 };
 
@@ -454,7 +454,7 @@ using namespace plcrash::async;
 
     /* Set up required CFA register rule */
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
+    cfa_state.set_cfa_register(dw_regnum, 10);
 
     /* Use opcode to generate a register value, and mark that register as the return address register. */
     cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t) &opcodes);
@@ -480,7 +480,7 @@ using namespace plcrash::async;
 - (void) testApplyPseudoReturnRegister {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     uint8_t opcodes[] = { 1, DW_OP_lit15 };
 
@@ -503,7 +503,7 @@ using namespace plcrash::async;
     
     /* Set up required CFA register rule */
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
+    cfa_state.set_cfa_register(dw_regnum, 10);
     
     /* Use opcode to generate a register value, and mark the register as the return address register. */
     cfa_state.set_register(dw_invalid_regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_EXPRESSION, (int64_t) &opcodes);
@@ -525,7 +525,7 @@ using namespace plcrash::async;
 - (void) testApplyCFAUndefined {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
@@ -539,7 +539,7 @@ using namespace plcrash::async;
 - (void) testApplyCFARegister {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
 
     /* Populate initial state */
@@ -548,7 +548,7 @@ using namespace plcrash::async;
     /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
      * that it actually is interpreted as an */
     plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts skip: 0], 30);
-    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts skip: 0], DWARF_CFA_STATE_CFA_TYPE_REGISTER, 10);
+    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts skip: 0], 10);
 
     /* Try to apply the state change */
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &_cie, &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
@@ -567,7 +567,7 @@ using namespace plcrash::async;
 - (void) testApplyCFARegisterUnsigned {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     /* Populate initial state */
@@ -576,7 +576,7 @@ using namespace plcrash::async;
     /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
      * that it actually is interpreted as an */
     plcrash_async_thread_state_set_reg(&prev_ts, [self findTestRegister: &prev_ts skip: 0], 30);
-    cfa_state.set_cfa_register([self findTestDwarfRegister: &prev_ts skip: 0], DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED, -10);
+    cfa_state.set_cfa_register_signed([self findTestDwarfRegister: &prev_ts skip: 0], -10);
     
     /* Try to apply the state change */
     err = plcrash_async_dwarf_cfa_state_apply(mach_task_self(), &_cie, &prev_ts, &plcrash_async_byteorder_direct, &cfa_state, &new_ts);
@@ -594,7 +594,7 @@ using namespace plcrash::async;
 - (void) testApplyCFAExpression {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     uint8_t opcodes = { DW_OP_lit15 };
 
@@ -621,7 +621,7 @@ using namespace plcrash::async;
 - (void) testApplyRegisterSignedOffset {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
 
     /* Target value large enough for 64-bit operation */
@@ -639,7 +639,7 @@ using namespace plcrash::async;
     /* Populate the CFA with the address of 'target_val' +20. We use this combined with signed offset
      * of -20 below to test signed offset handling. */
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, (plcrash_greg_t) &target_val);
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 20);
+    cfa_state.set_cfa_register(dw_regnum, 20);
 
     /* Set the register rule and apply the state change  */
     cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, -20);
@@ -662,7 +662,7 @@ using namespace plcrash::async;
 - (void) testApplyRegisterSignedOffsetValue {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     /* Initial thread state */
@@ -672,7 +672,7 @@ using namespace plcrash::async;
     
     /* Populate the CFA with a test address. */
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, (plcrash_greg_t) 30);
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    cfa_state.set_cfa_register(dw_regnum, 0);
     
     /* Set the register rule and apply the state change  */
     cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, -20);
@@ -692,7 +692,7 @@ using namespace plcrash::async;
 - (void) testApplyRegisterFromRegister {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     /* Initial thread state */
@@ -707,7 +707,7 @@ using namespace plcrash::async;
 
     /* Populate the required CFA rule; the value doesn't matter for this test. We use
      * 'dw_regnum_src' as the CFA register, but this value does not matter for our test. */
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, dw_regnum_src);
+    cfa_state.set_cfa_register(dw_regnum, dw_regnum_src);
 
     /*
      * Populate the source register value from which the rule will fetch  the target
@@ -732,7 +732,7 @@ using namespace plcrash::async;
 - (void) testApplyRegisterFromExpression {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     /* Target value for 32-bit/64-bit dereferencing */
@@ -752,7 +752,7 @@ using namespace plcrash::async;
      * that the expression is actually evaluated, we apply an offset that we'll remove in the opcode
      * stream. */
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, ((intptr_t) &target_val) + sizeof(target_val));
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    cfa_state.set_cfa_register(dw_regnum, 0);
     
     /*
      * Configure the register rule to use our expression opcodes. Note that the first opcode value is the uleb128-encoded
@@ -786,7 +786,7 @@ using namespace plcrash::async;
 - (void) testApplyRegisterValueFromExpression {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     /* Initial thread state */
@@ -798,7 +798,7 @@ using namespace plcrash::async;
      * value here that we'll then modify as part of our expression. This allows us to verify that the CFA
      * value was correctly pushed onto the stack. */
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 10);
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    cfa_state.set_cfa_register(dw_regnum, 0);
     
     /*
      * Configure the register rule to use our expression opcodes. Note that the first opcode value is the uleb128-encoded
@@ -826,7 +826,7 @@ using namespace plcrash::async;
 - (void) testApplyRegisterSameValue {
     plcrash_async_thread_state_t prev_ts;
     plcrash_async_thread_state_t new_ts;
-    dwarf_cfa_state cfa_state;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
     /* Initial thread state */
@@ -836,7 +836,7 @@ using namespace plcrash::async;
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);
 
     /* Populate an (unused) CFA rule */
-    cfa_state.set_cfa_register(dw_regnum, DWARF_CFA_STATE_CFA_TYPE_REGISTER, 0);
+    cfa_state.set_cfa_register(dw_regnum, 0);
     
     /* Set the register rule and apply the state change  */
     cfa_state.set_register(dw_regnum, PLCRASH_DWARF_CFA_REG_RULE_SAME_VALUE, 0);

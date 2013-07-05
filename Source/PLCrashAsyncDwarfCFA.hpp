@@ -45,6 +45,7 @@
  * @{
  */
 
+template <typename machine_ptr, typename machine_ptr_s>
 plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *mobj,
                                                       pl_vm_address_t pc,
                                                       plcrash_async_dwarf_cie_info_t *cie_info,
@@ -53,14 +54,14 @@ plcrash_error_t plcrash_async_dwarf_cfa_eval_program (plcrash_async_mobject_t *m
                                                       pl_vm_address_t address,
                                                       pl_vm_off_t offset,
                                                       pl_vm_size_t length,
-                                                      plcrash::async::dwarf_cfa_state *state);
+                                                      plcrash::async::dwarf_cfa_state<machine_ptr, machine_ptr_s> *state);
 
-
+template <typename machine_ptr, typename machine_ptr_s>
 plcrash_error_t plcrash_async_dwarf_cfa_state_apply (task_t task,
                                                      plcrash_async_dwarf_cie_info_t *cie_info,
                                                      const plcrash_async_thread_state_t *thread_state,
                                                      const plcrash_async_byteorder_t *byteorder,
-                                                     plcrash::async::dwarf_cfa_state *cfa_state,
+                                                     plcrash::async::dwarf_cfa_state<machine_ptr, machine_ptr_s> *cfa_state,
                                                      plcrash_async_thread_state_t *new_thread_state);
 
 /**

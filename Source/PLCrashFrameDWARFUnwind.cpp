@@ -35,28 +35,36 @@
 #include <inttypes.h>
 
 /**
- * Attempt to fetch next frame using compact frame unwinding data from @a image_list.
+ * @internal
+ *
+ * Attempt to fetch next frame using compact frame unwinding data from @a image.
  *
  * @param task The task containing the target frame stack.
- * @param image_list The list of images loaded in the target @a task.
+ * @param pc The current frame's PC value.
+ * @param image The Mach-O image for the current stack frame.
  * @param current_frame The current stack frame.
  * @param previous_frame The previous stack frame, or NULL if this is the first frame.
  * @param next_frame The new frame to be initialized.
  *
+ * @tparam machine_ptr The native machine pointer type for the target data.
+ * @tparam machine_ptr_s The native machine signed pointer type for the target data.
+ *
  * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
  */
-plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
-                                                  plcrash_async_image_list_t *image_list,
-                                                  const plframe_stackframe_t *current_frame,
-                                                  const plframe_stackframe_t *previous_frame,
-                                                  plframe_stackframe_t *next_frame)
+template<typename machine_ptr, typename machine_ptr_s>
+static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
+                                                             plcrash_greg_t pc,
+                                                             plcrash_async_macho_t *image,
+                                                             const plframe_stackframe_t *current_frame,
+                                                             const plframe_stackframe_t *previous_frame,
+                                                             plframe_stackframe_t *next_frame)
 {
     /* Mapped DWARF sections; only one of eh_frame/debug_frame will be mapped */
     plcrash_async_mobject_t eh_frame;
     plcrash_async_mobject_t debug_frame;
     plcrash_async_mobject_t *dwarf_section = NULL;
     bool is_debug_frame = false;
-
+    
     /* Reader state */
     plcrash_async_dwarf_frame_reader_t reader;
     bool did_init_reader = false;
@@ -69,52 +77,31 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     
     plcrash_async_dwarf_cie_info_t cie_info;
     bool did_init_cie = false;
-
+    
     /* CFA evaluation stack */
-    plcrash::async::dwarf_cfa_state cfa_state;
-
+    plcrash::async::dwarf_cfa_state<machine_ptr, machine_ptr_s> cfa_state;
+    
     plframe_error_t result;
     plcrash_error_t err;
-
-    /* Fetch the IP. It should always be available */
-    if (!plcrash_async_thread_state_has_reg(&current_frame->thread_state, PLCRASH_REG_IP)) {
-        PLCF_DEBUG("Frame is missing a valid IP register, skipping compact unwind encoding");
-        return PLFRAME_EBADFRAME;
-    }
-    plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
-
-    /*
-     * Mark the list as being read; this prevents any deallocation of our borrowed reference to a plcrash_async_image_t,
-     * and must be balanced by a call (in our cleanup section below) to mark reading as completed.
-     */
-    plcrash_async_image_list_set_reading(image_list, true);
-
-    /* Find the corresponding image */
-    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, pc);
-    if (image == NULL) {
-        PLCF_DEBUG("Could not find a loaded image for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
-        result = PLFRAME_ENOTSUP;
-        goto cleanup;
-    }
-    
+        
     /*
      * Map the eh_frame or debug_frame DWARF sections. Apple doesn't seem to use debug_frame at all;
      * as such, we prefer eh_frame, but allow falling back on debug_frame.
      */
     {
-        err = plcrash_async_macho_map_section(&image->macho_image, "__TEXT", "__eh_frame", &eh_frame);
+        err = plcrash_async_macho_map_section(image, "__TEXT", "__eh_frame", &eh_frame);
         if (err == PLCRASH_ESUCCESS) {
             dwarf_section = &eh_frame;
         }
-
+        
         if (dwarf_section == NULL) {
-            err = plcrash_async_macho_map_section(&image->macho_image, "__DWARF", "__debug_frame", &debug_frame);
+            err = plcrash_async_macho_map_section(image, "__DWARF", "__debug_frame", &debug_frame);
             if (err == PLCRASH_ESUCCESS) {
                 dwarf_section = &debug_frame;
                 is_debug_frame = true;
             }
         }
-
+        
         /* If neither, there's nothing to do */
         if (dwarf_section == NULL) {
             /* The lack of debug_frame/eh_frame is not an error, but we can't proceed. */
@@ -122,23 +109,23 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
             goto cleanup;
         }
     }
-
+    
     /* Initialize the reader. */
     uint8_t address_size;
     {
-        address_size = image->macho_image.m64 ? 8 : 4;
-        if ((err = plcrash_async_dwarf_frame_reader_init(&reader, dwarf_section, image->macho_image.byteorder, address_size, is_debug_frame)) != PLCRASH_ESUCCESS) {
+        address_size = image->m64 ? 8 : 4;
+        if ((err = plcrash_async_dwarf_frame_reader_init(&reader, dwarf_section, image->byteorder, address_size, is_debug_frame)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Could not initialize a %s DWARF parser for the current frame pc: 0x%" PRIx64 " %d", (is_debug_frame ? "debug_frame" : "eh_frame"), (uint64_t) pc, err);
             result = PLFRAME_EINVAL;
             goto cleanup;
         }
         did_init_reader = true;
     }
-
+    
     /* Find the FDE (if any) */
     {
         err = plcrash_async_dwarf_frame_reader_find_fde(&reader, 0x0 /* offset hint */, pc, &fde_info);
-
+        
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Did not find FDE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
             result = PLFRAME_ENOTSUP;
@@ -146,7 +133,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         }
         did_init_fde = true;
     }
-
+    
     /* Initialize pointer state */
     {
         plcrash_async_dwarf_gnueh_ptr_state_init(&ptr_state, address_size);
@@ -154,10 +141,10 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         
         // TODO - configure the pointer state */
     }
-
+    
     /* Parse CIE info */
     {
-        err = plcrash_async_dwarf_cie_info_init(&cie_info, dwarf_section, image->macho_image.byteorder, &ptr_state, plcrash_async_mobject_base_address(dwarf_section) + fde_info.cie_offset);
+        err = plcrash_async_dwarf_cie_info_init(&cie_info, dwarf_section, image->byteorder, &ptr_state, plcrash_async_mobject_base_address(dwarf_section) + fde_info.cie_offset);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to parse CIE at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.cie_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -168,19 +155,19 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         }
         did_init_cie = true;
     }
-
+    
     /* Evaluate the CFA instruction opcodes */
     {
         /* Initial instructions */
-        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length, &cfa_state);
+        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length, &cfa_state);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
             goto cleanup;
         }
-
+        
         /*  FDE instructions */
-        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->macho_image.byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length, &cfa_state);
+        err = plcrash_async_dwarf_cfa_eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length, &cfa_state);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -189,7 +176,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     }
     
     /* Apply the frame delta -- this may fail. */
-    if ((err = plcrash_async_dwarf_cfa_state_apply(task, &cie_info, &current_frame->thread_state, image->macho_image.byteorder, &cfa_state, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
+    if ((err = plcrash_async_dwarf_cfa_state_apply(task, &cie_info, &current_frame->thread_state, image->byteorder, &cfa_state, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
         result = PLFRAME_ESUCCESS;
     } else {
         PLCF_DEBUG("Failed to apply CFA state for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
@@ -213,6 +200,57 @@ cleanup:
     
     if (did_init_ptr_state)
         plcrash_async_dwarf_gnueh_ptr_state_free(&ptr_state);
-
+    
     return result;
+}
+
+/**
+ * Attempt to fetch next frame using compact frame unwinding data from @a image_list.
+ *
+ * @param task The task containing the target frame stack.
+ * @param image_list The list of images loaded in the target @a task.
+ * @param current_frame The current stack frame.
+ * @param previous_frame The previous stack frame, or NULL if this is the first frame.
+ * @param next_frame The new frame to be initialized.
+ *
+ * @return Returns PLFRAME_ESUCCESS on success, PLFRAME_ENOFRAME is no additional frames are available, or a standard plframe_error_t code if an error occurs.
+ */
+plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
+                                                  plcrash_async_image_list_t *image_list,
+                                                  const plframe_stackframe_t *current_frame,
+                                                  const plframe_stackframe_t *previous_frame,
+                                                  plframe_stackframe_t *next_frame)
+{
+    plframe_error_t ferr;
+
+    /* Fetch the IP. It should always be available */
+    if (!plcrash_async_thread_state_has_reg(&current_frame->thread_state, PLCRASH_REG_IP)) {
+        PLCF_DEBUG("Frame is missing a valid IP register, skipping compact unwind encoding");
+        return PLFRAME_EBADFRAME;
+    }
+    plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
+
+    /*
+     * Mark the list as being read; this prevents any deallocation of our borrowed reference to a plcrash_async_image_t,
+     * and must be balanced by a call (in our cleanup section below) to mark reading as completed.
+     */
+    plcrash_async_image_list_set_reading(image_list, true);
+    
+    /* Find the corresponding image */
+    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, pc);
+    if (image == NULL) {
+        PLCF_DEBUG("Could not find a loaded image for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
+        plcrash_async_image_list_set_reading(image_list, false);
+        return PLFRAME_ENOTSUP;
+    }
+    
+    /* Perform the actual read */
+    if (image->macho_image.m64) {
+        ferr = plframe_cursor_read_dwarf_unwind_int<uint64_t, int64_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
+    } else {
+        ferr = plframe_cursor_read_dwarf_unwind_int<uint32_t, int32_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
+    }
+    
+    plcrash_async_image_list_set_reading(image_list, false);
+    return ferr;
 }

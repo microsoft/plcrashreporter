@@ -42,7 +42,8 @@ using namespace plcrash::async;
  * @return Returns true on success, or false if insufficient space is available on the state
  * stack.
  */
-bool dwarf_cfa_state::push_state (void) {
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::push_state (void) {
     PLCF_ASSERT(_table_depth+1 <= DWARF_CFA_STATE_MAX_STATES);
     
     if (_table_depth+1 == DWARF_CFA_STATE_MAX_STATES)
@@ -50,7 +51,7 @@ bool dwarf_cfa_state::push_state (void) {
     
     _table_depth++;
     _register_count[_table_depth] = 0;
-    _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_UNDEFINED;
+    _cfa_value[_table_depth].set_undefined_rule();
 
     plcrash_async_memset(_table_stack[_table_depth], DWARF_CFA_STATE_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
     
@@ -63,7 +64,8 @@ bool dwarf_cfa_state::push_state (void) {
  *
  * @return Returns true on success, or false if no states are available on the state stack.
  */
-bool dwarf_cfa_state::pop_state (void) {
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::pop_state (void) {
     if (_table_depth == 0)
         return false;
     
@@ -74,7 +76,8 @@ bool dwarf_cfa_state::pop_state (void) {
 /*
  * Default constructor.
  */
-dwarf_cfa_state::dwarf_cfa_state (void) {
+template <typename machine_ptr, typename machine_ptr_s>
+dwarf_cfa_state<machine_ptr, machine_ptr_s>::dwarf_cfa_state (void) {
     /* The size must be smaller than the invalid entry index, which is used as a NULL flag */
     PLCF_ASSERT_STATIC(max_size, DWARF_CFA_STATE_MAX_REGISTERS < DWARF_CFA_STATE_INVALID_ENTRY_IDX);
     
@@ -96,7 +99,7 @@ dwarf_cfa_state::dwarf_cfa_state (void) {
     plcrash_async_memset(_table_stack[0], DWARF_CFA_STATE_INVALID_ENTRY_IDX, sizeof(_table_stack[0]));
     
     /* Default CFA */
-    _cfa_value[0].cfa_type = DWARF_CFA_STATE_CFA_TYPE_UNDEFINED;
+    _cfa_value[0].set_undefined_rule();
 }
 
 /**
@@ -106,7 +109,8 @@ dwarf_cfa_state::dwarf_cfa_state (void) {
  * @param rule The DWARF CFA rule for @a regnum.
  * @param value The data value to be used when interpreting @a rule. May either be signed or unsigned.
  */
-bool dwarf_cfa_state::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, int64_t value) {
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, machine_ptr value) {
     PLCF_ASSERT(rule <= UINT8_MAX);
     
     /* Check for an existing entry, or find the target entry off which we'll chain our entry */
@@ -167,7 +171,8 @@ bool dwarf_cfa_state::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwa
  * @param rule[out] On success, the DWARF CFA rule for @a regnum.
  * @param value[out] On success, the data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, int64_t *value) {
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value) {
     /* Search for the entry */
     unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
@@ -197,7 +202,8 @@ bool dwarf_cfa_state::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcras
  *
  * @param regnum The DWARF register number to be removed.
  */
-void dwarf_cfa_state::remove_register (dwarf_cfa_state_regnum_t regnum) {
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::remove_register (dwarf_cfa_state_regnum_t regnum) {
     /* Search for the entry */
     unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     
@@ -229,24 +235,32 @@ void dwarf_cfa_state::remove_register (dwarf_cfa_state_regnum_t regnum) {
 /**
  * Return the number of register rules set for the current register state.
  */
-uint8_t dwarf_cfa_state::get_register_count (void) {
+template <typename machine_ptr, typename machine_ptr_s>
+uint8_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_register_count (void) {
     return _register_count[_table_depth];
 }
 
 
 /**
- * Set a register-based canonical frame address rule.
+ * Set a register-based DWARF_CFA_STATE_CFA_TYPE_REGISTER rule.
  *
  * @param regnum The base register for the canonical frame address.
- * @param cfa_type The CFA type. Must be one of DWARF_CFA_STATE_CFA_TYPE_REGISTER or DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED.
- * @param offset The offset.
+ * @param offset The unsigned offset.
  */
-void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_cfa_state_cfa_type_t cfa_type, int64_t offset) {
-    PLCF_ASSERT(cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER || cfa_type == DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED);
-    
-    _cfa_value[_table_depth].cfa_type = cfa_type;
-    _cfa_value[_table_depth].reg.regnum = regnum;
-    _cfa_value[_table_depth].reg.offset = offset;
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_register (dwarf_cfa_state_regnum_t regnum, machine_ptr offset) {
+    _cfa_value[_table_depth].set_register_rule(regnum, offset);
+}
+
+/**
+ * Set a register-based DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED rule.
+ *
+ * @param regnum The base register for the canonical frame address.
+ * @param offset The unsigned offset.
+ */
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_register_signed (dwarf_cfa_state_regnum_t regnum, machine_ptr_s offset) {
+    _cfa_value[_table_depth].set_register_rule_signed(regnum, offset);
 }
 
 /**
@@ -255,16 +269,16 @@ void dwarf_cfa_state::set_cfa_register (dwarf_cfa_state_regnum_t regnum, dwarf_c
  * @param expression Target-relative address of the expression opcode stream.
  * @param length Length in bytes of the opcode stream.
  */
-void dwarf_cfa_state::set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length) {
-    _cfa_value[_table_depth].cfa_type = DWARF_CFA_STATE_CFA_TYPE_EXPRESSION;
-    _cfa_value[_table_depth].expression.address = address;
-    _cfa_value[_table_depth].expression.length = length;
+template <typename machine_ptr, typename machine_ptr_s>
+void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_expression (pl_vm_address_t address, pl_vm_size_t length) {
+    _cfa_value[_table_depth].set_expression_rule(address, length);
 }
 
 /**
  * Return the canonical frame address rule defined for the current state.
  */
-dwarf_cfa_rule_t dwarf_cfa_state::get_cfa_rule (void) {
+template <typename machine_ptr, typename machine_ptr_s>
+dwarf_cfa_rule<machine_ptr, machine_ptr_s> dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_cfa_rule (void) {
     return _cfa_value[_table_depth];
 }
 
@@ -274,7 +288,8 @@ dwarf_cfa_rule_t dwarf_cfa_state::get_cfa_rule (void) {
  *
  * @param stack The stack to be iterated.
  */
-dwarf_cfa_state_iterator::dwarf_cfa_state_iterator(dwarf_cfa_state *stack) {
+template <typename machine_ptr, typename machine_ptr_s>
+dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::dwarf_cfa_state_iterator(dwarf_cfa_state<machine_ptr, machine_ptr_s> *stack) {
     _stack = stack;
     _bucket_idx = 0;
     _cur_entry_idx = DWARF_CFA_STATE_INVALID_ENTRY_IDX;
@@ -287,7 +302,8 @@ dwarf_cfa_state_iterator::dwarf_cfa_state_iterator(dwarf_cfa_state *stack) {
  * @param rule[out] On success, the DWARF CFA rule for @a regnum.
  * @param value[out] On success, the data value to be used when interpreting @a rule.
  */
-bool dwarf_cfa_state_iterator::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, uint64_t *value) {
+template <typename machine_ptr, typename machine_ptr_s>
+bool dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value) {
     /* Fetch the next entry in the bucket chain */
     if (_cur_entry_idx != DWARF_CFA_STATE_INVALID_ENTRY_IDX) {
         _cur_entry_idx = _stack->_entries[_cur_entry_idx].next;
@@ -315,12 +331,19 @@ bool dwarf_cfa_state_iterator::next (dwarf_cfa_state_regnum_t *regnum, plcrash_d
     }
     
     
-    typename dwarf_cfa_state::dwarf_cfa_reg_entry_t *entry = &_stack->_entries[_cur_entry_idx];
+    typename dwarf_cfa_state<machine_ptr, machine_ptr_s>::dwarf_cfa_reg_entry_t *entry = &_stack->_entries[_cur_entry_idx];
     *regnum = entry->regnum;
     *value = entry->value;
     *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
     return true;
 }
+
+/* Provide explicit 32/64-bit instantiations */
+template class dwarf_cfa_state<uint32_t, int32_t>;
+template class dwarf_cfa_state_iterator<uint32_t, int32_t>;
+
+template class dwarf_cfa_state<uint64_t, int64_t>;
+template class dwarf_cfa_state_iterator<uint64_t, int64_t>;
 
 /**
  * @}
