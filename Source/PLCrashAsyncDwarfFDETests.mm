@@ -131,7 +131,7 @@ struct __attribute__((packed)) fde_data {
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize memory mapping");
 
     /* Test decoding */
-    err = plcrash_async_dwarf_fde_info_init<uint64_t>(&info, &mobj, &plcrash_async_byteorder_direct, 8, (pl_vm_address_t) &_data.fde, true);
+    err = plcrash_async_dwarf_fde_info_init<uint64_t>(&info, &mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t) &_data.fde, true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
 
     STAssertEquals(info.fde_offset, (pl_vm_address_t) ((uintptr_t)&_data.fde - (uintptr_t)&_data + sizeof(_data.fde.length)), @"Incorrect FDE offset");
@@ -167,7 +167,7 @@ struct __attribute__((packed)) fde_data {
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize memory mapping");
 
     /* Test decoding */
-    err = plcrash_async_dwarf_fde_info_init<uint64_t>(&info, &mobj, &plcrash_async_byteorder_direct, 8, (pl_vm_address_t) &_data.fde, true);
+    err = plcrash_async_dwarf_fde_info_init<uint64_t>(&info, &mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t) &_data.fde, true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
     
     STAssertEquals(info.pc_start, (uint64_t)0xFF, @"Incorrect PC start value");
@@ -194,7 +194,7 @@ struct __attribute__((packed)) fde_data {
     
     /* Test decoding; if it succeeds, it means the CIE was correctly dereferenced using the ehframe CIE
      * offset rules. */
-    err = plcrash_async_dwarf_fde_info_init<uint64_t>(&info, &mobj, &plcrash_async_byteorder_direct, 8, (pl_vm_address_t) &_data.fde, false);
+    err = plcrash_async_dwarf_fde_info_init<uint64_t>(&info, &mobj, &plcrash_async_byteorder_direct, (pl_vm_address_t) &_data.fde, false);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to parse DWARF info");
         
     /* Clean up */

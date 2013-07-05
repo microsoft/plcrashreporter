@@ -187,9 +187,9 @@ plcrash_error_t dwarf_frame_reader::find_fde (pl_vm_off_t offset,
         
         /* Decode the FDE */
         if (_m64)
-            err = plcrash_async_dwarf_fde_info_init<uint64_t>(fde_info, _mobj, byteorder, sizeof(uint64_t), cfi_entry, _debug_frame);
+            err = plcrash_async_dwarf_fde_info_init<uint64_t>(fde_info, _mobj, byteorder, cfi_entry, _debug_frame);
         else
-            err = plcrash_async_dwarf_fde_info_init<uint32_t>(fde_info, _mobj, byteorder, sizeof(uint32_t), cfi_entry, _debug_frame);
+            err = plcrash_async_dwarf_fde_info_init<uint32_t>(fde_info, _mobj, byteorder, cfi_entry, _debug_frame);
         if (err != PLCRASH_ESUCCESS)
             return err;
         
