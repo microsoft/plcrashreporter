@@ -99,7 +99,7 @@
 		05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
 		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
-		05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
+		05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A15177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
 		05507A16177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
 		05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };

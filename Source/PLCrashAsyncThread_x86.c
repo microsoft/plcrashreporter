@@ -82,7 +82,7 @@ static const plcrash_regnum_t x86_64_nonvolatile_registers[] = {
 };
 
 /*
- * i386 DWARF register mappings as defined by GCC and LLVM/clang. These mappings
+ * i386 GCC eh_frame register mappings as defined by GCC and LLVM/clang. These mappings
  * appear to have originally been defined by the SVR4 reference port C compiler,
  * and then later implemented by GCC for its 80386 target.
  *
@@ -92,14 +92,16 @@ static const plcrash_regnum_t x86_64_nonvolatile_registers[] = {
  *
  * Note that not all registers defined by gcc/LLVM are currently supported by our
  * thread-state API, and are not mapped.
+ *
+ * @warning These mappings are not accurate for use in DWARF debug_frame.
  */
 static const struct dwarf_register_table x86_32_dwarf_table [] = {
     { PLCRASH_X86_EAX, 0 },
     { PLCRASH_X86_ECX, 1 },
     { PLCRASH_X86_EDX, 2 },
     { PLCRASH_X86_EBX, 3 },
-    { PLCRASH_X86_ESP, 4 },
-    { PLCRASH_X86_EBP, 5 },
+    { PLCRASH_X86_EBP, 4 },
+    { PLCRASH_X86_ESP, 5 },
     { PLCRASH_X86_ESI, 6 },
     { PLCRASH_X86_EDI, 7 },
     { PLCRASH_X86_EIP, 8 }
