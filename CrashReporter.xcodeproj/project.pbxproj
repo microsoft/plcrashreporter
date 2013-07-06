@@ -269,6 +269,9 @@
 		05BB84901364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB848E1364EE1500D53B84 /* PLCrashSysctlTests.m */; };
 		05BB84911364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB848E1364EE1500D53B84 /* PLCrashSysctlTests.m */; };
 		05BB84A31364F1A000D53B84 /* PLCrashSysctl.c in Sources */ = {isa = PBXBuildFile; fileRef = 05BB84851364EDF200D53B84 /* PLCrashSysctl.c */; };
+		05C5880E1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
+		05C5880F1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */; };
+		05C588101788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */; };
 		05C76DA6176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */; };
 		05C76DA7176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */; };
 		05C76DA8176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */; };
@@ -1023,6 +1026,7 @@
 		05BB84841364EDF200D53B84 /* PLCrashSysctl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashSysctl.h; sourceTree = "<group>"; };
 		05BB84851364EDF200D53B84 /* PLCrashSysctl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashSysctl.c; sourceTree = "<group>"; };
 		05BB848E1364EE1500D53B84 /* PLCrashSysctlTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSysctlTests.m; sourceTree = "<group>"; };
+		05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frameless.S; sourceTree = "<group>"; };
 		05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dwarf_opstream.cpp; sourceTree = "<group>"; };
 		05C76DA5176B8C7000E9B10D /* dwarf_opstream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = dwarf_opstream.hpp; sourceTree = "<group>"; };
 		05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dwarf_opstream_tests.mm; sourceTree = "<group>"; };
@@ -1308,6 +1312,7 @@
 				05920D311784C806001E8975 /* unwind_test_x86_64_frameless_big.S */,
 				05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */,
 				05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */,
+				05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */,
 			);
 			path = "Libunwind Regression Tests";
 			sourceTree = "<group>";
@@ -2785,6 +2790,7 @@
 				05920D321784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
 				05507A4F1784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */,
 				05507A531784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */,
+				05C5880E1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2874,6 +2880,7 @@
 				05920D331784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
 				05507A501784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */,
 				05507A541784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */,
+				05C5880F1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2963,6 +2970,7 @@
 				05920D341784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
 				05507A511784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */,
 				05507A551784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */,
+				05C588101788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
