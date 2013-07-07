@@ -122,7 +122,6 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
         err = reader.find_fde(0x0 /* offset hint */, pc, &fde_info);
         
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Did not find FDE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
             result = PLFRAME_ENOTSUP;
             goto cleanup;
         }
