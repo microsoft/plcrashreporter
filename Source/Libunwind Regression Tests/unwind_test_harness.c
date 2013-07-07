@@ -42,6 +42,7 @@ extern void *unwind_tester_list_x86_frame[];
 extern void *unwind_tester_list_x86_frameless[];
 extern void *unwind_tester_list_x86_frameless_big[];
 extern void *unwind_tester_list_x86_unusual[];
+extern void *unwind_tester_list_x86_disable_compact_frame[];
 
 extern int unwind_tester (void *test, void **sp);
 extern void unwind_tester_target_ip (void);
@@ -105,6 +106,9 @@ static struct unwind_test_case unwind_test_cases[] = {
     { unwind_tester_list_x86_64_unusual,      true,   NULL },
 
 #elif defined(__i386__)
+    /* DWARF unwinding (no compact frame data) */
+    { unwind_tester_list_x86_disable_compact_frame, true, frame_readers_dwarf },
+
     /* frame-based unwinding */
     { unwind_tester_list_x86_frame,      false,  frame_readers_frame },
     { unwind_tester_list_x86_frame,      true,   frame_readers_compact },
