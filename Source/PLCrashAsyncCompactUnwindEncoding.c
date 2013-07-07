@@ -532,7 +532,6 @@ permutation -= (permunreg[pos]*factor); \
 			break;
 		case 1:
             PERMUTE(0, 1);
-			permunreg[0] = permutation;
 			break;
 	}
 #undef PERMUTE
