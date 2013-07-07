@@ -47,25 +47,28 @@ using namespace plcrash::async;
  */
 - (void) testReadAlignedEncodedPointer {
     plcrash_async_mobject_t mobj;
-    gnu_ehptr_reader<uint32_t> reader(plcrash_async_byteorder_big_endian());
     plcrash_error_t err;
-    uint32_t result;
+    uint64_t result;
     size_t size;
+
+    /* 64-bit reader (supports both 32-bit and 64-bit test hosts) */
+    gnu_ehptr_reader<uint64_t> reader(plcrash_async_byteorder_big_endian());
     
     /* Test data */
-    const uint8_t aligned_data[] = { 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb };
+    const uint8_t aligned_data[] = { 0xab, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb,
+                                     0xbc, 0xbd, 0xbe, 0xbf, 0xc0, 0xc1, 0xc2, 0xc3 };
     
-    /* Default state */
-    reader.set_frame_section_base((uint64_t) aligned_data, (uint64_t) aligned_data-1);
+    /* Default state; 1 byte shy of 8 byte alignment. */
+    reader.set_frame_section_base((uint64_t) aligned_data, (uint64_t) 1);
 
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) aligned_data, sizeof(aligned_data), true), @"Failed to initialize mobj mapping");
     
     err = reader.read(&mobj, (pl_vm_address_t) &aligned_data[0], 0, DW_EH_PE_aligned, &result, &size);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to decode aligned value");
     
-    /* The VM base is 1 byte shy of four byte alignment. To align the pointer value, we'll have to skip 3 bytes. */
-    STAssertEquals(result, (uint32_t) 0xadaeafba, @"Incorrect value decoded, got 0%" PRIx32, (uint32_t) result);
-    STAssertEquals(size, (size_t)7, @"Incorrect byte length");
+    /* The VM base is 1 byte shy of eight byte alignment. To align the pointer value, we'll have to skip 7 bytes. */
+    STAssertEquals(result, (uint64_t) 0xbcbdbebfc0c1c2c3, @"Incorrect value decoded, got 0%" PRIx64, (uint64_t) result);
+    STAssertEquals(size, (size_t)15, @"Incorrect byte length");
     
     plcrash_async_mobject_free(&mobj);
 }
