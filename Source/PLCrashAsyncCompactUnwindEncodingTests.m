@@ -68,9 +68,6 @@
  */
 @interface PLCrashAsyncCompactUnwindEncodingTests : PLCrashTestCase {
 @private
-    /** A mapped Mach-O file */
-    plcrash_async_mobject_t _machoData;
-    
     /** The parsed Mach-O file (this will be a subset of _imageData) */
     plcrash_async_macho_t _image;
     
@@ -130,7 +127,6 @@
 
 - (void) tearDown {
     plcrash_nasync_macho_free(&_image);
-    plcrash_async_mobject_free(&_machoData);
     plcrash_async_mobject_free(&_unwind_mobj);
     plcrash_async_cfe_reader_free(&_reader);
 }
