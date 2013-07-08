@@ -31,6 +31,7 @@
 #include "PLCrashAsyncDwarfCFAState.hpp"
 #include "PLCrashAsyncDwarfExpression.hpp"
 
+/* A known-invalid opcode */
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
 
 using namespace plcrash::async;
