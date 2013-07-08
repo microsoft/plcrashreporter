@@ -40,12 +40,11 @@
  * @{
  */
 
-
 /**
- * Initialize a new memory object reference, mapping @a task_addr from @a task into the current process. The mapping
- * will be copy-on-write, and will be checked to ensure a minimum protection value of VM_PROT_READ.
+ * Map pages starting at @a task_addr from @a task into the current process. The mapping
+ * will be copy-on-write, and will be checked to ensure a minimum protection value of
+ * VM_PROT_READ.
  *
- * @param mobj Memory object to be initialized.
  * @param task The task from which the memory will be mapped.
  * @param task_address The task-relative address of the memory to be mapped. This is not required to fall on a page boundry.
  * @param length The total size of the mapping to create.
@@ -53,12 +52,14 @@
  * does not exist at the target address. It is the caller's responsibility to validate the resulting length of the
  * mapping, eg, using plcrash_async_mobject_remap_address() and similar. If true, and the entire requested page range is
  * not valid, the mapping request will fail.
+ * @param result[out] The in-process address at which the pages were mapped.
+ * @param result_length[out] The total size, in bytes, of the mapped pages.
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
  * mapping will be performed.
  *
  * @note
- * This function previously used vm_remap() to perform atomic remapping of process memory. However, this appeared
+ * This code previously used vm_remap() to perform atomic remapping of process memory. However, this appeared
  * to trigger a kernel bug (and resulting panic) on iOS 6.0 through 6.1.2, possibly fixed in 6.1.3. Note that
  * no stable release of PLCrashReporter shipped with the vm_remap() code.
  *
@@ -87,70 +88,184 @@
  * vm_map(); this follows a largely distinct code path from vm_remap(). In testing by a large-scale user of PLCrashReporter,
  * they were no longer able to reproduce the issue with this fix in place. Additionally, they've not been able to reproduce
  * the issue on 6.1.3 devices, or had any reports of the issue occuring on 6.1.3 devices.
+ *
+ * The mach_make_memory_entry_64() API may not actually return an entry for the full requested length; this requires
+ * that we loop through the full range, requesting an entry for the remaining unallocated pages, and then mapping
+ * the pages in question. Since this requires multiple calls to vm_map(), we pre-allocate a contigious range of pages
+ * for the target mappings into which we'll insert (via overwrite) our own mappings.
+ *
+ * @note
+ * As a work-around for bugs in Apple's Mach-O/dyld implementation, we provide the @a require_full flag; if false,
+ * a successful mapping that is smaller than the requested range may be made, and will not return an error. This is necessary
+ * to allow our callers to work around bugs in update_dyld_shared_cache(1), which writes out a larger Mach-O VM segment
+ * size value than is actually available and mappable. See the plcrash_async_macho_map_segment() API documentation for
+ * more details. This bug has been reported to Apple as rdar://13707406.
  */
-plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length, bool require_full) {
+static plcrash_error_t plcrash_async_mobject_remap_pages_workaround (mach_port_t task,
+                                                                     pl_vm_address_t task_addr,
+                                                                     pl_vm_size_t length,
+                                                                     bool require_full,
+                                                                     pl_vm_address_t *result,
+                                                                     pl_vm_size_t *result_length)
+{
     kern_return_t kt;
 
     /* Compute the total required page size. */
-    pl_vm_address_t page_addr = mach_vm_trunc_page(task_addr);
-    pl_vm_size_t page_size = mach_vm_round_page(length + (task_addr - page_addr));
+    pl_vm_address_t base_addr = mach_vm_trunc_page(task_addr);
+    pl_vm_size_t total_size = mach_vm_round_page(length + (task_addr - base_addr));
+    
+    /*
+     * If short mappings are permitted, determine the actual mappable size of the target range. Due
+     * to rdar://13707406 (update_dyld_shared_cache appears to write invalid LINKEDIT vmsize), an
+     * LC_SEGMENT-reported VM size may be far larger than the actual mapped pages. This would result
+     * in us making large (eg, 36MB) allocations in cases where the mappable range is actually much
+     * smaller, which can trigger out-of-memory conditions on smaller devices.
+     */
+    if (!require_full) {
+        pl_vm_size_t verified_size = 0;
+        
+        while (verified_size < total_size) {            
+            memory_object_size_t entry_length = total_size - verified_size;
+            mach_port_t mem_handle;
+            
+            /* Fetch an entry reference */
+            kt = mach_make_memory_entry_64(task, &entry_length, base_addr + verified_size, VM_PROT_READ, &mem_handle, MACH_PORT_NULL);
+            if (kt != KERN_SUCCESS) {
+                /* Once we hit an unmappable page, break */
+                break;
+            }
+            
+            /* Drop the reference */
+            kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
+            if (kt != KERN_SUCCESS) {
+                PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
+            }
 
+            /* Note the size */
+            verified_size += entry_length;
+        }
 
-    /* Create a reference to the target pages. The returned entry may be smaller than the requested length. */
-    memory_object_size_t entry_length = page_size;
-    mach_port_t mem_handle;
-    kt = mach_make_memory_entry_64(task, &entry_length, page_addr, VM_PROT_READ, &mem_handle, MACH_PORT_NULL);
-    if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("mach_make_memory_entry_64() failed: %d", kt);
-        return PLCRASH_ENOMEM;
+        /* No valid page found at the task_addr */
+        if (verified_size == 0) {
+            PLCF_DEBUG("No mappable pages found at 0x%" PRIx64, (uint64_t) task_addr);
+            return PLCRASH_ENOMEM;
+        }
+
+        /* Reduce the total size to the verified size */
+        if (verified_size < total_size)
+            total_size = verified_size;
     }
 
     /*
-     * If short mappings are enabled, and the entry is smaller than the target mapping, use the memory entry's
-     * size rather than the originally requested size. Otherwise, a smaller entry will result in a vm_map() 
-     * error when the requested pages are unavailable.
+     * Set aside a memory range large enough for the total requested number of pages. Ideally the kernel
+     * will lazy-allocate the backing physical pages so that we don't waste actual memory on this
+     * pre-emptive page range reservation.
      */
-    if (!require_full && entry_length < page_size) {
-        /* Reset the page size to match the actual available memory ... */
-        page_size = entry_length;
-
-        /* The length represents the user's requested byte length, and is not required to be page aligned. Thus, it
-         * needs to be recomputed such that it fits within the smaller entry size here, while still accounting for the
-         * offset of the user's non-page-aligned start address. */
-        length = entry_length - (task_addr - page_addr);
-    }
-
-    /* Set initial start address for VM_FLAGS_ANYWHERE; vm_map() will search for the next unused region. */
-    mobj->vm_address = 0x0;
-
-    /* Map the pages into our local task */
+    pl_vm_address_t mapping_addr = 0x0;
+    pl_vm_size_t mapped_size = 0;
 #ifdef PL_HAVE_MACH_VM
-    kt = mach_vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+    kt = mach_vm_allocate(mach_task_self(), &mapping_addr, total_size, VM_FLAGS_ANYWHERE);
 #else
-    kt = vm_map(mach_task_self(), &mobj->vm_address, page_size, 0x0, VM_FLAGS_ANYWHERE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
-#endif /* !PL_HAVE_MACH_VM */
+    kt = vm_allocate(mach_task_self(), &mapping_addr, total_size, VM_FLAGS_ANYWHERE);
+#endif
 
     if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("vm_map() failure: %d", kt);
-        
-        kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
-        if (kt != KERN_SUCCESS) {
-            PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
+        PLCF_DEBUG("Failed to allocate a target page range for the page remapping: %d", kt);
+        return PLCRASH_EINTERNAL;
+    }
+
+    /* Map the source pages into the allocated region, overwriting the existing page mappings */
+    while (mapped_size < total_size) {
+        /* Create a reference to the target pages. The returned entry may be smaller than the total length. */
+        memory_object_size_t entry_length = total_size - mapped_size;
+        mach_port_t mem_handle;
+        kt = mach_make_memory_entry_64(task, &entry_length, base_addr + mapped_size, VM_PROT_READ, &mem_handle, MACH_PORT_NULL);
+        if (kt != KERN_SUCCESS) {            
+            /* No pages are found at the target. When validating the total length above, we already verified the
+             * availability of the requested pages; if they've now disappeared, we can treat it as an error,
+             * even if !require_full was specified */
+            PLCF_DEBUG("mach_make_memory_entry_64() failed: %d", kt);
+            
+            /* Clean up the reserved pages */
+            kt = vm_deallocate(mach_task_self(), mapping_addr, total_size);
+            if (kt != KERN_SUCCESS) {
+                PLCF_DEBUG("vm_deallocate() failed: %d", kt);
+            }
+            
+            /* Return error */
+            return PLCRASH_ENOMEM;
         }
         
-        return PLCRASH_ENOMEM;
+        /* Map the pages into our local task, overwriting the allocation used to reserve the target space above. */
+        pl_vm_address_t target_address = mapping_addr + mapped_size;
+#ifdef PL_HAVE_MACH_VM
+        kt = mach_vm_map(mach_task_self(), &target_address, entry_length, 0x0, VM_FLAGS_FIXED|VM_FLAGS_OVERWRITE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+#else
+        kt = vm_map(mach_task_self(), &target_address, entry_length, 0x0, VM_FLAGS_FIXED|VM_FLAGS_OVERWRITE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+#endif /* !PL_HAVE_MACH_VM */
+        
+        if (kt != KERN_SUCCESS) {
+            PLCF_DEBUG("vm_map() failure: %d", kt);
+            
+            /* Drop the memory handle */
+            kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
+            if (kt != KERN_SUCCESS) {
+                PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
+            }
+            
+            /* Clean up the reserved pages */
+            kt = vm_deallocate(mach_task_self(), mapping_addr, total_size);
+            if (kt != KERN_SUCCESS) {
+                PLCF_DEBUG("vm_deallocate() failed: %d", kt);
+            }
+            
+            return PLCRASH_ENOMEM;
+        }
+        
+        /* Adjust the total mapping size */
+        mapped_size += entry_length;
     }
-
-    /* Clean up the now-unused reference */
-    kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
-    if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
-    }
-
-    /* Determine the offset to the actual data */
-    mobj->address = mobj->vm_address + (task_addr - mach_vm_trunc_page(task_addr));
-    mobj->length = length;
     
+    *result = mapping_addr;
+    *result_length = mapped_size;
+
+    return PLCRASH_ESUCCESS;
+}
+
+
+/**
+ * Initialize a new memory object reference, mapping @a task_addr from @a task into the current process. The mapping
+ * will be copy-on-write, and will be checked to ensure a minimum protection value of VM_PROT_READ.
+ *
+ * @param mobj Memory object to be initialized.
+ * @param task The task from which the memory will be mapped.
+ * @param task_address The task-relative address of the memory to be mapped. This is not required to fall on a page boundry.
+ * @param length The total size of the mapping to create.
+ * @param require_full If false, short mappings will be permitted in the case where a memory object of the requested length
+ * does not exist at the target address. It is the caller's responsibility to validate the resulting length of the
+ * mapping, eg, using plcrash_async_mobject_remap_address() and similar. If true, and the entire requested page range is
+ * not valid, the mapping request will fail.
+ *
+ * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned, and no
+ * mapping will be performed.
+ */
+plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length, bool require_full) {
+    plcrash_error_t err;
+
+    /* Perform the page mapping */
+    err = plcrash_async_mobject_remap_pages_workaround(task, task_addr, length, require_full, &mobj->vm_address, &mobj->vm_length);
+    if (err != PLCRASH_ESUCCESS)
+        return err;
+
+    /* Determine the offset and length of the actual data */
+    mobj->address = mobj->vm_address + (task_addr - mach_vm_trunc_page(task_addr));
+    mobj->length = mobj->vm_length - (mobj->address - mobj->vm_address);
+
+    /* Ensure that the length is capped to the user's requested length, rather than the total length once rounded up
+     * to a full page. The length might already be smaller than the requested length if require_full is false. */
+    if (mobj->length > length)
+        mobj->length = length;
+
     /* Determine the difference between the target and local mappings. Note that this needs to be computed on either two page
      * aligned addresses, or two non-page aligned addresses. Mixing task_addr and vm_address would return an incorrect offset. */
     mobj->vm_slide = task_addr - mobj->address;
@@ -349,7 +464,7 @@ plcrash_error_t plcrash_async_mobject_read_uint64 (plcrash_async_mobject_t *mobj
  */
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
     kern_return_t kt;
-    if ((kt = vm_deallocate(mach_task_self(), mobj->address, mobj->length)) != KERN_SUCCESS)
+    if ((kt = vm_deallocate(mach_task_self(), mobj->vm_address, mobj->vm_length)) != KERN_SUCCESS)
         PLCF_DEBUG("vm_deallocate() failure: %d", kt);
 
     /* Decrement our task refcount */
