@@ -27,7 +27,7 @@
 
 #import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfCFA.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 #include <inttypes.h>
 
 using namespace plcrash::async;
