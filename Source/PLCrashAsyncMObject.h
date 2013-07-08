@@ -57,6 +57,9 @@ typedef struct plcrash_async_mobject {
     /** The actual mapping start address. This may differ from the address pointer, as it must be
      * page-aligned. */
     pl_vm_address_t vm_address;
+    
+    /** The actual mapping size. This may differ from the user-requested size, as the base address has been page-aligned */
+    pl_vm_size_t vm_length;
 } plcrash_async_mobject_t;
 
 plcrash_error_t plcrash_async_mobject_init (plcrash_async_mobject_t *mobj, mach_port_t task, pl_vm_address_t task_addr, pl_vm_size_t length, bool require_full);
