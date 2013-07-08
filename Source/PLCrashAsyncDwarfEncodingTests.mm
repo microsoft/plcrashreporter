@@ -135,10 +135,10 @@ using namespace plcrash::async;
     
     /* Should be the second entry in the table, plus the initial length field. */
     if (_m64) {
-        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) ((sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64), @"Incorrect offset");
         STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
     } else {
-        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_32, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) ((sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_32), @"Incorrect offset");
         STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_32, @"Incorrect length");
     }
     //STAssertEquals(fde_info.fde_instruction_offset, (pl_vm_address_t)0x0, @"Incorrect instruction offset (should be the first entry)");
@@ -159,10 +159,10 @@ using namespace plcrash::async;
     
     /* Should be the second entry in the table, plus the initial length field. */
     if (_m64) {
-        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) ((sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_64), @"Incorrect offset");
         STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_64, @"Incorrect length");
     } else {
-        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) (sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_32, @"Incorrect offset");
+        STAssertEquals(fde_info.fde_offset, (pl_vm_address_t) ((sizeof(pl_cfi_entry)) + PL_CFI_LEN_SIZE_32), @"Incorrect offset");
         STAssertEquals(fde_info.fde_length, (uint64_t)PL_CFI_SIZE_32, @"Incorrect length");
     }
 
