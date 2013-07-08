@@ -30,7 +30,7 @@
 #include "PLCrashAsyncMachOImage.h"
 
 #include "PLCrashAsyncDwarfEncoding.hpp"
-#include "PLCrashAsyncDwarfCFA.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 
 #include <inttypes.h>
 

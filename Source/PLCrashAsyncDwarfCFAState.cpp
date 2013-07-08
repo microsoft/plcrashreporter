@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashAsyncDwarfCFA.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 
 using namespace plcrash::async;
 

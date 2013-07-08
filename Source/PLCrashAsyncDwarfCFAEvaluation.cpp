@@ -26,7 +26,7 @@
 
 #include "PLCrashAsyncDwarfExpression.hpp"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
-#include "PLCrashAsyncDwarfCFA.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 
 #include "dwarf_opstream.hpp"
 

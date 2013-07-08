@@ -28,7 +28,7 @@
 
 #import "PLCrashTestCase.h"
 
-#include "PLCrashAsyncDwarfCFA.hpp"
+#include "PLCrashAsyncDwarfCFAState.hpp"
 #include "PLCrashAsyncDwarfExpression.hpp"
 
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
