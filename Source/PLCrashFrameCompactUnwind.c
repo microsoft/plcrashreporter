@@ -69,7 +69,8 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     plcrash_async_mobject_t unwind_mobj;
     err = plcrash_async_macho_map_section(&image->macho_image, SEG_TEXT, "__unwind_info", &unwind_mobj);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Could not map the compact unwind info section for image %s: %d", image->macho_image.name, err);
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("Could not map the compact unwind info section for image %s: %d", image->macho_image.name, err);
         result = PLFRAME_ENOTSUP;
         goto cleanup;
     }

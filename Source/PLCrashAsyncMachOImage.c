@@ -464,7 +464,7 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
  * @param mobj The mobject to be initialized with a mapping of the section's data. It is the caller's responsibility to dealloc @a mobj after
  * a successful initialization.
  *
- * @return Returns PLCRASH_ESUCCESS on success, or an error result on failure.
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the section is not found, or an error result on failure.
  */
 plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
     struct segment_command *cmd_32;
