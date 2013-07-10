@@ -43,6 +43,8 @@
 
 #import "crash_report.pb-c.h"
 
+#import "PLCrashSysctl.h"
+
 @interface PLCrashLogWriterTests : SenTestCase {
 @private
     /* Path to crash log */
@@ -107,6 +109,64 @@
     STAssertTrue(strcmp(appInfo->version, "1.0") == 0, @"Incorrect app version written");
 }
 
+// check a crash report's process info
+- (void) checkProcessInfo: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__ProcessInfo *procInfo = crashReport->process_info;
+    
+    STAssertNotNULL(procInfo, @"No process info available");
+    // Nothing else to do?
+    if (procInfo == NULL)
+        return;
+
+    STAssertEquals((pid_t)procInfo->process_id, getpid(), @"Incorrect process id written");
+    STAssertEquals((pid_t)procInfo->parent_process_id, getppid(), @"Incorrect parent process id written");
+
+    int retval;
+    if (plcrash_sysctl_int("sysctl.proc_native", &retval)) {
+        if (retval == 0) {
+            STAssertTrue(procInfo->native, @"Our current process is marked as non-native");
+        } else {
+            STAssertTrue(procInfo->native, @"Our current process is marked as native");
+        }
+    } else {
+        /* If the sysctl is not available, the process can be assumed to be native. */
+        STAssertTrue(procInfo->native, @"No proc_native sysctl specified; native should be assumed");
+    }
+
+    /* Fetch and verify process data via sysctl */
+    struct kinfo_proc process_info;
+    size_t process_info_len = sizeof(process_info);
+    int process_info_mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, 0 };
+    int process_info_mib_len = 4;
+    
+    /* Current process name name */
+    process_info_mib[3] = getpid();
+    if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
+        STAssertEqualCStrings(procInfo->process_name, process_info.kp_proc.p_comm, @"Incorrect process name");
+    } else {
+        STFail(@"Could not retreive process name: %s", strerror(errno));
+    }
+    
+    /* Current process path */
+    char *process_path = NULL;
+    uint32_t process_path_len = 0;
+    
+    _NSGetExecutablePath(NULL, &process_path_len);
+    if (process_path_len > 0) {
+        process_path = malloc(process_path_len);
+        _NSGetExecutablePath(process_path, &process_path_len);
+        STAssertEqualCStrings(procInfo->process_path, process_path, @"Incorrect process name");
+        free(process_path);
+    }
+    
+    /* Parent process */
+    process_info_mib[3] = getppid();
+    if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
+        STAssertEqualCStrings(procInfo->parent_process_name, process_info.kp_proc.p_comm, @"Incorrect process name");
+    } else {
+        STFail(@"Could not retreive parent process name: %s", strerror(errno));
+    }
+}
 
 - (void) checkThreads: (Plcrash__CrashReport *) crashReport {
     Plcrash__CrashReport__Thread **threads = crashReport->threads;
@@ -277,6 +337,8 @@
 
     /* Test the report */
     [self checkSystemInfo: crashReport];
+    [self checkAppInfo: crashReport];
+    [self checkProcessInfo: crashReport];
     [self checkThreads: crashReport];
     [self checkException: crashReport];
     
