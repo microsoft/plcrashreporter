@@ -184,8 +184,9 @@ message CrashReport_V2 {
         /* Application process path */
         optional string path = 3;
         
-        /** The start time of the process (as seconds since UNIX epoch). */
-        required uint64 start_time = 4;
+        /** The start time of the process (as seconds since UNIX epoch). The field may be
+         * ommitted if the start time can not be determined. */
+        optional uint64 start_time = 4;
 
         /* Application parent process name */
         optional string parent_name = 5;
