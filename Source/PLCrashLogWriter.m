@@ -643,12 +643,24 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 {
     size_t rv = 0;
 
+    /*
+     * In the current crash reporter serialization format, pid values are serialized as unsigned 32-bit integers. This
+     * conforms with the actual implementation of pid_t on both 32-bit and 64-bit Darwin systems. To conform with
+     * SuSV3, however, the values should be encoded as signed integers; the actual width of the type being implementation
+     * defined.
+     *
+     * To maintain compatibility with existing report readers the values remain encoded as unsigned 32-bit integers,
+     * but should be updated to int64 values in future major revision of the data format.
+     */
+    uint32_t pidval;
+
     /* Process name */
     if (process_name != NULL)
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, process_name);
 
     /* Process ID */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT64, &process_id);
+    pidval = process_id;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT32, &pidval);
 
     /* Process path */
     if (process_path != NULL)
@@ -659,7 +671,8 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, parent_process_name);
 
     /* Parent process ID */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT64, &parent_process_id);
+    pidval = parent_process_id;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_ID_ID, PLPROTOBUF_C_TYPE_UINT32, &pidval);
 
     /* Native process. */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_NATIVE_ID, PLPROTOBUF_C_TYPE_BOOL, &native);
