@@ -167,6 +167,12 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertNotNil(crashLog.processInfo, @"No process information available");
     STAssertNotNil(crashLog.processInfo.processName, @"No process name available");
     STAssertNotNil(crashLog.processInfo.processPath, @"No process path available");
+
+    STAssertNotNil(crashLog.processInfo.processStartTime, @"No process start time available");
+    NSTimeInterval startTimeInterval = [[NSDate date] timeIntervalSinceDate: crashLog.processInfo.processStartTime];
+    STAssertTrue(startTimeInterval >= 0, @"Date occured in the future");
+    STAssertTrue(startTimeInterval < 60, @"Date occured more than 60 second in the past");
+
     STAssertNotNil(crashLog.processInfo.parentProcessName, @"No parent process name available");
     STAssertTrue(crashLog.processInfo.native, @"Process should be native");
     

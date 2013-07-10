@@ -420,6 +420,11 @@ error:
     NSString *processPath = nil;
     if (processInfo->process_path != NULL)
         processPath = [NSString stringWithUTF8String: processInfo->process_path];
+
+    /* Start time available? */
+    NSDate *startTime = nil;
+    if (processInfo->has_start_time)
+        startTime = [NSDate dateWithTimeIntervalSince1970: processInfo->start_time];
     
     /* Parent Name available? */
     NSString *parentProcessName = nil;
@@ -434,6 +439,7 @@ error:
     return [[[PLCrashReportProcessInfo alloc] initWithProcessName: processName
                                                         processID: processID
                                                       processPath: processPath
+                                                 processStartTime: startTime
                                                 parentProcessName: parentProcessName
                                                   parentProcessID: parentProcessID
                                                            native: processInfo->native] autorelease];
