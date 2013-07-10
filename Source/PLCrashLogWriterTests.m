@@ -123,6 +123,10 @@
 
     STAssertEquals((pid_t)procInfo->process_id, getpid(), @"Incorrect process id written");
     STAssertEquals((pid_t)procInfo->parent_process_id, getppid(), @"Incorrect parent process id written");
+    
+    STAssertTrue(procInfo->has_start_time, @"Missing start time value");
+    STAssertTrue(time(NULL) >= procInfo->start_time, @"Recorded time occured in the future");
+    STAssertTrue(time(NULL) - procInfo->start_time <= 60, @"Recorded time differs from the current time by more than 1 minute");
 
     int retval;
     if (plcrash_sysctl_int("sysctl.proc_native", &retval)) {

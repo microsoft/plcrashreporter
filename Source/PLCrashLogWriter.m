@@ -198,6 +198,9 @@ enum {
     
     /** CrashReport.process_info.native */
     PLCRASH_PROTO_PROCESS_INFO_NATIVE_ID = 6,
+    
+    /** CrashReport.process_info.start_time */
+    PLCRASH_PROTO_PROCESS_INFO_START_TIME_ID = 7,
 
     
     /** CrashReport.Processor.encoding */
@@ -278,12 +281,14 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             /* Retrieve PID */
             writer->process_info.process_id = getpid();
 
-            /* Retrieve name */
+            /* Retrieve name and start time. */
             process_info_mib[3] = writer->process_info.process_id;
             if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
                 writer->process_info.process_name = strdup(process_info.kp_proc.p_comm);
+                writer->process_info.start_time = process_info.kp_proc.p_starttime.tv_sec;
             } else {
                 PLCF_DEBUG("Could not retreive process name: %s", strerror(errno));
+                return PLCRASH_EINTERNAL;
             }
 
             /* Retrieve path */
@@ -635,13 +640,15 @@ static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const c
  * @param parent_process_name Parent process name
  * @param parent_process_id Parent process ID
  * @param native If false, process is running under emulation.
+ * @param start_time The start time of the process.
  */
-static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, const char *process_name, 
+static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, const char *process_name,
                                                  const pid_t process_id, const char *process_path, 
                                                  const char *parent_process_name, const pid_t parent_process_id,
-                                                 bool native) 
+                                                 bool native, time_t start_time)
 {
     size_t rv = 0;
+    uint64_t tval;
 
     /*
      * In the current crash reporter serialization format, pid values are serialized as unsigned 32-bit integers. This
@@ -665,10 +672,11 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
     /* Process path */
     if (process_path != NULL)
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_PATH_ID, PLPROTOBUF_C_TYPE_STRING, process_path);
-
+    
     /* Parent process name */
     if (parent_process_name != NULL)
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, parent_process_name);
+    
 
     /* Parent process ID */
     pidval = parent_process_id;
@@ -676,6 +684,10 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 
     /* Native process. */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_NATIVE_ID, PLPROTOBUF_C_TYPE_BOOL, &native);
+    
+    /* Start time */
+    tval = start_time;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_START_TIME_ID, PLPROTOBUF_C_TYPE_UINT64, &tval);
 
     return rv;
 }
@@ -1199,13 +1211,15 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         /* Determine size */
         size = plcrash_writer_write_process_info(NULL, writer->process_info.process_name, writer->process_info.process_id, 
                                                  writer->process_info.process_path, writer->process_info.parent_process_name,
-                                                 writer->process_info.parent_process_id, writer->process_info.native);
+                                                 writer->process_info.parent_process_id, writer->process_info.native,
+                                                 writer->process_info.start_time);
         
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_process_info(file, writer->process_info.process_name, writer->process_info.process_id, 
                                           writer->process_info.process_path, writer->process_info.parent_process_name, 
-                                          writer->process_info.parent_process_id, writer->process_info.native);
+                                          writer->process_info.parent_process_id, writer->process_info.native,
+                                          writer->process_info.start_time);
     }
     
     /* Threads */

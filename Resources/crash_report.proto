@@ -280,6 +280,9 @@ message CrashReport {
         
         /** If false, the process is being run via process-level CPU emulation (such as Rosetta). */
         required bool native = 6;
+
+        /** The start time of the process (as seconds since UNIX epoch). Required for all v1.2+ crash reports. */
+        optional uint64 start_time = 7;
     }
   
     /* The process info. Required for all v1.1+ crash reports. */

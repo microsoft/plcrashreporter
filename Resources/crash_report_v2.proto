@@ -183,16 +183,19 @@ message CrashReport_V2 {
 
         /* Application process path */
         optional string path = 3;
+        
+        /** The start time of the process (as seconds since UNIX epoch). */
+        required uint64 start_time = 4;
 
         /* Application parent process name */
-        optional string parent_name = 4;
+        optional string parent_name = 5;
 
         /* Application parent process ID */
-        required uint64 parent_pid = 5;
+        required uint64 parent_pid = 6;
 
         /** If false, the process is being run via process-level CPU emulation (such as Rosetta). If unknown, this
          * value must be ommitted. */
-        optional bool native = 6;
+        optional bool native = 7;
     }
   
     /* The process info. */

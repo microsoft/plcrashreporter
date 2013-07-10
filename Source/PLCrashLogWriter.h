@@ -111,6 +111,9 @@ typedef struct plcrash_log_writer {
         /** Process path (may be null) */
         char *process_path;
         
+        /** Process start time */
+        time_t start_time;
+        
         /** Parent process name (may be null) */
         char *parent_process_name;
         
