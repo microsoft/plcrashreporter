@@ -319,8 +319,9 @@ message CrashReport {
         /** If true, this report was generated on request, and no crash occured. */
         required bool user_requested = 1;
 
-        /** UUID unique for this crash */
-        optional string incident_id = 2;
+        /** A client-generated 16 byte OSF standard UUID for this report. May be used to filter duplicate reports submitted
+         * by a single client. */
+        optional bytes uuid = 2;
     }
 
     /* Report format information. Required for all v1.1+ crash reports. */

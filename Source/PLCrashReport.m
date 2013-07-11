@@ -94,19 +94,24 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
 
     /* Report info (optional) */
     _userRequested = NO;
-    _incidentIdentifier = nil;
-    if (_decoder->crashReport->report_info) {
+    _uuid = NULL;
+    if (_decoder->crashReport->report_info != NULL) {
         _userRequested = _decoder->crashReport->report_info->user_requested;
 
-        /* Incident Identifier (optional) */
-        if (_decoder->crashReport->report_info->incident_id) {
-            _incidentIdentifier = [[NSString stringWithUTF8String:_decoder->crashReport->report_info->incident_id] retain];
-        }
-    }
+        /* Report UUID (optional)
+         * If our minimum supported target is bumped to (10.8+, iOS 6.0+), NSUUID should
+         * be used instead. */
+        if (_decoder->crashReport->report_info->has_uuid) {
+            /* Validate the UUID length */
+            if (_decoder->crashReport->report_info->uuid.len != sizeof(uuid_t)) {
+                populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid , @"Report UUID value is not a standard 16 bytes");
+                goto error;
+            }
 
-    /* If no incident identifier from client, generate one now */
-    if (_incidentIdentifier == nil) {
-        _incidentIdentifier = [[[NSUUID UUID] UUIDString] retain];
+            CFUUIDBytes uuid_bytes;
+            memcpy(&uuid_bytes, _decoder->crashReport->report_info->uuid.data, _decoder->crashReport->report_info->uuid.len);
+            _uuid = CFUUIDCreateFromUUIDBytes(NULL, uuid_bytes);
+        }
     }
 
     /* System info */
@@ -172,7 +177,9 @@ error:
     [_threads release];
     [_images release];
     [_exceptionInfo release];
-    [_incidentIdentifier release];
+    
+    if (_uuid != NULL)
+        CFRelease(_uuid);
 
     /* Free the decoder state */
     if (_decoder != NULL) {
@@ -233,7 +240,7 @@ error:
 @synthesize images = _images;
 @synthesize exceptionInfo = _exceptionInfo;
 @synthesize userRequested = _userRequested;
-@synthesize incidentIdentifier = _incidentIdentifier;
+@synthesize uuidRef = _uuid;
 
 @end
 

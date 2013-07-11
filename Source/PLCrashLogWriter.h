@@ -32,6 +32,8 @@
 #import "PLCrashAsync.h"
 #import "PLCrashAsyncImageList.h"
 
+#include <uuid/uuid.h>
+
 /**
  * @internal
  * @defgroup plcrash_log_writer Crash Log Writer
@@ -55,8 +57,8 @@ typedef struct plcrash_log_writer {
          * report */
         bool user_requested;
 
-        /** Incident Identifier */
-        char *incident_id;
+        /** Report UUID */
+        uuid_t uuid_bytes;
     } report_info;
 
     /** System data */

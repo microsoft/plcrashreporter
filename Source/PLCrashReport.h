@@ -41,6 +41,12 @@
 #import "PLCrashReportSystemInfo.h"
 #import "PLCrashReportThreadInfo.h"
 
+#import <AvailabilityMacros.h>
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8 || __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_6_0
+#define PLCRASH_PRIVATE_HAS_NSUUID 1
+#endif
+
 /** 
  * @ingroup constants
  * Crash file magic identifier */
@@ -112,7 +118,7 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
     BOOL _userRequested;
 
     /** Report UUID */
-    NSString *_incidentIdentifier;
+    CFUUIDRef _uuid;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
@@ -183,8 +189,10 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 @property(nonatomic, readonly) BOOL userRequested;
 
 /**
- * Incident Identifier. A UUID unique to this crash report.
+ * A client-generated 16-byte UUID. May be used to filter duplicate reports submitted or generated
+ * by a single client. Only available in later (v1.2+) crash report format versions. If not available,
+ * will be NULL.
  */
-@property(nonatomic, readonly) NSString *incidentIdentifier;
+@property(nonatomic, readonly) CFUUIDRef uuidRef;
 
 @end

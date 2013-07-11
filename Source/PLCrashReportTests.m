@@ -123,9 +123,8 @@
 
     /* Report info */
     STAssertFalse(crashLog.userRequested, @"Crash should not be user requested");
-    STAssertNotNil(crashLog.incidentIdentifier, @"No incident identifier");
-    STAssertNotNil([[NSUUID new] initWithUUIDString:crashLog.incidentIdentifier], @"incident identifier not a UUID");
-
+    STAssertNotNULL(crashLog.uuidRef, @"No report UUID");
+    
     /* System info */
     STAssertNotNil(crashLog.systemInfo, @"No system information available");
     STAssertNotNil(crashLog.systemInfo.operatingSystemVersion, @"OS version is nil");
