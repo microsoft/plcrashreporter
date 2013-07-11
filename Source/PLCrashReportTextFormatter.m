@@ -46,7 +46,6 @@
 
 @interface PLCrashReportTextFormatter (PrivateAPI)
 NSInteger binaryImageSort(id binary1, id binary2, void *context);
-
 + (NSString *) formatStackFrame: (PLCrashReportStackFrameInfo *) frameInfo
                      frameIndex: (NSUInteger) frameIndex
                          report: (PLCrashReport *) report
@@ -58,6 +57,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
  * Formats PLCrashReport data as human-readable text.
  */
 @implementation PLCrashReportTextFormatter
+
 
 /**
  * Formats the provided @a report as human-readable text in the given @a textFormat, and return
@@ -511,7 +511,6 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
             lp64 ? 16 : 8, frameInfo.instructionPointer,
             symbolString];
 }
-
 
 /**
  * Sort PLCrashReportBinaryImageInfo instances by their starting address.

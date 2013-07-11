@@ -41,12 +41,6 @@
 #import "PLCrashReportSystemInfo.h"
 #import "PLCrashReportThreadInfo.h"
 
-#import <AvailabilityMacros.h>
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8 || __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_6_0
-#define PLCRASH_PRIVATE_HAS_NSUUID 1
-#endif
-
 /** 
  * @ingroup constants
  * Crash file magic identifier */
