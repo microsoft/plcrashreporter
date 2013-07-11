@@ -107,6 +107,12 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 
     /** Exception information (may be nil) */
     PLCrashReportExceptionInfo *_exceptionInfo;
+
+    /** User requested not a crash */
+    BOOL _userRequested;
+
+    /** Report UUID */
+    NSString *_incidentIdentifier;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
@@ -170,5 +176,15 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * otherwise nil.
  */
 @property(nonatomic, readonly) PLCrashReportExceptionInfo *exceptionInfo;
+
+/**
+ * YES if this report was user requested not generated because of a crash.
+ */
+@property(nonatomic, readonly) BOOL userRequested;
+
+/**
+ * Incident Identifier. A UUID unique to this crash report.
+ */
+@property(nonatomic, readonly) NSString *incidentIdentifier;
 
 @end

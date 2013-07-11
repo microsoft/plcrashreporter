@@ -233,6 +233,9 @@ enum {
     
     /** CrashReport.report_info.crashed */
     PLCRASH_PROTO_REPORT_INFO_USER_REQUESTED_ID = 1,
+
+    /** CrashReport.report_info.incident */
+    PLCRASH_PROTO_REPORT_INFO_INCIDENT_ID = 2,
 };
 
 /**
@@ -260,6 +263,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 
     /* Default to false */
     writer->report_info.user_requested = user_requested;
+
+    /* Generate a UUID for this incident */
+    writer->report_info.incident_id = strdup([[[NSUUID UUID] UUIDString] UTF8String]);
 
     /* Fetch the application information */
     {
@@ -1088,6 +1094,9 @@ static size_t plcrash_writer_write_report_info (plcrash_async_file_t *file, plcr
     /* Note crashed status */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_REPORT_INFO_USER_REQUESTED_ID, PLPROTOBUF_C_TYPE_BOOL, &writer->report_info.user_requested);
     
+    /* Incident Identifier */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_REPORT_INFO_INCIDENT_ID, PLPROTOBUF_C_TYPE_STRING, writer->report_info.incident_id);
+
     return rv;
 }
 

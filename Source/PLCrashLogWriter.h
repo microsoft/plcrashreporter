@@ -54,6 +54,9 @@ typedef struct plcrash_log_writer {
         /** If true, the report should be marked as a 'generated' user-requested report, rather than as a true crash
          * report */
         bool user_requested;
+
+        /** Incident Identifier */
+        char *incident_id;
     } report_info;
 
     /** System data */

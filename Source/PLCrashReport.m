@@ -92,6 +92,22 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         goto error;
     }
 
+    /* Report info (optional) */
+    _userRequested = NO;
+    _incidentIdentifier = nil;
+    if (_decoder->crashReport->report_info) {
+        _userRequested = _decoder->crashReport->report_info->user_requested;
+
+        /* Incident Identifier (optional) */
+        if (_decoder->crashReport->report_info->incident_id) {
+            _incidentIdentifier = [[NSString stringWithUTF8String:_decoder->crashReport->report_info->incident_id] retain];
+        }
+    }
+
+    /* If no incident identifier from client, generate one now */
+    if (_incidentIdentifier == nil) {
+        _incidentIdentifier = [[[NSUUID UUID] UUIDString] retain];
+    }
 
     /* System info */
     _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info error: outError] retain];
@@ -156,6 +172,7 @@ error:
     [_threads release];
     [_images release];
     [_exceptionInfo release];
+    [_incidentIdentifier release];
 
     /* Free the decoder state */
     if (_decoder != NULL) {
@@ -215,6 +232,8 @@ error:
 @synthesize threads = _threads;
 @synthesize images = _images;
 @synthesize exceptionInfo = _exceptionInfo;
+@synthesize userRequested = _userRequested;
+@synthesize incidentIdentifier = _incidentIdentifier;
 
 @end
 

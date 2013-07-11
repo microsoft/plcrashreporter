@@ -168,7 +168,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         if (report.hasMachineInfo && report.machineInfo.modelName != nil)
             hardwareModel = report.machineInfo.modelName;
 
-        [text appendFormat: @"Incident Identifier: TODO\n"];
+        [text appendFormat: @"Incident Identifier: %@\n", report.incidentIdentifier];
         [text appendFormat: @"CrashReporter Key:   TODO\n"];
         [text appendFormat: @"Hardware Model:      %@\n", hardwareModel];
     }
@@ -246,6 +246,13 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         [text appendFormat: @"*** Terminating app due to uncaught exception '%@', reason: '%@'\n",
                 report.exceptionInfo.exceptionName, report.exceptionInfo.exceptionReason];
         
+        [text appendString: @"\n"];
+    }
+
+    /* Was this user requested not a real crash? */
+    if (report.userRequested) {
+        [text appendString: @"Application Specific Information:\n"];
+        [text appendString: @"*** User Requested Crash Report ***\n"];
         [text appendString: @"\n"];
     }
 
