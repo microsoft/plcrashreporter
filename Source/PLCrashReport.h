@@ -108,9 +108,6 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
     /** Exception information (may be nil) */
     PLCrashReportExceptionInfo *_exceptionInfo;
 
-    /** User requested not a crash */
-    BOOL _userRequested;
-
     /** Report UUID */
     CFUUIDRef _uuid;
 }
@@ -176,11 +173,6 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * otherwise nil.
  */
 @property(nonatomic, readonly) PLCrashReportExceptionInfo *exceptionInfo;
-
-/**
- * YES if this report was user requested not generated because of a crash.
- */
-@property(nonatomic, readonly) BOOL userRequested;
 
 /**
  * A client-generated 16-byte UUID. May be used to filter duplicate reports submitted or generated

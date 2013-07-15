@@ -60,7 +60,6 @@
     /* Try parsing the result */
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
-    STAssertTrue(report.userRequested, @"Report not marked user requested");
 
     /* Sanity check the signal info */
     STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
@@ -77,7 +76,6 @@
     
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
-    STAssertTrue(report.userRequested, @"Report not marked user requested");
 
     STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
     STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");

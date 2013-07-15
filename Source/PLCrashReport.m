@@ -93,11 +93,8 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     }
 
     /* Report info (optional) */
-    _userRequested = NO;
     _uuid = NULL;
     if (_decoder->crashReport->report_info != NULL) {
-        _userRequested = _decoder->crashReport->report_info->user_requested;
-
         /* Report UUID (optional)
          * If our minimum supported target is bumped to (10.8+, iOS 6.0+), NSUUID should
          * be used instead. */
@@ -239,7 +236,6 @@ error:
 @synthesize threads = _threads;
 @synthesize images = _images;
 @synthesize exceptionInfo = _exceptionInfo;
-@synthesize userRequested = _userRequested;
 @synthesize uuidRef = _uuid;
 
 @end

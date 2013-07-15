@@ -255,13 +255,6 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         [text appendString: @"\n"];
     }
 
-    /* Was this user requested not a real crash? */
-    if (report.userRequested) {
-        [text appendString: @"Application Specific Information:\n"];
-        [text appendString: @"*** User Requested Crash Report ***\n"];
-        [text appendString: @"\n"];
-    }
-
     /* If an exception stack trace is available, output an Apple-compatible backtrace. */
     if (report.exceptionInfo != nil && report.exceptionInfo.stackFrames != nil && [report.exceptionInfo.stackFrames count] > 0) {
         PLCrashReportExceptionInfo *exception = report.exceptionInfo;

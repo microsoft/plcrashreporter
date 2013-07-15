@@ -122,7 +122,6 @@
     STAssertNotNil(crashLog, @"Could not decode crash log: %@", error);
 
     /* Report info */
-    STAssertFalse(crashLog.userRequested, @"Crash should not be user requested");
     STAssertNotNULL(crashLog.uuidRef, @"No report UUID");
     
     /* System info */
