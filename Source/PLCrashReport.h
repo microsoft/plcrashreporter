@@ -107,6 +107,9 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 
     /** Exception information (may be nil) */
     PLCrashReportExceptionInfo *_exceptionInfo;
+
+    /** Report UUID */
+    CFUUIDRef _uuid;
 }
 
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
@@ -170,5 +173,12 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * otherwise nil.
  */
 @property(nonatomic, readonly) PLCrashReportExceptionInfo *exceptionInfo;
+
+/**
+ * A client-generated 16-byte UUID. May be used to filter duplicate reports submitted or generated
+ * by a single client. Only available in later (v1.2+) crash report format versions. If not available,
+ * will be NULL.
+ */
+@property(nonatomic, readonly) CFUUIDRef uuidRef;
 
 @end

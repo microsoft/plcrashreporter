@@ -345,6 +345,16 @@
         return;
 
     STAssertFalse(crashReport->report_info->user_requested, @"Report not correctly marked as non-user-requested");
+    STAssertTrue(crashReport->report_info->has_uuid, @"Report missing a UUID value");
+    STAssertEquals((size_t)16, crashReport->report_info->uuid.len, @"UUID is not expected 16 bytes");
+    {
+        CFUUIDBytes uuid_bytes;
+        memcpy(&uuid_bytes, crashReport->report_info->uuid.data, sizeof(uuid_bytes));
+        CFUUIDRef uuid = CFUUIDCreateFromUUIDBytes(NULL, uuid_bytes);
+        STAssertNotNULL(uuid, @"Value not parsable as a UUID");
+        if (uuid != NULL)
+            CFRelease(uuid);
+    }
 
     /* Test the report */
     [self checkSystemInfo: crashReport];

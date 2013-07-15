@@ -40,6 +40,8 @@ extern "C" {
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashFrameWalker.h"
 
+#include <uuid/uuid.h>
+
 /**
  * @internal
  * @defgroup plcrash_log_writer Crash Log Writer
@@ -62,6 +64,9 @@ typedef struct plcrash_log_writer {
         /** If true, the report should be marked as a 'generated' user-requested report, rather than as a true crash
          * report */
         bool user_requested;
+
+        /** Report UUID */
+        uuid_t uuid_bytes;
     } report_info;
 
     /** System data */

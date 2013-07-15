@@ -92,6 +92,24 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         goto error;
     }
 
+    /* Report info (optional) */
+    _uuid = NULL;
+    if (_decoder->crashReport->report_info != NULL) {
+        /* Report UUID (optional)
+         * If our minimum supported target is bumped to (10.8+, iOS 6.0+), NSUUID should
+         * be used instead. */
+        if (_decoder->crashReport->report_info->has_uuid) {
+            /* Validate the UUID length */
+            if (_decoder->crashReport->report_info->uuid.len != sizeof(uuid_t)) {
+                populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid , @"Report UUID value is not a standard 16 bytes");
+                goto error;
+            }
+
+            CFUUIDBytes uuid_bytes;
+            memcpy(&uuid_bytes, _decoder->crashReport->report_info->uuid.data, _decoder->crashReport->report_info->uuid.len);
+            _uuid = CFUUIDCreateFromUUIDBytes(NULL, uuid_bytes);
+        }
+    }
 
     /* System info */
     _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info error: outError] retain];
@@ -156,6 +174,9 @@ error:
     [_threads release];
     [_images release];
     [_exceptionInfo release];
+    
+    if (_uuid != NULL)
+        CFRelease(_uuid);
 
     /* Free the decoder state */
     if (_decoder != NULL) {
@@ -215,6 +236,7 @@ error:
 @synthesize threads = _threads;
 @synthesize images = _images;
 @synthesize exceptionInfo = _exceptionInfo;
+@synthesize uuidRef = _uuid;
 
 @end
 
