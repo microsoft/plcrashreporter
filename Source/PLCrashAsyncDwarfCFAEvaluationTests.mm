@@ -31,6 +31,10 @@
 #include "PLCrashAsyncDwarfCFAState.hpp"
 #include "PLCrashAsyncDwarfExpression.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 /* A known-invalid opcode */
 #define DW_CFA_BAD_OPCODE DW_CFA_hi_user
 
@@ -852,3 +856,5 @@ using namespace plcrash::async;
 
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

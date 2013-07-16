@@ -27,10 +27,15 @@
 #ifndef PLCRASH_ASYNC_DWARF_PRIVATE_H
 #define PLCRASH_ASYNC_DWARF_PRIVATE_H 1
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
  * @defgroup plcrash_async_dwarf_private DWARF Internal Utility Classes
  */
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_PRIVATE_H */

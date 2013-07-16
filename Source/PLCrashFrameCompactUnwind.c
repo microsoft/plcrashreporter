@@ -24,10 +24,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #include "PLCrashFrameCompactUnwind.h"
 #include "PLCrashAsyncCompactUnwindEncoding.h"
+#include "PLCrashReporterBuildConfig.h"
 
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 /**
  * Attempt to fetch next frame using compact frame unwinding data from @a image_list.
@@ -139,3 +143,5 @@ cleanup:
     plcrash_async_image_list_set_reading(image_list, false);
     return result;
 }
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

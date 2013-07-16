@@ -24,15 +24,19 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashFrameDWARFUnwind.h"
 
+#include "PLCrashFrameDWARFUnwind.h"
 
 #include "PLCrashAsyncMachOImage.h"
 
 #include "PLCrashAsyncDwarfEncoding.hpp"
 #include "PLCrashAsyncDwarfCFAState.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 using namespace plcrash::async;
 
@@ -238,3 +242,5 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     plcrash_async_image_list_set_reading(image_list, false);
     return ferr;
 }
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

@@ -30,6 +30,9 @@
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 namespace plcrash { namespace async {
 
@@ -87,4 +90,5 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
 
 }}
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* !PLCRASH_ASYNC_DWARF_FDE_H */

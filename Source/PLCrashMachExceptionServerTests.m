@@ -26,6 +26,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+
 #import "GTMSenTestCase.h"
 
 #import "PLCrashMachExceptionServer.h"
@@ -133,3 +137,5 @@ static bool exception_callback (task_t task,
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */

@@ -31,7 +31,11 @@
 #include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 namespace plcrash { namespace async {
 
@@ -466,4 +470,5 @@ plcrash_error_t plcrash_async_dwarf_read_task_uintmax64 (task_t task,
  * @}
  */
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_PRIVATE_H */

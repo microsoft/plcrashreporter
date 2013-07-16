@@ -25,6 +25,9 @@
  */
 
 #include "dwarf_stack.hpp"
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 /**
  * @internal
@@ -37,3 +40,5 @@
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

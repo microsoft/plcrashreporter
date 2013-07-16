@@ -29,6 +29,10 @@
 
 #include <cstddef>
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf_private_stack
@@ -223,4 +227,5 @@ template <typename T, size_t S> inline bool dwarf_stack<T,S>::rotate (void) {
  * @}
  */
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_STACK_H */

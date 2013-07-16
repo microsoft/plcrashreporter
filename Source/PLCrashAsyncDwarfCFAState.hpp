@@ -34,6 +34,10 @@
 #include "PLCrashAsyncDwarfCIE.hpp"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf_cfa_state
@@ -361,4 +365,5 @@ public:
  * @}
  */
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_STACK_H */

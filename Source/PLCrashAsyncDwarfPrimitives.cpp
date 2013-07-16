@@ -27,7 +27,11 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 #include "PLCrashAsyncDwarfEncoding.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 using namespace plcrash::async;
 
@@ -533,3 +537,5 @@ template class gnu_ehptr_reader<uint64_t>;
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

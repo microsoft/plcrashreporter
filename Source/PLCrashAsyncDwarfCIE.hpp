@@ -31,6 +31,10 @@
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 namespace plcrash { namespace async {
 
 /**
@@ -175,4 +179,5 @@ void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 
 }}
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_CIE_H */

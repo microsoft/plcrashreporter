@@ -29,6 +29,10 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+
 /**
  * @internal
  * Exception handler callback.
@@ -105,3 +109,5 @@ typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
 - (BOOL) deregisterHandlerAndReturnError: (NSError **) outError;
 
 @end
+
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */

@@ -30,6 +30,10 @@
 
 #include "dwarf_opstream.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 using namespace plcrash::async;
 
 @interface dwarf_opstream_tests : PLCrashTestCase {
@@ -206,3 +210,5 @@ using namespace plcrash::async;
 
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

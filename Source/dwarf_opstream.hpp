@@ -33,6 +33,10 @@
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf_private_opstream
@@ -268,4 +272,5 @@ inline uintptr_t dwarf_opstream::get_position (void) {
  * @}
  */
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_OPSTREAM_H */

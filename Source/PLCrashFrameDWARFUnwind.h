@@ -27,21 +27,26 @@
 #ifndef PLCRASH_FRAME_DWARF_UNWIND_H
 #define PLCRASH_FRAME_DWARF_UNWIND_H
 
+#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFrameWalker.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "PLCrashFrameWalker.h"
 
 plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
                                                   plcrash_async_image_list_t *image_list,
                                                   const plframe_stackframe_t *current_frame,
                                                   const plframe_stackframe_t *previous_frame,
                                                   plframe_stackframe_t *next_frame);
-    
+
     
 #ifdef __cplusplus
 }
 #endif
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_FRAME_DWARF_UNWIND_H */

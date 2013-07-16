@@ -32,6 +32,10 @@
 
 #include "dwarf_encoding_test.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 using namespace plcrash::async;
 
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
@@ -176,3 +180,5 @@ using namespace plcrash::async;
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

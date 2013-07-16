@@ -30,11 +30,16 @@
 #import "PLCrashAsyncCompactUnwindEncoding.h"
 #import "PLCrashAsyncMachOImage.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #import <TargetConditionals.h>
 
 #import <mach-o/fat.h>
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
+
+
+#if PLCRASH_FEATURE_UNWIND_COMPACT
 
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
 #define TEST_BINARY @"test.macosx"
@@ -917,3 +922,5 @@
 #endif /* PLCRASH_ASYNC_THREAD_X86_SUPPORT */
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_COMPACT */

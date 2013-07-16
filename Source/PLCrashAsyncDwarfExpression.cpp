@@ -32,6 +32,10 @@
 #include "PLCrashAsyncDwarfExpression.hpp"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 using namespace plcrash::async;
 
 /**
@@ -718,3 +722,5 @@ template plcrash_error_t plcrash_async_dwarf_expression_eval<uint64_t, int64_t> 
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

@@ -27,12 +27,15 @@
 #ifndef PLCRASH_FRAME_COMPACTUNWIND_H
 #define PLCRASH_FRAME_COMPACTUNWIND_H
 
+#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFrameWalker.h"
+#include "PLCrashAsyncCompactUnwindEncoding.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "PLCrashFrameWalker.h"
-#include "PLCrashAsyncCompactUnwindEncoding.h"
 
 plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
                                                     plcrash_async_image_list_t *image_list,
@@ -44,4 +47,5 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
 }
 #endif
 
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_FRAME_COMPACTUNWIND_H */

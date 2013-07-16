@@ -29,7 +29,11 @@
 
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_COMPACT
 
 /**
  * @internal
@@ -1088,3 +1092,5 @@ void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry) {
 /**
  * @} plcrash_async_cfe
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_COMPACT */

@@ -27,7 +27,11 @@
 #include "PLCrashAsyncDwarfFDE.hpp"
 #include "PLCrashAsyncDwarfCIE.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 using namespace plcrash::async;
 
@@ -256,3 +260,5 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

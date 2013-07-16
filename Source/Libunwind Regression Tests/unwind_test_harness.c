@@ -33,6 +33,8 @@
 #include "PLCrashFrameCompactUnwind.h"
 #include "PLCrashFrameDWARFUnwind.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
 extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];
 extern void *unwind_tester_list_x86_64_frameless[];
@@ -54,12 +56,16 @@ plframe_cursor_frame_reader_t *frame_readers_frame[] = {
 };
 
 plframe_cursor_frame_reader_t *frame_readers_compact[] = {
+#if PLCRASH_FEATURE_UNWIND_COMPACT
     plframe_cursor_read_compact_unwind,
+#endif
     NULL
 };
 
 plframe_cursor_frame_reader_t *frame_readers_dwarf[] = {
+#if PLCRASH_FEATURE_UNWIND_DWARF
     plframe_cursor_read_dwarf_unwind,
+#endif
     NULL
 };
 

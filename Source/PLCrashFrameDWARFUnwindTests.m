@@ -27,6 +27,9 @@
 
 #import "GTMSenTestCase.h"
 #import "PLCrashFrameDWARFUnwind.h"
+#import "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 /**
  * @internal
@@ -75,3 +78,5 @@
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

@@ -31,7 +31,11 @@
 #include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include <mach-o/compact_unwind_encoding.h>
+
+#if PLCRASH_FEATURE_UNWIND_COMPACT
 
 /**
  * @internal
@@ -192,5 +196,7 @@ void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, ui
 /**
  * @} plcrash_async_cfe
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_COMPACT */
 
 #endif /* PLCRASH_ASYNC_COMPACT_UNWIND_ENCODING_H */

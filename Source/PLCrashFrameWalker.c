@@ -34,6 +34,8 @@
 #include "PLCrashFrameCompactUnwind.h"
 #include "PLCrashFrameDWARFUnwind.h"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #pragma mark Error Handling
 
 /**
@@ -225,8 +227,15 @@ plframe_error_t plframe_cursor_next_with_readers (plframe_cursor_t *cursor, plfr
  */
 plframe_error_t plframe_cursor_next (plframe_cursor_t *cursor) {
     plframe_cursor_frame_reader_t *readers[] = {
+
+#if PLCRASH_FEATURE_UNWIND_COMPACT
         plframe_cursor_read_compact_unwind,
+#endif
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
         plframe_cursor_read_dwarf_unwind,
+#endif
+
         plframe_cursor_read_frame_ptr
     };
 

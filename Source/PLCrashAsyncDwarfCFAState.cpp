@@ -26,6 +26,10 @@
 
 #include "PLCrashAsyncDwarfCFAState.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 using namespace plcrash::async;
 
 /**
@@ -348,3 +352,5 @@ template class dwarf_cfa_state_iterator<uint64_t, int64_t>;
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

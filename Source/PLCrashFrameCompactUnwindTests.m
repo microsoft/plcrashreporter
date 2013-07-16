@@ -27,6 +27,9 @@
 
 #import "GTMSenTestCase.h"
 #import "PLCrashFrameCompactUnwind.h"
+#import "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_COMPACT
 
 /**
  * @internal
@@ -73,3 +76,5 @@
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_COMPACT */

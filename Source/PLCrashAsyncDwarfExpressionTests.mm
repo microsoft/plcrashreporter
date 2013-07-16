@@ -30,6 +30,9 @@
 
 #include "PLCrashAsyncDwarfExpression.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 /*
  * Configure the test cases for thread states that are supported by the host.
@@ -816,3 +819,5 @@
 
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

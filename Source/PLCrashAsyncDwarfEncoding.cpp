@@ -25,8 +25,11 @@
  */
 
 #include "PLCrashAsyncDwarfEncoding.hpp"
+#include "PLCrashReporterBuildConfig.h"
 
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 using namespace plcrash::async;
 
@@ -207,3 +210,5 @@ plcrash_error_t dwarf_frame_reader::find_fde (pl_vm_off_t offset,
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

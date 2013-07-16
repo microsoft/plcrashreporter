@@ -32,6 +32,10 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 #include "PLCrashAsyncDwarfFDE.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
+
 using namespace plcrash::async;
 
 struct __attribute__((packed)) cie_data {
@@ -203,3 +207,5 @@ struct __attribute__((packed)) fde_data {
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

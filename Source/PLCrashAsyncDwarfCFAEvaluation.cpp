@@ -28,9 +28,13 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 #include "PLCrashAsyncDwarfCFAState.hpp"
 
+#include "PLCrashReporterBuildConfig.h"
+
 #include "dwarf_opstream.hpp"
 
 #include <inttypes.h>
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 /**
  * @internal
@@ -720,3 +724,5 @@ template class dwarf_cfa_state<uint64_t, int64_t>;
 /**
  * @}
  */
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */

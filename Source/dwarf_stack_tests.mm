@@ -27,8 +27,11 @@
  */
 
 #import "PLCrashTestCase.h"
-
 #include "dwarf_stack.hpp"
+
+#include "PLCrashReporterBuildConfig.h"
+
+#if PLCRASH_FEATURE_UNWIND_DWARF
 
 using namespace plcrash::async;
 
@@ -197,3 +200,5 @@ using namespace plcrash::async;
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
