@@ -37,7 +37,7 @@
 
 using namespace plcrash::async;
 
-@interface PLCrashAsyncDwarfCFATests : PLCrashTestCase {
+@interface PLCrashAsyncDwarfCFAStateTests : PLCrashTestCase {
 @private
 }
 @end
@@ -45,7 +45,7 @@ using namespace plcrash::async;
 /**
  * Test DWARF CFA stack implementation.
  */
-@implementation PLCrashAsyncDwarfCFATests
+@implementation PLCrashAsyncDwarfCFAStateTests
 
 /**
  * Test CFA rule handling.
