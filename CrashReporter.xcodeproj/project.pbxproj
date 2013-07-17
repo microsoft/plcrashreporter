@@ -143,6 +143,9 @@
 		0573B44A1681108500395F2A /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		057C9BBE17970F54006B242E /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
+		057C9BBF17970F6D006B242E /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
+		057C9BC017970F77006B242E /* PLCrashAsyncDwarfExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7488A176135CE009B8745 /* PLCrashAsyncDwarfExpression.cpp */; };
 		057CD98616CD5D5C0067E670 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057CD98516CD5D5C0067E670 /* Default-568h@2x.png */; };
 		057CD98716CD5D7A0067E670 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057CD98516CD5D5C0067E670 /* Default-568h@2x.png */; };
 		0581B521168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
@@ -3070,6 +3073,9 @@
 				05E748A717616D30009B8745 /* dwarf_stack.cpp in Sources */,
 				05C76DA6176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DC8176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.cpp in Sources */,
+				057C9BBF17970F6D006B242E /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
+				057C9BC017970F77006B242E /* PLCrashAsyncDwarfExpression.cpp in Sources */,
+				057C9BBE17970F54006B242E /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
