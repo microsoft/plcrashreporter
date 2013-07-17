@@ -47,7 +47,7 @@
  * @param processStartTime Date and time that the crashing process was started. May be nil.
  * @param parentProcessName Parent process' name. May be nil.
  * @param parentProcessID Parent process' PID.
- * @param process Flag designating whether this process is native. If false, the process is being run via process-level
+ * @param native Flag designating whether this process is native. If false, the process is being run via process-level
  * CPU emulation (such as Rosetta).
  */
 - (id) initWithProcessName: (NSString *) processName

@@ -40,7 +40,7 @@
  * Initialize with the provided frame info.
  *
  * @param instructionPointer The instruction pointer value for this frame.
- * @param symbol Symbol information for this frame, if available. May be nil.
+ * @param symbolInfo Symbol information for this frame, if available. May be nil.
  */
 - (id) initWithInstructionPointer: (uint64_t) instructionPointer symbolInfo: (PLCrashReportSymbolInfo *) symbolInfo {
     if ((self = [super init]) == nil)

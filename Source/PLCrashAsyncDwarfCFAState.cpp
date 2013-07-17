@@ -172,8 +172,8 @@ bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_register (dwarf_cfa_state_
  * true on success, or false if no entry has been added for the register.
  *
  * @param regnum The DWARF register number.
- * @param rule[out] On success, the DWARF CFA rule for @a regnum.
- * @param value[out] On success, the data value to be used when interpreting @a rule.
+ * @param[out] rule On success, the DWARF CFA rule for @a regnum.
+ * @param[out] value On success, the data value to be used when interpreting @a rule.
  */
 template <typename machine_ptr, typename machine_ptr_s>
 bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_register_rule (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value) {
@@ -270,7 +270,7 @@ void dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_cfa_register_signed (dwarf
 /**
  * Set an expression-based canonical frame address rule.
  *
- * @param expression Target-relative address of the expression opcode stream.
+ * @param address Target-relative address of the expression opcode stream.
  * @param length Length in bytes of the opcode stream.
  */
 template <typename machine_ptr, typename machine_ptr_s>
@@ -302,9 +302,9 @@ dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::dwarf_cfa_state_iterator(d
 /**
  * Enumerate the next register entry. Returns true on success, or false if no additional entries are available.
  *
- * @param regnum[out] On success, the DWARF register number.
- * @param rule[out] On success, the DWARF CFA rule for @a regnum.
- * @param value[out] On success, the data value to be used when interpreting @a rule.
+ * @param[out] regnum On success, the DWARF register number.
+ * @param[out] rule On success, the DWARF CFA rule for @a regnum.
+ * @param[out] value On success, the data value to be used when interpreting @a rule.
  */
 template <typename machine_ptr, typename machine_ptr_s>
 bool dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value) {

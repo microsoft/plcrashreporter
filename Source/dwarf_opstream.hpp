@@ -211,7 +211,7 @@ inline bool dwarf_opstream::read_sleb128 (int64_t *result) {
  * the mapped range and advancing the stream position past the read value.
  *
  * @param reader The GNU eh_frame pointer reader to be used for reading.
- * @param DW_EH_PE_t The pointer encoding to use when decoding the pointer value.
+ * @param encoding The pointer encoding to use when decoding the pointer value.
  * @param result On success, the pointer value.
  *
  * @tparam machine_ptr The native pointer word size of the target.

@@ -66,7 +66,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
  * @param ptr_reader GNU EH pointer reader; this also provides the base addresses and other
  * information required to decode pointers in the CFA opcode stream. May be NULL if eh_frame
  * augmentation data is not available in @a cie_info.
- * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param byteorder The byte order of the data referenced by @a mobj.
  * @param address The task-relative address within @a mobj at which the opcodes will be fetched.
  * @param offset An offset to be applied to @a address.
  * @param length The total length of the opcodes readable at @a address + @a offset.

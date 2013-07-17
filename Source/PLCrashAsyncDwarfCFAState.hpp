@@ -147,7 +147,7 @@ public:
     /**
      * Configure the target as a DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED register rule.
      *
-     * @param type DWARF register rule type (eg, one of DWARF_CFA_STATE_CFA_TYPE_REGISTER or DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED).
+     * @param regnum The DWARF register number.
      * @param offset The signed register offset.
      */
     void set_register_rule_signed (dwarf_cfa_state_regnum_t regnum, machine_ptr offset) {
@@ -159,7 +159,7 @@ public:
     /**
      * Configure the target as a DWARF_CFA_STATE_CFA_TYPE_EXPRESSION rule.
      *
-     * @param Target-relative absolute address of the expression opcode stream.
+     * @param address Target-relative absolute address of the expression opcode stream.
      * @param length Total length of the opcode stream, in bytes.
      */
     void set_expression_rule (pl_vm_address_t address, pl_vm_address_t length) {

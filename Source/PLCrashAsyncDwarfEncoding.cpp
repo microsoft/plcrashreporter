@@ -47,7 +47,7 @@ using namespace plcrash::async;
  *
  * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address. This instance must
  * survive for the lifetime of the reader.
- * @param byteoder The byte order of the data referenced by @a mobj.
+ * @param byteorder The byte order of the data referenced by @a mobj.
  * @param m64 True if the target system uses 64-bit pointers, false if it uses 32-bit pointers.
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
  * frame reader will assume eh_frame data.

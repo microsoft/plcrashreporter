@@ -45,8 +45,8 @@
  *
  * @param processorInfo The image's code type, or nil if unavailable.
  * @param baseAddress The image's base address.
- * @param imageSize The image's segment size.
- * @param imageName The image's name (absolute path).
+ * @param size The image's segment size.
+ * @param name The image's name (absolute path).
  * @param uuid The image's UUID, or nil if unavailable. In the case of Mach-O, this will be the 128-bit
  * object UUID, which is also used to match against the corresponding Mach-O DWARF dSYM file.
  */
