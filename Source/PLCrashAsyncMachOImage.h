@@ -57,7 +57,7 @@ typedef struct plcrash_async_macho {
     pl_vm_address_t header_addr;
     
     /** The binary's dyld-reported reported vmaddr slide. */
-    int64_t vmaddr_slide;
+    pl_vm_off_t vmaddr_slide;
 
     /** The binary image's name/path. */
     char *name;

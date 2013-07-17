@@ -185,7 +185,7 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     if (image->text_vmaddr < header) {
         image->vmaddr_slide = header - image->text_vmaddr;
     } else if (image->text_vmaddr > header) {
-        image->vmaddr_slide = -((int64_t) (image->text_vmaddr - header));
+        image->vmaddr_slide = -((pl_vm_off_t) (image->text_vmaddr - header));
     } else {
         image->vmaddr_slide = 0;
     }

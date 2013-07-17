@@ -86,7 +86,7 @@
 
         /* Validate its value */
         STAssertEquals((pl_vm_address_t) _dyld_get_image_header(i), item->macho_image.header_addr, @"Incorrect header value");
-        STAssertEquals((int64_t)_dyld_get_image_vmaddr_slide(i), item->macho_image.vmaddr_slide, @"Incorrect slide value");
+        STAssertEquals((pl_vm_off_t)_dyld_get_image_vmaddr_slide(i), item->macho_image.vmaddr_slide, @"Incorrect slide value");
         STAssertEqualCStrings(_dyld_get_image_name(i), item->macho_image.name, @"Incorrect name value");
     }
 }
@@ -134,7 +134,7 @@
         
         /* Validate its value */
         STAssertEquals((pl_vm_address_t) _dyld_get_image_header(val), item->macho_image.header_addr, @"Incorrect header value for %d", val);
-        STAssertEquals((int64_t)_dyld_get_image_vmaddr_slide(val), item->macho_image.vmaddr_slide, @"Incorrect slide value for %d", val);
+        STAssertEquals((pl_vm_off_t)_dyld_get_image_vmaddr_slide(val), item->macho_image.vmaddr_slide, @"Incorrect slide value for %d", val);
         STAssertEqualCStrings(_dyld_get_image_name(val), item->macho_image.name, @"Incorrect name value for %d", val);
         val += 0x2;
     }
@@ -147,7 +147,7 @@
     STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
     
     /* Look up the vmaddr slide for our image */
-    int64_t vmaddr_slide = 0;
+    pl_vm_off_t vmaddr_slide = 0;
     bool found_image = false;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
         if (_dyld_get_image_header(i) == dli.dli_fbase) {
