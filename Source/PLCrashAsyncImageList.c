@@ -90,7 +90,6 @@ void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
  *
  * @param list The list to which the image record should be appended.
  * @param header The image's header address.
- * @param vmaddr_slide The image's vmaddr slide, as reported by dyld.
  * @param name The image's name.
  *
  * @warning This method is not async safe.
