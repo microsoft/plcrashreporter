@@ -75,12 +75,20 @@ using namespace plcrash::async;
 
 /* Perform evaluation of the given opcodes, expecting a result of type @a type,
  * with an expected value of @a expected. The data is interpreted as big endian. */
-#define PERFORM_EVAL_TEST(opcodes, pc_offset, expected) do { \
+#define PERFORM_EVAL_TEST(opcodes, pc, expected) PERFORM_EVAL_TEST_WITH_INITIAL_PC(opcodes, pc, 0x0, expected)
+
+/* Perform evaluation of the given opcodes, expecting a result of type @a type,
+ * with an expected value of @a expected. The @a pc_start value will be used
+ * as the initial DW CFA location for the evaluation.
+ *
+ *
+ * The data is interpreted as big endian. */
+#define PERFORM_EVAL_TEST_WITH_INITIAL_PC(opcodes, pc, initial_pc, expected) do { \
     plcrash_async_mobject_t mobj; \
     plcrash_error_t err; \
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &opcodes, sizeof(opcodes), true), @"Failed to initialize mobj"); \
     \
-        err = _stack.eval_program(&mobj, (pl_vm_address_t)pc_offset, &_cie, _ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes)); \
+        err = _stack.eval_program(&mobj, (uint64_t)pc, (uint64_t)initial_pc, &_cie, _ptr_state, plcrash_async_byteorder_big_endian(), (pl_vm_address_t) &opcodes, 0, sizeof(opcodes)); \
         STAssertEquals(err, expected, @"Evaluation failed"); \
     \
     plcrash_async_mobject_free(&mobj); \
@@ -95,11 +103,18 @@ using namespace plcrash::async;
     STAssertEquals(_expect_val, value, @"Incorrect value returned"); \
 } while (0)
 
+/** Test handling of the initial location state */
+- (void) testInitialLoc {    
+    /* Evaluation should terminate prior to the bad opcode */
+    uint8_t opcodes[] = { DW_CFA_advance_loc1, DW_CFA_BAD_OPCODE};
+    PERFORM_EVAL_TEST_WITH_INITIAL_PC(opcodes, 0x1, 0x1, PLCRASH_ESUCCESS);
+}
+
 /** Test evaluation of DW_CFA_set_loc */
 - (void) testSetLoc {
     /* This should terminate once our PC offset is hit below; otherwise, it will execute a
      * bad CFA instruction and return falure */
-    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, DW_CFA_BAD_OPCODE};
+    uint8_t opcodes[] = { DW_CFA_set_loc, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, DW_CFA_advance_loc1, DW_CFA_BAD_OPCODE};
     PERFORM_EVAL_TEST(opcodes, 0x102030405060708, PLCRASH_ESUCCESS);
     
     /* Test evaluation without GNU EH agumentation data (eg, using direct word sized pointers) */
@@ -112,7 +127,7 @@ using namespace plcrash::async;
     _cie.code_alignment_factor = 2;
     
     /* Evaluation should terminate prior to the bad opcode */
-    uint8_t opcodes[] = { DW_CFA_advance_loc|0x1, DW_CFA_BAD_OPCODE};
+    uint8_t opcodes[] = { DW_CFA_advance_loc|0x1, DW_CFA_advance_loc1, DW_CFA_BAD_OPCODE};
     PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
 }
 
@@ -122,7 +137,7 @@ using namespace plcrash::async;
     _cie.code_alignment_factor = 2;
     
     /* Evaluation should terminate prior to the bad opcode */
-    uint8_t opcodes[] = { DW_CFA_advance_loc1, 0x1, DW_CFA_BAD_OPCODE};
+    uint8_t opcodes[] = { DW_CFA_advance_loc1, 0x1, DW_CFA_advance_loc1, DW_CFA_BAD_OPCODE};
     PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
 }
 
@@ -131,7 +146,7 @@ using namespace plcrash::async;
     _cie.code_alignment_factor = 2;
     
     /* Evaluation should terminate prior to the bad opcode */
-    uint8_t opcodes[] = { DW_CFA_advance_loc2, 0x0, 0x1, DW_CFA_BAD_OPCODE};
+    uint8_t opcodes[] = { DW_CFA_advance_loc2, 0x0, 0x1, DW_CFA_advance_loc1, DW_CFA_BAD_OPCODE};
     PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
 }
 
@@ -140,7 +155,7 @@ using namespace plcrash::async;
     _cie.code_alignment_factor = 2;
     
     /* Evaluation should terminate prior to the bad opcode */
-    uint8_t opcodes[] = { DW_CFA_advance_loc4, 0x0, 0x0, 0x0, 0x1, DW_CFA_BAD_OPCODE};
+    uint8_t opcodes[] = { DW_CFA_advance_loc4, 0x0, 0x0, 0x0, 0x1, DW_CFA_advance_loc1, DW_CFA_BAD_OPCODE};
     PERFORM_EVAL_TEST(opcodes, 0x2, PLCRASH_ESUCCESS);
 }
 

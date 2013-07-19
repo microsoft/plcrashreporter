@@ -31,6 +31,7 @@
 #include <stdint.h>
 
 #include "PLCrashAsync.h"
+#include "PLCrashAsyncDwarfFDE.hpp"
 #include "PLCrashAsyncDwarfCIE.hpp"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
@@ -306,7 +307,8 @@ public:
     dwarf_cfa_state (void);
     
     plcrash_error_t eval_program (plcrash_async_mobject_t *mobj,
-                                  pl_vm_address_t pc,
+                                  machine_ptr pc,
+                                  machine_ptr initial_pc_value,
                                   plcrash_async_dwarf_cie_info_t *cie_info,
                                   gnu_ehptr_reader<machine_ptr> *ptr_reader,
                                   const plcrash_async_byteorder_t *byteorder,

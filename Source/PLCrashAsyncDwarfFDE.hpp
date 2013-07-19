@@ -56,12 +56,10 @@ typedef struct plcrash_async_dwarf_fde_info {
     /** Offset to the CIE associated with this FDE, relative to the eh_frame/debug_frame section base. */
     pl_vm_address_t cie_offset;
     
-    /** The start of the IP range covered by this FDE. The address is relative to the image's base address, <em>not</em>
-     * the in-memory PC address of a loaded images. */
+    /** The start of the IP range covered by this FDE. The address is the in-memory load address, rather than the on-disk VM address. */
     uint64_t pc_start;
     
-    /** The end of the IP range covered by this FDE (exclusive). The address is relative to the image's base address, <em>not</em>
-     * the in-memory PC address of a loaded images.  */
+    /** The end of the IP range covered by this FDE (exclusive). he address is the in-memory load address, rather than the on-disk VM address.*/
     uint64_t pc_end;
     
     /** The address of the FDE instructions, relative to the eh_frame/debug_frame section base. */

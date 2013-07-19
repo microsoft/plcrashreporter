@@ -36,6 +36,8 @@
 
 #include <inttypes.h>
 
+#include <limits>
+
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
 using namespace plcrash::async;
@@ -59,7 +61,7 @@ using namespace plcrash::async;
  */
 template<typename machine_ptr, typename machine_ptr_s>
 static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
-                                                             plcrash_greg_t pc,
+                                                             machine_ptr pc,
                                                              plcrash_async_macho_t *image,
                                                              const plframe_stackframe_t *current_frame,
                                                              const plframe_stackframe_t *previous_frame,
@@ -152,8 +154,12 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     
     /* Evaluate the CFA instruction opcodes */
     {
+        /* Assert that pc_start won't overflow machine_ptr. This could only occur if we were to use a 64-bit FDE parser with 32-bit CFA evaluation
+         * TODO: The FDE pc_start value should probably by typed for the target architecture. */
+        PLCF_ASSERT(fde_info.pc_start < std::numeric_limits<machine_ptr>::max());
+
         /* Initial instructions */
-        err = cfa_state.eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length);
+        err = cfa_state.eval_program(dwarf_section, pc, fde_info.pc_start, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), cie_info.initial_instructions_offset, cie_info.initial_instructions_length);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -161,7 +167,7 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
         }
         
         /*  FDE instructions */
-        err = cfa_state.eval_program(dwarf_section, pc, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length);
+        err = cfa_state.eval_program(dwarf_section, pc, fde_info.pc_start, &cie_info, &ptr_state, image->byteorder, plcrash_async_mobject_base_address(dwarf_section), fde_info.instructions_offset, fde_info.instructions_length);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to evaluate CFA at offset of 0x%" PRIx64 ": %d", (uint64_t) fde_info.instructions_offset, err);
             result = PLFRAME_ENOTSUP;
@@ -234,8 +240,14 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     
     /* Perform the actual read */
     if (image->macho_image.m64) {
+        /* Could only happen due to programmer error; eg, an image that doesn't actually match our thread state */
+        PLCF_ASSERT(pc <= UINT64_MAX);
+
         ferr = plframe_cursor_read_dwarf_unwind_int<uint64_t, int64_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
     } else {
+        /* Could only happen due to programmer error; eg, an image that doesn't actually match our thread state */
+        PLCF_ASSERT(pc <= UINT32_MAX);
+
         ferr = plframe_cursor_read_dwarf_unwind_int<uint32_t, int32_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
     }
     

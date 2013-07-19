@@ -62,7 +62,10 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
  * the program will be executed to completion. This value should be the absolute address at which the code is loaded
  * into the target process, as the current implementation utilizes relative addressing to perform address
  * lookups.
- * @param cie_info The CIE info data for this opcode stream.
+ * @param initial_pc_value The initial PC value to be used as the CFA location -- this should
+ * generally be the PC start value as provided by the encoded FDE. This value should be adjusted/slid
+ * to match the load address of the binary containing @a pc.
+ * @param cie_info The CIE data for this opcode stream.
  * @param ptr_reader GNU EH pointer reader; this also provides the base addresses and other
  * information required to decode pointers in the CFA opcode stream. May be NULL if eh_frame
  * augmentation data is not available in @a cie_info.
@@ -79,7 +82,8 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
  */
 template <typename machine_ptr, typename machine_ptr_s>
 plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcrash_async_mobject_t *mobj,
-                                                                           pl_vm_address_t pc,
+                                                                           machine_ptr pc,
+                                                                           machine_ptr initial_pc_value,
                                                                            plcrash_async_dwarf_cie_info_t *cie_info,
                                                                            gnu_ehptr_reader<machine_ptr> *ptr_reader,
                                                                            const plcrash_async_byteorder_t *byteorder,
@@ -89,7 +93,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
 {
     plcrash::async::dwarf_opstream opstream;
     plcrash_error_t err;
-    machine_ptr location = 0;
+    machine_ptr location = initial_pc_value;
 
     /* Save the initial state; this is needed for DW_CFA_restore, et al. */
     // TODO - It would be preferrable to only allocate the number of registers actually required here.
@@ -181,7 +185,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
 
     /* Iterate the opcode stream until the pc_offset is hit */
     uint8_t opcode;
-    while ((pc == 0 || location < pc) && opstream.read_intU(&opcode)) {
+    while ((pc == 0 || location <= pc) && opstream.read_intU(&opcode)) {
         uint8_t const_operand = 0;
 
         /* Check for opcodes encoded in the top two bits, with an operand
