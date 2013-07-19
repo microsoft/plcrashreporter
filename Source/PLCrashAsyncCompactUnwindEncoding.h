@@ -141,7 +141,7 @@ typedef struct plcrash_async_cfe_entry {
      *   TODO: Need a mechanism to define the actual size of the offset. For x86-32/x86-64, it is defined as being
      *   encoded in a subl instruction.
      * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF: The offset to the DWARF FDE in the __eh_frame section.
-     * - PLCRASH_ASYNC_CFE_ENTRY_NONE: Unused.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE: Unused.
      */
     intptr_t stack_offset;
 
