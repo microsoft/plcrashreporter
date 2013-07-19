@@ -176,6 +176,49 @@
     }
 }
 
+/* Test-only frame readers */
+static plframe_error_t null_ip_reader (task_t task,
+                                       plcrash_async_image_list_t *image_list,
+                                       const plframe_stackframe_t *current_frame,
+                                       const plframe_stackframe_t *previous_frame,
+                                       plframe_stackframe_t *next_frame)
+{
+    plcrash_async_thread_state_copy(&next_frame->thread_state, &current_frame->thread_state);
+    plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_IP, 0x1);
+    return PLFRAME_ESUCCESS;
+}
+
+static plframe_error_t esuccess_reader (task_t task,
+                                        plcrash_async_image_list_t *image_list,
+                                        const plframe_stackframe_t *current_frame,
+                                        const plframe_stackframe_t *previous_frame,
+                                        plframe_stackframe_t *next_frame)
+{
+    plcrash_async_thread_state_copy(&next_frame->thread_state, &current_frame->thread_state);
+    return PLFRAME_ESUCCESS;
+}
+
+
+/**
+ * Test handling of IPs within the NULL page.
+ */
+- (void) testStep {
+    plframe_cursor_t cursor;
+    
+    /* Initialize the cursor */
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), &_image_list), @"Initialization failed");
+    
+    /* Try fetching the first frame */
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_next(&cursor), @"Failed to fetch first frame");
+    
+    /* Verify that fetching the next frame fails with ENOFRAME when the reader returns ENOFRAME */
+    plframe_cursor_frame_reader_t *readers[] = { null_ip_reader, esuccess_reader };
+    STAssertEquals(PLFRAME_ENOFRAME, plframe_cursor_next_with_readers(&cursor, readers, sizeof(readers) / sizeof(readers[0])), @"Did not return expected error code");
+    
+    plframe_cursor_free(&cursor);
+    
+}
+
 /*
  * Perform stack walking regression tests.
  */

@@ -206,9 +206,9 @@ plframe_error_t plframe_cursor_next_with_readers (plframe_cursor_t *cursor, plfr
         return PLFRAME_ENOFRAME;
     }
     
-    /* A NULL pc is a terminating frame */
+    /* A pc within the NULL page is a terminating frame */
     plcrash_greg_t ip = plcrash_async_thread_state_get_reg(&frame.thread_state, PLCRASH_REG_IP);
-    if (ip == 0x0)
+    if (ip <= PAGE_SIZE)
         return PLFRAME_ENOFRAME;
     
     /* Save the newly fetched frame */
