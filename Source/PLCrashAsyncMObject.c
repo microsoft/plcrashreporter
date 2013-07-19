@@ -464,7 +464,14 @@ plcrash_error_t plcrash_async_mobject_read_uint64 (plcrash_async_mobject_t *mobj
  */
 void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
     kern_return_t kt;
-    if ((kt = vm_deallocate(mach_task_self(), mobj->vm_address, mobj->vm_length)) != KERN_SUCCESS)
+    
+#ifdef PL_HAVE_MACH_VM
+    kt = mach_vm_deallocate(mach_task_self(), mobj->vm_address, mobj->vm_length);
+#else
+    kt = vm_deallocate(mach_task_self(), mobj->vm_address, mobj->vm_length);
+#endif
+    
+    if (kt != KERN_SUCCESS)
         PLCF_DEBUG("vm_deallocate() failure: %d", kt);
 
     /* Decrement our task refcount */
