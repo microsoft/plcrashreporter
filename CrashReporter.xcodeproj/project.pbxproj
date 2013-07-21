@@ -148,6 +148,7 @@
 		057C9BC017970F77006B242E /* PLCrashAsyncDwarfExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7488A176135CE009B8745 /* PLCrashAsyncDwarfExpression.cpp */; };
 		057CD98616CD5D5C0067E670 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057CD98516CD5D5C0067E670 /* Default-568h@2x.png */; };
 		057CD98716CD5D7A0067E670 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057CD98516CD5D5C0067E670 /* Default-568h@2x.png */; };
+		057DCA18179C613200BDC648 /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
 		0581B521168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		0581B522168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		05920D20177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
@@ -2713,6 +2714,7 @@
 				05A17DF916DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */,
 				05F3CD6316DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7B16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
+				057DCA18179C613200BDC648 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				05E74850175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
 				05E748621760D64D009B8745 /* PLCrashAsyncDwarfFDE.cpp in Sources */,
 				05E7486A1760D891009B8745 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
