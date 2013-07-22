@@ -394,7 +394,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     /* Compare the results */
     STAssertEqualCStrings(dli.dli_sname, ctx.name, @"Returned incorrect symbol name");
-    STAssertEquals(dli.dli_saddr, (void *) ctx.addr, @"Returned incorrect symbol address with slide %" PRId64, _image.vmaddr_slide);
+    STAssertEquals(dli.dli_saddr, (void *) ctx.addr, @"Returned incorrect symbol address with slide %" PRId64, (int64_t) _image.vmaddr_slide);
 }
 
 /**
