@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2008-2013 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2013 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,11 +26,17 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <Foundation/Foundation.h>
-#import "CrashReporter.h"
+#ifndef PLCRASHREPORTER_CONSTANTS_H
+#define PLCRASHREPORTER_CONSTANTS_H
 
-#import "PLCrashReporterConstants.h"
+#if defined(__cplusplus)
+#   define PLCR_EXPORT extern "C"
+#   define PLCR_C_BEGIN_DECLS extern "C" {
+#   define PLCR_C_END_DECLS }
+#else
+#   define PLCR_EXPORT extern
+#   define PLCR_C_BEGIN_DECLS
+#   define PLCR_C_END_DECLS
+#endif
 
-PLCR_EXPORT void plcrash_populate_error (NSError **error, PLCrashReporterError code, NSString *description, NSError *cause);
-PLCR_EXPORT void plcrash_populate_mach_error (NSError **error, kern_return_t kr, NSString *description);
-PLCR_EXPORT void plcrash_populate_posix_error (NSError **error, int errnoVal, NSString *description);
+#endif /* PLCRASHREPORTER_CONSTANTS_H */
