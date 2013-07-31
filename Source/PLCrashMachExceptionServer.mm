@@ -94,11 +94,11 @@
 /* On Mac OS X, we are free to use the 64-bit mach_* APIs. No headers are provided for these,
  * but the MIG defs are available and may be included directly in the build */
 #if !TARGET_OS_IPHONE
-#define HANDLE_MACH64_CODES 1
+#define USE_MACH64_CODES 1
 #import "mach_exc.h"
 #endif
 
-#if HANDLE_MACH64_CODES
+#if USE_MACH64_CODES
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
 #else
@@ -324,8 +324,6 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
 static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t *request,
                                                      mach_port_t port,
                                                      exception_behavior_t behavior,
-                                                     bool mach_exception_codes,
-                                                     exception_data_type_t code32[],
                                                      thread_state_data_t thread_state,
                                                      mach_msg_type_number_t thread_state_count,
                                                      thread_state_flavor_t thread_state_flavor,
@@ -333,12 +331,23 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
 {
     /* This will only be false in the case where we can't handle the requested exception behavior */
     *forwarded = true;
+    
+    
+    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
+#if USE_MACH64_CODES
+    exception_data_type_t code32[request->codeCnt];
+    for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+        code32[i] = (uint64_t) request->code[i];
+    }
+#else
+    int32_t *code32 = request->code;
+#endif
 
     /* Handle the supported behaviors */
-    switch (behavior) {
+    switch (behavior & ~MACH_EXCEPTION_CODES) {
         case EXCEPTION_DEFAULT:
-            if (mach_exception_codes) {
-#if HANDLE_MACH64_CODES
+            if (behavior & MACH_EXCEPTION_CODES) {
+#if USE_MACH64_CODES
                 return mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
 #endif
             } else {
@@ -347,8 +356,8 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
             break;
             
         case EXCEPTION_STATE:
-            if (mach_exception_codes) {
-#if HANDLE_MACH64_CODES
+            if (behavior & MACH_EXCEPTION_CODES) {
+#if USE_MACH64_CODES
                 return mach_exception_raise_state(port, request->exception, request->code, request->codeCnt, &thread_state_flavor, thread_state,
                                                   thread_state_count, thread_state, &thread_state_count);
 #endif
@@ -359,8 +368,8 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
             break;
             
         case EXCEPTION_STATE_IDENTITY:
-            if (mach_exception_codes) {
-#if HANDLE_MACH64_CODES
+            if (behavior & MACH_EXCEPTION_CODES) {
+#if USE_MACH64_CODES
                 return mach_exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
                                                            request->codeCnt, &thread_state_flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
 #endif
@@ -375,20 +384,18 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
             break;
     }
 
-    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exception_codes ? "true" : "false");
+    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, (behavior & MACH_EXCEPTION_CODES) ? "true" : "false");
     *forwarded = false;
     return KERN_FAILURE;
 }
 
 /**
- * Forward an exception request directly to @a port.
+ * Forward an exception request directly to @a port, preserving the original reply port. The response
+ * will be sent by the receiver to the original Mach exception client, via @a request's msgh_local_port.
  *
  * @param request The request to forward.
  * @param port The port to which the exception should be forwarded.
  * @param behavior The behavior with which @a port was registered.
- * @param mach_exception_codes If true, whether MACH_EXCEPTION_CODES was specified for @a port's behavior.
- * @param code32 If mach_exception_codes is false, this array must be populated with 32-bit exception codes
- * that may be passed to the next exception server.
  * @param thread_state The thread state of the exception corresponding to @a request.
  * @param thread_state_count The number of thread state entries in @a thread_state.
  * @param thread_state_flavor The thead flavor of @a thread_state.
@@ -396,25 +403,18 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
  * @return If KERN_SUCCESS, the exception message was successfully forwarded to @a port. The result is unknown,
  * as any response will be sent directly to the original Mach exception client.
  */
+template <typename exc_raise_t, typename exc_raise_state_t, typename exc_raise_state_identity_t, typename exc_code_unsigned_t>
 static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_t *request,
                                                       mach_port_t port,
                                                       exception_behavior_t behavior,
-                                                      bool mach_exception_codes,
-                                                      exception_data_type_t code32[],
                                                       thread_state_data_t thread_state,
                                                       mach_msg_type_number_t thread_state_count,
                                                       thread_state_flavor_t thread_state_flavor)
 {
     union {
-        __Request__exception_raise_t fwd_default;
-        __Request__exception_raise_state_t fwd_state;
-        __Request__exception_raise_state_identity_t fwd_state_identity;
-
-#if HANDLE_MACH64_CODES
-        __Request__mach_exception_raise_t mach_fwd_default;
-        __Request__mach_exception_raise_state_t mach_fwd_state;
-        __Request__mach_exception_raise_state_identity_t mach_fwd_state_identity;
-#endif
+        exc_raise_t fwd_default;
+        exc_raise_state_t fwd_state;
+        exc_raise_state_identity_t fwd_state_identity;
     } reqs;
     
     /* Initialize common message header */
@@ -422,117 +422,66 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
     reqs.fwd_default.Head = request->Head;
     reqs.fwd_default.Head.msgh_remote_port = port;
 
-
     /* Populate the message as per the requested behavior. */
-    switch (behavior) {
+    switch (behavior & ~MACH_EXCEPTION_CODES) {
         case EXCEPTION_DEFAULT: {
-            if (mach_exception_codes) {
-#if HANDLE_MACH64_CODES
-                __Request__mach_exception_raise_t *msg = &reqs.mach_fwd_default;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(request->code[0]));
-
-                fwd = (mach_msg_base_t *) msg;
-#endif
-            } else {
-                __Request__exception_raise_t *msg = &reqs.fwd_default;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
-                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(code32[0]));
-
-                fwd = (mach_msg_base_t *) msg;
+            exc_raise_t *msg = &reqs.fwd_default;
+            msg->Head.msgh_size = sizeof(*msg);
+            
+            msg->thread = request->thread;
+            msg->task = request->task;
+            msg->NDR = NDR_record;
+            msg->exception = request->exception;
+            msg->codeCnt = request->codeCnt;
+            
+            PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(exc_code_unsigned_t));
+            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+                msg->code[i] = (exc_code_unsigned_t) request->code[i];
             }
+            
+            fwd = (mach_msg_base_t *) msg;
             break;
         }
             
         case EXCEPTION_STATE: {
-            if (mach_exception_codes) {
-#if HANDLE_MACH64_CODES
-                __Request__mach_exception_raise_state_t *msg = &reqs.mach_fwd_state;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(request->code[0]));
-
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
-#endif
-            } else {
-                __Request__exception_raise_state_t *msg = &reqs.fwd_state;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
-                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(code32[0]));
-
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
+            exc_raise_state_t *msg = &reqs.fwd_state;
+            msg->Head.msgh_size = sizeof(*msg);
+            
+            msg->NDR = NDR_record;
+            msg->exception = request->exception;
+            msg->codeCnt = request->codeCnt;
+            
+            PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(exc_code_unsigned_t));
+            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+                msg->code[i] = (exc_code_unsigned_t) request->code[i];
             }
+
+            msg->old_stateCnt = thread_state_count;
+            memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+            
+            fwd = (mach_msg_base_t *) msg;
             break;
         }
             
         case EXCEPTION_STATE_IDENTITY: {
-            if (mach_exception_codes) {
-#if HANDLE_MACH64_CODES
-                __Request__mach_exception_raise_state_identity_t *msg = &reqs.mach_fwd_state_identity;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, request->code, sizeof(request->code[0]) * request->codeCnt);
-                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(request->code[0]));
-
-                msg->flavor = thread_state_flavor;
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
-#endif
-            } else {
-                __Request__exception_raise_state_identity_t *msg = &reqs.fwd_state_identity;
-                msg->Head.msgh_size = sizeof(*msg);
-                
-                msg->thread = request->thread;
-                msg->task = request->task;
-                msg->NDR = NDR_record;
-                msg->exception = request->exception;
-
-                msg->codeCnt = request->codeCnt;
-                memcpy(msg->code, code32, sizeof(code32[0]) * request->codeCnt);
-                PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(code32[0]));
-
-                msg->flavor = thread_state_flavor;
-                msg->old_stateCnt = thread_state_count;
-                memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-                
-                fwd = (mach_msg_base_t *) msg;
+            exc_raise_state_identity_t *msg = &reqs.fwd_state_identity;
+            msg->Head.msgh_size = sizeof(*msg);
+            
+            msg->thread = request->thread;
+            msg->task = request->task;
+            msg->NDR = NDR_record;
+            msg->exception = request->exception;
+            
+            PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(exc_code_unsigned_t));
+            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+                msg->code[i] = (exc_code_unsigned_t) request->code[i];
             }
+            
+            msg->flavor = thread_state_flavor;
+            msg->old_stateCnt = thread_state_count;
+            memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
+            
+            fwd = (mach_msg_base_t *) msg;
             break;
         }
             
@@ -542,21 +491,22 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
     }
     
     if (fwd == NULL) {
-        PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exception_codes ? "true" : "false");
+        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
         return KERN_FAILURE;
     }
-
+    
     return mach_msg(&fwd->header, MACH_SEND_MSG, fwd->header.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 }
+
 
 /**
  * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
  *
  * @param request The incoming request that should be forwarded.
  * @param state The set of exception handlers to which the message should be forwarded.
- * @param forward_direct If false, the exception message will be sent with a local mach reply port,
- * and the result will be returned. If true, the exception message will be sent with its original
- * reply port, and the response will be unavailable.
+ * @param direct If true, the exception message will be sent with its original
+ * reply port, and the response will be unavailable. If false, the exception message
+ * will be sent with a local mach reply port, and the result will be returned.
  * @param forwarded Set to true if the exception was forwarded, false otherwise.
  *
  * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
@@ -587,7 +537,7 @@ static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_
  */
 static kern_return_t exception_server_forward (PLRequest_exception_raise_t *request,
                                                struct plcrash_exception_handler_state *state,
-                                               bool forward_direct,
+                                               bool direct,
                                                bool *forwarded)
 {
     exception_behavior_t behavior;
@@ -596,7 +546,6 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     mach_msg_type_number_t thread_state_count;
     mach_port_t port;
     kern_return_t kr;
-    bool mach_exception_codes = false;
 
     /* Default state of non-forwarded */
     *forwarded = false;
@@ -622,40 +571,36 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
     if (!found) {
         return KERN_FAILURE;
     }
-    
-    /* Clean up behavior */
-    if (behavior & MACH_EXCEPTION_CODES)
-        mach_exception_codes = true;
-    behavior &= ~MACH_EXCEPTION_CODES;
 
-    /* Fetch thread state if required */
-    if (behavior != EXCEPTION_DEFAULT) {
-        thread_state_count = THREAD_STATE_MAX;
-        kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
-        if (kr != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to fetch thread state for thread, kr=0x%x", kr);
-            return kr;
-        }
+    /* Fetch thread state */
+    thread_state_count = THREAD_STATE_MAX;
+    kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to fetch thread state for thread, kr=0x%x", kr);
+        return kr;
     }
-
-    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
-#if HANDLE_MACH64_CODES
-    exception_data_type_t code32[request->codeCnt];
-    for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-        code32[i] = (uint64_t) request->code[i];
-    }
-#else
-    int32_t *code32 = request->code;
-#endif
 
     /* Use the preferred forwarding mechanism */
-    if (forward_direct) {
-        kr = exception_server_forward_direct(request, port, behavior, mach_exception_codes, code32, thread_state, thread_state_count, flavor);
+    if (direct) {
+        if (behavior & MACH_EXCEPTION_CODES) {
+#if USE_MACH64_CODES
+            kr = exception_server_forward_direct
+                <__Request__mach_exception_raise_t, __Request__mach_exception_raise_state_t, __Request__mach_exception_raise_state_identity_t, uint64_t>
+                (request, port, behavior, thread_state, thread_state_count, flavor);
+#else
+            PLCF_DEBUG("Unable to forward exception to handler registered with unsupported MACH_EXCEPTION_CODES");
+            kr = KERN_FAILURE;
+#endif
+        } else {
+            kr = exception_server_forward_direct
+                <__Request__exception_raise_t, __Request__exception_raise_state_t, __Request__exception_raise_state_identity_t, uint32_t>
+                (request, port, behavior, thread_state, thread_state_count, flavor);
+        }
 
         if (kr == KERN_SUCCESS)
             *forwarded = true;
     } else {
-        kr = exception_server_forward_proxy(request, port, behavior, mach_exception_codes, code32, thread_state, thread_state_count, flavor, forwarded);
+        kr = exception_server_forward_proxy(request, port, behavior, thread_state, thread_state_count, flavor, forwarded);
     }
 
     return kr;
@@ -669,7 +614,7 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
  * has been returned, as the state of the process' threads is entirely unknown.
  */
 static void *exception_server_thread (void *arg) {
-    struct plcrash_exception_server_context *exc_context = arg;
+    struct plcrash_exception_server_context *exc_context = (struct plcrash_exception_server_context *) arg;
     PLRequest_exception_raise_t *request = NULL;
     size_t request_size;
     kern_return_t kr;
@@ -680,7 +625,7 @@ static void *exception_server_thread (void *arg) {
     pthread_mutex_lock(&exc_context->lock); {
         exc_context->prev_handler_state.count = EXC_TYPES_COUNT;
 
-#if HANDLE_MACH64_CODES
+#if USE_MACH64_CODES
         exception_behavior_t behavior = EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES;
 #else
         exception_behavior_t behavior = EXCEPTION_DEFAULT;
@@ -825,7 +770,7 @@ static void *exception_server_thread (void *arg) {
             set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
             
             /* Map 32-bit codes to 64-bit types. */
-#if !HANDLE_MACH64_CODES
+#if !USE_MACH64_CODES
             mach_exception_data_type_t code64[request->codeCnt];
             for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
                 code64[i] = (uint32_t) request->code[i];
@@ -927,7 +872,7 @@ static void *exception_server_thread (void *arg) {
     NSAssert(_serverContext == NULL, @"Register called twice!");
 
     /* Initialize the bare context. */
-    _serverContext = calloc(1, sizeof(*_serverContext));
+    _serverContext = (struct plcrash_exception_server_context *) calloc(1, sizeof(*_serverContext));
     _serverContext->task = task;
     _serverContext->thread = thread;
     _serverContext->exc_mask = FATAL_EXCEPTION_MASK;
