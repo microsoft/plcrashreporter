@@ -179,6 +179,9 @@ struct plcrash_exception_server_context {
     /** The target mach thread. MACH_PORT_NULL if a
      * task server is to be registered. */
     thread_t thread;
+    
+    /** The server's mach thread. */
+    thread_t server_thread;
 
     /** Registered exception port. */
     mach_port_t server_port;
@@ -788,7 +791,6 @@ static void *exception_server_thread (void *arg) {
                                                      request->exception,
                                                      code64,
                                                      request->codeCnt,
-                                                     false, /* TODO: double fault handling */
                                                      exc_context->callback_context);
             
             if (exception_handled) {
@@ -825,7 +827,47 @@ static void *exception_server_thread (void *arg) {
 
 /***
  * @internal
- * Implements Crash Reporter mach exception handling.
+ *
+ * Mach Exception Server.
+ *
+ * Implements monitoring of Mach exceptions on tasks and threads.
+ *
+ * @par Double Faults
+ *
+ * It may be valuable to be able to detect that your crash reporter itself crashed,
+ * and if possible, provide debugging information that can be reported.
+ *
+ * How this is handled depends on whether you are running in-process, or out-of-process.
+ *
+ * @par Out-of-process
+ *
+ * In the case that the reporter is running out-of-process, it is recommended that you use a
+ * crash reporter *on your crash reporter* to report the crash.
+ *
+ * It is less likely that a bug triggered by analyzing the target process will <em>also</em>
+ * be triggered when analyzing the crash reporter itself.
+ *
+ * @par In-process
+ *
+ * When running in-process, it is far more likely that re-running the crash reporter
+ * will trigger the same crash again. Thus, it is recommended that an implementor handle double
+ * faults in a "safe mode" less likely to trigger an additional crash, and gauranteed to record
+ * (at a minimum) that the crash report itself crashed, even if no additional crash data can be
+ * recorded.
+ *
+ * This may be done by targeting the Mach exception server's thread with a thread-specific
+ * crash handler. All callbacks will be issued on this thread, and it may be reliably targeted
+ * to observe any crashes that occur within those callbacks.
+ *
+ * An example implementation might do the following:
+ * - Before performing any other operations, create a cookie file on-disk that can be checked on
+ *   startup to determine whether the crash reporter itself crashed. This at the very least will
+ *   let API clients know that a problem exists (eg, a failure occured while generating the report).
+ * - Re-run the crash report writer, disabling any risky code paths that are not strictly necessary, e.g.:
+ *     - Disable local symbolication if it has been enabled by the user. This will avoid
+ *       a great deal if binary parsing.
+ *     - Disable reporting on any threads other than the crashed thread. This will avoid
+ *       any bugs that may have occured in the stack unwinding code for existing threads.
  */
 @implementation PLCrashMachExceptionServer
 
@@ -847,6 +889,9 @@ static void *exception_server_thread (void *arg) {
  * @note If this method returns NO, the exception handler will remain unmodified.
  * @note Inserting the Mach task handler is performed atomically, and multiple handlers
  * may be initialized concurrently.
+ *
+ * If the server is started successfully, it must be stopped via PLCrashMachExceptionServer::deregisterHandlerAndReturnError:,
+ * to free all associated resources.
  *
  * @param task The mach task for which the handler should be registered.
  * @param thread The mach thread for which the handler should be registered. If MACH_PORT_NULL,
@@ -877,6 +922,7 @@ static void *exception_server_thread (void *arg) {
     _serverContext->thread = thread;
     _serverContext->exc_mask = FATAL_EXCEPTION_MASK;
     _serverContext->server_port = MACH_PORT_NULL;
+    _serverContext->server_thread = MACH_PORT_NULL;
     _serverContext->server_init_result = KERN_SUCCESS;
     _serverContext->callback = callback;
     _serverContext->callback_context = context;
@@ -935,6 +981,9 @@ static void *exception_server_thread (void *arg) {
         }
         
         pthread_attr_destroy(&attr);
+
+        /* Save the thread reference */
+        _serverContext->server_thread = pthread_mach_thread_np(thr);
     }
 
     pthread_mutex_lock(&_serverContext->lock);
@@ -963,6 +1012,23 @@ error:
     }
 
     return NO;
+}
+
+/**
+ * Return the Mach thread on which the exception server is running.
+ *
+ * @warning The behavior of this method is undefined if the receiver
+ * has not been registered as a mach exception server, or has been deregistered.
+ */
+- (thread_t) serverThread {
+    NSAssert(_serverContext != NULL, @"No handler registered!");
+
+    thread_t result;
+    pthread_mutex_lock(&_serverContext->lock); {
+        result = _serverContext->server_thread;
+    } pthread_mutex_unlock(&_serverContext->lock);
+    
+    return result;
 }
 
 /**

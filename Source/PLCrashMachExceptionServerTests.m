@@ -47,7 +47,6 @@ static bool exception_callback (task_t task,
                                 exception_type_t exception_type,
                                 mach_exception_data_t code,
                                 mach_msg_type_number_t code_count,
-                                bool double_fault,
                                 void *context)
 {
     mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
