@@ -223,6 +223,10 @@ struct plcrash_exception_server_context {
      * the result of resetting the task exception handler. */
     kern_return_t server_stop_result;
 
+    /** If true, this is a 'double fault' server; it is being used to monitor
+     * exceptions that are triggered on the exception thread itself */
+    bool double_fault_server;
+
     /** Previously registered handlers. We will forward all exceptions here after
       * internal processing. */
     struct plcrash_exception_handler_state prev_handler_state;
@@ -763,11 +767,6 @@ static void *exception_server_thread (void *arg) {
                 PLCF_DEBUG("Mach exception message received from unexpected task.");
                 is_monitored_task = false;
             }
-
-            /* Restore exception ports; we don't want to double-fault if our exception handler crashes */
-            // TODO - We should register a thread-specific double-fault handler to specifically handle
-            // this state by executing a "safe mode" logging path.
-            set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
             
             /* Map 32-bit codes to 64-bit types. */
 #if !USE_MACH64_CODES
@@ -788,7 +787,7 @@ static void *exception_server_thread (void *arg) {
                                                      request->exception,
                                                      code64,
                                                      request->codeCnt,
-                                                     false, /* TODO: double fault handling */
+                                                     exc_context->double_fault_server,
                                                      exc_context->callback_context);
             
             if (exception_handled) {
@@ -809,6 +808,7 @@ static void *exception_server_thread (void *arg) {
             /*
              * Reply to the message.
              */
+            // TODO - We shouldn't reply when using direct forwarding.
             mr = exception_server_reply(request, exc_result);
             if (mr != MACH_MSG_SUCCESS)
                 PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
@@ -821,6 +821,17 @@ static void *exception_server_thread (void *arg) {
 
     return NULL;
 }
+
+@interface PLCrashMachExceptionServer (PrivateMethods)
+
+- (BOOL) registerHandlerForTask: (task_t) task
+                         thread: (thread_t) thread
+                   double_fault: (BOOL) double_fault
+                   withCallback: (PLCrashMachExceptionHandlerCallback) callback
+                        context: (void *) context
+                          error: (NSError **) outError;
+
+@end
 
 
 /***
@@ -841,8 +852,14 @@ static void *exception_server_thread (void *arg) {
     return self;
 }
 
+- (void) dealloc {
+    [_doubleFaultServer release];
+    
+    [super dealloc];
+}
+
 /**
- * Register the task signal handlers with the provided callback.
+ * Register a task or thread exception handler with the provided callback.
  *
  * @note If this method returns NO, the exception handler will remain unmodified.
  * @note Inserting the Mach task handler is performed atomically, and multiple handlers
@@ -865,6 +882,120 @@ static void *exception_server_thread (void *arg) {
                         context: (void *) context
                           error: (NSError **) outError
 {
+    return [self registerHandlerForTask: task thread: thread double_fault: false withCallback: callback context: context error: outError];
+}
+
+/**
+ * De-register the mach exception handler.
+ 
+ * @param outError A pointer to an NSError object variable. If an error occurs, this
+ * pointer will contain an error object indicating why the signal handlers could not be
+ * registered. If no error occurs, this parameter will be left unmodified. You may specify
+ * NULL for this parameter, and no error information will be provided.
+ *
+ * @warning Removing the exception handler for a currently executing process may lead to
+ * undefined behavior, and should be avoided in production code. Once registered, a handler
+ * should remain valid until the termination of a process. If multiple Mach task handlers have
+ * been registered, it is not possible for the receiver to correctly restore the appropriate
+ * exception ports, as the ports saved at the time of registration will no longer correspond to
+ * top-level registered handler. Additionally, a reference to the receiver's Mach exception
+ * ports may have been saved by another exception handler; there is no way to inform said
+ * handler of the termination of the receiver, or direct it to use a different target when
+ * forwarding exception messages. As such, once registered, an exception server should continue
+ * to run for the lifetime of the target thread or process.
+ *
+ * @warning Removing the Mach task handler is not currently performed atomically; if an
+ * exception message is received during deregistration, the exception may be lost.
+ */
+- (BOOL) deregisterHandlerAndReturnError: (NSError **) outError {
+    mach_msg_return_t mr;
+    BOOL result = YES;
+
+    NSAssert(_serverContext != NULL, @"No handler registered!");
+
+    /* Mark the server for termination */
+    OSAtomicCompareAndSwap32Barrier(0, 1, (int32_t *) &_serverContext->server_should_stop);
+
+    /* Wake up the waiting server */
+    mach_msg_header_t msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE);
+    msg.msgh_local_port = MACH_PORT_NULL;
+    msg.msgh_remote_port = _serverContext->server_port;
+    msg.msgh_size = sizeof(msg);
+    msg.msgh_id = 0;
+
+    mr = mach_msg(&msg, MACH_SEND_MSG, msg.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+
+    if (mr != MACH_MSG_SUCCESS) {
+        /* It's defined by the mach headers as safe to treat a mach_msg_return_t as a kern_return_t */
+        plcrash_populate_mach_error(outError, mr, @"Failed to send termination message to background thread");
+        return NO;
+    }
+
+    /* Wait for completion */
+    pthread_mutex_lock(&_serverContext->lock);
+    while (!_serverContext->server_stop_done) {
+        pthread_cond_wait(&_serverContext->server_cond, &_serverContext->lock);
+    }
+    pthread_mutex_unlock(&_serverContext->lock);
+
+    if (_serverContext->server_stop_result != KERN_SUCCESS) {
+        result = NO;
+        plcrash_populate_mach_error(outError, _serverContext->server_stop_result, @"Failed to reset mach exception handlers");
+    }
+
+    /* Once we've been signaled by the background thread, it will no longer access exc_context */
+    free(_serverContext);
+    _serverContext = NULL;
+
+    /* Shut down our double-fault handler */
+    if (result && _doubleFaultServer != nil) {
+        NSError *error = nil;
+        if (![_doubleFaultServer deregisterHandlerAndReturnError: &error]) {
+            if (outError != NULL)
+                *outError = error;
+
+            return NO;
+        }
+    }
+
+    return result;
+}
+
+@end
+
+@implementation PLCrashMachExceptionServer (PrivateMethods)
+
+/**
+ * @internal
+ *
+ * Register the task signal handlers with the provided callback.
+ *
+ * @note If this method returns NO, the exception handler will remain unmodified.
+ * @note Inserting the Mach task handler is performed atomically, and multiple handlers
+ * may be initialized concurrently.
+ *
+ * @param task The mach task for which the handler should be registered.
+ * @param thread The mach thread for which the handler should be registered. If MACH_PORT_NULL,
+ * a task-global handler will be registered.
+ * @param double_fault_server If true, this is a 'double fault' server; it is being used to monitor
+ * exceptions that are triggered on the exception thread itself.
+ * @param callback Callback called upon receipt of an exception. The callback will execute
+ * on the exception server's thread, distinctly from the crashed thread.
+ * @param context Context to be passed to the callback. May be NULL.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this
+ * pointer will contain an error object indicating why the exception handler could not be
+ * registered. If no error occurs, this parameter will be left unmodified. You may specify
+ * NULL for this parameter, and no error information will be provided.
+ */
+- (BOOL) registerHandlerForTask: (task_t) task
+                         thread: (thread_t) thread
+                   double_fault: (BOOL) double_fault_server
+                   withCallback: (PLCrashMachExceptionHandlerCallback) callback
+                        context: (void *) context
+                          error: (NSError **) outError;
+{
     pthread_attr_t attr;
     pthread_t thr;
     kern_return_t kr;
@@ -878,6 +1009,7 @@ static void *exception_server_thread (void *arg) {
     _serverContext->exc_mask = FATAL_EXCEPTION_MASK;
     _serverContext->server_port = MACH_PORT_NULL;
     _serverContext->server_init_result = KERN_SUCCESS;
+    _serverContext->double_fault_server = double_fault_server;
     _serverContext->callback = callback;
     _serverContext->callback_context = context;
 
@@ -948,6 +1080,24 @@ static void *exception_server_thread (void *arg) {
     }
     pthread_mutex_unlock(&_serverContext->lock);
 
+    /* Register the double-fault handler */
+    if (!double_fault_server) {
+        _doubleFaultServer = [PLCrashMachExceptionServer new];
+        BOOL registered;
+        
+        registered = [_doubleFaultServer registerHandlerForTask: mach_task_self()
+                                                         thread: pthread_mach_thread_np(thr)
+                                                   double_fault: true
+                                                   withCallback: callback
+                                                        context: context
+                                                          error: outError];
+        if (!registered) {
+            PLCF_DEBUG("Failed to register double fault exception server");
+            [_doubleFaultServer release];
+            goto error;
+        }
+    }
+    
     return YES;
 
 error:
@@ -963,73 +1113,6 @@ error:
     }
 
     return NO;
-}
-
-/**
- * De-register the mach exception handler.
- 
- * @param outError A pointer to an NSError object variable. If an error occurs, this
- * pointer will contain an error object indicating why the signal handlers could not be
- * registered. If no error occurs, this parameter will be left unmodified. You may specify
- * NULL for this parameter, and no error information will be provided.
- *
- * @warning Removing the exception handler for a currently executing process may lead to
- * undefined behavior, and should be avoided in production code. Once registered, a handler
- * should remain valid until the termination of a process. If multiple Mach task handlers have
- * been registered, it is not possible for the receiver to correctly restore the appropriate
- * exception ports, as the ports saved at the time of registration will no longer correspond to
- * top-level registered handler. Additionally, a reference to the receiver's Mach exception
- * ports may have been saved by another exception handler; there is no way to inform said
- * handler of the termination of the receiver, or direct it to use a different target when
- * forwarding exception messages. As such, once registered, an exception server should continue
- * to run for the lifetime of the target thread or process.
- *
- * @warning Removing the Mach task handler is not currently performed atomically; if an
- * exception message is received during deregistration, the exception may be lost.
- */
-- (BOOL) deregisterHandlerAndReturnError: (NSError **) outError {
-    mach_msg_return_t mr;
-    BOOL result = YES;
-
-    NSAssert(_serverContext != NULL, @"No handler registered!");
-
-    /* Mark the server for termination */
-    OSAtomicCompareAndSwap32Barrier(0, 1, (int32_t *) &_serverContext->server_should_stop);
-
-    /* Wake up the waiting server */
-    mach_msg_header_t msg;
-    memset(&msg, 0, sizeof(msg));
-    msg.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE);
-    msg.msgh_local_port = MACH_PORT_NULL;
-    msg.msgh_remote_port = _serverContext->server_port;
-    msg.msgh_size = sizeof(msg);
-    msg.msgh_id = 0;
-
-    mr = mach_msg(&msg, MACH_SEND_MSG, msg.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-
-    if (mr != MACH_MSG_SUCCESS) {
-        /* It's defined by the mach headers as safe to treat a mach_msg_return_t as a kern_return_t */
-        plcrash_populate_mach_error(outError, mr, @"Failed to send termination message to background thread");
-        return NO;
-    }
-
-    /* Wait for completion */
-    pthread_mutex_lock(&_serverContext->lock);
-    while (!_serverContext->server_stop_done) {
-        pthread_cond_wait(&_serverContext->server_cond, &_serverContext->lock);
-    }
-    pthread_mutex_unlock(&_serverContext->lock);
-
-    if (_serverContext->server_stop_result != KERN_SUCCESS) {
-        result = NO;
-        plcrash_populate_mach_error(outError, _serverContext->server_stop_result, @"Failed to reset mach exception handlers");
-    }
-
-    /* Once we've been signaled by the background thread, it will no longer access exc_context */
-    free(_serverContext);
-    _serverContext = NULL;
-
-    return result;
 }
 
 @end

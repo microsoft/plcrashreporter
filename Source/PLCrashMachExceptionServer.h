@@ -94,6 +94,10 @@ typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
 
 @interface PLCrashMachExceptionServer : NSObject {
 @private
+    /** Backing double-fault server, used to handle exceptions that occur on the
+     * exception handling thread. Will be nil if this is a double fault server instance. */
+    PLCrashMachExceptionServer *_doubleFaultServer;
+
     /** Backing server context. This structure will not be allocated until the background
      * exception server thread is spawned; once the server thread has been successfully started,
      * it is that server thread's responsibility to deallocate this structure. */
