@@ -575,12 +575,17 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
         return KERN_FAILURE;
     }
 
-    /* Fetch thread state */
-    thread_state_count = THREAD_STATE_MAX;
-    kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
-    if (kr != KERN_SUCCESS) {
-        PLCF_DEBUG("Failed to fetch thread state for thread, kr=0x%x", kr);
-        return kr;
+    /*
+     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
+     * fetching the thread state will simply fail.
+     */
+    if ((behavior & ~MACH_EXCEPTION_CODES) != EXCEPTION_DEFAULT) {
+        thread_state_count = THREAD_STATE_MAX;
+        kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
+        if (kr != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", request->thread.name, flavor, kr);
+            return kr;
+        }
     }
 
     /* Use the preferred forwarding mechanism */
@@ -752,19 +757,26 @@ static void *exception_server_thread (void *arg) {
             }
 
             /*
-             * Detect exceptions from tasks other than our target task. This should only be possible if
-             * a crash occurs after a fork(), but before our pthread_atfork() handler de-registers 
-             * our exception handler.
+             * Detect exceptions from tasks other than our target task; since exception ports are inherited, we'll
+             * be registered as the exception server for any child processes by default.
              *
-             * The exception still needs to be forwarded to any previous exception handlers, but we will
-             * not call our callback handler.
-             *
-             * TODO: Implement pthread_atfork() cleanup handler.
+             * The child process' exception still needs to be forwarded to any previously registered exception handlers,
+             * but we will not call our callback handler.
              */
-            bool is_monitored_task = true;
             if (request->task.name != exc_context->task) {
-                PLCF_DEBUG("Mach exception message received from unexpected task.");
-                is_monitored_task = false;
+                bool forwarded;
+                
+                /* Forward directly to the original exception server; we cut ourselves out of the reply chain */
+                kern_return_t kt = exception_server_forward(request, &exc_context->prev_handler_state, true, &forwarded);
+                if (kt == KERN_SUCCESS && forwarded)
+                    continue;
+
+                /* If we were unable to forward the exception, we need to respond to the exception request directly */
+                mr = exception_server_reply(request, KERN_FAILURE);
+                if (mr != MACH_MSG_SUCCESS)
+                    PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+                
+                continue;
             }
 
             /* Restore exception ports; we don't want to double-fault if our exception handler crashes */

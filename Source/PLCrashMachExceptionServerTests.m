@@ -135,6 +135,69 @@ static bool exception_callback (task_t task,
     STAssertTrue([task deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
 }
 
+/* An exception callback that simply exits with a return code of 25 */
+static bool exception_callback_exit (task_t task,
+                                     thread_t thread,
+                                     exception_type_t exception_type,
+                                     mach_exception_data_t code,
+                                     mach_msg_type_number_t code_count,
+                                     void *context)
+{
+    exit(25);
+    return false;
+}
+
+/*
+ * Verify that child process' exceptions are passed to the originally
+ * registered exception handler.
+ */
+- (void) testChildInheritedExceptionHandler {
+    NSError *error;
+
+    /* Register an inheritable server */
+    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] init] autorelease];
+    STAssertNotNil(server, @"Failed to initialize server");
+    
+    STAssertTrue([server registerHandlerForTask: mach_task_self()
+                                         thread: MACH_PORT_NULL
+                                   withCallback: exception_callback_exit
+                                        context: NULL
+                                          error: &error], @"Failed to configure handler: %@", error);
+    
+    
+    mprotect(crash_page, sizeof(crash_page), PROT_NONE);
+    pid_t pid = fork();
+    if (pid == -1) {
+        /* Failure is expected on iOS */
+#if !TARGET_OS_IPHONE
+        const char *errstr = strerror(errno);
+        STFail(@"Fork failed: %s", errstr);
+#endif
+    } else if (pid != 0) {
+        /* In parent */
+        int statl;
+        
+        /* Wait for termination */
+        pid_t wpid;
+        do {
+            wpid = waitpid(pid, &statl, 0);
+        } while (wpid == -1 && errno == EINTR);
+        STAssertEquals(wpid, pid, @"waitpid() failed: %s", strerror(errno));
+        
+        /* Verify that termination occured due to an unhandled signal */
+        STAssertTrue(WIFSIGNALED(statl), @"Child process should have failed with a signal");
+        STAssertNotEquals(WEXITSTATUS(statl), 25, @"Child process triggered callback execution!");
+        STAssertNotEquals(WEXITSTATUS(statl), 26, @"Child process exited cleanly!");
+
+    } else {
+        /* In child; trigger a crash */
+        crash_page[0] = 0xCA;
+        
+        /* Should be unreachable */
+        exit(26);
+    }
+}
+
 @end
 
 #endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
