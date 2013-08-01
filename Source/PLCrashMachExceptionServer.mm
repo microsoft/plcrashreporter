@@ -734,9 +734,13 @@ static void *exception_server_thread (void *arg) {
                  * spuriously with the process in an unknown state, in which case we must not call
                  * out to non-async-safe functions */
                 if (exc_context->server_should_stop) {
-                    /* Restore exception ports; we won't be around to handle future exceptions */
-                    // TODO - This is non-atomic; should we cycle through a mach_msg() call to clear
-                    // exception messages that may have been enqueued?
+                    /* Restore exception ports; we won't be around to handle future exceptions. This is non-atomic; any
+                     * messages pending on this port will be lost, as documented in -deregisterHandlerAndReturnError.
+                     *
+                     * In theory we could cycle through a mach_msg() call to clear exception messages that may have been enqueued,
+                     * but there are already sufficient complications related to deregistering a Mach exception handler that
+                     * potentially dropping messages is considered acceptable (and this behavior is documented).
+                     */
                     set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
 
                     /* Inform the requesting thread of completion */
@@ -1053,14 +1057,17 @@ error:
  *
  * @warning Removing the exception handler for a currently executing process may lead to
  * undefined behavior, and should be avoided in production code. Once registered, a handler
- * should remain valid until the termination of a process. If multiple Mach task handlers have
- * been registered, it is not possible for the receiver to correctly restore the appropriate
- * exception ports, as the ports saved at the time of registration will no longer correspond to
- * top-level registered handler. Additionally, a reference to the receiver's Mach exception
- * ports may have been saved by another exception handler; there is no way to inform said
- * handler of the termination of the receiver, or direct it to use a different target when
- * forwarding exception messages. As such, once registered, an exception server should continue
- * to run for the lifetime of the target thread or process.
+ * should remain valid until the termination of a process:
+ *
+ * - If multiple Mach task handlers have been registered, it is not possible for the receiver
+ *   to correctly restore the appropriate exception ports, as the ports saved at the time of
+ *   registration will no longer correspond to top-level registered handler.
+ * - A reference to the receiver's Mach exception ports may have been saved by another exception
+ *   handler; there is no way to inform said handler of the termination of the receiver, or direct
+ *   it to use a different target when forwarding exception messages.
+ *
+ * As such, once registered, an exception server should continue to run for the lifetime of the target
+ * thread or process.
  *
  * @warning Removing the Mach task handler is not currently performed atomically; if an
  * exception message is received during deregistration, the exception may be lost.
