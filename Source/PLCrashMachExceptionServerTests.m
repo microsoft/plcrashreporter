@@ -50,22 +50,8 @@ static bool exception_callback (task_t task,
                                 bool double_fault,
                                 void *context)
 {
-    /* Test double fault handling */
-    if (!double_fault) {
-        /* If this is the first callback, set a flag and then let the code below
-         * trigger a second fault. */
-        mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
-        crash_page[2] = 0xBA;
-        mprotect(crash_page, sizeof(crash_page), PROT_NONE);
-    } else {
-        /* This is the double-fault handler; fix the memory protections and
-         * allow the initial handler to continue. */
-        mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
-        crash_page[3] = 0xBE;
-        return true;
-    }
-
-    /* Verify correctness of the code values */
+    mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
+    
     if (code_count != 2) {
         crash_page[1] = 0xFA;
     } else if (code[1] != (uintptr_t) crash_page) {
@@ -105,9 +91,6 @@ static bool exception_callback (task_t task,
     STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Page should have been set to test value");
     STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
 
-    STAssertEquals(crash_page[2], (uint8_t)0xBA, @"First (non-double-fault) callback did not run");
-    STAssertEquals(crash_page[3], (uint8_t)0xBE, @"Double fault callback did not run");
-
     STAssertTrue([server deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
 }
 
@@ -145,9 +128,6 @@ static bool exception_callback (task_t task,
     
     STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Page should have been set to test value");
     STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
-    
-    STAssertEquals(crash_page[2], (uint8_t)0xBA, @"First (non-double-fault) callback did not run");
-    STAssertEquals(crash_page[3], (uint8_t)0xBE, @"Double fault callback did not run");
 
     STAssertFalse(taskRan, @"Task handler ran");
     STAssertTrue(threadRan, @"Thread-specific handler did not run");
