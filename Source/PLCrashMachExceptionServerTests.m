@@ -36,9 +36,66 @@
 
 #include <sys/mman.h>
 
-@interface PLCrashMachExceptionServerTests : SenTestCase @end
+@interface PLCrashMachExceptionServerTests : SenTestCase {
+    plcrash_mach_exception_port_state_t _task_ports;
+    plcrash_mach_exception_port_state_t _thread_ports;
+}
+@end
 
 @implementation PLCrashMachExceptionServerTests
+
+- (void) setUp {
+    /*
+     * Reset the current exception ports. Our tests interfere with any observing
+     * debuggers, so we remove any task and thread exception ports here, and then
+     * restore them in -tearDown.
+     */
+    kern_return_t kr;
+    kr = task_swap_exception_ports(mach_task_self(),
+                                   EXC_MASK_ALL,
+                                   MACH_PORT_NULL,
+                                   EXCEPTION_DEFAULT,
+                                   THREAD_STATE_NONE,
+                                   _task_ports.masks,
+                                   &_task_ports.count,
+                                   _task_ports.ports,
+                                   _task_ports.behaviors,
+                                   _task_ports.flavors);
+    STAssertEquals(kr, KERN_SUCCESS, @"Failed to reset task ports");
+    
+    kr = thread_swap_exception_ports(mach_thread_self(),
+                                     EXC_MASK_ALL,
+                                     MACH_PORT_NULL,
+                                     EXCEPTION_DEFAULT,
+                                     THREAD_STATE_NONE,
+                                     _thread_ports.masks,
+                                     &_thread_ports.count,
+                                     _thread_ports.ports,
+                                     _thread_ports.behaviors,
+                                     _thread_ports.flavors);
+    STAssertEquals(kr, KERN_SUCCESS, @"Failed to reset thread ports");
+}
+
+- (void) tearDown {
+    kern_return_t kr;
+
+    /* Restore the original exception ports */
+    for (mach_msg_type_number_t i = 0; i < _task_ports.count; i++) {
+        if (MACH_PORT_VALID(!_task_ports.ports[i]))
+            continue;
+    
+        kr = task_set_exception_ports(mach_task_self(), _task_ports.masks[i], _task_ports.ports[i], _task_ports.behaviors[i], _task_ports.flavors);
+        STAssertEquals(kr, KERN_SUCCESS, @"Failed to set task ports");
+    }
+    
+    for (mach_msg_type_number_t i = 0; i < _thread_ports.count; i++) {
+        if (MACH_PORT_VALID(!_thread_ports.ports[i]))
+            continue;
+        
+        kr = thread_set_exception_ports(mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors);
+        STAssertEquals(kr, KERN_SUCCESS, @"Failed to set thread ports");
+    }
+}
 
 static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
@@ -192,7 +249,7 @@ static bool exception_callback_exit (task_t task,
     } else {
         /* In child; trigger a crash */
         crash_page[0] = 0xCA;
-        
+
         /* Should be unreachable */
         exit(26);
     }

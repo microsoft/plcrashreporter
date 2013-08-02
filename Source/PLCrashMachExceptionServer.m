@@ -144,32 +144,6 @@ static exception_mask_t exception_to_mask (exception_type_t exception) {
 }
 
 /**
- * @internal
- *
- * Exception state as returned by task_get_exception_ports(). Up
- * to EXC_TYPES_COUNT entries may be returned. The actual count
- * is provided via exception_handler_state::count. The values
- * stored in the arrays correspond positionally.
- */
-struct plcrash_exception_handler_state {
-    /** Number of independent mask/port/behavior/flavor sets
-     * (up to EXC_TYPES_COUNT). */
-    mach_msg_type_number_t count;
-
-    /** Exception masks. */
-    exception_mask_t masks[EXC_TYPES_COUNT];
-
-    /** Exception ports. */
-    mach_port_t ports[EXC_TYPES_COUNT];
-
-    /** Exception behaviors. */
-    exception_behavior_t behaviors[EXC_TYPES_COUNT];
-
-    /** Exception thread flavors. */
-    thread_state_flavor_t flavors[EXC_TYPES_COUNT];
-};
-
-/**
  * Exception handler context.
  */
 struct plcrash_exception_server_context {
@@ -228,7 +202,7 @@ struct plcrash_exception_server_context {
 
     /** Previously registered handlers. We will forward all exceptions here after
       * internal processing. */
-    struct plcrash_exception_handler_state prev_handler_state;
+    plcrash_mach_exception_port_state_t prev_handler_state;
 };
 
 /**
@@ -242,7 +216,7 @@ struct plcrash_exception_server_context {
  * for all types specified in @a required_mask, a port of MACH_PORT_NULL will be set for the given exception type.
  * @param state Exception handler state.
  */
-static void set_exception_ports (task_t task, thread_t thread, exception_mask_t required_mask, struct plcrash_exception_handler_state *state) {
+static void set_exception_ports (task_t task, thread_t thread, exception_mask_t required_mask, plcrash_mach_exception_port_state_t *state) {
     kern_return_t kr;
 
     /* Set exception ports for all supplied state entries. */
@@ -307,34 +281,25 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
 }
 
 /**
- * Forward an exception request directly to @a port.
+ * Send an exception request directly to @a port and wait for the reply.
  *
- * @param request The request to forward.
+ * @param request The request to send.
  * @param port The port to which the exception should be forwarded.
  * @param behavior The behavior with which @a port was registered.
- * @param mach_exception_codes If true, whether MACH_EXCEPTION_CODES was specified for @a port's behavior.
- * @param code32 If mach_exception_codes is false, this array must be populated with 32-bit exception codes
- * that may be passed to the next exception server.
- * @param thread_state The thread state of the exception corresponding to @a request.
- * @param thread_state_count The number of thread state entries in @a thread_state.
  * @param thread_state_flavor The thead flavor of @a thread_state.
- * @param forwarded Set to true if the exception was forwarded, false otherwise.
  *
  * @return If KERN_SUCCESS, the exception server at @a port handled the exception, and the failed thread
  * may be resumed. Otherwise, the exception should be considered unhandled, due to either an error
  * with mach messaging, or due to a negative response from the target @a port.
  */
-static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t *request,
-                                                     mach_port_t port,
-                                                     exception_behavior_t behavior,
-                                                     thread_state_data_t thread_state,
-                                                     mach_msg_type_number_t thread_state_count,
-                                                     thread_state_flavor_t thread_state_flavor,
-                                                     bool *forwarded)
+static kern_return_t exception_server_request (PLRequest_exception_raise_t *request,
+                                               mach_port_t port,
+                                               exception_behavior_t behavior,
+                                               thread_state_flavor_t thread_state_flavor)
 {
-    /* This will only be false in the case where we can't handle the requested exception behavior */
-    *forwarded = true;
-    
+    thread_state_data_t thread_state;
+    mach_msg_type_number_t thread_state_count;
+    kern_return_t kr;
     
     /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
 #if USE_MACH64_CODES
@@ -346,10 +311,30 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
     int32_t *code32 = request->code;
 #endif
 
+    /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
+    bool mach_exc_codes = false;
+    if (behavior & MACH_EXCEPTION_CODES) {
+        mach_exc_codes = true;
+        behavior &= ~MACH_EXCEPTION_CODES;
+    }
+
+    /*
+     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
+     * fetching the thread state will simply fail.
+     */
+    if (behavior != EXCEPTION_DEFAULT) {
+        thread_state_count = THREAD_STATE_MAX;
+        kr = thread_get_state (request->thread.name, thread_state_flavor, thread_state, &thread_state_count);
+        if (kr != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", request->thread.name, thread_state_flavor, kr);
+            return kr;
+        }
+    }
+
     /* Handle the supported behaviors */
-    switch (behavior & ~MACH_EXCEPTION_CODES) {
+    switch (behavior) {
         case EXCEPTION_DEFAULT:
-            if (behavior & MACH_EXCEPTION_CODES) {
+            if (mach_exc_codes) {
 #if USE_MACH64_CODES
                 return mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
 #endif
@@ -359,7 +344,7 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
             break;
             
         case EXCEPTION_STATE:
-            if (behavior & MACH_EXCEPTION_CODES) {
+            if (mach_exc_codes) {
 #if USE_MACH64_CODES
                 return mach_exception_raise_state(port, request->exception, request->code, request->codeCnt, &thread_state_flavor, thread_state,
                                                   thread_state_count, thread_state, &thread_state_count);
@@ -371,7 +356,7 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
             break;
             
         case EXCEPTION_STATE_IDENTITY:
-            if (behavior & MACH_EXCEPTION_CODES) {
+            if (mach_exc_codes) {
 #if USE_MACH64_CODES
                 return mach_exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
                                                            request->codeCnt, &thread_state_flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
@@ -387,171 +372,36 @@ static kern_return_t exception_server_forward_proxy (PLRequest_exception_raise_t
             break;
     }
 
-    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, (behavior & MACH_EXCEPTION_CODES) ? "true" : "false");
-    *forwarded = false;
+    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exc_codes ? "true" : "false");
     return KERN_FAILURE;
 }
-
-/**
- * Forward an exception request directly to @a port, preserving the original reply port. The response
- * will be sent by the receiver to the original Mach exception client, via @a request's msgh_local_port.
- *
- * @param request The request to forward.
- * @param port The port to which the exception should be forwarded.
- * @param behavior The behavior with which @a port was registered.
- * @param thread_state The thread state of the exception corresponding to @a request.
- * @param thread_state_count The number of thread state entries in @a thread_state.
- * @param thread_state_flavor The thead flavor of @a thread_state.
- *
- * @return If KERN_SUCCESS, the exception message was successfully forwarded to @a port. The result is unknown,
- * as any response will be sent directly to the original Mach exception client.
- */
-template <typename exc_raise_t, typename exc_raise_state_t, typename exc_raise_state_identity_t, typename exc_code_unsigned_t>
-static kern_return_t exception_server_forward_direct (PLRequest_exception_raise_t *request,
-                                                      mach_port_t port,
-                                                      exception_behavior_t behavior,
-                                                      thread_state_data_t thread_state,
-                                                      mach_msg_type_number_t thread_state_count,
-                                                      thread_state_flavor_t thread_state_flavor)
-{
-    union {
-        exc_raise_t fwd_default;
-        exc_raise_state_t fwd_state;
-        exc_raise_state_identity_t fwd_state_identity;
-    } reqs;
-    
-    /* Initialize common message header */
-    mach_msg_base_t *fwd = NULL;
-    reqs.fwd_default.Head = request->Head;
-    reqs.fwd_default.Head.msgh_remote_port = port;
-
-    /* Populate the message as per the requested behavior. */
-    switch (behavior & ~MACH_EXCEPTION_CODES) {
-        case EXCEPTION_DEFAULT: {
-            exc_raise_t *msg = &reqs.fwd_default;
-            msg->Head.msgh_size = sizeof(*msg);
-            
-            msg->thread = request->thread;
-            msg->task = request->task;
-            msg->NDR = NDR_record;
-            msg->exception = request->exception;
-            msg->codeCnt = request->codeCnt;
-            
-            PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(exc_code_unsigned_t));
-            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-                msg->code[i] = (exc_code_unsigned_t) request->code[i];
-            }
-            
-            fwd = (mach_msg_base_t *) msg;
-            break;
-        }
-            
-        case EXCEPTION_STATE: {
-            exc_raise_state_t *msg = &reqs.fwd_state;
-            msg->Head.msgh_size = sizeof(*msg);
-            
-            msg->NDR = NDR_record;
-            msg->exception = request->exception;
-            msg->codeCnt = request->codeCnt;
-            
-            PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(exc_code_unsigned_t));
-            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-                msg->code[i] = (exc_code_unsigned_t) request->code[i];
-            }
-
-            msg->old_stateCnt = thread_state_count;
-            memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-            
-            fwd = (mach_msg_base_t *) msg;
-            break;
-        }
-            
-        case EXCEPTION_STATE_IDENTITY: {
-            exc_raise_state_identity_t *msg = &reqs.fwd_state_identity;
-            msg->Head.msgh_size = sizeof(*msg);
-            
-            msg->thread = request->thread;
-            msg->task = request->task;
-            msg->NDR = NDR_record;
-            msg->exception = request->exception;
-            
-            PLCF_ASSERT(sizeof(msg->code[0]) == sizeof(exc_code_unsigned_t));
-            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-                msg->code[i] = (exc_code_unsigned_t) request->code[i];
-            }
-            
-            msg->flavor = thread_state_flavor;
-            msg->old_stateCnt = thread_state_count;
-            memcpy(msg->old_state, thread_state, sizeof(thread_state[0]) * thread_state_count);
-            
-            fwd = (mach_msg_base_t *) msg;
-            break;
-        }
-            
-        default:
-            /* Handled below */
-            break;
-    }
-    
-    if (fwd == NULL) {
-        PLCF_DEBUG("Unsupported exception behavior: 0x%x", behavior);
-        return KERN_FAILURE;
-    }
-    
-    return mach_msg(&fwd->header, MACH_SEND_MSG, fwd->header.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-}
-
 
 /**
  * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
  *
  * @param request The incoming request that should be forwarded.
  * @param state The set of exception handlers to which the message should be forwarded.
- * @param direct If true, the exception message will be sent with its original
- * reply port, and the response will be unavailable. If false, the exception message
- * will be sent with a local mach reply port, and the result will be returned.
- * @param forwarded Set to true if the exception was forwarded, false otherwise.
  *
  * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
- * if the exception was not handled or no handling server was registered.
+ * if the exception was not handled, or forwarding failed.
  *
  * @par In-Process Operation
  *
  * When operating in-process, handling the exception replies internally breaks external debuggers,
  * as they assume it is safe to leave our thread suspended. This results in the target thread never resuming,
- * as our thread never wakes up to reply to the message. If messages are forwarded directly, rather than proxied,
- * then the current process will be removed from the critical path during exception replies. To do so, the
- * @a forward_direct argument should be true.
+ * as our thread never wakes up to reply to the message, or to handle future messages.
  *
- * Note, however, that if we do not remove our exception server from the chain before forwarding a request,
- * we will still block the next exception message, as our exception server's thread may not be restarted.
- * Additionally, if threads are suspended due to an exception message that our exception server is not
- * registered for, we will never de-register ourselves, and the same lockup will occur.
- *
- * Additionally, removing this exception handler will inescapably remove this handler, <em>as well as all handlers
- * registered after this handler</em>, as the relationship between handlers is effectively a single-ordered list.
- *
- * The recommened solution is to simply not register a Mach exception handler in the case where a debugger
- * is already attached. If this can not be avoided, then direct forwarding should be used.
+ * The recommended solution is to simply not register a Mach exception handler in the case where a debugger
+ * is already attached.
  *
  * @TODO We need to be able to determine if an exception can be/will/was handled by a signal handler. Failure
  * to detect such a case will result in spurious reports written for otherwise handled signals. See also:
  * https://bugzilla.xamarin.com/show_bug.cgi?id=4120
  */
-static kern_return_t exception_server_forward (PLRequest_exception_raise_t *request,
-                                               struct plcrash_exception_handler_state *state,
-                                               bool direct,
-                                               bool *forwarded)
-{
+static kern_return_t exception_server_forward_next (PLRequest_exception_raise_t *request, plcrash_mach_exception_port_state_t *state) {
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
-    thread_state_data_t thread_state;
-    mach_msg_type_number_t thread_state_count;
     mach_port_t port;
-    kern_return_t kr;
-
-    /* Default state of non-forwarded */
-    *forwarded = false;
 
     /* Find a matching handler */
     exception_mask_t fwd_mask = exception_to_mask(request->exception);
@@ -575,43 +425,7 @@ static kern_return_t exception_server_forward (PLRequest_exception_raise_t *requ
         return KERN_FAILURE;
     }
 
-    /*
-     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
-     * fetching the thread state will simply fail.
-     */
-    if ((behavior & ~MACH_EXCEPTION_CODES) != EXCEPTION_DEFAULT) {
-        thread_state_count = THREAD_STATE_MAX;
-        kr = thread_get_state (request->thread.name, flavor, thread_state, &thread_state_count);
-        if (kr != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", request->thread.name, flavor, kr);
-            return kr;
-        }
-    }
-
-    /* Use the preferred forwarding mechanism */
-    if (direct) {
-        if (behavior & MACH_EXCEPTION_CODES) {
-#if USE_MACH64_CODES
-            kr = exception_server_forward_direct
-                <__Request__mach_exception_raise_t, __Request__mach_exception_raise_state_t, __Request__mach_exception_raise_state_identity_t, uint64_t>
-                (request, port, behavior, thread_state, thread_state_count, flavor);
-#else
-            PLCF_DEBUG("Unable to forward exception to handler registered with unsupported MACH_EXCEPTION_CODES");
-            kr = KERN_FAILURE;
-#endif
-        } else {
-            kr = exception_server_forward_direct
-                <__Request__exception_raise_t, __Request__exception_raise_state_t, __Request__exception_raise_state_identity_t, uint32_t>
-                (request, port, behavior, thread_state, thread_state_count, flavor);
-        }
-
-        if (kr == KERN_SUCCESS)
-            *forwarded = true;
-    } else {
-        kr = exception_server_forward_proxy(request, port, behavior, thread_state, thread_state_count, flavor, forwarded);
-    }
-
-    return kr;
+    return exception_server_request(request, port, behavior, flavor);
 }
 
 /**
@@ -768,15 +582,11 @@ static void *exception_server_thread (void *arg) {
              * but we will not call our callback handler.
              */
             if (request->task.name != exc_context->task) {
-                bool forwarded;
-                
-                /* Forward directly to the original exception server; we cut ourselves out of the reply chain */
-                kern_return_t kt = exception_server_forward(request, &exc_context->prev_handler_state, true, &forwarded);
-                if (kt == KERN_SUCCESS && forwarded)
-                    continue;
+                /* Forward to the original exception server */
+                kern_return_t kr = exception_server_forward_next(request, &exc_context->prev_handler_state);
 
-                /* If we were unable to forward the exception, we need to respond to the exception request directly */
-                mr = exception_server_reply(request, KERN_FAILURE);
+                /* Provide the response */
+                mr = exception_server_reply(request, kr);
                 if (mr != MACH_MSG_SUCCESS)
                     PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
                 
@@ -815,13 +625,7 @@ static void *exception_server_thread (void *arg) {
             } else {
                 /* If not exception was not handled internally (ie, the thread was not corrected and resumed), then
                  * forward the exception. */
-                kern_return_t forward_result;
-                bool forwarded;
-
-                // TODO - allow selecting between forwarding mechanisms
-                forward_result = exception_server_forward(request, &exc_context->prev_handler_state, true, &forwarded);
-                if (forwarded)
-                    exc_result = forward_result;
+                exc_result = exception_server_forward_next(request, &exc_context->prev_handler_state);
             }
 
             /*
