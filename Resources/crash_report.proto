@@ -254,6 +254,30 @@ message CrashReport {
 
         /* Faulting instruction or address */
         required uint64 address = 3;
+        
+        /*
+         * Mach exception info.
+         */
+        message MachException {
+            /* The exception type. These values will generally be common across most Apple platforms. */
+            required uint32 type = 1;
+            
+            /* The exception codes. Interpretation of these values depends on the exception type, and/or the
+             * faulting platform. */
+            repeated uint64 codes = 2;
+        }
+    
+        /*
+         * The Mach Exception that triggered the crash. This field will only be included in the
+         * case that encoding crash reporter's exception-based reporting was enabled, and a Mach
+         * exception was caught.
+         *
+         * If the mach_exception field is defined, the legacy signal info will also be provided; this is required to maintain
+         * backwards compatibility with existing report handlers. Note, however, that the signal info may be derived from the
+         * Mach exception info by the encoding crash reporter, and thus may not exactly match the kernel exception-to-signal
+         * mappings implemented in xnu. As such, when Mach exception data is available, its use should be preferred.
+         */
+        optional MachException mach_exception = 4;
     }
 
     /* The signal that triggered the crash */
