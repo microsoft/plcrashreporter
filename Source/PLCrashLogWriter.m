@@ -47,6 +47,7 @@
 #import "PLCrashAsyncSymbolication.h"
 
 #import "PLCrashSysctl.h"
+#import "PLCrashProcessInfo.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h> // For UIDevice
@@ -283,26 +284,21 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     
     /* Fetch the process information */
     {
-        /* MIB used to fetch process info */
-        struct kinfo_proc process_info;
-        size_t process_info_len = sizeof(process_info);
-        int process_info_mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, 0 };
-        int process_info_mib_len = 4;
-
         /* Current process */
-        {            
+        PLCrashProcessInfo *pinfo = [PLCrashProcessInfo currentProcessInfo];
+        if (pinfo == nil) {
+            /* Should only occur if the process is no longer valid */
+            PLCF_DEBUG("Could not retreive process info for target");
+            return PLCRASH_EINVAL;
+        }
+
+        {
             /* Retrieve PID */
-            writer->process_info.process_id = getpid();
+            writer->process_info.process_id = pinfo.processID;
 
             /* Retrieve name and start time. */
-            process_info_mib[3] = writer->process_info.process_id;
-            if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
-                writer->process_info.process_name = strdup(process_info.kp_proc.p_comm);
-                writer->process_info.start_time = process_info.kp_proc.p_starttime.tv_sec;
-            } else {
-                PLCF_DEBUG("Could not retreive process name: %s", strerror(errno));
-                return PLCRASH_EINTERNAL;
-            }
+            writer->process_info.process_name = strdup([pinfo.processName UTF8String]);
+            writer->process_info.start_time = pinfo.startTime.tv_sec;
 
             /* Retrieve path */
             char *process_path = NULL;
@@ -317,14 +313,14 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         }
 
         /* Parent process */
-        {            
+        {
             /* Retrieve PID */
-            writer->process_info.parent_process_id = getppid();
+            writer->process_info.parent_process_id = pinfo.parentProcessID;
 
             /* Retrieve name */
-            process_info_mib[3] = writer->process_info.parent_process_id;
-            if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
-                writer->process_info.parent_process_name = strdup(process_info.kp_proc.p_comm);
+            PLCrashProcessInfo *parentInfo = [[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID];
+            if (parentInfo != nil) {
+                writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
             } else {
                 PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
             }
