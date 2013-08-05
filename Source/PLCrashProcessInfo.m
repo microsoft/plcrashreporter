@@ -46,10 +46,12 @@
  */
 @implementation PLCrashProcessInfo
 
-@synthesize traced = _traced;
 @synthesize processID = _processID;
 @synthesize processName = _processName;
 @synthesize parentProcessID = _parentProcessID;
+
+@synthesize traced = _traced;
+@synthesize startTime = _startTime;
 
 /**
  * Return the current process info of the calling process. Note that these values
@@ -95,6 +97,7 @@
     _processID = pid;
     _processName = [[NSString alloc] initWithBytes: process_info.kp_proc.p_comm length: strlen(process_info.kp_proc.p_comm) encoding: NSUTF8StringEncoding];
     _parentProcessID = process_info.kp_eproc.e_ppid;
+    _startTime = process_info.kp_proc.p_starttime;
 
     return self;
 }

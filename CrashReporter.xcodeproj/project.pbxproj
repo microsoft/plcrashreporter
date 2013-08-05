@@ -1481,7 +1481,7 @@
 				0573B4281681097200395F2A /* Mach Exception Server */,
 				05BB84AE1364F5BC00D53B84 /* Signal Handler */,
 				05BB84AF1364F5C600D53B84 /* Async-Safe APIs */,
-				05BB84B01364F5DB00D53B84 /* Host Statistics */,
+				05BB84B01364F5DB00D53B84 /* Host and Process Info */,
 				059670210EEF5459008A0601 /* Crash Log Writer */,
 				05A17DDB16D80C7C00888448 /* Test Thread */,
 				0596674D0EEDEBB1008A0601 /* Frame Walking */,
@@ -1672,7 +1672,7 @@
 			name = "Async-Safe APIs";
 			sourceTree = "<group>";
 		};
-		05BB84B01364F5DB00D53B84 /* Host Statistics */ = {
+		05BB84B01364F5DB00D53B84 /* Host and Process Info */ = {
 			isa = PBXGroup;
 			children = (
 				05BB84841364EDF200D53B84 /* PLCrashSysctl.h */,
@@ -1682,7 +1682,7 @@
 				05102E1517B0151000B5D925 /* PLCrashProcessInfo.m */,
 				05102E1C17B0152B00B5D925 /* PLCrashProcessInfoTests.m */,
 			);
-			name = "Host Statistics";
+			name = "Host and Process Info";
 			sourceTree = "<group>";
 		};
 		05CD32750EE93E5A000FDE88 /* Tools */ = {

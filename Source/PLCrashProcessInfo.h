@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 
 #import <sys/types.h>
+#import <sys/time.h>
 
 @interface PLCrashProcessInfo : NSObject {
 @private
@@ -40,6 +41,9 @@
     
     /** The target process parent's process identifier. */
     pid_t _parentProcessID;
+
+    /** The process start time. This is the timestamp at which the process was created. */
+    struct timeval _startTime;
 
     /** If YES, a debugger is attached (eg, P_TRACED was set). */
     BOOL _traced;
@@ -57,6 +61,9 @@
 
 /** The process ID of the parent of the target process. */
 @property(nonatomic, readonly) pid_t parentProcessID;
+
+/** The process start time. This is the timestamp at which the process was created. */
+@property(nonatomic, readonly) struct timeval startTime;
 
 /**
  * YES if the target process was being traced (eg, via a debugger).

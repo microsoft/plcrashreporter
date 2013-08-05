@@ -69,6 +69,11 @@
     STAssertEquals(getppid(), _pinfo.parentProcessID, @"Incorrect process ID");
 }
 
+- (void) testStartTime {
+    STAssertEquals(_process_info.kp_proc.p_starttime.tv_sec, _pinfo.startTime.tv_sec, @"Incorrect start time in seconds");
+    STAssertEquals(_process_info.kp_proc.p_starttime.tv_usec, _pinfo.startTime.tv_usec, @"Incorrect start time in microseconds");
+}
+
 - (void) testDebuggerAttached {
     STAssertEquals(_pinfo.isTraced, (BOOL) ((_process_info.kp_proc.p_flag & P_TRACED) ? YES : NO), @"Debugger not attached");
 }
