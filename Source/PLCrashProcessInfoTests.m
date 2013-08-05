@@ -62,7 +62,7 @@
 }
 
 - (void) testProcessName {
-    STAssertEqualStrings([[NSProcessInfo processInfo] processName], _pinfo.processName, @"Incorrect process name");
+    STAssertEqualStrings([[[NSProcessInfo processInfo] processName] substringToIndex: MAXCOMLEN], _pinfo.processName, @"Incorrect process name");
 }
 
 - (void) testParentProcessID {
