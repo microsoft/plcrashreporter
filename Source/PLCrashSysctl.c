@@ -31,10 +31,10 @@
 
 /**
  * @internal
- * @defgroup plcrash_host Gather Host Statistics
- * @ingroup plcrash_host
+ * @defgroup plcrash_host Host and Process Info
+ * @ingroup plcrash_internal
  *
- * Implements general utility functions for gathering host statistics.
+ * Implements general utility functions for gathering host/process statistics.
  * @{
  */
 
