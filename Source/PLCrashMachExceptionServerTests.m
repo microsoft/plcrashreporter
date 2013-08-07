@@ -33,6 +33,7 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashMachExceptionServer.h"
+#import "PLCrashHostInfo.h"
 
 #include <sys/mman.h>
 
@@ -45,6 +46,16 @@
 @implementation PLCrashMachExceptionServerTests
 
 - (void) setUp {
+    /* The iOS Simulator SDK includes EXC_MASK_GUARD in EXC_MASK_ALL, but the
+     * host system (eg, Mac OS X <= 10.8) may not support it, in which case we
+     * need to strip the flag out here */
+    exception_mask_t exc_mask_all = EXC_MASK_ALL;
+#if defined(EXC_MASK_GUARD) && TARGET_IPHONE_SIMULATOR
+    if ([PLCrashHostInfo currentHostInfo].darwinVersion.major < PLCRASH_MAC_OS_X_DARWIN_MAJOR_VERSION_10_9) {
+        exc_mask_all &= ~EXC_MASK_GUARD;
+    }
+#endif
+
     /*
      * Reset the current exception ports. Our tests interfere with any observing
      * debuggers, so we remove any task and thread exception ports here, and then
@@ -52,7 +63,7 @@
      */
     kern_return_t kr;
     kr = task_swap_exception_ports(mach_task_self(),
-                                   EXC_MASK_ALL,
+                                   exc_mask_all,
                                    MACH_PORT_NULL,
                                    EXCEPTION_DEFAULT,
                                    THREAD_STATE_NONE,
@@ -64,7 +75,7 @@
     STAssertEquals(kr, KERN_SUCCESS, @"Failed to reset task ports");
     
     kr = thread_swap_exception_ports(mach_thread_self(),
-                                     EXC_MASK_ALL,
+                                     exc_mask_all,
                                      MACH_PORT_NULL,
                                      EXCEPTION_DEFAULT,
                                      THREAD_STATE_NONE,
