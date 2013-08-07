@@ -62,7 +62,7 @@
 }
 
 /**
- * Initialize the receiver with the process info for the process with @a pid, or nil if
+ * Initialize a new instance with the process info for the process with @a pid. Returns nil if
  * @a pid does not reference a valid process.
  *
  * @param pid The process identifier of the target process.
