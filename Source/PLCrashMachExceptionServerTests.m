@@ -51,9 +51,13 @@
      * need to strip the flag out here */
     exception_mask_t exc_mask_all = EXC_MASK_ALL;
 #if defined(EXC_MASK_GUARD) && TARGET_IPHONE_SIMULATOR
-    if ([PLCrashHostInfo currentHostInfo].darwinVersion.major < PLCRASH_HOST_MAC_OS_X_DARWIN_MAJOR_VERSION_10_9) {
+
+# if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
+#   error This work-around is no longer required and should be removed
+# endif
+
+    if ([PLCrashHostInfo currentHostInfo].darwinVersion.major < PLCRASH_HOST_MAC_OS_X_DARWIN_MAJOR_VERSION_10_9)
         exc_mask_all &= ~EXC_MASK_GUARD;
-    }
 #endif
 
     /*
