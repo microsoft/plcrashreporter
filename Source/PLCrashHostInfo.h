@@ -67,7 +67,10 @@ typedef struct PLCrashHostInfoVersion {
 
 + (instancetype) currentHostInfo;
 
-/** The Darwin (xnu) release version (eg, kern.osversion) */
+/**
+ * The Darwin (xnu) release version (eg, kern.osversion). This value is parsed from its string representation,
+ * and may not be accurate. Clients should fail safely in the case of encountering an unexpected version value.
+ */
 @property(nonatomic, readonly) PLCrashHostInfoVersion darwinVersion;
 
 @end
