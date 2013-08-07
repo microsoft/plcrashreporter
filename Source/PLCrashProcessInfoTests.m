@@ -62,7 +62,11 @@
 }
 
 - (void) testProcessName {
-    STAssertEqualStrings([[[NSProcessInfo processInfo] processName] substringToIndex: MAXCOMLEN], _pinfo.processName, @"Incorrect process name");
+    NSString *fetched = [[NSProcessInfo processInfo] processName];
+
+    /* sysctl interface only supports process names of MAXCOMLEN in length */
+    fetched = [fetched substringToIndex: MIN(MAXCOMLEN, [fetched length])];
+    STAssertEqualStrings(fetched, _pinfo.processName, @"Incorrect process name");
 }
 
 - (void) testParentProcessID {
