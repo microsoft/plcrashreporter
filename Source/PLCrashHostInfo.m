@@ -45,8 +45,8 @@
 @synthesize darwinVersion = _darwinVersion;
 
 /**
- * Return the current process info of the calling process. Note that these values
- * will be fetched once, and the returned instance is immutable.
+ * Return the current process info of the calling process. If an error occurs
+ * fetching the host info, nil will be returned.
  */
 + (instancetype) currentHostInfo {
     return [[[self alloc] init] autorelease];

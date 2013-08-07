@@ -83,6 +83,7 @@
 
 #import "PLCrashMachExceptionServer.h"
 #import "PLCrashReporterNSError.h"
+#import "PLCrashHostInfo.h"
 #import "PLCrashAsync.h"
 
 #import <pthread.h>
@@ -108,20 +109,9 @@ typedef __Reply__exception_raise_t PLReply_exception_raise_t;
 
 /**
  * @internal
- * Mask of monitored fatal exceptions.
- *
- * @warning Must be kept in sync with exception_to_mask();
- */
-static const exception_mask_t FATAL_EXCEPTION_MASK = EXC_MASK_BAD_ACCESS |
-                                                     EXC_MASK_BAD_INSTRUCTION |
-                                                     EXC_MASK_ARITHMETIC |
-                                                     EXC_MASK_BREAKPOINT;
-
-/**
- * @internal
  * Map an exception type to its corresponding mask value.
  *
- * @note This only needs to handle the values listed in FATAL_EXCEPTION_MASK.
+ * @note This needs to handle all exception types for which the exception server will be registered.
  */
 static exception_mask_t exception_to_mask (exception_type_t exception) {
 #define EXM(n) case EXC_ ## n: return EXC_MASK_ ## n;
@@ -136,11 +126,21 @@ static exception_mask_t exception_to_mask (exception_type_t exception) {
         EXM(MACH_SYSCALL);
         EXM(RPC_ALERT);
         EXM(CRASH);
+#ifdef EXC_GUARD
+        EXM(GUARD);
+#endif
     }
 #undef EXM
 
-    PLCF_DEBUG("No mapping available from exception type 0x%d to an exception mask", exception);
-    return 0;
+    /* This is very loosely gauranteed in exception_types.h; it's possible, though unlikely, that
+     * a future exception type could diverge from the standard mask flag assignment. */
+    PLCF_DEBUG("Unhandled exception type %d; exception_to_mask() should be updated", exception);
+
+#ifdef PLCF_DEBUG_BUILD
+    abort();
+#else
+    return (1 << exception);
+#endif
 }
 
 /**
@@ -735,12 +735,27 @@ static void *exception_server_thread (void *arg) {
     kern_return_t kr;
     
     NSAssert(_serverContext == NULL, @"Register called twice!");
+    
+    /* Determine the target exception types */
+    exception_mask_t exc_mask = EXC_MASK_BAD_ACCESS |       /* Memory access fail */
+                                EXC_MASK_BAD_INSTRUCTION |  /* Illegal instruction */
+                                EXC_MASK_ARITHMETIC |       /* Arithmetic exception (eg, divide by zero) */
+                                EXC_MASK_SOFTWARE |         /* Software exception (eg, as triggered by x86's bound instruction) */
+                                EXC_MASK_BREAKPOINT;        /* Trace or breakpoint */
+    
+    /* EXC_GUARD was added in xnu 13.x (iOS 6.0, Mac OS X 10.9) */
+#ifdef EXC_MASK_GUARD
+    PLCrashHostInfo *hinfo = [PLCrashHostInfo currentHostInfo];
+
+    if (hinfo != nil && hinfo.darwinVersion.major >= 13)
+        exc_mask |= EXC_MASK_GUARD; /* Process accessed a guarded file descriptor. See also: https://devforums.apple.com/message/713907#713907 */
+#endif
 
     /* Initialize the bare context. */
     _serverContext = (struct plcrash_exception_server_context *) calloc(1, sizeof(*_serverContext));
     _serverContext->task = task;
     _serverContext->thread = thread;
-    _serverContext->exc_mask = FATAL_EXCEPTION_MASK;
+    _serverContext->exc_mask = exc_mask;
     _serverContext->server_port = MACH_PORT_NULL;
     _serverContext->server_thread = MACH_PORT_NULL;
     _serverContext->server_init_result = KERN_SUCCESS;
