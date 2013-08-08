@@ -736,7 +736,23 @@ static void *exception_server_thread (void *arg) {
     
     NSAssert(_serverContext == NULL, @"Register called twice!");
     
-    /* Determine the target exception types */
+    /* Determine the target exception type mask. Note that unlike some other implementations,
+     * we do not monitor EXC_RESOURCE:
+     *
+     * EXC_RESOURCE wasn't added until iOS 5.1 and Mac OS X 10.8, and is used for
+     * kernel-based thread resource constraints on a per-thread/per-task basis. XNU
+     * supports either pausing threads that exceed the defined constraints (via the private
+     * ledger kernel APIs), or issueing a Mach exception that can be used to monitor the
+     * constraints.
+     *
+     * The EXC_RESOURCE resouce exception used to implement the private posix_spawnattr_setcpumonitor()
+     * API, which allows for monitoring CPU utilization by observing issued EXC_RESOURCE exceptions.
+     * This appears to be used by launchd.
+     *
+     * Either way, we're uninterested in EXC_RESOURCE; the xnu ux_exception() handler should not deliver
+     * a signal for the exception and should return KERN_SUCCESS, letting exception_triage()
+     * consider it as handled.
+     */
     exception_mask_t exc_mask = EXC_MASK_BAD_ACCESS |       /* Memory access fail */
                                 EXC_MASK_BAD_INSTRUCTION |  /* Illegal instruction */
                                 EXC_MASK_ARITHMETIC |       /* Arithmetic exception (eg, divide by zero) */

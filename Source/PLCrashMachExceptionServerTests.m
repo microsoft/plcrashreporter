@@ -37,6 +37,10 @@
 
 #include <sys/mman.h>
 
+#ifndef EXC_MASK_RESOURCE
+#define EXC_MASK_RESOURCE (1<<11)
+#endif
+
 @interface PLCrashMachExceptionServerTests : SenTestCase {
     plcrash_mach_exception_port_state_t _task_ports;
     plcrash_mach_exception_port_state_t _thread_ports;
@@ -48,8 +52,17 @@
 - (void) setUp {
     /* The iOS Simulator SDK includes EXC_MASK_GUARD in EXC_MASK_ALL, but the
      * host system (eg, Mac OS X <= 10.8) may not support it, in which case we
-     * need to strip the flag out here */
+     * need to strip the flag out here.
+     *
+     * We also ignore EXC_RESOURCE entirely (it's not monitored by the crash
+     * reporter).
+     */
     exception_mask_t exc_mask_all = EXC_MASK_ALL;
+    
+#ifdef EXC_MASK_RESOURCE
+    exc_mask_all &= ~EXC_MASK_RESOURCE;
+#endif
+
 #if defined(EXC_MASK_GUARD) && TARGET_IPHONE_SIMULATOR
 
 # if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
