@@ -228,7 +228,11 @@ static bool exception_callback_exit (task_t task,
                                      mach_msg_type_number_t code_count,
                                      void *context)
 {
-    exit(25);
+    if (task != mach_task_self()) {
+        /* Our callback was executed for a child process */
+        exit(25);
+    }
+
     return false;
 }
 
@@ -281,6 +285,8 @@ static bool exception_callback_exit (task_t task,
         /* Should be unreachable */
         exit(26);
     }
+    
+    STAssertTrue([server deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
 }
 
 @end
