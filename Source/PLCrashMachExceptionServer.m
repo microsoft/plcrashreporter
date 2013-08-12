@@ -27,6 +27,7 @@
  */
 
 #include "PLCrashReporterBuildConfig.h"
+#import "PLCrashMachExceptionPortState.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 

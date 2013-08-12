@@ -79,6 +79,15 @@
 		0518E0A8174E8A0E00BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
 		0518E0A9174E8A1300BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
 		0518E0AA174E8A1F00BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
+		051F067B17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h in Headers */ = {isa = PBXBuildFile; fileRef = 051F067917B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h */; };
+		051F067C17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h in Headers */ = {isa = PBXBuildFile; fileRef = 051F067917B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h */; };
+		051F067D17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h in Headers */ = {isa = PBXBuildFile; fileRef = 051F067917B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h */; };
+		051F067E17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F067A17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m */; };
+		051F067F17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F067A17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m */; };
+		051F068017B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F067A17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m */; };
+		051F068217B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m */; };
+		051F068317B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m */; };
+		051F068417B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m */; };
 		052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EB1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
@@ -1001,6 +1010,9 @@
 		05102E2217B2B80A00B5D925 /* PLCrashHostInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashHostInfo.h; sourceTree = "<group>"; };
 		05102E2317B2B80A00B5D925 /* PLCrashHostInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashHostInfo.m; sourceTree = "<group>"; };
 		05102E2C17B2B82000B5D925 /* PLCrashHostInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashHostInfoTests.m; sourceTree = "<group>"; };
+		051F067917B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashMachExceptionPortState.h; sourceTree = "<group>"; };
+		051F067A17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionPortState.m; sourceTree = "<group>"; };
+		051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionPortStateTests.m; sourceTree = "<group>"; };
 		052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashLogWriterEncodingTests.m; sourceTree = "<group>"; };
 		052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PLCrashLogWriterEncodingTests.proto; sourceTree = "<group>"; };
 		052A45CF136353FB00987004 /* DemoCrash-iOS-Device.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash-iOS-Device.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1404,6 +1416,9 @@
 				0573B42A1681098E00395F2A /* PLCrashMachExceptionServer.h */,
 				0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */,
 				05FDFC83168950F600463E43 /* PLCrashMachExceptionServerTests.m */,
+				051F067917B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h */,
+				051F067A17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m */,
+				051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m */,
 				0581B520168FDB280098C103 /* mach_exc.defs */,
 			);
 			name = "Mach Exception Server";
@@ -2065,6 +2080,7 @@
 				05920D27177B9257001E8975 /* PLCrashFrameDWARFUnwind.h in Headers */,
 				05102E1717B0151000B5D925 /* PLCrashProcessInfo.h in Headers */,
 				05102E2617B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
+				051F067C17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2108,6 +2124,7 @@
 				05920D28177B9257001E8975 /* PLCrashFrameDWARFUnwind.h in Headers */,
 				05102E1817B0151000B5D925 /* PLCrashProcessInfo.h in Headers */,
 				05102E2717B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
+				051F067D17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2188,6 +2205,7 @@
 				05A5E28117A82751008A75E5 /* PLCrashReporterConstants.h in Headers */,
 				05102E1617B0151000B5D925 /* PLCrashProcessInfo.h in Headers */,
 				05102E2517B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
+				051F067B17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2712,6 +2730,7 @@
 				05920D21177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05102E1A17B0151000B5D925 /* PLCrashProcessInfo.m in Sources */,
 				05102E2A17B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
+				051F067F17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2773,6 +2792,7 @@
 				05920D22177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05102E1B17B0151000B5D925 /* PLCrashProcessInfo.m in Sources */,
 				05102E2B17B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
+				051F068017B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2867,6 +2887,7 @@
 				05920D36178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1D17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2D17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
+				051F068217B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2963,6 +2984,7 @@
 				05920D37178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1E17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2E17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
+				051F068317B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3059,6 +3081,7 @@
 				05920D38178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1F17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2F17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
+				051F068417B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3198,6 +3221,7 @@
 				05920D20177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05102E1917B0151000B5D925 /* PLCrashProcessInfo.m in Sources */,
 				05102E2917B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
+				051F067E17B6B0D4006D0EFA /* PLCrashMachExceptionPortState.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
