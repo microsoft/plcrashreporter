@@ -28,11 +28,12 @@
 
 #include "PLCrashReporterBuildConfig.h"
 
-#if 0 && PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
 #import "GTMSenTestCase.h"
 
 #import "PLCrashMachExceptionServer.h"
+#import "PLCrashMachExceptionPortState.h"
 #import "PLCrashHostInfo.h"
 
 #include <sys/mman.h>
@@ -127,7 +128,7 @@
 
 static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
-static bool exception_callback (task_t task,
+static kern_return_t exception_callback (task_t task,
                                 thread_t thread,
                                 exception_type_t exception_type,
                                 mach_exception_data_t code,
@@ -149,7 +150,7 @@ static bool exception_callback (task_t task,
     if (didRun != NULL)
         *didRun = YES;
 
-    return true;
+    return KERN_SUCCESS;
 }
 
 /**
@@ -158,14 +159,16 @@ static bool exception_callback (task_t task,
 - (void) testTaskServerInsertion {
     NSError *error;
 
-    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] init] autorelease];
+    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+                                                                                       context: NULL
+                                                                                         error: &error] autorelease];
     STAssertNotNil(server, @"Failed to initialize server");
 
-    STAssertTrue([server registerHandlerForTask: mach_task_self()
-                                         thread: MACH_PORT_NULL
-                                   withCallback: exception_callback
-                                        context: NULL
-                                          error: &error], @"Failed to configure handler: %@", error);
+    
+    STAssertTrue([server registerForTask: mach_task_self()
+                                    mask: EXC_MASK_BAD_ACCESS
+                      previousPortStates: NULL
+                                   error: &error], @"Failed to configure handler: %@", error);
 
     mprotect(crash_page, sizeof(crash_page), 0);
 
@@ -174,8 +177,6 @@ static bool exception_callback (task_t task,
 
     STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Page should have been set to test value");
     STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
-
-    STAssertTrue([server deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
 }
 
 /**
@@ -183,27 +184,30 @@ static bool exception_callback (task_t task,
  */
 - (void) testThreadServerInsertion {
     NSError *error;
-    
-    PLCrashMachExceptionServer *task = [[[PLCrashMachExceptionServer alloc] init] autorelease];
-    STAssertNotNil(task, @"Failed to initialize server");
-
-    PLCrashMachExceptionServer *thr = [[[PLCrashMachExceptionServer alloc] init] autorelease];
-    STAssertNotNil(thr, @"Failed to initialize server");
 
     BOOL taskRan = false;
     BOOL threadRan = false;
+    
+    PLCrashMachExceptionServer *task = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+                                                                                     context: &taskRan
+                                                                                       error: &error] autorelease];
+    STAssertNotNil(task, @"Failed to initialize server");
 
-    STAssertTrue([task registerHandlerForTask: mach_task_self()
-                                       thread: MACH_PORT_NULL
-                                 withCallback: exception_callback
-                                      context: &taskRan
-                                        error: &error], @"Failed to configure handler: %@", error);
+    PLCrashMachExceptionServer *thr = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+                                                                                    context: &threadRan
+                                                                                      error: &error] autorelease];
+    STAssertNotNil(thr, @"Failed to initialize server");
 
-    STAssertTrue([thr registerHandlerForTask: mach_task_self()
-                                      thread: mach_thread_self()
-                                withCallback: exception_callback
-                                     context: &threadRan
-                                       error: &error], @"Failed to configure handler: %@", error);
+
+    STAssertTrue([task registerForTask: mach_task_self()
+                                  mask: EXC_MASK_BAD_ACCESS
+                    previousPortStates: NULL
+                                 error: &error], @"Failed to configure handler: %@", error);
+
+    STAssertTrue([thr registerForThread: mach_thread_self()
+                                   mask: EXC_MASK_BAD_ACCESS
+                     previousPortStates: NULL
+                                  error: &error], @"Failed to configure handler: %@", error);
 
     mprotect(crash_page, sizeof(crash_page), 0);
     
@@ -214,79 +218,7 @@ static bool exception_callback (task_t task,
     STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
 
     STAssertFalse(taskRan, @"Task handler ran");
-    STAssertTrue(threadRan, @"Thread-specific handler did not run");
-    
-    STAssertTrue([thr deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
-    STAssertTrue([task deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
-}
-
-/* An exception callback that simply exits with a return code of 25 */
-static bool exception_callback_exit (task_t task,
-                                     thread_t thread,
-                                     exception_type_t exception_type,
-                                     mach_exception_data_t code,
-                                     mach_msg_type_number_t code_count,
-                                     void *context)
-{
-    if (task != mach_task_self()) {
-        /* Our callback was executed for a child process */
-        exit(25);
-    }
-
-    return false;
-}
-
-/*
- * Verify that child process' exceptions are passed to the originally
- * registered exception handler.
- */
-- (void) testChildInheritedExceptionHandler {
-    NSError *error;
-
-    /* Register an inheritable server */
-    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] init] autorelease];
-    STAssertNotNil(server, @"Failed to initialize server");
-    
-    STAssertTrue([server registerHandlerForTask: mach_task_self()
-                                         thread: MACH_PORT_NULL
-                                   withCallback: exception_callback_exit
-                                        context: NULL
-                                          error: &error], @"Failed to configure handler: %@", error);
-    
-    
-    mprotect(crash_page, sizeof(crash_page), PROT_NONE);
-    pid_t pid = fork();
-    if (pid == -1) {
-        /* Failure is expected on iOS */
-#if !TARGET_OS_IPHONE
-        const char *errstr = strerror(errno);
-        STFail(@"Fork failed: %s", errstr);
-#endif
-    } else if (pid != 0) {
-        /* In parent */
-        int statl;
-        
-        /* Wait for termination */
-        pid_t wpid;
-        do {
-            wpid = waitpid(pid, &statl, 0);
-        } while (wpid == -1 && errno == EINTR);
-        STAssertEquals(wpid, pid, @"waitpid() failed: %s", strerror(errno));
-        
-        /* Verify that termination occured due to an unhandled signal */
-        STAssertTrue(WIFSIGNALED(statl), @"Child process should have failed with a signal");
-        STAssertNotEquals(WEXITSTATUS(statl), 25, @"Child process triggered callback execution!");
-        STAssertNotEquals(WEXITSTATUS(statl), 26, @"Child process exited cleanly!");
-
-    } else {
-        /* In child; trigger a crash */
-        crash_page[0] = 0xCA;
-
-        /* Should be unreachable */
-        exit(26);
-    }
-    
-    STAssertTrue([server deregisterHandlerAndReturnError: &error], @"Failed to reset handler; %@", error);
+    STAssertTrue(threadRan, @"Thread-specific handler did not run");    
 }
 
 @end
