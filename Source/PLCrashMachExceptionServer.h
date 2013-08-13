@@ -45,15 +45,15 @@
  * @param code_count The number of codes provided.
  * @param context The context supplied to PLCrashMachExceptionServer::registerHandlerForTask:withCallback:context:error
  *
- * @return Return true if the exception has been handled. Return false otherwise. If true, the thread
+ * @return Return KERN_SUCCESS if the exception has been handled. Return an appropriate failure code otherwise. If KERN_SUCCESS, the thread
  * will be resumed.
  */
-typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
-                                                     thread_t thread,
-                                                     exception_type_t exception_type,
-                                                     mach_exception_data_t code,
-                                                     mach_msg_type_number_t code_count,
-                                                     void *context);
+typedef kern_return_t (*PLCrashMachExceptionHandlerCallback) (task_t task,
+                                                              thread_t thread,
+                                                              exception_type_t exception_type,
+                                                              mach_exception_data_t code,
+                                                              mach_msg_type_number_t code_count,
+                                                              void *context);
 
 @interface PLCrashMachExceptionServer : NSObject {
 @private
@@ -63,15 +63,16 @@ typedef bool (*PLCrashMachExceptionHandlerCallback) (task_t task,
     struct plcrash_exception_server_context *_serverContext;
 }
 
-- (BOOL) registerHandlerForTask: (task_t) task
-                         thread: (thread_t) thread
-                   withCallback: (PLCrashMachExceptionHandlerCallback) callback
-                        context: (void *) context
-                          error: (NSError **) outError;
+- (id) initWithCallBack: (PLCrashMachExceptionHandlerCallback) callback
+                context: (void *) context
+                  error: (NSError **) outError;
 
-- (thread_t) serverThread;
+- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError;
+- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError;
 
-- (BOOL) deregisterHandlerAndReturnError: (NSError **) outError;
+/** The Mach thread on which the exception server is running. This may be used to register
+ * a thread-specific exception handler for the server itself. */
+@property(nonatomic, readonly) thread_t serverThread;
 
 @end
 

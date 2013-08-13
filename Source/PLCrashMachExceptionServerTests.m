@@ -28,7 +28,7 @@
 
 #include "PLCrashReporterBuildConfig.h"
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if 0 && PLCRASH_FEATURE_MACH_EXCEPTIONS
 
 #import "GTMSenTestCase.h"
 

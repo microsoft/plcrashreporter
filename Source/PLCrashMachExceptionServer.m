@@ -103,9 +103,11 @@
 #if USE_MACH64_CODES
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
+#define PLCRASH_DEFAULT_BEHAVIOR (EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES)
 #else
 typedef __Request__exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__exception_raise_t PLReply_exception_raise_t;
+#define PLCRASH_DEFAULT_BEHAVIOR EXCEPTION_DEFAULT
 #endif
 
 /**
@@ -148,21 +150,11 @@ static exception_mask_t exception_to_mask (exception_type_t exception) {
  * Exception handler context.
  */
 struct plcrash_exception_server_context {
-    /** The target mach task. */
-    task_t task;
-    
-    /** The target mach thread. MACH_PORT_NULL if a
-     * task server is to be registered. */
-    thread_t thread;
-    
     /** The server's mach thread. */
     thread_t server_thread;
 
     /** Registered exception port. */
     mach_port_t server_port;
-    
-    /** The mask of exceptions for which we're registered. */
-    exception_mask_t exc_mask;
 
     /** User callback. */
     PLCrashMachExceptionHandlerCallback callback;
@@ -176,14 +168,6 @@ struct plcrash_exception_server_context {
     /** Condition used to signal waiting initialization thread. */
     pthread_cond_t server_cond;
     
-    /** Intended to be observed by the waiting initialization thread. Informs
-     * the waiting thread that initialization has completed . */
-    bool server_init_done;
-
-    /** Intended to be observed by the waiting initialization thread. Contains
-     * the result of setting the task exception handler. */
-    kern_return_t server_init_result;
-    
     /**
      * Intended to be set by a controlling termination thread. Informs the mach exception
      * thread that it should de-register itself and then signal completion.
@@ -196,58 +180,9 @@ struct plcrash_exception_server_context {
     /** Intended to be observed by the waiting initialization thread. Informs
      * the waiting thread that shutdown has completed . */
     bool server_stop_done;
-    
-    /** Intended to be observed by the waiting initialization thread. Contains
-     * the result of resetting the task exception handler. */
-    kern_return_t server_stop_result;
-
-    /** Previously registered handlers. We will forward all exceptions here after
-      * internal processing. */
-    plcrash_mach_exception_port_state_t prev_handler_state;
 };
 
-/**
- * @internal
- *
- * Set exception ports defined in @a state for @a task and @a thread.
- *
- * @param task The task for which the exception handler(s) were registered.
- * @param thread If not MACH_PORT_NULL, the thread for which the exception ports should be set.
- * @param required_mask The mask of exception types for which the ports should be set. If @a state does not contain handlers
- * for all types specified in @a required_mask, a port of MACH_PORT_NULL will be set for the given exception type.
- * @param state Exception handler state.
- */
-static void set_exception_ports (task_t task, thread_t thread, exception_mask_t required_mask, plcrash_mach_exception_port_state_t *state) {
-    kern_return_t kr;
 
-    /* Set exception ports for all supplied state entries. */
-    exception_mask_t remaining_mask = required_mask;
-    for (mach_msg_type_number_t i = 0; i < state->count; ++i) {
-        if (MACH_PORT_VALID(!state->ports[i]))
-            continue;
-
-        if (thread == MACH_PORT_NULL)
-            kr = task_set_exception_ports(task, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i]);
-        else
-            kr = thread_set_exception_ports(thread, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i]);
-
-        /* Log errors, but continue to restore any remaining exception ports */
-        if (kr == KERN_SUCCESS) {
-            /* Mark as completed */
-            remaining_mask &= ~state->masks[i];
-        } else {
-            PLCF_DEBUG("Failed to restore task exception ports (i=%x, m=%x, p=%x, b=%x, f=%x): %x", i, state->masks[i], state->ports[i], state->behaviors[i], state->flavors[i], kr);
-        }
-    }
-
-    /* Reset any remaining exception types that were not handled above. */
-    if (remaining_mask != 0) {
-        if (thread == MACH_PORT_NULL)
-            kr = task_set_exception_ports(task, remaining_mask, MACH_PORT_NULL, EXCEPTION_STATE_IDENTITY, MACHINE_THREAD_STATE);
-        else
-            kr = thread_set_exception_ports(thread, remaining_mask, MACH_PORT_NULL, EXCEPTION_STATE_IDENTITY, MACHINE_THREAD_STATE);
-    }
-}
 
 /**
  * Send a Mach exception reply for the given @a request and return the result.
@@ -399,7 +334,7 @@ static kern_return_t exception_server_request (PLRequest_exception_raise_t *requ
  * to detect such a case will result in spurious reports written for otherwise handled signals. See also:
  * https://bugzilla.xamarin.com/show_bug.cgi?id=4120
  */
-static kern_return_t exception_server_forward_next (PLRequest_exception_raise_t *request, plcrash_mach_exception_port_state_t *state) {
+kern_return_t exception_server_forward_next (PLRequest_exception_raise_t *request, plcrash_mach_exception_port_state_t *state) {
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
     mach_port_t port;
@@ -442,54 +377,6 @@ static void *exception_server_thread (void *arg) {
     size_t request_size;
     kern_return_t kr;
     mach_msg_return_t mr;
-
-    /* Atomically swap in our up the exception handler, also informing the waiting thread of
-     * completion (or failure). */
-    pthread_mutex_lock(&exc_context->lock); {
-        exc_context->prev_handler_state.count = EXC_TYPES_COUNT;
-
-#if USE_MACH64_CODES
-        exception_behavior_t behavior = EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES;
-#else
-        exception_behavior_t behavior = EXCEPTION_DEFAULT;
-#endif
-        
-        if (exc_context->thread == MACH_PORT_NULL) {
-            kr = task_swap_exception_ports(exc_context->task,
-                                           exc_context->exc_mask,
-                                           exc_context->server_port,
-                                           behavior,
-                                           THREAD_STATE_NONE,
-                                           exc_context->prev_handler_state.masks,
-                                           &exc_context->prev_handler_state.count,
-                                           exc_context->prev_handler_state.ports,
-                                           exc_context->prev_handler_state.behaviors,
-                                           exc_context->prev_handler_state.flavors);
-        } else {
-            kr = thread_swap_exception_ports(exc_context->thread,
-                                             exc_context->exc_mask,
-                                             exc_context->server_port,
-                                             behavior,
-                                             THREAD_STATE_NONE,
-                                             exc_context->prev_handler_state.masks,
-                                             &exc_context->prev_handler_state.count,
-                                             exc_context->prev_handler_state.ports,
-                                             exc_context->prev_handler_state.behaviors,
-                                             exc_context->prev_handler_state.flavors);
-        }
-        exc_context->server_init_result = kr;
-        exc_context->server_init_done = true;
-
-        /* Notify our spawning thread of our initialization */
-        pthread_cond_signal(&exc_context->server_cond);
-
-        /* Exit on error. If a failure occured, it's now unsafe to access exc_server; the spawning
-         * thread may have already deallocated it. */
-        if (kr != KERN_SUCCESS) {
-            pthread_mutex_unlock(&exc_context->lock);
-            return NULL;
-        }
-    } pthread_mutex_unlock(&exc_context->lock);
 
     /* Initialize the received message with a default size */
     request_size = round_page(sizeof(*request));
@@ -534,12 +421,11 @@ static void *exception_server_thread (void *arg) {
         /* Handle fatal errors */
         } else if (mr != MACH_MSG_SUCCESS) {
             /* Shouldn't happen ... */
-            PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x. Restoring exception ports and stopping server thread.", mr);
-
-            /* Restore exception ports; we won't be around to handle future exceptions */
-            set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
-
-            break;
+            PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x", mr);
+            
+            // TODO - Should we inform observers?
+            
+            continue;
 
         /* Success! */
         } else {
@@ -549,21 +435,9 @@ static void *exception_server_thread (void *arg) {
                  * spuriously with the process in an unknown state, in which case we must not call
                  * out to non-async-safe functions */
                 if (exc_context->server_should_stop) {
-                    /* Restore exception ports; we won't be around to handle future exceptions. This is non-atomic; any
-                     * messages pending on this port will be lost, as documented in -deregisterHandlerAndReturnError.
-                     *
-                     * In theory we could cycle through a mach_msg() call to clear exception messages that may have been enqueued,
-                     * but there are already sufficient complications related to deregistering a Mach exception handler that
-                     * potentially dropping messages is considered acceptable (and this behavior is documented).
-                     */
-                    set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
-
                     /* Inform the requesting thread of completion */
                     pthread_mutex_lock(&exc_context->lock); {
-                        // TODO - Report errors resetting the exception ports?
-                        exc_context->server_stop_result = KERN_SUCCESS;
                         exc_context->server_stop_done = true;
-
                         pthread_cond_signal(&exc_context->server_cond);
                     } pthread_mutex_unlock(&exc_context->lock);
 
@@ -574,30 +448,6 @@ static void *exception_server_thread (void *arg) {
                     break;
                 }
             }
-
-            /*
-             * Detect exceptions from tasks other than our target task; since exception ports are inherited, we'll
-             * be registered as the exception server for any child processes by default.
-             *
-             * The child process' exception still needs to be forwarded to any previously registered exception handlers,
-             * but we will not call our callback handler.
-             */
-            if (request->task.name != exc_context->task) {
-                /* Forward to the original exception server */
-                kern_return_t kr = exception_server_forward_next(request, &exc_context->prev_handler_state);
-
-                /* Provide the response */
-                mr = exception_server_reply(request, kr);
-                if (mr != MACH_MSG_SUCCESS)
-                    PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
-                
-                continue;
-            }
-
-            /* Restore exception ports; we don't want to double-fault if our exception handler crashes */
-            // TODO - We should register a thread-specific double-fault handler to specifically handle
-            // this state by executing a "safe mode" logging path.
-            set_exception_ports(exc_context->task, exc_context->thread, exc_context->exc_mask, &exc_context->prev_handler_state);
             
             /* Map 32-bit codes to 64-bit types. */
 #if !USE_MACH64_CODES
@@ -610,24 +460,13 @@ static void *exception_server_thread (void *arg) {
 #endif
 
             /* Call our handler. */
-            kern_return_t exc_result = KERN_FAILURE;
-            bool exception_handled;
-
-            exception_handled = exc_context->callback(request->task.name,
-                                                     request->thread.name,
-                                                     request->exception,
-                                                     code64,
-                                                     request->codeCnt,
-                                                     exc_context->callback_context);
-            
-            if (exception_handled) {
-                /* Mark as handled */
-                exc_result = KERN_SUCCESS;
-            } else {
-                /* If not exception was not handled internally (ie, the thread was not corrected and resumed), then
-                 * forward the exception. */
-                exc_result = exception_server_forward_next(request, &exc_context->prev_handler_state);
-            }
+            kern_return_t exc_result;
+            exc_result = exc_context->callback(request->task.name,
+                                               request->thread.name,
+                                               request->exception,
+                                               code64,
+                                               request->codeCnt,
+                                               exc_context->callback_context);
 
             /*
              * Reply to the message.
@@ -693,110 +532,53 @@ static void *exception_server_thread (void *arg) {
 @implementation PLCrashMachExceptionServer
 
 /**
- * Initialize a new Mach exception server. The exception server will
- * not register itself in the handler chain until
- * PLCrashMachExceptionServer::registerHandlerForTask:withCallback:context:error is called.
- */
-- (id) init {
-    if ((self = [super init]) == nil)
-        return nil;
-
-    return self;
-}
-
-/**
- * Register the task signal handlers with the provided callback.
+ * Initialize a new Mach exception server.
  *
- * @note If this method returns NO, the exception handler will remain unmodified.
- * @note Inserting the Mach task handler is performed atomically, and multiple handlers
- * may be initialized concurrently.
- *
- * If the server is started successfully, it must be stopped via PLCrashMachExceptionServer::deregisterHandlerAndReturnError:,
- * to free all associated resources.
- *
- * @param task The mach task for which the handler should be registered.
- * @param thread The mach thread for which the handler should be registered. If MACH_PORT_NULL,
- * a task-global handler will be registered.
  * @param callback Callback called upon receipt of an exception. The callback will execute
  * on the exception server's thread, distinctly from the crashed thread.
  * @param context Context to be passed to the callback. May be NULL.
- * @param outError A pointer to an NSError object variable. If an error occurs, this
- * pointer will contain an error object indicating why the exception handler could not be
- * registered. If no error occurs, this parameter will be left unmodified. You may specify
- * NULL for this parameter, and no error information will be provided.
+ * @param outError A pointer to an NSError object variable. If an error occurs initializing the exception server,
+ * this pointer will contain an error object indicating why the exception handler could not be registered. If no
+ * error occurs, this parameter will be left unmodified. You may specify NULL for this parameter, and no error
+ * information will be provided.
  */
-- (BOOL) registerHandlerForTask: (task_t) task
-                         thread: (thread_t) thread
-                   withCallback: (PLCrashMachExceptionHandlerCallback) callback
-                        context: (void *) context
-                          error: (NSError **) outError
+- (id) initWithCallBack: (PLCrashMachExceptionHandlerCallback) callback
+                context: (void *) context
+                  error: (NSError **) outError
 {
     pthread_attr_t attr;
     pthread_t thr;
     kern_return_t kr;
-    
-    NSAssert(_serverContext == NULL, @"Register called twice!");
-    
-    /* Determine the target exception type mask. Note that unlike some other implementations,
-     * we do not monitor EXC_RESOURCE:
-     *
-     * EXC_RESOURCE wasn't added until iOS 5.1 and Mac OS X 10.8, and is used for
-     * kernel-based thread resource constraints on a per-thread/per-task basis. XNU
-     * supports either pausing threads that exceed the defined constraints (via the private
-     * ledger kernel APIs), or issueing a Mach exception that can be used to monitor the
-     * constraints.
-     *
-     * The EXC_RESOURCE resouce exception used to implement the private posix_spawnattr_setcpumonitor()
-     * API, which allows for monitoring CPU utilization by observing issued EXC_RESOURCE exceptions.
-     * This appears to be used by launchd.
-     *
-     * Either way, we're uninterested in EXC_RESOURCE; the xnu ux_exception() handler should not deliver
-     * a signal for the exception and should return KERN_SUCCESS, letting exception_triage()
-     * consider it as handled.
-     */
-    exception_mask_t exc_mask = EXC_MASK_BAD_ACCESS |       /* Memory access fail */
-                                EXC_MASK_BAD_INSTRUCTION |  /* Illegal instruction */
-                                EXC_MASK_ARITHMETIC |       /* Arithmetic exception (eg, divide by zero) */
-                                EXC_MASK_SOFTWARE |         /* Software exception (eg, as triggered by x86's bound instruction) */
-                                EXC_MASK_BREAKPOINT;        /* Trace or breakpoint */
-    
-    /* EXC_GUARD was added in xnu 13.x (iOS 6.0, Mac OS X 10.9) */
-#ifdef EXC_MASK_GUARD
-    PLCrashHostInfo *hinfo = [PLCrashHostInfo currentHostInfo];
 
-    if (hinfo != nil && hinfo.darwinVersion.major >= 13)
-        exc_mask |= EXC_MASK_GUARD; /* Process accessed a guarded file descriptor. See also: https://devforums.apple.com/message/713907#713907 */
-#endif
+    if ((self = [super init]) == nil)
+        return nil;
 
+    
     /* Initialize the bare context. */
     _serverContext = (struct plcrash_exception_server_context *) calloc(1, sizeof(*_serverContext));
-    _serverContext->task = task;
-    _serverContext->thread = thread;
-    _serverContext->exc_mask = exc_mask;
     _serverContext->server_port = MACH_PORT_NULL;
     _serverContext->server_thread = MACH_PORT_NULL;
-    _serverContext->server_init_result = KERN_SUCCESS;
     _serverContext->callback = callback;
     _serverContext->callback_context = context;
-
+    
     if (pthread_mutex_init(&_serverContext->lock, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Mutex initialization failed");
-
+        
         free(_serverContext);
         _serverContext = NULL;
-
+        
         return NO;
     }
-
+    
     if (pthread_cond_init(&_serverContext->server_cond, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Condition initialization failed");
-
+        
         free(_serverContext);
         _serverContext = NULL;
-
+        
         return NO;
     }
-
+    
     /*
      * Initalize our server's port
      */
@@ -805,22 +587,20 @@ static void *exception_server_thread (void *arg) {
         plcrash_populate_mach_error(outError, kr, @"Failed to allocate exception server's port");
         goto error;
     }
-
+    
     kr = mach_port_insert_right(mach_task_self(), _serverContext->server_port, _serverContext->server_port, MACH_MSG_TYPE_MAKE_SEND);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to add send right to exception server's port");
         goto error;
     }
     
-    /* Spawn the server thread. The server thread will be responsible for actually setting the task exception
-     * ports; this must happen last, as we gaurantee that the new exception ports will be either fully configured,
-     * or left unchanged, and pthread_create() may fail. */
+    /* Spawn the server thread. */
     {
         if (pthread_attr_init(&attr) != 0) {
             plcrash_populate_posix_error(outError, errno, @"Failed to initialize pthread_attr");
             goto error;
         }
-
+        
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
         // TODO - A custom stack should be specified, using high/low guard pages to help prevent overwriting the stack
         // by crashing code.
@@ -833,37 +613,27 @@ static void *exception_server_thread (void *arg) {
         }
         
         pthread_attr_destroy(&attr);
-
+        
         /* Save the thread reference */
         _serverContext->server_thread = pthread_mach_thread_np(thr);
     }
-
-    pthread_mutex_lock(&_serverContext->lock);
     
-    while (!_serverContext->server_init_done)
-        pthread_cond_wait(&_serverContext->server_cond, &_serverContext->lock);
-
-    if (_serverContext->server_init_result != KERN_SUCCESS) {
-        plcrash_populate_mach_error(outError, _serverContext->server_init_result, @"Failed to set task exception ports");
-        goto error;
-    }
-    pthread_mutex_unlock(&_serverContext->lock);
-
     return YES;
-
+    
 error:
     if (_serverContext != NULL) {
         if (_serverContext->server_port != MACH_PORT_NULL)
             mach_port_deallocate(mach_task_self(), _serverContext->server_port);
-
+        
         pthread_cond_destroy(&_serverContext->server_cond);
         pthread_mutex_destroy(&_serverContext->lock);
-
+        
         free(_serverContext);
         _serverContext = NULL;
     }
 
-    return NO;
+    [self release];
+    return nil;
 }
 
 /**
@@ -884,35 +654,57 @@ error:
 }
 
 /**
- * De-register the mach exception handler.
- 
- * @param outError A pointer to an NSError object variable. If an error occurs, this
- * pointer will contain an error object indicating why the signal handlers could not be
- * registered. If no error occurs, this parameter will be left unmodified. You may specify
- * NULL for this parameter, and no error information will be provided.
+ * Atomically set the Mach exception server port managed by the receiver as the @a task's Mach exception server, returning
+ * the previously configured ports in @a portStates.
  *
- * @warning Removing the exception handler for a currently executing process may lead to
- * undefined behavior, and should be avoided in production code. Once registered, a handler
- * should remain valid until the termination of a process:
- *
- * - If multiple Mach task handlers have been registered, it is not possible for the receiver
- *   to correctly restore the appropriate exception ports, as the ports saved at the time of
- *   registration will no longer correspond to top-level registered handler.
- * - A reference to the receiver's Mach exception ports may have been saved by another exception
- *   handler; there is no way to inform said handler of the termination of the receiver, or direct
- *   it to use a different target when forwarding exception messages.
- *
- * As such, once registered, an exception server should continue to run for the lifetime of the target
- * thread or process.
- *
- * @warning Removing the Mach task handler is not currently performed atomically; if an
- * exception message is received during deregistration, the exception may be lost.
+ * @param task The task for which the Mach exception server should be set.
+ * @param mask The exception mask for which the receiver should be registered.
+ * @param portStates On success, will contain a set of previously registered port state(s) for the exception masks claimed
+ * by the receiver. If NULL, the previous port states will not be provided.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the Mach exception port could not be registered. If no error
+ * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
+ * will be provided.
+ * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) deregisterHandlerAndReturnError: (NSError **) outError {
-    mach_msg_return_t mr;
-    BOOL result = YES;
+- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError {    
+    PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: _serverContext->server_port
+                                                                                           mask: mask
+                                                                                       behavior: PLCRASH_DEFAULT_BEHAVIOR
+                                                                                         flavor: MACHINE_THREAD_STATE] autorelease];
+    return [state registerForTask: task previousPortStates: portStates error: outError];
+}
 
-    NSAssert(_serverContext != NULL, @"No handler registered!");
+/**
+ * Atomically set the Mach exception server port managed by the receiver as the @a thread's Mach exception server, returning
+ * the previously configured ports in @a portStates.
+ *
+ * @param thread The thread for which the Mach exception server should be set.
+ * @param mask The exception mask for which the receiver should be registered.
+ * @param portStates On success, will contain a set of previously registered port state(s) for the exception masks claimed
+ * by the receiver.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the Mach exception port could not be registered. If no error
+ * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
+ * will be provided.
+ * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
+ */
+- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError {
+    PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: _serverContext->server_port
+                                                                                           mask: mask
+                                                                                       behavior: PLCRASH_DEFAULT_BEHAVIOR
+                                                                                         flavor: MACHINE_THREAD_STATE] autorelease];
+    return [state registerForTask: thread previousPortStates: portStates error: outError];
+}
+
+/* We automatically stop the server on dealloc */
+- (void) dealloc {
+    mach_msg_return_t mr;
+    
+    if (_serverContext == NULL) {
+        [super dealloc];
+        return;
+    }
 
     /* Mark the server for termination */
     OSAtomicCompareAndSwap32Barrier(0, 1, (int32_t *) &_serverContext->server_should_stop);
@@ -929,9 +721,8 @@ error:
     mr = mach_msg(&msg, MACH_SEND_MSG, msg.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 
     if (mr != MACH_MSG_SUCCESS) {
-        /* It's defined by the mach headers as safe to treat a mach_msg_return_t as a kern_return_t */
-        plcrash_populate_mach_error(outError, mr, @"Failed to send termination message to background thread");
-        return NO;
+        NSLog(@"Unexpected error sending termination message to background thread: %d", mr);
+        return;
     }
 
     /* Wait for completion */
@@ -941,16 +732,10 @@ error:
     }
     pthread_mutex_unlock(&_serverContext->lock);
 
-    if (_serverContext->server_stop_result != KERN_SUCCESS) {
-        result = NO;
-        plcrash_populate_mach_error(outError, _serverContext->server_stop_result, @"Failed to reset mach exception handlers");
-    }
-
     /* Once we've been signaled by the background thread, it will no longer access exc_context */
     free(_serverContext);
-    _serverContext = NULL;
-
-    return result;
+    
+    [super dealloc];
 }
 
 @end
