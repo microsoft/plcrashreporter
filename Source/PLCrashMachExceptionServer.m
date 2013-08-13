@@ -182,8 +182,6 @@ struct plcrash_exception_server_context {
     bool server_stop_done;
 };
 
-
-
 /**
  * Send a Mach exception reply for the given @a request and return the result.
  *
@@ -217,106 +215,15 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
 }
 
 /**
- * Send an exception request directly to @a port and wait for the reply.
- *
- * @param request The request to send.
- * @param port The port to which the exception should be forwarded.
- * @param behavior The behavior with which @a port was registered.
- * @param thread_state_flavor The thead flavor of @a thread_state.
- *
- * @return If KERN_SUCCESS, the exception server at @a port handled the exception, and the failed thread
- * may be resumed. Otherwise, the exception should be considered unhandled, due to either an error
- * with mach messaging, or due to a negative response from the target @a port.
- */
-static kern_return_t exception_server_request (PLRequest_exception_raise_t *request,
-                                               mach_port_t port,
-                                               exception_behavior_t behavior,
-                                               thread_state_flavor_t thread_state_flavor)
-{
-    thread_state_data_t thread_state;
-    mach_msg_type_number_t thread_state_count;
-    kern_return_t kr;
-    
-    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
-#if USE_MACH64_CODES
-    exception_data_type_t code32[request->codeCnt];
-    for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-        code32[i] = (uint64_t) request->code[i];
-    }
-#else
-    int32_t *code32 = request->code;
-#endif
-
-    /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
-    bool mach_exc_codes = false;
-    if (behavior & MACH_EXCEPTION_CODES) {
-        mach_exc_codes = true;
-        behavior &= ~MACH_EXCEPTION_CODES;
-    }
-
-    /*
-     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
-     * fetching the thread state will simply fail.
-     */
-    if (behavior != EXCEPTION_DEFAULT) {
-        thread_state_count = THREAD_STATE_MAX;
-        kr = thread_get_state (request->thread.name, thread_state_flavor, thread_state, &thread_state_count);
-        if (kr != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", request->thread.name, thread_state_flavor, kr);
-            return kr;
-        }
-    }
-
-    /* Handle the supported behaviors */
-    switch (behavior) {
-        case EXCEPTION_DEFAULT:
-            if (mach_exc_codes) {
-#if USE_MACH64_CODES
-                return mach_exception_raise(port, request->thread.name, request->task.name, request->exception, request->code, request->codeCnt);
-#endif
-            } else {
-                return exception_raise(port, request->thread.name, request->task.name, request->exception, code32, request->codeCnt);
-            }
-            break;
-            
-        case EXCEPTION_STATE:
-            if (mach_exc_codes) {
-#if USE_MACH64_CODES
-                return mach_exception_raise_state(port, request->exception, request->code, request->codeCnt, &thread_state_flavor, thread_state,
-                                                  thread_state_count, thread_state, &thread_state_count);
-#endif
-            } else {
-                return exception_raise_state(port, request->exception, code32, request->codeCnt, &thread_state_flavor, thread_state,
-                                             thread_state_count, thread_state, &thread_state_count);                    
-            }
-            break;
-            
-        case EXCEPTION_STATE_IDENTITY:
-            if (mach_exc_codes) {
-#if USE_MACH64_CODES
-                return mach_exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, request->code,
-                                                           request->codeCnt, &thread_state_flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
-#endif
-            } else {
-                return exception_raise_state_identity(port, request->thread.name, request->task.name, request->exception, code32,
-                                                      request->codeCnt, &thread_state_flavor, thread_state, thread_state_count, thread_state, &thread_state_count);                    
-            }
-            break;
-
-        default:
-            /* Handled below */
-            break;
-    }
-
-    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exc_codes ? "true" : "false");
-    return KERN_FAILURE;
-}
-
-/**
  * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
  *
- * @param request The incoming request that should be forwarded.
- * @param state The set of exception handlers to which the message should be forwarded.
+ * @param task The task in which the exception occured.
+ * @param thread The thread on which the exception occured. The thread will be suspended when the callback is issued, and may be resumed
+ * by the callback using thread_resume().
+ * @param exception_type Mach exception type.
+ * @param code Mach exception codes.
+ * @param code_count The number of codes provided.
+ * @param port_state The set of exception handlers to which the message should be forwarded.
  *
  * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
  * if the exception was not handled, or forwarding failed.
@@ -330,38 +237,118 @@ static kern_return_t exception_server_request (PLRequest_exception_raise_t *requ
  * The recommended solution is to simply not register a Mach exception handler in the case where a debugger
  * is already attached.
  *
- * @TODO We need to be able to determine if an exception can be/will/was handled by a signal handler. Failure
- * to detect such a case will result in spurious reports written for otherwise handled signals. See also:
- * https://bugzilla.xamarin.com/show_bug.cgi?id=4120
+ * @note This function may be called at crash-time.
  */
-kern_return_t exception_server_forward_next (PLRequest_exception_raise_t *request, plcrash_mach_exception_port_state_t *state) {
+kern_return_t PLCrashMachExceptionForward (task_t task,
+                                           thread_t thread,
+                                           exception_type_t exception_type,
+                                           mach_exception_data_t code,
+                                           mach_msg_type_number_t code_count,
+                                           plcrash_mach_exception_port_state_t *port_state)
+{
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
     mach_port_t port;
-
+    
     /* Find a matching handler */
-    exception_mask_t fwd_mask = exception_to_mask(request->exception);
+    exception_mask_t fwd_mask = exception_to_mask(exception_type);
     bool found = false;
-    for (mach_msg_type_number_t i = 0; i < state->count; i++) {
-        if (!MACH_PORT_VALID(state->ports[i]))
+    for (mach_msg_type_number_t i = 0; i < port_state->count; i++) {
+        if (!MACH_PORT_VALID(port_state->ports[i]))
             continue;
-
-        if ((state->masks[i] & fwd_mask) == 0)
+        
+        if ((port_state->masks[i] & fwd_mask) == 0)
             continue;
-
+        
         found = true;
-        port = state->ports[i];
-        behavior = state->behaviors[i];
-        flavor = state->flavors[i];
+        port = port_state->ports[i];
+        behavior = port_state->behaviors[i];
+        flavor = port_state->flavors[i];
         break;
     }
-
+    
     /* No handler found */
     if (!found) {
         return KERN_FAILURE;
     }
-
-    return exception_server_request(request, port, behavior, flavor);
+    
+    thread_state_data_t thread_state;
+    mach_msg_type_number_t thread_state_count;
+    kern_return_t kr;
+    
+    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
+#if USE_MACH64_CODES
+    exception_data_type_t code32[code_count];
+    for (mach_msg_type_number_t i = 0; i < code_count; i++) {
+        code32[i] = (uint64_t) code[i];
+    }
+#else
+    int32_t *code32 = request->code;
+#endif
+    
+    /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
+    bool mach_exc_codes = false;
+    if (behavior & MACH_EXCEPTION_CODES) {
+        mach_exc_codes = true;
+        behavior &= ~MACH_EXCEPTION_CODES;
+    }
+    
+    /*
+     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
+     * fetching the thread state will simply fail.
+     */
+    if (behavior != EXCEPTION_DEFAULT) {
+        thread_state_count = THREAD_STATE_MAX;
+        kr = thread_get_state (thread, flavor, thread_state, &thread_state_count);
+        if (kr != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", thread, flavor, kr);
+            return kr;
+        }
+    }
+    
+    /* Handle the supported behaviors */
+    switch (behavior) {
+        case EXCEPTION_DEFAULT:
+            if (mach_exc_codes) {
+#if USE_MACH64_CODES
+                return mach_exception_raise(port, thread, task, exception_type, code, code_count);
+#endif
+            } else {
+                return exception_raise(port, thread, task, exception_type, code32, code_count);
+            }
+            break;
+            
+        case EXCEPTION_STATE:
+            if (mach_exc_codes) {
+#if USE_MACH64_CODES
+                return mach_exception_raise_state(port, exception_type, code, code_count, &flavor, thread_state,
+                                                  thread_state_count, thread_state, &thread_state_count);
+#endif
+            } else {
+                return exception_raise_state(port, exception_type, code32, code_count, &flavor, thread_state,
+                                             thread_state_count, thread_state, &thread_state_count);
+            }
+            break;
+            
+        case EXCEPTION_STATE_IDENTITY:
+            if (mach_exc_codes) {
+#if USE_MACH64_CODES
+                return mach_exception_raise_state_identity(port, thread, task, exception_type, code,
+                                                           code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+#endif
+            } else {
+                return exception_raise_state_identity(port, thread, task, exception_type, code32,
+                                                      code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+            }
+            break;
+            
+        default:
+            /* Handled below */
+            break;
+    }
+    
+    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exc_codes ? "true" : "false");
+    return KERN_FAILURE;
 }
 
 /**
@@ -491,6 +478,10 @@ static void *exception_server_thread (void *arg) {
  * Mach Exception Server.
  *
  * Implements monitoring of Mach exceptions on tasks and threads.
+ *
+ * @TODO We need to be able to determine if an exception can be/will/was handled by a signal handler. Failure
+ * to detect such a case will result in spurious reports written for otherwise handled signals. See also:
+ * https://bugzilla.xamarin.com/show_bug.cgi?id=4120
  *
  * @par Double Faults
  *

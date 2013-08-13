@@ -29,7 +29,8 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
-#include "PLCrashReporterBuildConfig.h"
+#import "PLCrashReporterBuildConfig.h"
+#import "PLCrashMachExceptionPortState.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
@@ -54,6 +55,13 @@ typedef kern_return_t (*PLCrashMachExceptionHandlerCallback) (task_t task,
                                                               mach_exception_data_t code,
                                                               mach_msg_type_number_t code_count,
                                                               void *context);
+
+kern_return_t PLCrashMachExceptionForward (task_t task,
+                                           thread_t thread,
+                                           exception_type_t exception_type,
+                                           mach_exception_data_t code,
+                                           mach_msg_type_number_t code_count,
+                                           plcrash_mach_exception_port_state_t *port_state);
 
 @interface PLCrashMachExceptionServer : NSObject {
 @private
