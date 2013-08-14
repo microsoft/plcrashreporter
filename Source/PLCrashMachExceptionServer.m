@@ -155,6 +155,12 @@ struct plcrash_exception_server_context {
 
     /** Registered exception port. */
     mach_port_t server_port;
+    
+    /** Notification port */
+    mach_port_t notify_port;
+    
+    /** Listen port set */
+    mach_port_t port_set;
 
     /** User callback. */
     PLCrashMachExceptionHandlerCallback callback;
@@ -377,13 +383,13 @@ static void *exception_server_thread (void *arg) {
     /* Wait for an exception message */
     while (true) {
         /* Initialize our request message */
-        request->Head.msgh_local_port = exc_context->server_port;
+        request->Head.msgh_local_port = exc_context->port_set;
         request->Head.msgh_size = request_size;
         mr = mach_msg(&request->Head,
                       MACH_RCV_MSG | MACH_RCV_LARGE,
                       0,
                       request->Head.msgh_size,
-                      exc_context->server_port,
+                      exc_context->port_set,
                       MACH_MSG_TIMEOUT_NONE,
                       MACH_PORT_NULL);
 
@@ -416,6 +422,15 @@ static void *exception_server_thread (void *arg) {
 
         /* Success! */
         } else {
+            /* Handle no sender notifications */
+            if (request->Head.msgh_local_port == exc_context->notify_port && request->Head.msgh_id == MACH_NOTIFY_NO_SENDERS) {
+                /* TODO: This will be used to dispatch 'no sender' delegate messages, which can be used to track whether
+                 * all mach exception clients have terminated. This is primarily useful in determining whether the exception
+                 * server can shut down when running out-of-process and potentially servicing exception messages from
+                 * multiple tasks. */
+                continue;
+            }
+            
             /* Detect 'short' messages. */
             if (request->Head.msgh_size < sizeof(*request)) {
                 /* We intentionally do not acquire a lock here. It is possible that we've been woken
@@ -548,6 +563,8 @@ static void *exception_server_thread (void *arg) {
     /* Initialize the bare context. */
     _serverContext = (struct plcrash_exception_server_context *) calloc(1, sizeof(*_serverContext));
     _serverContext->server_port = MACH_PORT_NULL;
+    _serverContext->notify_port = MACH_PORT_NULL;
+    _serverContext->port_set = MACH_PORT_NULL;
     _serverContext->server_thread = MACH_PORT_NULL;
     _serverContext->callback = callback;
     _serverContext->callback_context = context;
@@ -583,7 +600,7 @@ static void *exception_server_thread (void *arg) {
         [self release];
         return nil;
     }
-    
+
     kr = mach_port_insert_right(mach_task_self(), _serverContext->server_port, _serverContext->server_port, MACH_MSG_TYPE_MAKE_SEND);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to add send right to exception server's port");
@@ -592,6 +609,63 @@ static void *exception_server_thread (void *arg) {
         return nil;
     }
     
+    /*
+     * Initialize our notification port
+     */
+    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &_serverContext->notify_port);
+    if (kr != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, kr, @"Failed to allocate exception server's port");
+        
+        [self release];
+        return nil;
+    }
+
+    kr = mach_port_insert_right(mach_task_self(), _serverContext->notify_port, _serverContext->notify_port, MACH_MSG_TYPE_MAKE_SEND);
+    if (kr != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, kr, @"Failed to add send right to exception server's port");
+        
+        [self release];
+        return nil;
+    }
+    
+    mach_port_t prev_notify_port;
+    kr = mach_port_request_notification(mach_task_self(), _serverContext->server_port, MACH_NOTIFY_NO_SENDERS, 0, _serverContext->notify_port, MACH_MSG_TYPE_MAKE_SEND_ONCE, &prev_notify_port);
+    if (kr != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, kr, @"Failed to request MACH_NOTIFY_NO_SENDERS on the exception server's port");
+
+        [self release];
+        return nil;
+    }
+    
+    /*
+     * Initialize our port set.
+     */
+    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET, &_serverContext->port_set);
+    if (kr != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, kr, @"Failed to allocate exception server's port set");
+        
+        [self release];
+        return nil;
+    }
+
+    /* Add the service port to the port set */
+    kr = mach_port_move_member(mach_task_self(), _serverContext->server_port, _serverContext->port_set);
+    if (kr != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, kr, @"Failed to add exception server port to port set");
+        
+        [self release];
+        return nil;
+    }
+
+    /* Add the notify port to the port set */
+    kr = mach_port_move_member(mach_task_self(), _serverContext->notify_port, _serverContext->port_set);
+    if (kr != KERN_SUCCESS) {
+        plcrash_populate_mach_error(outError, kr, @"Failed to add exception server notify port to port set");
+        
+        [self release];
+        return nil;
+    }
+
     /* Spawn the server thread. */
     {
         if (pthread_attr_init(&attr) != 0) {
@@ -723,6 +797,12 @@ static void *exception_server_thread (void *arg) {
     if (_serverContext->server_port != MACH_PORT_NULL)
         mach_port_deallocate(mach_task_self(), _serverContext->server_port);
     
+    if (_serverContext->notify_port != MACH_PORT_NULL)
+        mach_port_deallocate(mach_task_self(), _serverContext->notify_port);
+    
+    if (_serverContext->port_set != MACH_PORT_NULL)
+        mach_port_deallocate(mach_task_self(), _serverContext->port_set);
+
     pthread_cond_destroy(&_serverContext->server_cond);
     pthread_mutex_destroy(&_serverContext->lock);
 
