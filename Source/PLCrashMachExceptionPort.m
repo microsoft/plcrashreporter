@@ -114,7 +114,7 @@
 /**
  * Initialize a new instance.
  *
- * @param port The Mach exception server's port. This value will be retained. MACH_PORT_NULL may be specified.
+ * @param port The Mach exception server's port, for which a MACH_PORT_RIGHT_SEND will be retained (and released on dealloc). MACH_PORT_NULL may be specified.
  * @param mask The exception masks for which @a port should be (or was) registered.
  * @param behavior The exception behavior expected by the server on @a port.
  * @param flavor The thread flavor expected by the server on @a port.

@@ -75,6 +75,8 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                 context: (void *) context
                   error: (NSError **) outError;
 
+- (mach_port_t) copySendRightForServerAndReturningError: (NSError **) outError;
+
 - (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError;
 - (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError;
 

@@ -231,6 +231,23 @@ static kern_return_t exception_callback (task_t task,
     STAssertTrue(didRun, @"Calback was not executed");
 }
 
+/**
+ * Test basic copying of the send right.
+ */
+- (void) testCopySendRight {
+    NSError *error;
+
+    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+                                                                                       context: NULL
+                                                                                         error: &error] autorelease];
+    STAssertNotNil(server, @"Failed to initialize server");
+
+    mach_port_t sendRight = [server copySendRightForServerAndReturningError: &error];
+    STAssertTrue(MACH_PORT_VALID(sendRight), @"Failed to copy send right: %@", error);
+
+    mach_port_deallocate(mach_task_self(), sendRight);
+}
+
 @end
 
 #endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */

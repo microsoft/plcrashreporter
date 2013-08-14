@@ -715,6 +715,36 @@ static void *exception_server_thread (void *arg) {
 }
 
 /**
+ * Create and return a new send right for the receiver's Mach exception server. The callee is responsible
+ * for deallocating the send right via mach_port_deallocate or similar.
+ *
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the Mach send right could not be created. If no error
+ * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
+ * will be provided.
+ * @return Returns a valid mach send right on success; on error, MACH_PORT_NULL will be returned.
+ */
+- (mach_port_t) copySendRightForServerAndReturningError: (NSError **) outError {
+    mach_port_t result;
+    kern_return_t kr;
+
+    pthread_mutex_lock(&_serverContext->lock); {
+        /* Insert a send right; this will either create the right, or bump the reference count. */
+        kr = mach_port_insert_right(mach_task_self(), _serverContext->server_port, _serverContext->server_port, MACH_MSG_TYPE_MAKE_SEND);
+        if (kr != KERN_SUCCESS) {
+            plcrash_populate_mach_error(outError, kr, @"Failed to insert Mach send right");
+            
+            pthread_mutex_unlock(&_serverContext->lock);
+            return MACH_PORT_NULL;
+        }
+        
+        result = _serverContext->server_port;
+    }; pthread_mutex_unlock(&_serverContext->lock);
+
+    return result;
+}
+
+/**
  * Atomically set the Mach exception server port managed by the receiver as the @a task's Mach exception server, returning
  * the previously configured ports in @a portStates.
  *
