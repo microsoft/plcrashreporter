@@ -316,6 +316,8 @@
 		05BEC42017BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BEC41F17BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m */; };
 		05BEC42117BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BEC41F17BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m */; };
 		05BEC42217BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BEC41F17BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m */; };
+		05BEC42317BB0C890082CBFB /* PLCrashMachExceptionServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */; };
+		05BEC42417BB0C960082CBFB /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		05C5880E1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05C5880F1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */; };
 		05C588101788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */; };
@@ -2912,6 +2914,8 @@
 				05102E2D17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
 				051F068217B98A0A006D0EFA /* PLCrashMachExceptionPortStateTests.m in Sources */,
 				05BEC42017BAF95C0082CBFB /* PLCrashMachExceptionPortStateSetTests.m in Sources */,
+				05BEC42417BB0C960082CBFB /* mach_exc.defs in Sources */,
+				05BEC42317BB0C890082CBFB /* PLCrashMachExceptionServer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -221,6 +221,39 @@ static kern_return_t exception_callback (task_t task,
     STAssertTrue(threadRan, @"Thread-specific handler did not run");    
 }
 
+/**
+ * Test forwarding implementation
+ */
+- (void) testForwardException {
+    NSError *error;
+
+    /* Set up a test server */
+    BOOL didRun = false;
+    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+                                                                                       context: &didRun
+                                                                                         error: &error] autorelease];
+    STAssertNotNil(server, @"Failed to initialize server");
+    STAssertTrue([server registerForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS previousPortStates: NULL error: &error], @"Failed to register server: %@", error);
+
+    /* Fetch the server's port set */
+    PLCrashMachExceptionPortStateSet *portSet = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS error: &error];
+
+    /* Attempt to forward the exception */
+    mach_exception_data_t codes;
+    codes[0] = 0x1;
+    codes[1] = 0x2;
+
+    plcrash_mach_exception_port_state_set_t port_set = portSet.asyncSafeRepresentation;
+    kern_return_t kt = PLCrashMachExceptionForward(mach_task_self(),
+                                                   mach_thread_self(),
+                                                   EXC_BAD_ACCESS,
+                                                   codes,
+                                                   2,
+                                                   &port_set);
+    STAssertEquals(KERN_SUCCESS, kt, @"Callback did not return KERN_SUCCESS");
+    STAssertTrue(didRun, @"Calback was not executed");
+}
+
 @end
 
 #endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
