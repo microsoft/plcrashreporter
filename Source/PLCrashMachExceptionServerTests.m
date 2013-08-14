@@ -51,29 +51,6 @@
 @implementation PLCrashMachExceptionServerTests
 
 - (void) setUp {
-    /* The iOS Simulator SDK includes EXC_MASK_GUARD in EXC_MASK_ALL, but the
-     * host system (eg, Mac OS X <= 10.8) may not support it, in which case we
-     * need to strip the flag out here.
-     *
-     * We also ignore EXC_RESOURCE entirely (it's not monitored by the crash
-     * reporter).
-     */
-    exception_mask_t exc_mask_all = EXC_MASK_ALL;
-    
-#ifdef EXC_MASK_RESOURCE
-    exc_mask_all &= ~EXC_MASK_RESOURCE;
-#endif
-
-#if defined(EXC_MASK_GUARD) && TARGET_IPHONE_SIMULATOR
-
-# if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
-#   error This work-around is no longer required and should be removed
-# endif
-
-    if ([PLCrashHostInfo currentHostInfo].darwinVersion.major < PLCRASH_HOST_MAC_OS_X_DARWIN_MAJOR_VERSION_10_9)
-        exc_mask_all &= ~EXC_MASK_GUARD;
-#endif
-
     /*
      * Reset the current exception ports. Our tests interfere with any observing
      * debuggers, so we remove any task and thread exception ports here, and then
@@ -81,7 +58,7 @@
      */
     kern_return_t kr;
     kr = task_swap_exception_ports(mach_task_self(),
-                                   exc_mask_all,
+                                   EXC_MASK_BAD_ACCESS,
                                    MACH_PORT_NULL,
                                    EXCEPTION_DEFAULT,
                                    THREAD_STATE_NONE,
@@ -93,7 +70,7 @@
     STAssertEquals(kr, KERN_SUCCESS, @"Failed to reset task ports");
     
     kr = thread_swap_exception_ports(mach_thread_self(),
-                                     exc_mask_all,
+                                     EXC_MASK_BAD_ACCESS,
                                      MACH_PORT_NULL,
                                      EXCEPTION_DEFAULT,
                                      THREAD_STATE_NONE,
@@ -239,7 +216,7 @@ static kern_return_t exception_callback (task_t task,
     PLCrashMachExceptionPortSet *portSet = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS error: &error];
 
     /* Attempt to forward the exception */
-    mach_exception_data_t codes;
+    mach_exception_data_type_t codes[2];
     codes[0] = 0x1;
     codes[1] = 0x2;
 

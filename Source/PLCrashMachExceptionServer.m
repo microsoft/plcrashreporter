@@ -558,16 +558,19 @@ static void *exception_server_thread (void *arg) {
         free(_serverContext);
         _serverContext = NULL;
         
-        return NO;
+        [self release];
+        return nil;
     }
     
     if (pthread_cond_init(&_serverContext->server_cond, NULL) != 0) {
         plcrash_populate_posix_error(outError, errno, @"Condition initialization failed");
-        
+
+        pthread_mutex_destroy(&_serverContext->lock);
         free(_serverContext);
         _serverContext = NULL;
         
-        return NO;
+        [self release];
+        return nil;
     }
     
     /*
@@ -576,20 +579,26 @@ static void *exception_server_thread (void *arg) {
     kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &_serverContext->server_port);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to allocate exception server's port");
-        goto error;
+        
+        [self release];
+        return nil;
     }
     
     kr = mach_port_insert_right(mach_task_self(), _serverContext->server_port, _serverContext->server_port, MACH_MSG_TYPE_MAKE_SEND);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to add send right to exception server's port");
-        goto error;
+        
+        [self release];
+        return nil;
     }
     
     /* Spawn the server thread. */
     {
         if (pthread_attr_init(&attr) != 0) {
             plcrash_populate_posix_error(outError, errno, @"Failed to initialize pthread_attr");
-            goto error;
+            
+            [self release];
+            return nil;
         }
         
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -600,7 +609,9 @@ static void *exception_server_thread (void *arg) {
         if (pthread_create(&thr, &attr, &exception_server_thread, _serverContext) != 0) {
             plcrash_populate_posix_error(outError, errno, @"Failed to create exception server thread");
             pthread_attr_destroy(&attr);
-            goto error;
+            
+            [self release];
+            return nil;
         }
         
         pthread_attr_destroy(&attr);
@@ -609,22 +620,7 @@ static void *exception_server_thread (void *arg) {
         _serverContext->server_thread = pthread_mach_thread_np(thr);
     }
     
-    return YES;
-    
-error:
-    if (_serverContext != NULL) {
-        if (_serverContext->server_port != MACH_PORT_NULL)
-            mach_port_deallocate(mach_task_self(), _serverContext->server_port);
-        
-        pthread_cond_destroy(&_serverContext->server_cond);
-        pthread_mutex_destroy(&_serverContext->lock);
-        
-        free(_serverContext);
-        _serverContext = NULL;
-    }
-
-    [self release];
-    return nil;
+    return self;
 }
 
 /**
@@ -685,7 +681,7 @@ error:
                                                                                            mask: mask
                                                                                        behavior: PLCRASH_DEFAULT_BEHAVIOR
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
-    return [state registerForTask: thread previousPortSet: portStates error: outError];
+    return [state registerForThread: thread previousPortSet: portStates error: outError];
 }
 
 /* We automatically stop the server on dealloc */
@@ -722,6 +718,13 @@ error:
         pthread_cond_wait(&_serverContext->server_cond, &_serverContext->lock);
     }
     pthread_mutex_unlock(&_serverContext->lock);
+
+    /* Server is now dead, can clean up all resources */
+    if (_serverContext->server_port != MACH_PORT_NULL)
+        mach_port_deallocate(mach_task_self(), _serverContext->server_port);
+    
+    pthread_cond_destroy(&_serverContext->server_cond);
+    pthread_mutex_destroy(&_serverContext->lock);
 
     /* Once we've been signaled by the background thread, it will no longer access exc_context */
     free(_serverContext);
