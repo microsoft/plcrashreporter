@@ -188,305 +188,6 @@ struct plcrash_exception_server_context {
     bool server_stop_done;
 };
 
-/**
- * Send a Mach exception reply for the given @a request and return the result.
- *
- * @param request The request to which a reply should be sent.
- * @param retcode The reply return code to supply.
- */
-static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *request, kern_return_t retcode) {
-    PLReply_exception_raise_t reply;
-
-    /* Initialize the reply */
-    memset(&reply, 0, sizeof(reply));
-    reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
-    reply.Head.msgh_local_port = MACH_PORT_NULL;
-    reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
-    reply.Head.msgh_size = sizeof(reply);
-    reply.NDR = NDR_record;
-    reply.RetCode = retcode;
-    
-    /*
-     * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
-     * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
-     * to change now). See the top-level file warning regarding use on iOS.
-     *
-     * On Mac OS X, the reply_id offset may be considered implicitly defined due to mach_exc.defs and
-     * exc.defs being public.
-     */
-    reply.Head.msgh_id = request->Head.msgh_id + 100;
-
-    /* Dispatch the reply */
-    return mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-}
-
-/**
- * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
- *
- * @param task The task in which the exception occured.
- * @param thread The thread on which the exception occured. The thread will be suspended when the callback is issued, and may be resumed
- * by the callback using thread_resume().
- * @param exception_type Mach exception type.
- * @param code Mach exception codes.
- * @param code_count The number of codes provided.
- * @param port_state The set of exception handlers to which the message should be forwarded.
- *
- * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
- * if the exception was not handled, or forwarding failed.
- *
- * @par In-Process Operation
- *
- * When operating in-process, handling the exception replies internally breaks external debuggers,
- * as they assume it is safe to leave our thread suspended. This results in the target thread never resuming,
- * as our thread never wakes up to reply to the message, or to handle future messages.
- *
- * The recommended solution is to simply not register a Mach exception handler in the case where a debugger
- * is already attached.
- *
- * @note This function may be called at crash-time.
- */
-kern_return_t PLCrashMachExceptionForward (task_t task,
-                                           thread_t thread,
-                                           exception_type_t exception_type,
-                                           mach_exception_data_t code,
-                                           mach_msg_type_number_t code_count,
-                                           plcrash_mach_exception_port_set_t *port_state)
-{
-    exception_behavior_t behavior;
-    thread_state_flavor_t flavor;
-    mach_port_t port;
-    
-    /* Find a matching handler */
-    exception_mask_t fwd_mask = exception_to_mask(exception_type);
-    bool found = false;
-    for (mach_msg_type_number_t i = 0; i < port_state->count; i++) {
-        if (!MACH_PORT_VALID(port_state->ports[i]))
-            continue;
-        
-        if ((port_state->masks[i] & fwd_mask) == 0)
-            continue;
-        
-        found = true;
-        port = port_state->ports[i];
-        behavior = port_state->behaviors[i];
-        flavor = port_state->flavors[i];
-        break;
-    }
-    
-    /* No handler found */
-    if (!found) {
-        return KERN_FAILURE;
-    }
-    
-    thread_state_data_t thread_state;
-    mach_msg_type_number_t thread_state_count;
-    kern_return_t kr;
-    
-    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
-#if USE_MACH64_CODES
-    exception_data_type_t code32[code_count];
-    for (mach_msg_type_number_t i = 0; i < code_count; i++) {
-        code32[i] = (uint64_t) code[i];
-    }
-#else
-    int32_t *code32 = request->code;
-#endif
-    
-    /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
-    bool mach_exc_codes = false;
-    if (behavior & MACH_EXCEPTION_CODES) {
-        mach_exc_codes = true;
-        behavior &= ~MACH_EXCEPTION_CODES;
-    }
-    
-    /*
-     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
-     * fetching the thread state will simply fail.
-     */
-    if (behavior != EXCEPTION_DEFAULT) {
-        thread_state_count = THREAD_STATE_MAX;
-        kr = thread_get_state (thread, flavor, thread_state, &thread_state_count);
-        if (kr != KERN_SUCCESS) {
-            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", thread, flavor, kr);
-            return kr;
-        }
-    }
-    
-    /* Handle the supported behaviors */
-    switch (behavior) {
-        case EXCEPTION_DEFAULT:
-            if (mach_exc_codes) {
-#if USE_MACH64_CODES
-                return mach_exception_raise(port, thread, task, exception_type, code, code_count);
-#endif
-            } else {
-                return exception_raise(port, thread, task, exception_type, code32, code_count);
-            }
-            break;
-            
-        case EXCEPTION_STATE:
-            if (mach_exc_codes) {
-#if USE_MACH64_CODES
-                return mach_exception_raise_state(port, exception_type, code, code_count, &flavor, thread_state,
-                                                  thread_state_count, thread_state, &thread_state_count);
-#endif
-            } else {
-                return exception_raise_state(port, exception_type, code32, code_count, &flavor, thread_state,
-                                             thread_state_count, thread_state, &thread_state_count);
-            }
-            break;
-            
-        case EXCEPTION_STATE_IDENTITY:
-            if (mach_exc_codes) {
-#if USE_MACH64_CODES
-                return mach_exception_raise_state_identity(port, thread, task, exception_type, code,
-                                                           code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
-#endif
-            } else {
-                return exception_raise_state_identity(port, thread, task, exception_type, code32,
-                                                      code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
-            }
-            break;
-            
-        default:
-            /* Handled below */
-            break;
-    }
-    
-    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exc_codes ? "true" : "false");
-    return KERN_FAILURE;
-}
-
-/**
- * Background exception server. Handles incoming exception messages and dispatches
- * them to the registered callback.
- *
- * This code must be written to be async-safe once a Mach exception message
- * has been returned, as the state of the process' threads is entirely unknown.
- */
-static void *exception_server_thread (void *arg) {
-    struct plcrash_exception_server_context *exc_context = (struct plcrash_exception_server_context *) arg;
-    PLRequest_exception_raise_t *request = NULL;
-    size_t request_size;
-    kern_return_t kr;
-    mach_msg_return_t mr;
-
-    /* Initialize the received message with a default size */
-    request_size = round_page(sizeof(*request));
-    kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
-    if (kr != KERN_SUCCESS) {
-        /* Shouldn't happen ... */
-        fprintf(stderr, "Unexpected error in vm_allocate(): %x\n", kr);
-        return NULL;
-    }
-
-    /* Wait for an exception message */
-    while (true) {
-        /* Initialize our request message */
-        request->Head.msgh_local_port = exc_context->port_set;
-        request->Head.msgh_size = request_size;
-        mr = mach_msg(&request->Head,
-                      MACH_RCV_MSG | MACH_RCV_LARGE,
-                      0,
-                      request->Head.msgh_size,
-                      exc_context->port_set,
-                      MACH_MSG_TIMEOUT_NONE,
-                      MACH_PORT_NULL);
-
-        /* Handle recoverable errors */
-        if (mr != MACH_MSG_SUCCESS && mr == MACH_RCV_TOO_LARGE) {
-            /* Determine the new size (before dropping the buffer) */
-            request_size = round_page(request->Head.msgh_size);
-
-            /* Drop the old receive buffer */
-            vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
-
-            /* Re-allocate a larger receive buffer */
-            kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
-            if (kr != KERN_SUCCESS) {
-                /* Shouldn't happen ... */
-                fprintf(stderr, "Unexpected error in vm_allocate(): 0x%x\n", kr);
-                return NULL;
-            }
-
-            continue;
-
-        /* Handle fatal errors */
-        } else if (mr != MACH_MSG_SUCCESS) {
-            /* Shouldn't happen ... */
-            PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x", mr);
-            
-            // TODO - Should we inform observers?
-            
-            continue;
-
-        /* Success! */
-        } else {
-            /* Handle no sender notifications */
-            if (request->Head.msgh_local_port == exc_context->notify_port && request->Head.msgh_id == MACH_NOTIFY_NO_SENDERS) {
-                /* TODO: This will be used to dispatch 'no sender' delegate messages, which can be used to track whether
-                 * all mach exception clients have terminated. This is primarily useful in determining whether the exception
-                 * server can shut down when running out-of-process and potentially servicing exception messages from
-                 * multiple tasks. */
-                continue;
-            }
-            
-            /* Detect 'short' messages. */
-            if (request->Head.msgh_size < sizeof(*request)) {
-                /* We intentionally do not acquire a lock here. It is possible that we've been woken
-                 * spuriously with the process in an unknown state, in which case we must not call
-                 * out to non-async-safe functions */
-                if (exc_context->server_should_stop) {
-                    /* Inform the requesting thread of completion */
-                    pthread_mutex_lock(&exc_context->lock); {
-                        exc_context->server_stop_done = true;
-                        pthread_cond_signal(&exc_context->server_cond);
-                    } pthread_mutex_unlock(&exc_context->lock);
-
-                    /* Ensure a quick death if we access exc_context after termination  */
-                    exc_context = NULL;
-
-                    /* Trigger cleanup */
-                    break;
-                }
-            }
-            
-            /* Map 32-bit codes to 64-bit types. */
-#if !USE_MACH64_CODES
-            mach_exception_data_type_t code64[request->codeCnt];
-            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
-                code64[i] = (uint32_t) request->code[i];
-            }
-#else
-            mach_exception_data_type_t *code64 = request->code;
-#endif
-
-            /* Call our handler. */
-            kern_return_t exc_result;
-            exc_result = exc_context->callback(request->task.name,
-                                               request->thread.name,
-                                               request->exception,
-                                               code64,
-                                               request->codeCnt,
-                                               exc_context->callback_context);
-
-            /*
-             * Reply to the message.
-             */
-            mr = exception_server_reply(request, exc_result);
-            if (mr != MACH_MSG_SUCCESS)
-                PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
-        }
-    }
-
-    /* Drop the receive buffer */
-    if (request != NULL)
-        vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
-
-    return NULL;
-}
-
-
 /***
  * @internal
  *
@@ -787,6 +488,308 @@ static void *exception_server_thread (void *arg) {
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
     return [state registerForThread: thread previousPortSet: portStates error: outError];
 }
+
+
+/**
+ * Send a Mach exception reply for the given @a request and return the result.
+ *
+ * @param request The request to which a reply should be sent.
+ * @param retcode The reply return code to supply.
+ */
+static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *request, kern_return_t retcode) {
+    PLReply_exception_raise_t reply;
+    
+    /* Initialize the reply */
+    memset(&reply, 0, sizeof(reply));
+    reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
+    reply.Head.msgh_local_port = MACH_PORT_NULL;
+    reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
+    reply.Head.msgh_size = sizeof(reply);
+    reply.NDR = NDR_record;
+    reply.RetCode = retcode;
+    
+    /*
+     * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
+     * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
+     * to change now). See the top-level file warning regarding use on iOS.
+     *
+     * On Mac OS X, the reply_id offset may be considered implicitly defined due to mach_exc.defs and
+     * exc.defs being public.
+     */
+    reply.Head.msgh_id = request->Head.msgh_id + 100;
+    
+    /* Dispatch the reply */
+    return mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+}
+
+
+/**
+ * Forward a Mach exception to the given exception to the first matching handler in @a state, if any.
+ *
+ * @param task The task in which the exception occured.
+ * @param thread The thread on which the exception occured. The thread will be suspended when the callback is issued, and may be resumed
+ * by the callback using thread_resume().
+ * @param exception_type Mach exception type.
+ * @param code Mach exception codes.
+ * @param code_count The number of codes provided.
+ * @param port_state The set of exception handlers to which the message should be forwarded.
+ *
+ * @return Returns KERN_SUCCESS if the exception was handled by a registered exception server, or an error
+ * if the exception was not handled, or forwarding failed.
+ *
+ * @par In-Process Operation
+ *
+ * When operating in-process, handling the exception replies internally breaks external debuggers,
+ * as they assume it is safe to leave our thread suspended. This results in the target thread never resuming,
+ * as our thread never wakes up to reply to the message, or to handle future messages.
+ *
+ * The recommended solution is to simply not register a Mach exception handler in the case where a debugger
+ * is already attached.
+ *
+ * @note This function may be called at crash-time.
+ */
+kern_return_t PLCrashMachExceptionForward (task_t task,
+                                           thread_t thread,
+                                           exception_type_t exception_type,
+                                           mach_exception_data_t code,
+                                           mach_msg_type_number_t code_count,
+                                           plcrash_mach_exception_port_set_t *port_state)
+{
+    exception_behavior_t behavior;
+    thread_state_flavor_t flavor;
+    mach_port_t port;
+    
+    /* Find a matching handler */
+    exception_mask_t fwd_mask = exception_to_mask(exception_type);
+    bool found = false;
+    for (mach_msg_type_number_t i = 0; i < port_state->count; i++) {
+        if (!MACH_PORT_VALID(port_state->ports[i]))
+            continue;
+        
+        if ((port_state->masks[i] & fwd_mask) == 0)
+            continue;
+        
+        found = true;
+        port = port_state->ports[i];
+        behavior = port_state->behaviors[i];
+        flavor = port_state->flavors[i];
+        break;
+    }
+    
+    /* No handler found */
+    if (!found) {
+        return KERN_FAILURE;
+    }
+    
+    thread_state_data_t thread_state;
+    mach_msg_type_number_t thread_state_count;
+    kern_return_t kr;
+    
+    /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
+#if USE_MACH64_CODES
+    exception_data_type_t code32[code_count];
+    for (mach_msg_type_number_t i = 0; i < code_count; i++) {
+        code32[i] = (uint64_t) code[i];
+    }
+#else
+    int32_t *code32 = request->code;
+#endif
+    
+    /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
+    bool mach_exc_codes = false;
+    if (behavior & MACH_EXCEPTION_CODES) {
+        mach_exc_codes = true;
+        behavior &= ~MACH_EXCEPTION_CODES;
+    }
+    
+    /*
+     * Fetch thread state if required. When not required, 'flavor' will be invalid (eg, THREAD_STATE_NONE or similar), and
+     * fetching the thread state will simply fail.
+     */
+    if (behavior != EXCEPTION_DEFAULT) {
+        thread_state_count = THREAD_STATE_MAX;
+        kr = thread_get_state (thread, flavor, thread_state, &thread_state_count);
+        if (kr != KERN_SUCCESS) {
+            PLCF_DEBUG("Failed to fetch thread state for thread=0x%x, flavor=0x%x, kr=0x%x", thread, flavor, kr);
+            return kr;
+        }
+    }
+    
+    /* Handle the supported behaviors */
+    switch (behavior) {
+        case EXCEPTION_DEFAULT:
+            if (mach_exc_codes) {
+#if USE_MACH64_CODES
+                return mach_exception_raise(port, thread, task, exception_type, code, code_count);
+#endif
+            } else {
+                return exception_raise(port, thread, task, exception_type, code32, code_count);
+            }
+            break;
+            
+        case EXCEPTION_STATE:
+            if (mach_exc_codes) {
+#if USE_MACH64_CODES
+                return mach_exception_raise_state(port, exception_type, code, code_count, &flavor, thread_state,
+                                                  thread_state_count, thread_state, &thread_state_count);
+#endif
+            } else {
+                return exception_raise_state(port, exception_type, code32, code_count, &flavor, thread_state,
+                                             thread_state_count, thread_state, &thread_state_count);
+            }
+            break;
+            
+        case EXCEPTION_STATE_IDENTITY:
+            if (mach_exc_codes) {
+#if USE_MACH64_CODES
+                return mach_exception_raise_state_identity(port, thread, task, exception_type, code,
+                                                           code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+#endif
+            } else {
+                return exception_raise_state_identity(port, thread, task, exception_type, code32,
+                                                      code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
+            }
+            break;
+            
+        default:
+            /* Handled below */
+            break;
+    }
+    
+    PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exc_codes ? "true" : "false");
+    return KERN_FAILURE;
+}
+
+
+/**
+ * Background exception server. Handles incoming exception messages and dispatches
+ * them to the registered callback.
+ *
+ * This code must be written to be async-safe once a Mach exception message
+ * has been returned, as the state of the process' threads is entirely unknown.
+ */
+static void *exception_server_thread (void *arg) {
+    struct plcrash_exception_server_context *exc_context = (struct plcrash_exception_server_context *) arg;
+    PLRequest_exception_raise_t *request = NULL;
+    size_t request_size;
+    kern_return_t kr;
+    mach_msg_return_t mr;
+    
+    /* Initialize the received message with a default size */
+    request_size = round_page(sizeof(*request));
+    kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
+    if (kr != KERN_SUCCESS) {
+        /* Shouldn't happen ... */
+        fprintf(stderr, "Unexpected error in vm_allocate(): %x\n", kr);
+        return NULL;
+    }
+    
+    /* Wait for an exception message */
+    while (true) {
+        /* Initialize our request message */
+        request->Head.msgh_local_port = exc_context->port_set;
+        request->Head.msgh_size = request_size;
+        mr = mach_msg(&request->Head,
+                      MACH_RCV_MSG | MACH_RCV_LARGE,
+                      0,
+                      request->Head.msgh_size,
+                      exc_context->port_set,
+                      MACH_MSG_TIMEOUT_NONE,
+                      MACH_PORT_NULL);
+        
+        /* Handle recoverable errors */
+        if (mr != MACH_MSG_SUCCESS && mr == MACH_RCV_TOO_LARGE) {
+            /* Determine the new size (before dropping the buffer) */
+            request_size = round_page(request->Head.msgh_size);
+            
+            /* Drop the old receive buffer */
+            vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
+            
+            /* Re-allocate a larger receive buffer */
+            kr = vm_allocate(mach_task_self(), (vm_address_t *) &request, request_size, VM_FLAGS_ANYWHERE);
+            if (kr != KERN_SUCCESS) {
+                /* Shouldn't happen ... */
+                fprintf(stderr, "Unexpected error in vm_allocate(): 0x%x\n", kr);
+                return NULL;
+            }
+            
+            continue;
+            
+            /* Handle fatal errors */
+        } else if (mr != MACH_MSG_SUCCESS) {
+            /* Shouldn't happen ... */
+            PLCF_DEBUG("Unexpected error in mach_msg(): 0x%x", mr);
+            
+            // TODO - Should we inform observers?
+            
+            continue;
+            
+            /* Success! */
+        } else {
+            /* Handle no sender notifications */
+            if (request->Head.msgh_local_port == exc_context->notify_port && request->Head.msgh_id == MACH_NOTIFY_NO_SENDERS) {
+                /* TODO: This will be used to dispatch 'no sender' delegate messages, which can be used to track whether
+                 * all mach exception clients have terminated. This is primarily useful in determining whether the exception
+                 * server can shut down when running out-of-process and potentially servicing exception messages from
+                 * multiple tasks. */
+                continue;
+            }
+            
+            /* Detect 'short' messages. */
+            if (request->Head.msgh_size < sizeof(*request)) {
+                /* We intentionally do not acquire a lock here. It is possible that we've been woken
+                 * spuriously with the process in an unknown state, in which case we must not call
+                 * out to non-async-safe functions */
+                if (exc_context->server_should_stop) {
+                    /* Inform the requesting thread of completion */
+                    pthread_mutex_lock(&exc_context->lock); {
+                        exc_context->server_stop_done = true;
+                        pthread_cond_signal(&exc_context->server_cond);
+                    } pthread_mutex_unlock(&exc_context->lock);
+                    
+                    /* Ensure a quick death if we access exc_context after termination  */
+                    exc_context = NULL;
+                    
+                    /* Trigger cleanup */
+                    break;
+                }
+            }
+            
+            /* Map 32-bit codes to 64-bit types. */
+#if !USE_MACH64_CODES
+            mach_exception_data_type_t code64[request->codeCnt];
+            for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
+                code64[i] = (uint32_t) request->code[i];
+            }
+#else
+            mach_exception_data_type_t *code64 = request->code;
+#endif
+            
+            /* Call our handler. */
+            kern_return_t exc_result;
+            exc_result = exc_context->callback(request->task.name,
+                                               request->thread.name,
+                                               request->exception,
+                                               code64,
+                                               request->codeCnt,
+                                               exc_context->callback_context);
+            
+            /*
+             * Reply to the message.
+             */
+            mr = exception_server_reply(request, exc_result);
+            if (mr != MACH_MSG_SUCCESS)
+                PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+        }
+    }
+    
+    /* Drop the receive buffer */
+    if (request != NULL)
+        vm_deallocate(mach_task_self(), (vm_address_t) request, request_size);
+    
+    return NULL;
+}
+
 
 /* We automatically stop the server on dealloc */
 - (void) dealloc {
