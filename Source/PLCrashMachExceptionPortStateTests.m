@@ -41,18 +41,18 @@
 @implementation PLCrashMachExceptionPortStateTests
 
 - (void) testExceptionPortStatesForTask {
-    plcrash_mach_exception_port_state_t states;
+    plcrash_mach_exception_port_state_set_t states;
     NSError *error;
     kern_return_t kr;
     
     /* Fetch the current ports */
     kr = task_get_exception_ports(mach_task_self(), EXC_MASK_ALL, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
-    NSSet *objStates = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_ALL error: &error];
+    PLCrashMachExceptionPortStateSet *objStates = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_ALL error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
 
     /* Compare the sets */
-    STAssertEquals([objStates count], (NSUInteger) states.count, @"Incorrect count");
+    STAssertEquals([objStates.set count], (NSUInteger) states.count, @"Incorrect count");
     for (PLCrashMachExceptionPortState *state in objStates) {
         BOOL found = NO;
         for (mach_msg_type_number_t i = 0; i < states.count; i++) {
@@ -69,18 +69,18 @@
 }
 
 - (void) testExceptionPortStatesForThread {
-    plcrash_mach_exception_port_state_t states;
+    plcrash_mach_exception_port_state_set_t states;
     NSError *error;
     kern_return_t kr;
     
     /* Fetch the current ports */
     kr = thread_get_exception_ports(mach_thread_self(), EXC_MASK_ALL, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
-    NSSet *objStates = [PLCrashMachExceptionPortState exceptionPortStatesForThread: mach_thread_self() mask: EXC_MASK_ALL error: &error];
+    PLCrashMachExceptionPortStateSet *objStates = [PLCrashMachExceptionPortState exceptionPortStatesForThread: mach_thread_self() mask: EXC_MASK_ALL error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
     
     /* Compare the sets */
-    STAssertEquals([objStates count], (NSUInteger) states.count, @"Incorrect count");
+    STAssertEquals([objStates.set count], (NSUInteger) states.count, @"Incorrect count");
     for (PLCrashMachExceptionPortState *state in objStates) {
         BOOL found = NO;
         for (mach_msg_type_number_t i = 0; i < states.count; i++) {
@@ -98,7 +98,7 @@
 
 - (void) testRegisterForTask {
     NSError *error;
-    NSSet *previousStates;
+    PLCrashMachExceptionPortStateSet *previousStates;
 
     PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: MACH_PORT_NULL
                                                                                            mask: EXC_MASK_SOFTWARE
@@ -106,14 +106,14 @@
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
 
     /* Fetch the current state to compare against */
-    NSSet *initialState = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_SOFTWARE error: &error];
+    PLCrashMachExceptionPortStateSet *initialState = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_SOFTWARE error: &error];
     STAssertNotNil(initialState, @"Failed to fetch port state: %@", error);
     
     /* Set new state */
     STAssertTrue([state registerForTask: mach_task_self() previousPortStates: &previousStates error: &error], @"Failed to register exception ports: %@", error);
     
     /* Verify that new state matches our expectations */
-    NSSet *newState = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_SOFTWARE error: &error];
+    PLCrashMachExceptionPortStateSet *newState = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_SOFTWARE error: &error];
     for (PLCrashMachExceptionPortState *expected in newState) {
         STAssertEquals((mach_port_t)MACH_PORT_NULL, expected.port, @"Incorrect port");
     }
@@ -132,7 +132,7 @@
 
 - (void) testRegisterForThread {
     NSError *error;
-    NSSet *previousStates;
+    PLCrashMachExceptionPortStateSet *previousStates;
     
     PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: MACH_PORT_NULL
                                                                                            mask: EXC_MASK_SOFTWARE
@@ -140,14 +140,14 @@
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
     
     /* Fetch the current state to compare against */
-    NSSet *initialState = [PLCrashMachExceptionPortState exceptionPortStatesForThread: mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
+    PLCrashMachExceptionPortStateSet *initialState = [PLCrashMachExceptionPortState exceptionPortStatesForThread: mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
     STAssertNotNil(initialState, @"Failed to fetch port state: %@", error);
     
     /* Set new state */
     STAssertTrue([state registerForThread: mach_thread_self() previousPortStates: &previousStates error: &error], @"Failed to register exception ports: %@", error);
     
     /* Verify that new state matches our expectations */
-    NSSet *newState = [PLCrashMachExceptionPortState exceptionPortStatesForThread: mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
+    PLCrashMachExceptionPortStateSet *newState = [PLCrashMachExceptionPortState exceptionPortStatesForThread: mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
     for (PLCrashMachExceptionPortState *expected in newState) {
         STAssertEquals((mach_port_t)MACH_PORT_NULL, expected.port, @"Incorrect port");
     }

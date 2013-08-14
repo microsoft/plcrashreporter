@@ -244,7 +244,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                                            exception_type_t exception_type,
                                            mach_exception_data_t code,
                                            mach_msg_type_number_t code_count,
-                                           plcrash_mach_exception_port_state_t *port_state)
+                                           plcrash_mach_exception_port_state_set_t *port_state)
 {
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
@@ -658,7 +658,7 @@ error:
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError {    
+- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {    
     PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: _serverContext->server_port
                                                                                            mask: mask
                                                                                        behavior: PLCRASH_DEFAULT_BEHAVIOR
@@ -680,7 +680,7 @@ error:
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
  */
-- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError {
+- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {
     PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: _serverContext->server_port
                                                                                            mask: mask
                                                                                        behavior: PLCRASH_DEFAULT_BEHAVIOR

@@ -43,8 +43,8 @@
 #endif
 
 @interface PLCrashMachExceptionServerTests : SenTestCase {
-    plcrash_mach_exception_port_state_t _task_ports;
-    plcrash_mach_exception_port_state_t _thread_ports;
+    plcrash_mach_exception_port_state_set_t _task_ports;
+    plcrash_mach_exception_port_state_set_t _thread_ports;
 }
 @end
 

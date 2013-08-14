@@ -29,35 +29,10 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
-#include "PLCrashReporterBuildConfig.h"
+#import "PLCrashReporterBuildConfig.h"
+#import "PLCrashMachExceptionPortStateSet.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
-
-/**
- * @internal
- *
- * A pure C representation of exception state as returned by task_get_exception_ports(). Up
- * to EXC_TYPES_COUNT entries may be returned. The actual count is provided via
- * plcrash_mach_exception_port_state::count. The values stored in the arrays correspond
- * positionally.
- */
-typedef struct plcrash_mach_exception_port_state {
-    /** Number of independent mask/port/behavior/flavor sets
-     * (up to EXC_TYPES_COUNT). */
-    mach_msg_type_number_t count;
-    
-    /** Exception masks. */
-    exception_mask_t masks[EXC_TYPES_COUNT];
-    
-    /** Exception ports. */
-    mach_port_t ports[EXC_TYPES_COUNT];
-    
-    /** Exception behaviors. */
-    exception_behavior_t behaviors[EXC_TYPES_COUNT];
-    
-    /** Exception thread flavors. */
-    thread_state_flavor_t flavors[EXC_TYPES_COUNT];
-} plcrash_mach_exception_port_state_t;
 
 @interface PLCrashMachExceptionPortState : NSObject {
 @private
@@ -79,11 +54,11 @@ typedef struct plcrash_mach_exception_port_state {
                      behavior: (exception_behavior_t) behavior
                        flavor: (thread_state_flavor_t) flavor;
 
-+ (NSSet *) exceptionPortStatesForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError;
-+ (NSSet *) exceptionPortStatesForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError;
++ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError;
++ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError;
 
-- (BOOL) registerForTask: (task_t) task previousPortStates: (NSSet **) portStates error: (NSError **) outError;
-- (BOOL) registerForThread: (thread_t) thread previousPortStates: (NSSet **) portStates error: (NSError **) outError;
+- (BOOL) registerForTask: (task_t) task previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError;
+- (BOOL) registerForThread: (thread_t) thread previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError;
 
 /** Exception server port. */
 @property(nonatomic, readonly) mach_port_t port;

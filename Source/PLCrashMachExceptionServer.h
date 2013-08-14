@@ -61,7 +61,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                                            exception_type_t exception_type,
                                            mach_exception_data_t code,
                                            mach_msg_type_number_t code_count,
-                                           plcrash_mach_exception_port_state_t *port_state);
+                                           plcrash_mach_exception_port_state_set_t *port_state);
 
 @interface PLCrashMachExceptionServer : NSObject {
 @private
@@ -75,8 +75,8 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                 context: (void *) context
                   error: (NSError **) outError;
 
-- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError;
-- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (NSSet **) portStates error: (NSError **) outError;
+- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError;
+- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError;
 
 /** The Mach thread on which the exception server is running. This may be used to register
  * a thread-specific exception handler for the server itself. */

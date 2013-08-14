@@ -55,8 +55,8 @@
  *
  * @return Returns the set of registered port states on success, or nil on failure.
  */
-+ (NSSet *) exceptionPortStatesForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError {
-    plcrash_mach_exception_port_state_t states;
++ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError {
+    plcrash_mach_exception_port_state_set_t states;
     
     kern_return_t kr;
 
@@ -73,22 +73,8 @@
         plcrash_populate_mach_error(outError, kr, @"Failed to swap mach exception ports");
         return nil;
     }
-
-    /* Convert to PLCrashMachExceptionPortState instances */
-    NSMutableSet *stateResult = [NSMutableSet setWithCapacity: states.count];
-    for (mach_msg_type_number_t i = 0; i < states.count; i++) {
-        PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: states.ports[i]
-                                                                                               mask: states.masks[i]
-                                                                                           behavior: states.behaviors[i]
-                                                                                             flavor: states.flavors[i]] autorelease];
-        [stateResult addObject: state];
-        
-        if ((kr = mach_port_mod_refs(mach_task_self(), states.ports[i], MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
-            NSLog(@"Unexpected error decrementing mach port reference: %d", kr);
-        }
-    }
     
-    return stateResult;
+    return [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
 }
 
 /**
@@ -103,8 +89,8 @@
  *
  * @return Returns the set of registered port states on success, or nil on failure.
  */
-+ (NSSet *) exceptionPortStatesForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError {
-    plcrash_mach_exception_port_state_t states;
++ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError {
+    plcrash_mach_exception_port_state_set_t states;
     
     kern_return_t kr;
     
@@ -122,21 +108,7 @@
         return nil;
     }
     
-    /* Convert to PLCrashMachExceptionPortState instances */
-    NSMutableSet *stateResult = [NSMutableSet setWithCapacity: states.count];
-    for (mach_msg_type_number_t i = 0; i < states.count; i++) {
-        PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: states.ports[i]
-                                                                                               mask: states.masks[i]
-                                                                                           behavior: states.behaviors[i]
-                                                                                             flavor: states.flavors[i]] autorelease];
-        [stateResult addObject: state];
-        
-        if ((kr = mach_port_mod_refs(mach_task_self(), states.ports[i], MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
-            NSLog(@"Unexpected error decrementing mach port reference: %d", kr);
-        }
-    }
-    
-    return stateResult;
+    return [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
 }
 
 /**
@@ -194,8 +166,8 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) registerForTask: (task_t) task previousPortStates: (NSSet **) portStates error: (NSError **) outError {
-    plcrash_mach_exception_port_state_t prev;
+- (BOOL) registerForTask: (task_t) task previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {
+    plcrash_mach_exception_port_state_set_t prev;
     
     kern_return_t kr;
     kr = task_swap_exception_ports(task,
@@ -214,22 +186,8 @@
         return NO;
     }
 
-    if (portStates != NULL) {
-        NSMutableSet *stateResult = [NSMutableSet setWithCapacity: prev.count];
-        for (mach_msg_type_number_t i = 0; i < prev.count; i++) {
-            PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: prev.ports[i]
-                                                                                                   mask: prev.masks[i]
-                                                                                               behavior: prev.behaviors[i]
-                                                                                                 flavor: prev.flavors[i]] autorelease];
-            [stateResult addObject: state];
-            
-            if ((kr = mach_port_mod_refs(mach_task_self(), prev.ports[i], MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
-                NSLog(@"Unexpected error decrementing mach port reference: %d", kr);
-            }
-        }
-
-        *portStates = stateResult;
-    }
+    if (portStates != NULL)
+        *portStates = [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
 
     return YES;
 }
@@ -247,8 +205,8 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
  */
-- (BOOL) registerForThread: (thread_t) thread previousPortStates: (NSSet **) portStates error: (NSError **) outError {
-    plcrash_mach_exception_port_state_t prev;
+- (BOOL) registerForThread: (thread_t) thread previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {
+    plcrash_mach_exception_port_state_set_t prev;
     
     kern_return_t kr;
     kr = thread_swap_exception_ports(thread,
@@ -268,20 +226,8 @@
     }
     
     if (portStates != NULL) {
-        NSMutableSet *stateResult = [NSMutableSet setWithCapacity: prev.count];
-        for (mach_msg_type_number_t i = 0; i < prev.count; i++) {
-            PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: prev.ports[i]
-                                                                                                   mask: prev.masks[i]
-                                                                                               behavior: prev.behaviors[i]
-                                                                                                 flavor: prev.flavors[i]] autorelease];
-            [stateResult addObject: state];
-            
-            if ((kr = mach_port_mod_refs(mach_task_self(), prev.ports[i], MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
-                NSLog(@"Unexpected error decrementing mach port reference: %d", kr);
-            }
-        }
-        
-        *portStates = stateResult;
+        if (portStates != NULL)
+            *portStates = [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
     }
     
     return YES;
