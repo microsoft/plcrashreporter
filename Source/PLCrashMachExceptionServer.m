@@ -27,7 +27,7 @@
  */
 
 #include "PLCrashReporterBuildConfig.h"
-#import "PLCrashMachExceptionPortState.h"
+#import "PLCrashMachExceptionPort.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
@@ -244,7 +244,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                                            exception_type_t exception_type,
                                            mach_exception_data_t code,
                                            mach_msg_type_number_t code_count,
-                                           plcrash_mach_exception_port_state_set_t *port_state)
+                                           plcrash_mach_exception_port_set_t *port_state)
 {
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
@@ -658,12 +658,12 @@ error:
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {    
-    PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: _serverContext->server_port
+- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError {    
+    PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: _serverContext->server_port
                                                                                            mask: mask
                                                                                        behavior: PLCRASH_DEFAULT_BEHAVIOR
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
-    return [state registerForTask: task previousPortStates: portStates error: outError];
+    return [state registerForTask: task previousPortSet: portStates error: outError];
 }
 
 /**
@@ -680,12 +680,12 @@ error:
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
  */
-- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {
-    PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: _serverContext->server_port
+- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError {
+    PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: _serverContext->server_port
                                                                                            mask: mask
                                                                                        behavior: PLCRASH_DEFAULT_BEHAVIOR
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
-    return [state registerForTask: thread previousPortStates: portStates error: outError];
+    return [state registerForTask: thread previousPortSet: portStates error: outError];
 }
 
 /* We automatically stop the server on dealloc */

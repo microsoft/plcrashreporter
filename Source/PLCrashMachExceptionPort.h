@@ -30,11 +30,11 @@
 #import <mach/mach.h>
 
 #import "PLCrashReporterBuildConfig.h"
-#import "PLCrashMachExceptionPortStateSet.h"
+#import "PLCrashMachExceptionPortSet.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
-@interface PLCrashMachExceptionPortState : NSObject {
+@interface PLCrashMachExceptionPort : NSObject {
 @private
     /** Exception mask. */
     exception_mask_t _mask;
@@ -49,19 +49,19 @@
     thread_state_flavor_t _flavor;
 }
 
-- (instancetype) initWithPort: (mach_port_t) port
-                         mask: (exception_mask_t) mask
-                     behavior: (exception_behavior_t) behavior
-                       flavor: (thread_state_flavor_t) flavor;
+- (instancetype) initWithServerPort: (mach_port_t) port
+                               mask: (exception_mask_t) mask
+                           behavior: (exception_behavior_t) behavior
+                             flavor: (thread_state_flavor_t) flavor;
 
-+ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError;
-+ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError;
++ (PLCrashMachExceptionPortSet *) exceptionPortsForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError;
++ (PLCrashMachExceptionPortSet *) exceptionPortsForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError;
 
-- (BOOL) registerForTask: (task_t) task previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError;
-- (BOOL) registerForThread: (thread_t) thread previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError;
+- (BOOL) registerForTask: (task_t) task previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError;
+- (BOOL) registerForThread: (thread_t) thread previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError;
 
 /** Exception server port. */
-@property(nonatomic, readonly) mach_port_t port;
+@property(nonatomic, readonly) mach_port_t server_port;
 
 /** Exception mask. */
 @property(nonatomic, readonly) exception_mask_t mask;

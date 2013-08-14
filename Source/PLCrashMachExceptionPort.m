@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashMachExceptionPortState.h"
+#import "PLCrashMachExceptionPort.h"
 #import "PLCrashReporterNSError.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
@@ -36,9 +36,9 @@
  * This class manages a reference to a Mach exception server port, and the associated
  * mask, behavior, and thread state flavor expected by the given Mach exception server.
  */
-@implementation PLCrashMachExceptionPortState
+@implementation PLCrashMachExceptionPort
 
-@synthesize port = _port;
+@synthesize server_port = _port;
 @synthesize mask = _mask;
 @synthesize behavior = _behavior;
 @synthesize flavor = _flavor;
@@ -55,8 +55,8 @@
  *
  * @return Returns the set of registered port states on success, or nil on failure.
  */
-+ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError {
-    plcrash_mach_exception_port_state_set_t states;
++ (PLCrashMachExceptionPortSet *) exceptionPortsForTask: (task_t) task mask: (exception_mask_t) mask error: (NSError **) outError {
+    plcrash_mach_exception_port_set_t states;
     
     kern_return_t kr;
 
@@ -74,7 +74,7 @@
         return nil;
     }
     
-    return [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
+    return [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
 }
 
 /**
@@ -89,8 +89,8 @@
  *
  * @return Returns the set of registered port states on success, or nil on failure.
  */
-+ (PLCrashMachExceptionPortStateSet *) exceptionPortStatesForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError {
-    plcrash_mach_exception_port_state_set_t states;
++ (PLCrashMachExceptionPortSet *) exceptionPortsForThread: (thread_t) thread mask: (exception_mask_t) mask error: (NSError **) outError {
+    plcrash_mach_exception_port_set_t states;
     
     kern_return_t kr;
     
@@ -108,7 +108,7 @@
         return nil;
     }
     
-    return [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
+    return [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
 }
 
 /**
@@ -119,10 +119,10 @@
  * @param behavior The exception behavior expected by the server on @a port.
  * @param flavor The thread flavor expected by the server on @a port.
  */
-- (instancetype) initWithPort: (mach_port_t) port
-                         mask: (exception_mask_t) mask
-                     behavior: (exception_behavior_t) behavior
-                       flavor: (thread_state_flavor_t) flavor
+- (instancetype) initWithServerPort: (mach_port_t) port
+                               mask: (exception_mask_t) mask
+                           behavior: (exception_behavior_t) behavior
+                             flavor: (thread_state_flavor_t) flavor
 {
     kern_return_t kt;
 
@@ -158,16 +158,16 @@
  * the previously configured ports in @a portStates.
  *
  * @param task The task for which the Mach exception server should be set.
- * @param portStates On success, will contain a set of previously registered port state(s) for the exception masks claimed
- * by the receiver. If NULL, the previous port states will not be provided.
+ * @param ports On success, will contain a set of previously registered ports for the exception masks claimed
+ * by the receiver. If NULL, the previous ports will not be provided.
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error object indicating why the Mach exception port could not be registered. If no error
  * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) registerForTask: (task_t) task previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {
-    plcrash_mach_exception_port_state_set_t prev;
+- (BOOL) registerForTask: (task_t) task previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
+    plcrash_mach_exception_port_set_t prev;
     
     kern_return_t kr;
     kr = task_swap_exception_ports(task,
@@ -186,8 +186,8 @@
         return NO;
     }
 
-    if (portStates != NULL)
-        *portStates = [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
+    if (ports != NULL)
+        *ports = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
 
     return YES;
 }
@@ -197,7 +197,7 @@
  * the previously configured ports in @a portStates.
  *
  * @param thread The thread for which the Mach exception server should be set.
- * @param portStates On success, will contain a set of previously registered port state(s) for the exception masks claimed
+ * @param ports On success, will contain a set of previously registered ports for the exception masks claimed
  * by the receiver.
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error object indicating why the Mach exception port could not be registered. If no error
@@ -205,8 +205,8 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
  */
-- (BOOL) registerForThread: (thread_t) thread previousPortStates: (PLCrashMachExceptionPortStateSet **) portStates error: (NSError **) outError {
-    plcrash_mach_exception_port_state_set_t prev;
+- (BOOL) registerForThread: (thread_t) thread previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
+    plcrash_mach_exception_port_set_t prev;
     
     kern_return_t kr;
     kr = thread_swap_exception_ports(thread,
@@ -225,10 +225,8 @@
         return NO;
     }
     
-    if (portStates != NULL) {
-        if (portStates != NULL)
-            *portStates = [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
-    }
+    if (ports != NULL)
+        *ports = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
     
     return YES;
 }

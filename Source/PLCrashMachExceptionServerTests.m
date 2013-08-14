@@ -33,7 +33,7 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashMachExceptionServer.h"
-#import "PLCrashMachExceptionPortState.h"
+#import "PLCrashMachExceptionPort.h"
 #import "PLCrashHostInfo.h"
 
 #include <sys/mman.h>
@@ -43,8 +43,8 @@
 #endif
 
 @interface PLCrashMachExceptionServerTests : SenTestCase {
-    plcrash_mach_exception_port_state_set_t _task_ports;
-    plcrash_mach_exception_port_state_set_t _thread_ports;
+    plcrash_mach_exception_port_set_t _task_ports;
+    plcrash_mach_exception_port_set_t _thread_ports;
 }
 @end
 
@@ -236,14 +236,14 @@ static kern_return_t exception_callback (task_t task,
     STAssertTrue([server registerForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS previousPortStates: NULL error: &error], @"Failed to register server: %@", error);
 
     /* Fetch the server's port set */
-    PLCrashMachExceptionPortStateSet *portSet = [PLCrashMachExceptionPortState exceptionPortStatesForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS error: &error];
+    PLCrashMachExceptionPortSet *portSet = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS error: &error];
 
     /* Attempt to forward the exception */
     mach_exception_data_t codes;
     codes[0] = 0x1;
     codes[1] = 0x2;
 
-    plcrash_mach_exception_port_state_set_t port_set = portSet.asyncSafeRepresentation;
+    plcrash_mach_exception_port_set_t port_set = portSet.asyncSafeRepresentation;
     kern_return_t kt = PLCrashMachExceptionForward(mach_task_self(),
                                                    mach_thread_self(),
                                                    EXC_BAD_ACCESS,

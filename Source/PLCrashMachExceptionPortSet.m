@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashMachExceptionPortStateSet.h"
+#import "PLCrashMachExceptionPortSet.h"
 
 /**
  * @internal
@@ -38,7 +38,7 @@
  * This class conforms to NSFastEnumeration, which may be used to enumerate
  * the managed PLCrashMachExceptionPortState instances.
  */
-@implementation PLCrashMachExceptionPortStateSet
+@implementation PLCrashMachExceptionPortSet
 
 @synthesize asyncSafeRepresentation = _asyncSafeRepresentation;
 @synthesize set = _state_set;
@@ -58,10 +58,10 @@
     _state_set = [set retain];
 
     /* Initialize the async-safe C representation (using borrowed port references) */
-    plcrash_mach_exception_port_state_set_t port_set;
+    plcrash_mach_exception_port_set_t port_set;
     port_set.count = 0;
-    for (PLCrashMachExceptionPortState *state in set) {
-        port_set.ports[port_set.count] = state.port;
+    for (PLCrashMachExceptionPort *state in set) {
+        port_set.ports[port_set.count] = state.server_port;
         
         port_set.masks[port_set.count] = state.mask;
         port_set.behaviors[port_set.count] = state.behavior;
@@ -81,17 +81,17 @@
  *
  * @warning If @a set contains more than EXC_TYPES_COUNT instances, an exception will be thrown.
  */
-- (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_state_set_t) asyncSafeRepresentation {
+- (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_set_t) asyncSafeRepresentation {
     if ((self = [super init]) == nil)
         return nil;
     
-    plcrash_mach_exception_port_state_set_t *states = &asyncSafeRepresentation;
+    plcrash_mach_exception_port_set_t *states = &asyncSafeRepresentation;
     NSAssert(states->count <= EXC_TYPES_COUNT, @"Count of %lu exceeds EXC_TYPES_COUNT (%lu)", (unsigned long)states->count, (unsigned long)EXC_TYPES_COUNT);
 
     kern_return_t kt;
     NSMutableSet *stateResult = [NSMutableSet setWithCapacity: states->count];
     for (mach_msg_type_number_t i = 0; i < states->count; i++) {
-        PLCrashMachExceptionPortState *state = [[[PLCrashMachExceptionPortState alloc] initWithPort: states->ports[i]
+        PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: states->ports[i]
                                                                                                mask: states->masks[i]
                                                                                            behavior: states->behaviors[i]
                                                                                              flavor: states->flavors[i]] autorelease];

@@ -31,17 +31,17 @@
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
 #import "GTMSenTestCase.h"
-#import "PLCrashMachExceptionPortStateSet.h"
+#import "PLCrashMachExceptionPortSet.h"
 
-@interface PLCrashMachExceptionPortStateSetTests : SenTestCase {
+@interface PLCrashMachExceptionPortSetTests : SenTestCase {
     
 }
 @end
 
-@implementation PLCrashMachExceptionPortStateSetTests
+@implementation PLCrashMachExceptionPortSetTests
 
 - (void) testInitWithStruct {
-    plcrash_mach_exception_port_state_set_t state_set;
+    plcrash_mach_exception_port_set_t state_set;
     state_set.count = 2;
     state_set.masks[0] = EXC_MASK_BAD_ACCESS;
     state_set.behaviors[0] = EXCEPTION_DEFAULT;
@@ -53,22 +53,22 @@
     state_set.ports[1] = MACH_PORT_NULL;
     state_set.flavors[1] = MACHINE_THREAD_STATE;
     
-    PLCrashMachExceptionPortStateSet *stateSet = [[[PLCrashMachExceptionPortStateSet alloc] initWithAsyncSafeRepresentation: state_set] autorelease];
+    PLCrashMachExceptionPortSet *stateSet = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: state_set] autorelease];
     exception_mask_t found = 0;
     
     /* Test basic initialization; This also tests fast enumeration pass-through */
-    for (PLCrashMachExceptionPortState *state in stateSet) {
+    for (PLCrashMachExceptionPort *state in stateSet) {
         if (found & state.mask)
             STFail(@"State was enumerated twice");
         
         if (state.mask == EXC_MASK_BAD_ACCESS) {
             STAssertEquals(state.behavior, EXCEPTION_DEFAULT, @"Incorrect behavior");
-            STAssertEquals(state.port, (mach_port_t)MACH_PORT_DEAD, @"Incorrect port");
+            STAssertEquals(state.server_port, (mach_port_t)MACH_PORT_DEAD, @"Incorrect port");
             STAssertEquals(state.flavor, MACHINE_THREAD_STATE, @"Incorrect flavor");
             
         } else if (state.mask == EXC_MASK_BAD_INSTRUCTION) {
             STAssertEquals(state.behavior, EXCEPTION_STATE, @"Incorrect behavior");
-            STAssertEquals(state.port, (mach_port_t)MACH_PORT_NULL, @"Incorrect port");
+            STAssertEquals(state.server_port, (mach_port_t)MACH_PORT_NULL, @"Incorrect port");
             STAssertEquals(state.flavor, MACHINE_THREAD_STATE, @"Incorrect flavor");
         } else {
             STFail(@"Unexpected state mask");
@@ -82,7 +82,7 @@
     
     /* Test the async-safe representation */
     found = 0;
-    plcrash_mach_exception_port_state_set_t state = stateSet.asyncSafeRepresentation;
+    plcrash_mach_exception_port_set_t state = stateSet.asyncSafeRepresentation;
     for (mach_msg_type_number_t i = 0; i < state.count; i++) {
         if (found & state.masks[i])
             STFail(@"State was enumerated twice");
@@ -110,32 +110,32 @@
 }
 
 - (void) testInitWithSet {
-    PLCrashMachExceptionPortState *firstState = [[[PLCrashMachExceptionPortState alloc] initWithPort: MACH_PORT_DEAD
+    PLCrashMachExceptionPort *firstState = [[[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_DEAD
                                                                                                 mask: EXC_MASK_BAD_ACCESS
                                                                                             behavior: EXCEPTION_DEFAULT
                                                                                               flavor: MACHINE_THREAD_STATE] autorelease];
-    PLCrashMachExceptionPortState *secondState = [[[PLCrashMachExceptionPortState alloc] initWithPort: MACH_PORT_NULL
+    PLCrashMachExceptionPort *secondState = [[[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
                                                                                                  mask: EXC_MASK_BAD_INSTRUCTION
                                                                                              behavior: EXCEPTION_STATE
                                                                                                flavor: MACHINE_THREAD_STATE] autorelease];
     NSSet *set = [NSSet setWithObjects: firstState, secondState, nil];
     
-    PLCrashMachExceptionPortStateSet *stateSet = [[[PLCrashMachExceptionPortStateSet alloc] initWithSet: set] autorelease];
+    PLCrashMachExceptionPortSet *stateSet = [[[PLCrashMachExceptionPortSet alloc] initWithSet: set] autorelease];
     exception_mask_t found = 0;
     
     /* Test basic initialization; This also tests fast enumeration pass-through */
-    for (PLCrashMachExceptionPortState *state in stateSet) {
+    for (PLCrashMachExceptionPort *state in stateSet) {
         if (found & state.mask)
             STFail(@"State was enumerated twice");
         
         if (state.mask == EXC_MASK_BAD_ACCESS) {
             STAssertEquals(state.behavior, EXCEPTION_DEFAULT, @"Incorrect behavior");
-            STAssertEquals(state.port, (mach_port_t)MACH_PORT_DEAD, @"Incorrect port");
+            STAssertEquals(state.server_port, (mach_port_t)MACH_PORT_DEAD, @"Incorrect port");
             STAssertEquals(state.flavor, MACHINE_THREAD_STATE, @"Incorrect flavor");
             
         } else if (state.mask == EXC_MASK_BAD_INSTRUCTION) {
             STAssertEquals(state.behavior, EXCEPTION_STATE, @"Incorrect behavior");
-            STAssertEquals(state.port, (mach_port_t)MACH_PORT_NULL, @"Incorrect port");
+            STAssertEquals(state.server_port, (mach_port_t)MACH_PORT_NULL, @"Incorrect port");
             STAssertEquals(state.flavor, MACHINE_THREAD_STATE, @"Incorrect flavor");
         } else {
             STFail(@"Unexpected state mask");
@@ -149,7 +149,7 @@
     
     /* Test the async-safe representation */
     found = 0;
-    plcrash_mach_exception_port_state_set_t state = stateSet.asyncSafeRepresentation;
+    plcrash_mach_exception_port_set_t state = stateSet.asyncSafeRepresentation;
     for (mach_msg_type_number_t i = 0; i < state.count; i++) {
         if (found & state.masks[i])
             STFail(@"State was enumerated twice");

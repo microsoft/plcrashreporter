@@ -32,7 +32,7 @@
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
-@class PLCrashMachExceptionPortState;
+@class PLCrashMachExceptionPort;
 
 /**
  * @internal
@@ -44,7 +44,7 @@
  * plcrash_mach_exception_port_state_set::count. The values stored in the arrays correspond
  * positionally.
  */
-typedef struct plcrash_mach_exception_port_state_set {
+typedef struct plcrash_mach_exception_port_set {
     /** Number of independent mask/port/behavior/flavor sets
      * (up to EXC_TYPES_COUNT). */
     mach_msg_type_number_t count;
@@ -60,27 +60,27 @@ typedef struct plcrash_mach_exception_port_state_set {
     
     /** Exception thread flavors. */
     thread_state_flavor_t flavors[EXC_TYPES_COUNT];
-} plcrash_mach_exception_port_state_set_t;
+} plcrash_mach_exception_port_set_t;
 
-@interface PLCrashMachExceptionPortStateSet : NSObject <NSFastEnumeration> {
+@interface PLCrashMachExceptionPortSet : NSObject <NSFastEnumeration> {
 @private
     /** Backing state set representation. */
     NSSet *_state_set;
     
-    plcrash_mach_exception_port_state_set_t _asyncSafeRepresentation;
+    plcrash_mach_exception_port_set_t _asyncSafeRepresentation;
 }
 
 - (id) initWithSet: (NSSet *) set;
-- (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_state_set_t) asyncSafeRepresentation;
+- (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_set_t) asyncSafeRepresentation;
 
 /** The set of PLCrashMachExceptionPortState instances managed by this state set. */
 @property(nonatomic, readonly) NSSet *set;
 
 /** The C representation of the port state set. May be used in async-safe code paths. */
-@property(nonatomic, readonly) plcrash_mach_exception_port_state_set_t asyncSafeRepresentation;
+@property(nonatomic, readonly) plcrash_mach_exception_port_set_t asyncSafeRepresentation;
 
 @end
 
-#import "PLCrashMachExceptionPortState.h"
+#import "PLCrashMachExceptionPort.h"
 
 #endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
