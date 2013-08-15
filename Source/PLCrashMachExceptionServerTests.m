@@ -200,7 +200,7 @@ static kern_return_t exception_callback (task_t task,
     STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
 
     STAssertFalse(taskRan, @"Task handler ran");
-    STAssertTrue(threadRan, @"Thread-specific handler did not run");    
+    STAssertTrue(threadRan, @"Thread-specific handler did not run");
 }
 
 /**

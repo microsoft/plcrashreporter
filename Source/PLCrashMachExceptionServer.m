@@ -100,6 +100,14 @@
 #import "mach_exc.h"
 #endif
 
+/* The msgh_id to use for thread termination messages. This value most not conflict with the MACH_NOTIFY_NO_SENDERS msgh_id, which
+ * is the only other value currently sent on the server notify port */
+#define PLCRASH_TERMINATE_MSGH_ID 0xDEADBEEF
+
+#if PLCRASH_TERMINATE_MSGH_ID == MACH_NOTIFY_NO_SENDERS
+#error The allocated message identifiers conflict.
+#endif
+
 #if USE_MACH64_CODES
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
@@ -303,14 +311,6 @@ struct plcrash_exception_server_context {
         [self release];
         return nil;
     }
-
-    kr = mach_port_insert_right(mach_task_self(), _serverContext->server_port, _serverContext->server_port, MACH_MSG_TYPE_MAKE_SEND);
-    if (kr != KERN_SUCCESS) {
-        plcrash_populate_mach_error(outError, kr, @"Failed to add send right to exception server's port");
-        
-        [self release];
-        return nil;
-    }
     
     /*
      * Initialize our notification port
@@ -332,7 +332,7 @@ struct plcrash_exception_server_context {
     }
     
     mach_port_t prev_notify_port;
-    kr = mach_port_request_notification(mach_task_self(), _serverContext->server_port, MACH_NOTIFY_NO_SENDERS, 0, _serverContext->notify_port, MACH_MSG_TYPE_MAKE_SEND_ONCE, &prev_notify_port);
+    kr = mach_port_request_notification(mach_task_self(), _serverContext->server_port, MACH_NOTIFY_NO_SENDERS, 1, _serverContext->notify_port, MACH_MSG_TYPE_MAKE_SEND_ONCE, &prev_notify_port);
     if (kr != KERN_SUCCESS) {
         plcrash_populate_mach_error(outError, kr, @"Failed to request MACH_NOTIFY_NO_SENDERS on the exception server's port");
 
@@ -721,32 +721,35 @@ static void *exception_server_thread (void *arg) {
             
             /* Success! */
         } else {
-            /* Handle no sender notifications */
-            if (request->Head.msgh_local_port == exc_context->notify_port && request->Head.msgh_id == MACH_NOTIFY_NO_SENDERS) {
-                /* TODO: This will be used to dispatch 'no sender' delegate messages, which can be used to track whether
-                 * all mach exception clients have terminated. This is primarily useful in determining whether the exception
-                 * server can shut down when running out-of-process and potentially servicing exception messages from
-                 * multiple tasks. */
-                continue;
-            }
+            /* Notify port handling */
+            if (request->Head.msgh_local_port == exc_context->notify_port) {
+                /* Handle no sender notifications */
+                if (request->Head.msgh_id == MACH_NOTIFY_NO_SENDERS) {
+                    /* TODO: This will be used to dispatch 'no sender' delegate messages, which can be used to track whether
+                     * all mach exception clients have terminated. This is primarily useful in determining whether the exception
+                     * server can shut down when running out-of-process and potentially servicing exception messages from
+                     * multiple tasks. */
+                    continue;
+                }
             
-            /* Detect 'short' messages. */
-            if (request->Head.msgh_size < sizeof(*request)) {
-                /* We intentionally do not acquire a lock here. It is possible that we've been woken
-                 * spuriously with the process in an unknown state, in which case we must not call
-                 * out to non-async-safe functions */
-                if (exc_context->server_should_stop) {
-                    /* Inform the requesting thread of completion */
-                    pthread_mutex_lock(&exc_context->lock); {
-                        exc_context->server_stop_done = true;
-                        pthread_cond_signal(&exc_context->server_cond);
-                    } pthread_mutex_unlock(&exc_context->lock);
-                    
-                    /* Ensure a quick death if we access exc_context after termination  */
-                    exc_context = NULL;
-                    
-                    /* Trigger cleanup */
-                    break;
+                /* Detect termination messages. */
+                if (request->Head.msgh_id == PLCRASH_TERMINATE_MSGH_ID) {
+                    /* We intentionally do not acquire a lock here. It is possible that we've been woken
+                     * spuriously with the process in an unknown state, in which case we must not call
+                     * out to non-async-safe functions */
+                    if (exc_context->server_should_stop) {
+                        /* Inform the requesting thread of completion */
+                        pthread_mutex_lock(&exc_context->lock); {
+                            exc_context->server_stop_done = true;
+                            pthread_cond_signal(&exc_context->server_cond);
+                        } pthread_mutex_unlock(&exc_context->lock);
+                        
+                        /* Ensure a quick death if we access exc_context after termination  */
+                        exc_context = NULL;
+                        
+                        /* Trigger cleanup */
+                        break;
+                    }
                 }
             }
 
@@ -815,9 +818,9 @@ static void *exception_server_thread (void *arg) {
     memset(&msg, 0, sizeof(msg));
     msg.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE);
     msg.msgh_local_port = MACH_PORT_NULL;
-    msg.msgh_remote_port = _serverContext->server_port;
+    msg.msgh_remote_port = _serverContext->notify_port;
     msg.msgh_size = sizeof(msg);
-    msg.msgh_id = 0;
+    msg.msgh_id = PLCRASH_TERMINATE_MSGH_ID;
 
     mr = mach_msg(&msg, MACH_SEND_MSG, msg.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 
