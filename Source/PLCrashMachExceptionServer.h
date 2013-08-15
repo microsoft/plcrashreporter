@@ -77,8 +77,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
 
 - (mach_port_t) copySendRightForServerAndReturningError: (NSError **) outError;
 
-- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError;
-- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError;
+- (PLCrashMachExceptionPort *) exceptionPortWithMask: (exception_mask_t) mask error: (NSError **) outError;
 
 /** The Mach thread on which the exception server is running. This may be used to register
  * a thread-specific exception handler for the server itself. */

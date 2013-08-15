@@ -104,10 +104,12 @@
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
 #define PLCRASH_DEFAULT_BEHAVIOR (EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES)
+#define PLCRASH_DEFAULT_THREAD_FLAVOR MACHINE_THREAD_STATE
 #else
 typedef __Request__exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__exception_raise_t PLReply_exception_raise_t;
 #define PLCRASH_DEFAULT_BEHAVIOR EXCEPTION_DEFAULT
+#define PLCRASH_DEFAULT_THREAD_FLAVOR MACHINE_THREAD_STATE
 #endif
 
 /**
@@ -424,6 +426,9 @@ struct plcrash_exception_server_context {
  * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
  * will be provided.
  * @return Returns a valid mach send right on success; on error, MACH_PORT_NULL will be returned.
+ *
+ * @warning The exception server must be registered with a specific thread state type and behavior; these may be
+ * fetched via the preferred PLCrashMachExceptionServer::exceptionPortWithMask:error:.
  */
 - (mach_port_t) copySendRightForServerAndReturningError: (NSError **) outError {
     mach_port_t result;
@@ -446,47 +451,37 @@ struct plcrash_exception_server_context {
 }
 
 /**
- * Atomically set the Mach exception server port managed by the receiver as the @a task's Mach exception server, returning
- * the previously configured ports in @a portStates.
+ * Create and return a new exception port instance for the receiver's Mach exception server. The returned instance
+ * defines the behavior and flavor required by the Mach exception server, as well as providing a valid Mach
+ * send right for the exception server.
  *
- * @param task The task for which the Mach exception server should be set.
- * @param mask The exception mask for which the receiver should be registered.
- * @param portStates On success, will contain a set of previously registered port state(s) for the exception masks claimed
- * by the receiver. If NULL, the previous port states will not be provided.
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
- * will contain an error object indicating why the Mach exception port could not be registered. If no error
+ * will contain an error object indicating why the Mach send right could not be created. If no error
  * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
  * will be provided.
- * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
+ * @return Returns a valid Mach port instance on success; on error, nil will be returned.
+ *
+ * @note The newly allocated send right will be owned by the PLCrashMachExceptionPort instance; to ensure that the send
+ * right survives for the lifetime of any exception server registration, the PLCrashMachExceptionPort must either be preserved,
+ * or the underlying mach port's reference count should be incremented, eg, via mach_port_mod_refs() or mach_port_insert_right().
  */
-- (BOOL) registerForTask: (task_t) task mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError {    
-    PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: _serverContext->server_port
-                                                                                           mask: mask
-                                                                                       behavior: PLCRASH_DEFAULT_BEHAVIOR
-                                                                                         flavor: MACHINE_THREAD_STATE] autorelease];
-    return [state registerForTask: task previousPortSet: portStates error: outError];
-}
+- (PLCrashMachExceptionPort *) exceptionPortWithMask: (exception_mask_t) mask error: (NSError **) outError {
+    /* Fetch a send right. Unless misconfigured, this should never fail */
+    mach_port_t port = [self copySendRightForServerAndReturningError: outError];
+    if (!MACH_PORT_VALID(port))
+        return nil;
 
-/**
- * Atomically set the Mach exception server port managed by the receiver as the @a thread's Mach exception server, returning
- * the previously configured ports in @a portStates.
- *
- * @param thread The thread for which the Mach exception server should be set.
- * @param mask The exception mask for which the receiver should be registered.
- * @param portStates On success, will contain a set of previously registered port state(s) for the exception masks claimed
- * by the receiver.
- * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
- * will contain an error object indicating why the Mach exception port could not be registered. If no error
- * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
- * will be provided.
- * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
- */
-- (BOOL) registerForThread: (thread_t) thread mask: (exception_mask_t) mask previousPortStates: (PLCrashMachExceptionPortSet **) portStates error: (NSError **) outError {
-    PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: _serverContext->server_port
-                                                                                           mask: mask
-                                                                                       behavior: PLCRASH_DEFAULT_BEHAVIOR
-                                                                                         flavor: MACHINE_THREAD_STATE] autorelease];
-    return [state registerForThread: thread previousPortSet: portStates error: outError];
+    /* Create the port oject */
+    PLCrashMachExceptionPort *result;
+    result = [[[PLCrashMachExceptionPort alloc] initWithServerPort: port
+                                                              mask: mask
+                                                          behavior: PLCRASH_DEFAULT_BEHAVIOR
+                                                            flavor: PLCRASH_DEFAULT_THREAD_FLAVOR] autorelease];
+
+    /* Drop our send right */
+    mach_port_deallocate(mach_task_self(), port);
+    
+    return result;
 }
 
 
@@ -753,6 +748,18 @@ static void *exception_server_thread (void *arg) {
                     /* Trigger cleanup */
                     break;
                 }
+            }
+
+            /* Sanity check the message size */
+            if (request->Head.msgh_size < sizeof(*request)) {
+                PLCF_DEBUG("Unexpected message size of %" PRIu64, (uint64_t) request->Head.msgh_size);
+
+                /* Provide a negative reply */
+                mr = exception_server_reply(request, KERN_FAILURE);
+                if (mr != MACH_MSG_SUCCESS)
+                    PLCF_DEBUG("Unexpected failure replying to Mach exception message: 0x%x", mr);
+                
+                continue;
             }
             
             /* Map 32-bit codes to 64-bit types. */

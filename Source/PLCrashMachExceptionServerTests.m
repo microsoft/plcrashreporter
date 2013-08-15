@@ -141,11 +141,12 @@ static kern_return_t exception_callback (task_t task,
                                                                                          error: &error] autorelease];
     STAssertNotNil(server, @"Failed to initialize server");
 
-    
-    STAssertTrue([server registerForTask: mach_task_self()
-                                    mask: EXC_MASK_BAD_ACCESS
-                      previousPortStates: NULL
-                                   error: &error], @"Failed to configure handler: %@", error);
+    PLCrashMachExceptionPort *port = [server exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
+    STAssertNotNil(port, @"Failed to fetch server port: %@", error);
+
+    STAssertTrue([port registerForTask: mach_task_self()
+                       previousPortSet: NULL
+                                 error: &error], @"Failed to configure handler: %@", error);
 
     mprotect(crash_page, sizeof(crash_page), 0);
 
@@ -174,17 +175,21 @@ static kern_return_t exception_callback (task_t task,
                                                                                     context: &threadRan
                                                                                       error: &error] autorelease];
     STAssertNotNil(thr, @"Failed to initialize server");
+    
+    PLCrashMachExceptionPort *taskPort = [task exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
+    STAssertNotNil(taskPort, @"Failed to fetch server port: %@", error);
+    
+    PLCrashMachExceptionPort *thrPort = [thr exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
+    STAssertNotNil(thrPort, @"Failed to fetch server port: %@", error);
 
 
-    STAssertTrue([task registerForTask: mach_task_self()
-                                  mask: EXC_MASK_BAD_ACCESS
-                    previousPortStates: NULL
-                                 error: &error], @"Failed to configure handler: %@", error);
+    STAssertTrue([taskPort registerForTask: mach_task_self()
+                           previousPortSet: NULL
+                                     error: &error], @"Failed to configure handler: %@", error);
 
-    STAssertTrue([thr registerForThread: mach_thread_self()
-                                   mask: EXC_MASK_BAD_ACCESS
-                     previousPortStates: NULL
-                                  error: &error], @"Failed to configure handler: %@", error);
+    STAssertTrue([thrPort registerForThread: mach_thread_self()
+                            previousPortSet: NULL
+                                      error: &error], @"Failed to configure handler: %@", error);
 
     mprotect(crash_page, sizeof(crash_page), 0);
     
@@ -210,7 +215,14 @@ static kern_return_t exception_callback (task_t task,
                                                                                        context: &didRun
                                                                                          error: &error] autorelease];
     STAssertNotNil(server, @"Failed to initialize server");
-    STAssertTrue([server registerForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS previousPortStates: NULL error: &error], @"Failed to register server: %@", error);
+    
+    PLCrashMachExceptionPort *port = [server exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
+    STAssertNotNil(port, @"Failed to fetch server port: %@", error);
+    
+    STAssertTrue([port registerForTask: mach_task_self()
+                       previousPortSet: NULL
+                                 error: &error], @"Failed to configure handler: %@", error);
+
 
     /* Fetch the server's port set */
     PLCrashMachExceptionPortSet *portSet = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_BAD_ACCESS error: &error];
@@ -245,7 +257,7 @@ static kern_return_t exception_callback (task_t task,
     mach_port_t sendRight = [server copySendRightForServerAndReturningError: &error];
     STAssertTrue(MACH_PORT_VALID(sendRight), @"Failed to copy send right: %@", error);
 
-    mach_port_deallocate(mach_task_self(), sendRight);
+    STAssertEquals(KERN_SUCCESS, mach_port_deallocate(mach_task_self(), sendRight), @"Failed to deallocate send right");
 }
 
 @end
