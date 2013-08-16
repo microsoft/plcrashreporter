@@ -42,13 +42,15 @@
  * @param exception_type Mach exception type.
  * @param code Mach exception codes.
  * @param code_count The number of codes provided.
+ * @param cpu_type The target architecture on which the exception was generated, encoded as a Mach-O CPU type. Interpreting Mach exception data is
+ * architecture-specific. If the CPU type is unknown, CPU_TYPE_ANY may be provided.
  * @param siginfo The siginfo structure to be initialized.
  *
  * @warning Mapping to BSD signal information is primarily supported to maintain backwards compatibility with existing report handlers
  * that expect to receive BSD signal data, rather than Mach exception data. Note, however, that the returned signal info may not exactly match the
  * kernel exception-to-signal mappings implemented in xnu. As such, when Mach exception data is available, its use should be preferred.
  */
-bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, exception_data_t codes, mach_msg_type_number_t code_count, siginfo_t *siginfo) {
+bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, exception_data_t codes, mach_msg_type_number_t code_count, cpu_type_t cpu_type, siginfo_t *siginfo) {
     if (code_count < 2) {
         PLCF_DEBUG("Unexpected Mach code count of %u; can't map to UNIX exception", code_count);
         return false;

@@ -51,7 +51,7 @@ extern "C" {
  * @{
  */
 
-bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, exception_data_t codes, mach_msg_type_number_t code_count, siginfo_t *siginfo);
+bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, exception_data_t codes, mach_msg_type_number_t code_count, cpu_type_t cpu_type, siginfo_t *siginfo);
 
 /**
  * @} plcrash_async_mach_exception_info
