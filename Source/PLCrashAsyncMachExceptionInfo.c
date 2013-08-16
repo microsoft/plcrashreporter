@@ -33,7 +33,6 @@
  * @{
  */
 
-
 /**
  * @internal
  *
@@ -77,18 +76,49 @@ bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, 
             break;
             
         case EXC_BAD_INSTRUCTION:
+            siginfo->si_signo = SIGILL;
+            siginfo->si_addr = subcode;
             break;
             
         case EXC_ARITHMETIC:
+            siginfo->si_signo = SIGFPE;
+            siginfo->si_addr = subcode;
             break;
             
         case EXC_EMULATION:
+            siginfo->si_signo = SIGEMT;
+            siginfo->si_addr = subcode;
             break;
             
         case EXC_SOFTWARE:
+            switch (code) {
+                case EXC_UNIX_BAD_SYSCALL:
+                    siginfo->si_signo = SIGSYS;
+                    break;
+                    
+                case EXC_UNIX_BAD_PIPE:
+                    siginfo->si_signo = SIGPIPE;
+                    break;
+                    
+                case EXC_UNIX_ABORT:
+                    siginfo->si_signo = SIGABRT;
+                    break;
+                case EXC_SOFT_SIGNAL:
+                    siginfo->si_signo = SIGKILL;
+                    break;
+
+                default:
+                    PLCF_DEBUG("Unexpected EXC_SOFTWARE code of %lld", code);
+                    siginfo->si_signo = SIGABRT;
+                    break;
+            }
+
+            siginfo->si_addr = subcode;
             break;
             
         case EXC_BREAKPOINT:
+            siginfo->si_signo = SIGTRAP;
+            siginfo->si_addr = subcode;
             break;
             
         default:
@@ -115,6 +145,27 @@ bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, 
         case SIGBUS:
             siginfo->si_code = BUS_ADRERR;
             break;
+            
+        case SIGILL:
+            siginfo->si_code = ILL_NOOP;
+            break;
+            
+        case SIGFPE:
+            siginfo->si_code = FPE_NOOP;
+            break;
+            
+        case SIGTRAP:
+            siginfo->si_code = TRAP_BRKPT;
+            break;
+
+        case SIGEMT:
+        case SIGSYS:
+        case SIGPIPE:
+        case SIGABRT:
+        case SIGKILL:
+            siginfo->si_code = 0x0;
+            break;
+
         default:
             return false;
     }

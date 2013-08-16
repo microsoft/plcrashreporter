@@ -50,6 +50,25 @@ extern "C" {
  *
  * @{
  */
+    
+/*
+ * The following values are considered unsupported (and are #ifdef'd __APPLE_API_UNSTABLE in
+ * unpublished xnu headers), but are required for interpreting EXC_SOFTWARE appropriately.
+ *
+ * @internal
+ * This is exactly why operating at the Mach exception layer is generally a bad idea.
+ */
+#ifndef EXC_UNIX_BAD_SYSCALL
+#define EXC_UNIX_BAD_SYSCALL    0x10000     /* SIGSYS */
+#endif
+    
+#ifndef EXC_UNIX_BAD_PIPE
+#define EXC_UNIX_BAD_PIPE       0x10001     /* SIGPIPE */
+#endif
+    
+#ifndef EXC_UNIX_ABORT
+#define EXC_UNIX_ABORT          0x10002     /* SIGABRT */
+#endif
 
 bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, exception_data_t codes, mach_msg_type_number_t code_count, cpu_type_t cpu_type, siginfo_t *siginfo);
 
