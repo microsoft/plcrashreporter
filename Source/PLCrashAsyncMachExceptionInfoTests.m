@@ -29,6 +29,9 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashAsyncMachExceptionInfo.h"
+#import "PLCrashFeatureConfig.h"
+
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
 @interface PLCrashAsyncMachExceptionInfoTests : SenTestCase @end
 
@@ -77,3 +80,5 @@
 }
 
 @end
+
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */

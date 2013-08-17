@@ -29,9 +29,12 @@
 #ifndef PLCRASH_ASYNC_MACH_EXCEPTION_INFO_H
 #define PLCRASH_ASYNC_MACH_EXCEPTION_INFO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "PLCrashFeatureConfig.h"
+#include "PLCrashConstants.h"
+
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+
+PLCR_C_BEGIN_DECLS
 
 #include <stdbool.h>
 #include <mach/mach.h>
@@ -75,9 +78,8 @@ bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, 
 /**
  * @} plcrash_async_mach_exception_info
  */
-    
-#ifdef __cplusplus
-}
-#endif
 
+PLCR_C_END_DECLS
+
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
 #endif /* PLCRASH_ASYNC_MACH_EXCEPTION_INFO_H */

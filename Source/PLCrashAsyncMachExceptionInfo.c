@@ -27,6 +27,9 @@
  */
 
 #include "PLCrashAsyncMachExceptionInfo.h"
+#include "PLCrashFeatureConfig.h"
+
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
 /**
  * @ingroup plcrash_async_mach_exception_info
@@ -176,3 +179,5 @@ bool plcrash_async_mach_exception_get_siginfo (exception_type_t exception_type, 
 /**
  * @} plcrash_async_mach_exception_info
  */
+
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
