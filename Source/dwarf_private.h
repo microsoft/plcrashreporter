@@ -27,7 +27,7 @@
 #ifndef PLCRASH_ASYNC_DWARF_PRIVATE_H
 #define PLCRASH_ASYNC_DWARF_PRIVATE_H 1
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 

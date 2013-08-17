@@ -31,7 +31,7 @@
 #include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #include <inttypes.h>
 

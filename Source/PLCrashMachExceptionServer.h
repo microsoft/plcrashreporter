@@ -29,7 +29,7 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
-#import "PLCrashReporterBuildConfig.h"
+#import "PLCrashFeatureConfig.h"
 #import "PLCrashMachExceptionPort.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS

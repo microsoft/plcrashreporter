@@ -33,7 +33,7 @@
 #include "PLCrashFrameCompactUnwind.h"
 #include "PLCrashFrameDWARFUnwind.h"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];

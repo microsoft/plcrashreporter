@@ -27,7 +27,7 @@
 #ifndef PLCRASH_FRAME_DWARF_UNWIND_H
 #define PLCRASH_FRAME_DWARF_UNWIND_H
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 #include "PLCrashFrameWalker.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF

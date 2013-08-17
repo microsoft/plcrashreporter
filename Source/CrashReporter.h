@@ -34,7 +34,7 @@
 
 // This must be included before any other PLCrashReporter includes, as
 // it redefines symbol names
-#import "PLCrashReporterNamespace.h"
+#import "PLCrashNamespace.h"
 
 #import "PLCrashReporter.h"
 #import "PLCrashReport.h"

@@ -5,7 +5,7 @@
 # Copyright 2008-2013 Plausible Labs Cooperative, Inc. All rights reserved.
 
 # Prefix wild-cards are used to support the case where a third-party integrator
-# adds their own class prefix via PLCrashReporterNamespace.h
+# adds their own class prefix via PLCrashNamespace.h
 
 # PLCrashReporter
 _*PLCrashReporterException

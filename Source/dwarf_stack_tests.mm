@@ -29,7 +29,7 @@
 #import "PLCrashTestCase.h"
 #include "dwarf_stack.hpp"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 

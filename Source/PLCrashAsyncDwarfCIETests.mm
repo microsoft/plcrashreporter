@@ -33,7 +33,7 @@
 #include "PLCrashAsyncDwarfCIE.hpp"
 #include "PLCrashAsyncDwarfFDE.hpp"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 

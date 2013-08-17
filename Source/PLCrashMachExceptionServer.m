@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 #import "PLCrashMachExceptionPort.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS

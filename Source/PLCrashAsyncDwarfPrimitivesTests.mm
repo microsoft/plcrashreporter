@@ -32,7 +32,7 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 #include "PLCrashAsyncDwarfFDE.hpp"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #include <inttypes.h>
 

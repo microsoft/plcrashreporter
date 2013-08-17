@@ -34,7 +34,7 @@
 #include "PLCrashFrameCompactUnwind.h"
 #include "PLCrashFrameDWARFUnwind.h"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #pragma mark Error Handling
 

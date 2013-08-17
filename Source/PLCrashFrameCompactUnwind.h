@@ -27,7 +27,7 @@
 #ifndef PLCRASH_FRAME_COMPACTUNWIND_H
 #define PLCRASH_FRAME_COMPACTUNWIND_H
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 

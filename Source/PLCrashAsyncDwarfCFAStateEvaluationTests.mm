@@ -31,7 +31,7 @@
 #include "PLCrashAsyncDwarfCFAState.hpp"
 #include "PLCrashAsyncDwarfExpression.hpp"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 

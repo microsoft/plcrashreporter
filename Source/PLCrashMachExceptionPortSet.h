@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "PLCrashReporterBuildConfig.h"
+#import "PLCrashFeatureConfig.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 

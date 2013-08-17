@@ -28,7 +28,7 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 #include "PLCrashAsyncDwarfCFAState.hpp"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #include "dwarf_opstream.hpp"
 

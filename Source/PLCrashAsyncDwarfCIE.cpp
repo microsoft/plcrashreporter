@@ -26,7 +26,7 @@
 
 #include "PLCrashAsyncDwarfCIE.hpp"
 
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #include <inttypes.h>
 

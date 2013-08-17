@@ -27,7 +27,7 @@
 
 #include "PLCrashFrameCompactUnwind.h"
 #include "PLCrashAsyncCompactUnwindEncoding.h"
-#include "PLCrashReporterBuildConfig.h"
+#include "PLCrashFeatureConfig.h"
 
 #include <inttypes.h>
 
