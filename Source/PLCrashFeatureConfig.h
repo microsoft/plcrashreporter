@@ -26,8 +26,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCRASHREPORTER_CONFIG_H
-#define PLCRASHREPORTER_CONFIG_H
+#ifndef PLCRASH_FEATURE_CONFIG_H
+#define PLCRASH_FEATURE_CONFIG_H
 
 #include <TargetConditionals.h>
 
@@ -102,4 +102,4 @@
  * @}
  */
 
-#endif /* PLCRASHREPORTER_CONFIG_H */
+#endif /* PLCRASH_FEATURE_CONFIG_H */

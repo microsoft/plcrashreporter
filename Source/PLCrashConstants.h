@@ -26,8 +26,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCRASHREPORTER_CONSTANTS_H
-#define PLCRASHREPORTER_CONSTANTS_H
+#ifndef PLCRASH_CONSTANTS_H
+#define PLCRASH_CONSTANTS_H
 
 #if defined(__cplusplus)
 #   define PLCR_EXPORT extern "C"
@@ -39,4 +39,4 @@
 #   define PLCR_C_END_DECLS
 #endif
 
-#endif /* PLCRASHREPORTER_CONSTANTS_H */
+#endif /* PLCRASH_CONSTANTS_H */
