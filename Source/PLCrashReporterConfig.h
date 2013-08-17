@@ -137,6 +137,9 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
     PLCrashReporterSymbolicationStrategy _symbolicationStrategy;
 }
 
++ (instancetype) defaultConfiguration;
+
+- (instancetype) init;
 - (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
                      symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy;
 
