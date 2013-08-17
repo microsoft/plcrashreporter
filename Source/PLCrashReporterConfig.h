@@ -74,6 +74,40 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
     PLCrashReporterConfigSignalHandlerMach = 1
 };
 
+/**
+ * @ingroup enums
+ * Supported mechanisms for performing local symbolication.
+ *
+ * Local symbolication is performed using inexact heuristics and symbol data available at runtime; it may
+ * return information that is incorrect. This may still be useful in the case where DWARF data is unavailable
+ * for a given build; in that case, it can provide function and method names (though not line numbers) for a
+ * crash report that may otherwise be unusable.
+ *
+ * Note, however, this comes at the cost of a significant increase in code that must run within the critical
+ * crash reporting section, where failures may result in crash reports being corrupted or left unwritten. In
+ * addition, some of the provided symbolication strategies rely on knowledge of runtime internals that may
+ * change in future iOS releases. Given that DWARF symbolication data will <em>always</em> be more accurate, and
+ * the risks inherent in executing considerably more code at crash time, it is strongly recommended that local
+ * symbolication only be enabled for non-release builds.
+ *
+ * Multiple symbolication strategies may be enabled, in which case a best-match heuristic will be applied to the
+ * results.
+ */
+typedef NS_OPTIONS(NSUInteger, PLCrashReporterConfigSymbolication) {
+    /**
+     * Use the standard binary symbol table. On iOS, this alone will return
+     * incomplete results, as most symbols are rewritten to the common '<redacted>' string.
+     */
+    PLCrashReporterConfigSymbolicationSymbolTable = 1 << 0,
+
+    /**
+     * Use Objective-C metadata to find method and class names. This relies on detailed parsing
+     * of the Objective-C runtime data, including undefined flags and other runtime internals. As such,
+     * it may return incorrect data should the runtime be changed incompatibly.
+     */
+    PLCrashReporterConfigSymbolicationObjectiveC = 1 << 1
+};
+
 @interface PLCrashReporterConfig : NSObject
 
 @end
