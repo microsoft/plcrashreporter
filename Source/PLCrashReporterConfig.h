@@ -94,6 +94,9 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
  * results.
  */
 typedef NS_OPTIONS(NSUInteger, PLCrashReporterConfigSymbolication) {
+    /** No symbolication. */
+    PLCrashReporterConfigSymbolicationNone = 0,
+
     /**
      * Use the standard binary symbol table. On iOS, this alone will return
      * incomplete results, as most symbols are rewritten to the common '<redacted>' string.
