@@ -27,12 +27,13 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "PLCrashFeatureConfig.h"
 
 /**
  * @ingroup enums
  * Supported mechanisms for trapping and handling crashes.
  */
-typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
+typedef NS_ENUM(NSUInteger, PLCrashReporterSignalHandlerType) {
     /**
      * Trap fatal signals via a sigaction(2)-registered BSD signal handler.
      *
@@ -53,8 +54,9 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
      *       or a too-long argument is supplied (eg, strncpy with a length argument longer than the target buffer),
      *       AND that argument can't be checked at compile-time.
      */
-    PLCrashReporterConfigSignalHandlerBSD = 0,
+    PLCrashReporterSignalHandlerTypeBSD = 0,
 
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
     /**
      * Trap fatal signals via a Mach exception server.
      *
@@ -71,7 +73,8 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
      *
      * For more information, refer to @ref mach_exceptions.
      */
-    PLCrashReporterConfigSignalHandlerMach = 1
+    PLCrashReporterSignalHandlerTypeMach = 1
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
 };
 
 /**
@@ -93,24 +96,42 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
  * Multiple symbolication strategies may be enabled, in which case a best-match heuristic will be applied to the
  * results.
  */
-typedef NS_OPTIONS(NSUInteger, PLCrashReporterConfigSymbolication) {
+typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
     /** No symbolication. */
-    PLCrashReporterConfigSymbolicationNone = 0,
+    PLCrashReporterSymbolicationStrategyNone = 0,
 
     /**
      * Use the standard binary symbol table. On iOS, this alone will return
      * incomplete results, as most symbols are rewritten to the common '<redacted>' string.
      */
-    PLCrashReporterConfigSymbolicationSymbolTable = 1 << 0,
+    PLCrashReporterSymbolicationStrategySymbolTable = 1 << 0,
 
     /**
      * Use Objective-C metadata to find method and class names. This relies on detailed parsing
      * of the Objective-C runtime data, including undefined flags and other runtime internals. As such,
      * it may return incorrect data should the runtime be changed incompatibly.
      */
-    PLCrashReporterConfigSymbolicationObjectiveC = 1 << 1
+    PLCrashReporterSymbolicationStrategyObjC = 1 << 1
 };
 
-@interface PLCrashReporterConfig : NSObject
+@interface PLCrashReporterConfig : NSObject {
+@private
+    /** The configured signal handler type. */
+    PLCrashReporterSignalHandlerType _signalHandlerType;
+    
+    /** The configured symbolication strategy. */
+    PLCrashReporterSymbolicationStrategy _symbolicationStrategy;
+}
+
+- (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy;
+
+/** The configured signal handler type. */
+@property(nonatomic, readonly) PLCrashReporterSignalHandlerType signalHandlerType;
+
+/** The configured symbolication strategy. */
+@property(nonatomic, readonly) PLCrashReporterSymbolicationStrategy symbolicationStrategy;
+
 
 @end
+

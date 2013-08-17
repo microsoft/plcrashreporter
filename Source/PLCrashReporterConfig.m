@@ -35,4 +35,40 @@
  */
 @implementation PLCrashReporterConfig
 
+@synthesize signalHandlerType = _signalHandlerType;
+@synthesize symbolicationStrategy = _symbolicationStrategy;
+
+/**
+ * Return the default local configuration.
+ */
++ (instancetype) defaultConfiguration {
+    return [[[self alloc] init] autorelease];
+}
+
+/**
+ * Initialize a new PLCrashReporterConfig instance using the default configuration. The default configuration
+ * is appropriate for use in release builds.
+ */
+- (instancetype) init {
+    return [self initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone];
+}
+
+/**
+ * Initialize a new PLCrashReporterConfig instance.
+ *
+ * @param signalHandlerType The requested signal handler type.
+ * @param symbolicationStrategy A local symbolication strategy.
+ */
+- (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+{
+    if ((self = [super init]) == nil)
+        return nil;
+
+    _signalHandlerType = signalHandlerType;
+    _symbolicationStrategy = symbolicationStrategy;
+
+    return self;
+}
+
 @end
