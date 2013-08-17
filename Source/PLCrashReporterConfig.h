@@ -37,6 +37,10 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterSignalHandlerType) {
     /**
      * Trap fatal signals via a sigaction(2)-registered BSD signal handler.
      *
+     * PLCrashReporter's signal handler will supersede previously registered handlers; existing
+     * handlers will not be called. This behavior may be modified in a future release, and should
+     * not be relied upon as a mechanism to prevent existing signal handlers from being called.
+     *
      * There are some limitations to signal-based crash handling on Mac OS X and iOS; specifically:
      *
      * - On Mac OS X, stack overflows will only be handled on the thread on which
@@ -60,9 +64,17 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterSignalHandlerType) {
     /**
      * Trap fatal signals via a Mach exception server.
      *
+     * If any existing Mach exception server has been registered for the task, exceptions will be forwarded to that
+     * exception handler. Should the exceptions be handled by an existing handler, no report will be generated
+     * by PLCrashReporter.
+     *
+     * @par Mac OS X
+     *
      * On Mac OS X, the Mach exception implementation is fully supported, using publicly available API -- note,
      * however, that some kernel-internal constants, as well as architecture-specific trap information,
      * may be required to fully interpret a Mach exception's root cause.
+     *
+     * @par iOS
      *
      * On iOS, the APIs required for a complete implementation are not fully public.
      *
@@ -70,6 +82,8 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterSignalHandlerType) {
      * implement Mach exception handling regardless of concerns over API visiblity. Given this, we've included
      * Mach exception handling as an optional feature, with both build-time and runtime configuration
      * to disable its inclusion or use, respectively.
+     *
+     * @par More Details
      *
      * For more information, refer to @ref mach_exceptions.
      */

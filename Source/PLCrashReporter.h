@@ -29,6 +29,8 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
+#import "PLCrashReporterConfig.h"
+
 /**
  * @ingroup functions
  *
@@ -81,6 +83,8 @@ typedef struct PLCrashReporterCallbacks {
 }
 
 + (PLCrashReporter *) sharedReporter;
+
+- (instancetype) initWithConfiguration: (PLCrashReporterConfig *) config;
 
 - (BOOL) hasPendingCrashReport;
 

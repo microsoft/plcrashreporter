@@ -206,7 +206,15 @@ static void uncaught_exception_handler (NSException *exception) {
 
 
 /**
- * Shared application crash reporter.
+ * Crash Reporter.
+ *
+ * A PLCrashReporter instance manages process-wide (and in-process) handling of crashes.
+ *
+ * @par Registering Multiple Reporters
+ *
+ * Depending on the underlying signal handling mechanism (refer to @ref PLCrashReporterSignalHandlerType), PLCrashReporter
+ * may permit registering more than one crash reporter instance at a time and correctly handle forwarding of signal/exception
+ * data. This is not currently considered a supported configuration.
  */
 @implementation PLCrashReporter
 
@@ -221,13 +229,27 @@ static void uncaught_exception_handler (NSException *exception) {
 }
 
 /**
- * Return the application's crash reporter instance.
+ * Return the default crash reporter instance. The returned instance will be configured
+ * appropriately for release deployment.
+ *
+ * @deprecated As of PLCrashReporter 1.2, the default reporter instance has been deprecated, and API
+ * clients should initialize a crash reporter instance directly.
  */
 + (PLCrashReporter *) sharedReporter {
     if (sharedReporter == nil)
         sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
 
     return sharedReporter;
+}
+
+/**
+ * Initialize a new PLCrashReporter instance with the given configuration.
+ *
+ * @param config The configuration to be used by this reporter instance.
+ */
+- (instancetype) initWithConfiguration: (PLCrashReporterConfig *) config {
+    // TODO - Implement configuration handling
+    return [self initWithBundle: [NSBundle mainBundle]];
 }
 
 

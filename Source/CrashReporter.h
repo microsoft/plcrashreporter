@@ -271,6 +271,26 @@ typedef enum {
  * codes handled in-kernel at the time of exception dispatch. It is generally recommended by Apple as the preferred
  * interface, and should generally be preferred by PLCrashReporter API clients.
  *
+ * @section mach_exceptions_compatibility
+ *
+ * @subsection Debuggers
+ *
+ * Enabling in-process Mach exception handlers will conflict with any attached debuggers; the debugger
+ * may suspend the processes Mach exception handling thread, which will result in any exception messages
+ * sent via the debugger being lost, as the in-process handler will be unable to receive and forward
+ * the messages.
+ *
+ * @subsection Managed Runtimes (Xamarin, Unity)
+ *
+ * A Mach exception handler may conflict with any managed runtime that registers a BSD signal handler that
+ * can safely handle otherwise fatal signals, allowing execution to proceed. This includes products
+ * such as Xamarin for iOS.
+ *
+ * In such a case, PLCrashReporter will write a crash report for non-fatal signals, as there is no
+ * immediate mechanism for determining whether a signal handler exists and that it can safely
+ * handle the failure. This can result in unexpected delays in application execution, increased I/O to
+ * disk, and other undesirable operations.
+ *
  * @section mach_exceptions_ios iOS
  *
  * The APIs required for Mach exception handling are not fully public on iOS. Unfortunately, there are a number
