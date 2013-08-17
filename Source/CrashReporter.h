@@ -261,9 +261,15 @@ typedef enum {
  * extracting the actual exception flags from status register as per the x86 architecture documentation. The exact format
  * of this subcode value is not actually documented outside the kernel, and may change in future releases.
  *
- * By comparison, the BSD signal interface is both fully defined and architecture independent, with any necessary
- * interpretation of the Mach exception codes handled in-kernel at the time of exception dispatch. It is generally
- * recommended by Apple as the preferred interface, and should generally be preferred by PLCrashReporter API clients.
+ * While we have the advantage of access to the x86 kernel sources, the situation on ARM is even less clear. The actual
+ * use of the Mach exception codes and subcodes is largely undefined by both headers and publicly available documentation,
+ * and the available x86 kernel sources are of little use in interpreting this data.
+ *
+ * As such, while Mach exceptions may catch some cases that BSD signals can not, they are not a perfect solution,
+ * and may also provide less insight into the actual failures that occur. By comparison, the BSD signal interface
+ * is both fully defined and architecture independent, with any necessary interpretation of the Mach exception
+ * codes handled in-kernel at the time of exception dispatch. It is generally recommended by Apple as the preferred
+ * interface, and should generally be preferred by PLCrashReporter API clients.
  *
  * @section mach_exceptions_ios iOS
  *
