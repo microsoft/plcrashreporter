@@ -233,7 +233,39 @@ typedef enum {
  */
 
 /**
- * @page mach_exceptions Mach Exceptions on iOS
+ * @page mach_exceptions Mach Exceptions on Mac OS X and iOS
+ *
+ * PLCrashReporter includes support for monitoring crashes via an in-process Mach exception handler. On Mac OS X, the
+ * Mach exception implementation is fully supported using entirely public API. On iOS, the APIs required are not fully
+ * public -- more details on the implications of this for exception handling on iOS may be found in
+ * @ref mach_exceptions_ios below.
+ *
+ * It is worth noting that even where the Mach exception APIs are fully supported, kernel-internal constants, as well
+ * as architecture-specific trap information, may be required to fully interpret a Mach exception's root cause.
+ *
+ * For example, the EXC_SOFTWARE exception is dispatched for four different failure types, using the exception
+ * code to differentiate failure types:
+ *   - Non-existent system call invoked (SIGSYS)
+ *   - Write on a pipe with no reader (SIGPIPE)
+ *   - Abort program (SIGABRT)
+ *   - Kill program (SIGKILL)
+ *
+ * Of those four types, only the constant required to interpret the SIGKILL behavior (EXC_SOFT_SIGNAL) is publicly defined.
+ * Of the remaining three failure types, the constant values are kernel implementation-private, defined only in the available
+ * kernel sources. On iOS, these sources are unavailable, and while they generally do match the Mac OS X implementation, there
+ * are no gaurantees that this is -- or will remain -- the case in the future.
+ *
+ * Likewise, interpretation of particular fault types requires information regarding the underlying machine traps
+ * that triggered the Mach exceptions. For example, a floating point trap on x86/x86-64 will trigger an EXC_ARITHMETIC,
+ * with a subcode value containing the value of the FPU status register. Determining the exact FPU cause requires
+ * extracting the actual exception flags from status register as per the x86 architecture documentation. The exact format
+ * of this subcode value is not actually documented outside the kernel, and may change in future releases.
+ *
+ * By comparison, the BSD signal interface is both fully defined and architecture independent, with any necessary
+ * interpretation of the Mach exception codes handled in-kernel at the time of exception dispatch. It is generally
+ * recommended by Apple as the preferred interface, and should generally be preferred by PLCrashReporter API clients.
+ *
+ * @section mach_exceptions_ios iOS
  *
  * The APIs required for Mach exception handling are not fully public on iOS. Unfortunately, there are a number
  * of crash states that can only be handled with Mach exception handlers:
