@@ -58,11 +58,11 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterConfigSignalHandler) {
     /**
      * Trap fatal signals via a Mach exception server.
      *
-     * If true, enable Mach exception support. On Mac OS X, the Mach exception implementation is fully supported,
-     * using publicly available API -- note, however, that some kernel-internal constants, as well as
-     * architecture-specific trap information, may be required to fully interpret a Mach exception's root cause.
+     * On Mac OS X, the Mach exception implementation is fully supported, using publicly available API -- note,
+     * however, that some kernel-internal constants, as well as architecture-specific trap information,
+     * may be required to fully interpret a Mach exception's root cause.
      *
-     * On iOS, the APIs required for a complete implementation are not public.
+     * On iOS, the APIs required for a complete implementation are not fully public.
      *
      * The exposed surface of undocumented API usage is relatively low, and there has been strong user demand to
      * implement Mach exception handling regardless of concerns over API visiblity. Given this, we've included
