@@ -38,10 +38,6 @@
 
 #include <sys/mman.h>
 
-#ifndef EXC_MASK_RESOURCE
-#define EXC_MASK_RESOURCE (1<<11)
-#endif
-
 @interface PLCrashMachExceptionServerTests : SenTestCase {
     plcrash_mach_exception_port_set_t _task_ports;
     plcrash_mach_exception_port_set_t _thread_ports;
