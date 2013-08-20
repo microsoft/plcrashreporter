@@ -29,12 +29,22 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashSignalHandler.h"
+#import "PLCrashProcessInfo.h"
 
-@interface PLCrashSignalHandlerTests : SenTestCase @end
+@interface PLCrashSignalHandlerTests : SenTestCase {
+}
+@end
+
+/* Page-aligned to allow us to tweak memory protections for test purposes. */
+static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
 static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next, void *context) {
-    // Do nothing
-    return false;
+    mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
+    
+    // Success
+    crash_page[1] = 0xFE;
+    
+    return true;
 }
 
 @implementation PLCrashSignalHandlerTests
@@ -57,6 +67,19 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, plc
     /* Check for SIGSEGV registration */
     sigaction (SIGSEGV, NULL, &action);
     STAssertNotEquals(action.sa_handler, SIG_DFL, @"Action not registered for SIGSEGV");
+
+    /* Verify that the callback is dispatched; if the process doesn't lock up here, the signal handler is working. Unfortunately, this
+     * test will halt when run under a debugger due to their catching of fatal signals, so we only perform the test if we're not
+     * currently being traced */
+    if (![[PLCrashProcessInfo currentProcessInfo] isTraced]) {
+        mprotect(crash_page, sizeof(crash_page), 0);
+        crash_page[0] = 0xCA;
+        
+        STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Byte should have been set to test value");
+        STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
+    } else {
+        NSLog(@"Running under debugger; skipping signal callback validation.");
+    }
 }
 
 @end

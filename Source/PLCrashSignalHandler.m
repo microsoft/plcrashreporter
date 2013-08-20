@@ -101,11 +101,13 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
     }
 
     /* Call the callback handler */
+    bool handled = false;
     if (SharedHandlerContext.crashCallback != NULL)
-        SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext, NULL);
+        handled = SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext, NULL);
     
     /* Re-raise the signal */
-    raise(signal);
+    if (!handled)
+        raise(signal);
 }
 
 /**
