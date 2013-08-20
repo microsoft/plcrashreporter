@@ -43,6 +43,37 @@ using namespace plcrash::async;
  */
 @implementation PLCrashAsyncLinkedListTests
 
+- (void) testPrependItem {
+    _list.nasync_prepend(0);
+    
+    // head/tail are marked private
+    // STAssertNotNULL(_list.head, @"List HEAD should be set to our new entry");
+    // STAssertEquals(_list.head, _list.tail, @"The list head and tail should be equal for the first entry");
+    
+    _list.nasync_prepend(1);
+    _list.nasync_prepend(2);
+    _list.nasync_prepend(3);
+    _list.nasync_prepend(4);
+    
+    /* Verify the prepended elements */
+    async_list<int>::node *item = NULL;
+    
+    _list.set_reading(true);
+    for (int i = 0; i <= 5; i++) {
+        /* Fetch the next item */
+        item = _list.next(item);
+        if (i <= 4) {
+            STAssertNotNULL(item, @"Item should not be NULL");
+        } else {
+            STAssertNULL(item, @"Item should be NULL");
+            break;
+        }
+        
+        /* Validate its value */
+        STAssertEquals(item->value(), (4-i), @"Incorrect value");
+    }
+    _list.set_reading(false);
+}
 
 - (void) testAppendItem {
     _list.nasync_append(0);

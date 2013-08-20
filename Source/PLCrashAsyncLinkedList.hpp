@@ -103,6 +103,7 @@ public:
     async_list (void);
     ~async_list (void);
     
+    void nasync_prepend (V value);
     void nasync_append (V value);
     void nasync_remove_first_value (V value);
     void nasync_remove_node (node *deleted_node);
@@ -147,10 +148,64 @@ template <typename V> async_list<V>::~async_list (void) {
         free_list(_free);
 }
 
+/**
+ * Prepend a new entry value to the list
+ *
+ * @param value The value to be prepended.
+ *
+ * @warning This method is not async safe.
+ */
+template <typename V> void async_list<V>::nasync_prepend (V value) {
+    /* Lock the list from other writers. */
+    OSSpinLockLock(&_write_lock); {
+        /* Construct the new entry, or recycle an existing one. */
+        node *new_node;
+        if (_free != NULL) {
+            /* Fetch a node from the free list */
+            new_node = _free;
+            new_node->reset(value);
+            
+            /* Update the free list */
+            _free = _free->_next;
+        } else {
+            new_node = new node(value);
+        }
+        
+        /* Issue a memory barrier to ensure a consistent view of the value. */
+        OSMemoryBarrier();
+        
+        /* If this is the first entry, initialize the list. */
+        if (_tail == NULL) {
+            
+            /* Update the list tail. This need not be done atomically, as tail is never accessed by a lockless reader. */
+            _tail = new_node;
+            
+            /* Atomically update the list head; this will be iterated upon by lockless readers. */
+            if (!OSAtomicCompareAndSwapPtrBarrier(NULL, new_node, (void **) (&_head))) {
+                /* Should never occur */
+                PLCF_DEBUG("An async image head was set with tail == NULL despite holding lock.");
+            }
+        }
+        
+        /* Otherwise, prepend to the head of the list */
+        else {
+            new_node->_next = _head;
+            new_node->_prev = NULL;
+
+            /* Issue a memory barrier to ensure a consistent view of the node. */
+            OSMemoryBarrier();
+
+            /* Atomically slot the new record into place; this may be iterated on by a lockless reader. */
+            if (!OSAtomicCompareAndSwapPtrBarrier(new_node->_next, new_node, (void **) (&_head))) {
+                PLCF_DEBUG("Failed to prepend to image list despite holding lock");
+            }
+        }
+    } OSSpinLockUnlock(&_write_lock);
+}
 
 
 /**
- * Append a new entry value the list
+ * Append a new entry value to the list
  *
  * @param value The value to be appended.
  *
