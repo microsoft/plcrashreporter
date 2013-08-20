@@ -28,10 +28,13 @@
 
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncImageList.h"
+#include "PLCrashAsyncLinkedList.hpp"
 
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+using namespace plcrash::async;
 
 /**
  * @internal
@@ -47,6 +50,7 @@
  * @{
  */
 
+
 /**
  * Initialize a new binary image list and issue a memory barrier
  *
@@ -58,10 +62,9 @@
 void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, mach_port_t task) {
     memset(list, 0, sizeof(*list));
 
+    list->_list = new async_list<plcrash_async_image_t *>();
     list->task = task;
     mach_port_mod_refs(mach_task_self(), list->task, MACH_PORT_RIGHT_SEND, 1);
-
-    list->write_lock = OS_SPINLOCK_INIT;
 }
 
 /**
@@ -70,18 +73,23 @@ void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, mach_port
  * @warning This method is not async safe.
  */
 void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
-    /* Free all nodes */
-    plcrash_async_image_t *next = list->head;
-    while (next != NULL) {
-        /* Save the current pointer and fetch the next pointer. */
-        plcrash_async_image_t *cur = next;
-        next = cur->next;
+    /* Clean up the image structures */
+    list->_list->set_reading(true);
+    async_list<plcrash_async_image_t *>::node *next = NULL;
+    while ((next = list->_list->next(next)) != NULL) {
+        plcrash_async_image_t *image = next->value();
         
-        /* Deallocate the current item. */
-        plcrash_nasync_macho_free(&cur->macho_image);
-        free(cur);
+        /* Deallocate the Mach-O reference. */
+        plcrash_nasync_macho_free(&image->macho_image);
+        
+        /* Deallocate the actual image value */
+        free(image);
     }
+    list->_list->set_reading(false);
 
+    /* Free the backing list */
+    delete list->_list;
+    
     mach_port_mod_refs(mach_task_self(), list->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
@@ -98,45 +106,15 @@ void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_a
     plcrash_error_t ret;
 
     /* Initialize the new entry. */
-    plcrash_async_image_t *new = calloc(1, sizeof(plcrash_async_image_t));
-    if ((ret = plcrash_nasync_macho_init(&new->macho_image, list->task, name, header)) != PLCRASH_ESUCCESS) {
+    plcrash_async_image_t *new_entry = (plcrash_async_image_t *) calloc(1, sizeof(plcrash_async_image_t));
+    if ((ret = plcrash_nasync_macho_init(&new_entry->macho_image, list->task, name, header)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Unexpected failure initializing Mach-O structure for %s: %d", name, ret);
-        free(new);
+        free(new_entry);
         return;
     }
 
-    /* Update the image record and issue a memory barrier to ensure a consistent view. */
-    OSMemoryBarrier();
-    
-    /* Lock the list from other writers. */
-    OSSpinLockLock(&list->write_lock); {
-
-        /* If this is the first entry, initialize the list. */
-        if (list->tail == NULL) {
-
-            /* Update the list tail. This need not be done atomically, as tail is never accessed by a lockless reader. */
-            list->tail = new;
-
-            /* Atomically update the list head; this will be iterated upon by lockless readers. */
-            if (!OSAtomicCompareAndSwapPtrBarrier(NULL, new, (void **) (&list->head))) {
-                /* Should never occur */
-                PLCF_DEBUG("An async image head was set with tail == NULL despite holding lock.");
-            }
-        }
-        
-        /* Otherwise, append to the end of the list */
-        else {
-            /* Atomically slot the new record into place; this may be iterated on by a lockless reader. */
-            if (!OSAtomicCompareAndSwapPtrBarrier(NULL, new, (void **) (&list->tail->next))) {
-                PLCF_DEBUG("Failed to append to image list despite holding lock");
-            }
-
-            /* Update the prev and tail pointers. This is never accessed without a lock, so no additional barrier
-             * is required here. */
-            new->prev = list->tail;
-            list->tail = new;
-        }
-    } OSSpinLockUnlock(&list->write_lock);
+    /* Append */
+    list->_list->nasync_append(new_entry);
 }
 
 /**
@@ -148,57 +126,27 @@ void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_a
  * @warning This method is not async safe.
  */
 void plcrash_nasync_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header) {
-    /* Lock the list from other writers. */
-    OSSpinLockLock(&list->write_lock); {
-        /* Find the record. */
-        plcrash_async_image_t *item = list->head;
-        while (item != NULL) {
-            if (item->macho_image.header_addr == header)
+    list->_list->set_reading(true); {
+        /* Find a matching entry */
+        async_list<plcrash_async_image_t *>::node *found = NULL;
+        async_list<plcrash_async_image_t *>::node *next = NULL;
+        while ((next = list->_list->next(next)) != NULL) {
+            if (next->value()->macho_image.header_addr == header) {
+                found = next;
                 break;
-
-            item = item->next;
+            }
         }
-        
+
         /* If not found, nothing to do */
-        if (item == NULL) {
+        if (found == NULL) {
             PLCF_DEBUG("Can't find header addr=%llu in Mach-O image list.", (uint64_t)header);
-            OSSpinLockUnlock(&list->write_lock);
+            list->_list->set_reading(false);
             return;
         }
 
-        /*
-         * Atomically make the item unreachable by readers.
-         *
-         * This serves as a synchronization point -- after the CAS, the item is no longer reachable via the list.
-         */
-        if (item == list->head) {
-            if (!OSAtomicCompareAndSwapPtrBarrier(item, item->next, (void **) &list->head)) {
-                PLCF_DEBUG("Failed to remove image list head despite holding lock");
-            }
-        } else {
-            /* There MUST be a non-NULL prev pointer, as this is not HEAD. */
-            if (!OSAtomicCompareAndSwapPtrBarrier(item, item->next, (void **) &item->prev->next)) {
-                PLCF_DEBUG("Failed to remove image list item despite holding lock");
-            }
-        }
-        
-        /* Now that the item is unreachable, update the prev/tail pointers. These are never accessed without a lock,
-         * and need not be updated atomically. */
-        if (item->next != NULL) {
-            /* Item is not the tail (otherwise next would be NULL), so simply update the next item's prev pointer. */
-            item->next->prev = item->prev;
-        } else {
-            /* Item is the tail (next is NULL). Simply update the tail record. */
-            list->tail = item->prev;
-        }
-
-        /* If a reader is active, simply spin until inactive. */
-        while (list->refcount > 0) {
-        }
-
-        plcrash_nasync_macho_free(&item->macho_image);
-        free(item);
-    } OSSpinLockUnlock(&list->write_lock);
+        /* Delete the entry */
+        list->_list->nasync_remove_node(found);
+    } list->_list->set_reading(false);
 }
 
 /**
@@ -210,13 +158,7 @@ void plcrash_nasync_image_list_remove (plcrash_async_image_list_t *list, pl_vm_a
  * @param enable If true, the list will be retained. If false, released.
  */
 void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, bool enable) {
-    if (enable) {
-        /* Increment and issue a barrier. Once issued, no items will be deallocated while a reference is held. */
-        OSAtomicIncrement32Barrier(&list->refcount);
-    } else {
-        /* Increment and issue a barrier. Once issued, items may again be deallocated. */
-        OSAtomicDecrement32Barrier(&list->refcount);
-    }
+    list->_list->set_reading(enable);
 }
 
 /**
@@ -225,6 +167,8 @@ void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, boo
  *
  * @param list The list to be iterated.
  * @param address The address to be searched for.
+ *
+ * @warning The list must be retained for reading via plcrash_async_image_list_set_reading() before calling this function.
  */
 plcrash_async_image_t *plcrash_async_image_containing_address (plcrash_async_image_list_t *list, pl_vm_address_t address) {
     plcrash_async_image_t *image = NULL;
@@ -243,12 +187,29 @@ plcrash_async_image_t *plcrash_async_image_containing_address (plcrash_async_ima
  *
  * @param list The list to be iterated.
  * @param current The current image record, or NULL to start iteration.
+ *
+ * @warning The list must be retained for reading via plcrash_async_image_list_set_reading() before calling this function.
  */
 plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t *list, plcrash_async_image_t *current) {
-    if (current != NULL)
-        return current->next;
+    /* We can assume that the caller enabled reading here; we can't gaurantee proper behavior otherwise. */
+    async_list<plcrash_async_image_t *>::node *node;
 
-    return list->head;
+    /* Fetch the next node */
+    if (current != NULL) {
+        node = list->_list->next(current->_node);
+    } else {
+        node = list->_list->next(NULL);
+    }
+
+    /* Handle end of list */
+    if (node == NULL)
+        return NULL;
+    
+    /* Lazily swap in the cyclic node reference. This is pessimestic, but there's really not a better time to do it. */
+    plcrash_async_image_t *image = node->value();
+    OSAtomicCompareAndSwapPtrBarrier(NULL, (void *) node, (void * volatile *) &image->_node);
+
+    return node->value();
 }
 
 /**
