@@ -32,8 +32,12 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashReporterNSError.h"
 
+#import "PLCrashAsyncLinkedList.hpp"
+
 #import <signal.h>
 #import <unistd.h>
+
+using namespace plcrash::async;
 
 /**
  * @internal
@@ -52,6 +56,16 @@ static int fatal_signals[] = {
  * number of signals in the fatal signals list */
 static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
 
+/** @internal
+ * A single registered signal callback. */
+typedef struct signal_callback_registration {
+    /** Callback function */
+    PLCrashSignalHandlerCallback callback;
+    
+    /** Callback context */
+    void *context;
+} signal_callback_registration_t;
+
 
 /**
  * Signal handler context that must be global for async-safe
@@ -59,27 +73,13 @@ static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
  */
 static struct {
     /** @internal
-     * Initialization flag. Set to YES if the signal handler has been registered. */
-    BOOL handlerRegistered;
-
-    /** @internal
-     * Shared signal handler. Only one may be allocated per process, for obvious reasons. */
-    PLCrashSignalHandler *sharedHandler;
+     * Registered callbacks. */
+    async_list<signal_callback_registration_t> registered_handlers;
     
     /** @internal
-     * Crash signal callback. */
-    PLCrashSignalHandlerCallback crashCallback;
-    
-    /** @internal
-     * Crash signal callback context */
-    void *crashCallbackContext;
-} SharedHandlerContext = {
-    .handlerRegistered = NO,
-    .sharedHandler = nil,
-    .crashCallback = NULL,
-    .crashCallbackContext = NULL
-};
-
+     * Originaly registered signal handlers */
+    plcrash_signal_handler_callback_set_t previous_handlers;
+} shared_handler_context;
 
 /** @internal
  * Root fatal signal handler */
@@ -100,11 +100,17 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
         sigaction(fatal_signals[i], &sa, NULL);
     }
 
-    /* Call the callback handler */
+    /* Call the callback handlers */
     bool handled = false;
-    if (SharedHandlerContext.crashCallback != NULL)
-        handled = SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext, NULL);
-    
+    shared_handler_context.registered_handlers.set_reading(true); {
+        async_list<signal_callback_registration_t>::node *next = NULL;
+        while ((next = shared_handler_context.registered_handlers.next(next)) != NULL) {
+            handled = next->value().callback(signal, info, (ucontext_t *) uapVoid, NULL /* TODO */, next->value().context);
+            if (handled)
+                break;
+        }
+    } shared_handler_context.registered_handlers.set_reading(false);
+
     /* Re-raise the signal */
     if (!handled)
         raise(signal);
@@ -143,24 +149,28 @@ bool PLCrashSignalHandlerForward (int sig, siginfo_t *info, ucontext_t *uap, plc
  */
 @implementation PLCrashSignalHandler
 
-/**
- * Return the process signal handler. Only one signal handler may be registered per process.
- */
-+ (PLCrashSignalHandler *) sharedHandler {
-    /* Initialize the context, if required */
-    if (SharedHandlerContext.sharedHandler == NULL) {
-        memset(&SharedHandlerContext, 0, sizeof(SharedHandlerContext));
-        SharedHandlerContext.sharedHandler = [[PLCrashSignalHandler alloc] init];
-    }
+/* Shared signal handler. Since signal handlers are process-global, it would be unusual
+ * for more than one instance to be required. */
+static PLCrashSignalHandler *sharedHandler;
 
-    return SharedHandlerContext.sharedHandler;
++ (void) initialize {
+    if ([self class] != [PLCrashSignalHandler class])
+        return;
+    
+    sharedHandler = [[self alloc] init];
 }
 
 /**
- * @internal
+ * Return the shared signal handler.
+ */
++ (PLCrashSignalHandler *) sharedHandler {
+    return sharedHandler;
+}
+
+/**
+ * Initialize a new signal handler instance.
  *
- * Initialize the signal handler. API clients should use he +[PLCrashSignalHandler sharedHandler] method.
- *
+ * API clients should generally prefer the +[PLCrashSignalHandler sharedHandler] method.
  */
 - (id) init {
     if ((self = [super init]) == nil)
@@ -225,14 +235,20 @@ bool PLCrashSignalHandlerForward (int sig, siginfo_t *info, ucontext_t *uap, plc
  * NULL for this parameter, and no error information will be provided. 
  */
 - (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallback) crashCallback context: (void *) context error: (NSError **) outError {
+    /* TODO */
+#if 0
     /* Prevent duplicate registrations */
     if (SharedHandlerContext.handlerRegistered)
         [NSException raise: PLCrashReporterException format: @"Signal handler has already been registered"];
     SharedHandlerContext.handlerRegistered = YES;
+#endif
 
-    /* Save the callback function */
-    SharedHandlerContext.crashCallback = crashCallback;
-    SharedHandlerContext.crashCallbackContext = context;
+    /* Save the callback function in the shared state list. */
+    signal_callback_registration_t reg = {
+        .callback = crashCallback,
+        .context = context
+    };
+    shared_handler_context.registered_handlers.nasync_prepend(reg);
 
     /* Register our signal stack */
     if (sigaltstack(&_sigstk, 0) < 0) {

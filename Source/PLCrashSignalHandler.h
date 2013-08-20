@@ -54,7 +54,7 @@ typedef bool (*PLCrashSignalHandlerCallback)(int signal, siginfo_t *info, uconte
  */
 struct plcrash_signal_handler_callback_set {
     /** Number of independent signal handler sets (up to NSIG). */
-    int count;
+    NSUInteger count;
 
     /** Signal types. */
     int signals[NSIG];
