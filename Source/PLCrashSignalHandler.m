@@ -102,12 +102,38 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
 
     /* Call the callback handler */
     if (SharedHandlerContext.crashCallback != NULL)
-        SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext);
+        SharedHandlerContext.crashCallback(signal, info, uapVoid, SharedHandlerContext.crashCallbackContext, NULL);
     
     /* Re-raise the signal */
     raise(signal);
 }
 
+/**
+ * Forward a signal to the first matching handler in @a next, if any.
+ *
+ * @param sig The signal number.
+ * @param info The signal info.
+ * @param uap The signal thread context.
+ * @param next The set of signal handlers to which the message may be forwarded.
+ *
+ * @return Returns true if the exception was handled by a registered signal handler, or false
+ * if the exception was not handled, or no signal handler was registered for @a signo.
+ *
+ * @par In-Process Operation
+ *
+ * When operating in-process, handling the exception replies internally breaks external debuggers,
+ * as they assume it is safe to leave our thread suspended. This results in the target thread never resuming,
+ * as our thread never wakes up to reply to the message, or to handle future messages.
+ *
+ * The recommended solution is to simply not register a Mach exception handler in the case where a debugger
+ * is already attached.
+ *
+ * @note This function may be called at crash-time.
+ */
+bool PLCrashSignalHandlerForward (int sig, siginfo_t *info, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next) {
+    // TODO
+    return false;
+}
 
 /***
  * @internal

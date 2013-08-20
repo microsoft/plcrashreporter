@@ -32,8 +32,9 @@
 
 @interface PLCrashSignalHandlerTests : SenTestCase @end
 
-static void crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context) {
+static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next, void *context) {
     // Do nothing
+    return false;
 }
 
 @implementation PLCrashSignalHandlerTests
