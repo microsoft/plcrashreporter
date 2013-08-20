@@ -41,9 +41,14 @@ namespace plcrash { namespace async {
  *
  * An async-safe linked list implementation.
  *
- * @tparam The 
+ * Maintains a linked list with support for async-safe iteration. Writing may occur concurrently with
+ * async-safe reading, but is not async-safe.
  *
- * @note Reading the list is async-safe, adding and removing items is not. 
+ * Atomic compare and swap is used to ensure a consistent view of the list for readers. To simplify implementation, a
+ * write mutex is held for all updates; the implementation is not designed for efficiency in the face of contention
+ * between readers and writers, and it's assumed that no contention should realistically occur.
+ *
+ * @tparam V The list element type. 
  */
 template <typename V>
 class async_list {
