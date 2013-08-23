@@ -32,6 +32,7 @@
 #import "PLCrashProcessInfo.h"
 
 @interface PLCrashSignalHandlerTests : SenTestCase {
+    struct sigaction _sa_sigegv;
 }
 @end
 
@@ -56,11 +57,7 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, voi
 - (void) testRegisterSignalHandlers {
     NSError *error;
     struct sigaction action;
-    
-    /* Ensure that no signal handler is registered for one of the fatal signals */
-    sigaction (SIGSEGV, NULL, &action);
-    STAssertEquals(action.sa_handler, SIG_DFL, @"Action already registered for SIGSEGV");
-    
+
     /* Register the signal handlers */
     STAssertTrue([[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &crash_callback context: NULL error: &error], @"Could not register signal handler: %@", error);
     
@@ -72,7 +69,7 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, voi
      * test will halt when run under a debugger due to their catching of fatal signals, so we only perform the test if we're not
      * currently being traced */
     if (![[PLCrashProcessInfo currentProcessInfo] isTraced]) {
-        mprotect(crash_page, sizeof(crash_page), 0);
+        mprotect(crash_page, sizeof(crash_page), PROT_NONE);
         crash_page[0] = 0xCA;
         
         STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Byte should have been set to test value");
@@ -81,5 +78,54 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, voi
         NSLog(@"Running under debugger; skipping signal callback validation.");
     }
 }
+
+static void sa_action_cb (int signo, siginfo_t *info, void *uapVoid) {
+    crash_page[1] = 0xFB;
+}
+
+#if 0
+static void sa_handler_cb (int signo) {
+    crash_page[1] = 0xF0;
+}
+#endif
+
+static bool noop_crash_cb (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
+    mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
+    
+    // Let the original signal handler run
+    return PLCrashSignalHandlerForward(next, signal, siginfo, uap);
+}
+
+/**
+ * Verify that PLCrashSignalHandler correctly passes signals to the original signal handler(s).
+ */
+- (void) testHandlerPassthrough {
+    NSError *error;
+
+    /* Register a standard POSIX handler */
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = sa_action_cb;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGBUS, &sa, NULL);
+
+    /* Register our callback */
+    STAssertTrue([[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &noop_crash_cb context: NULL error: &error], @"Could not register signal handler: %@", error);
+
+    /* Verify that the callback is dispatched; if the process doesn't lock up here, the signal handler is working. Unfortunately, this
+     * test will halt when run under a debugger due to their catching of fatal signals, so we only perform the test if we're not
+     * currently being traced */
+    if (![[PLCrashProcessInfo currentProcessInfo] isTraced]) {
+        mprotect(crash_page, sizeof(crash_page), PROT_NONE);
+        crash_page[0] = 0xCA;
+        
+        STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Byte should have been set to test value");
+        STAssertEquals(crash_page[1], (uint8_t)0xFB, @"Crash callback did not run");
+    } else {
+        NSLog(@"Running under debugger; skipping signal callback validation.");
+    }
+}
+
 
 @end

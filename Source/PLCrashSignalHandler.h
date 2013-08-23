@@ -27,6 +27,9 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "PLCrashConstants.h"
+
+PLCR_C_BEGIN_DECLS
 
 typedef struct PLCrashSignalHandlerCallback PLCrashSignalHandlerCallback;
 
@@ -58,3 +61,5 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int signal
 - (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallbackFunc) crashCallback context: (void *) context error: (NSError **) outError;
 
 @end
+
+PLCR_C_END_DECLS
