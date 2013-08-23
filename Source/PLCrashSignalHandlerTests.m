@@ -38,7 +38,7 @@
 /* Page-aligned to allow us to tweak memory protections for test purposes. */
 static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
-static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next, void *context) {
+static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
     
     // Success

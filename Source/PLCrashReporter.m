@@ -116,7 +116,7 @@ static PLCrashReporterCallbacks crashCallbacks = {
  *
  * Signal handler callback.
  */
-static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next, void *context) {
+static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     plcrashreporter_handler_ctx_t *sigctx = context;
     plcrash_async_thread_state_t thread_state;
     plcrash_async_file_t file;

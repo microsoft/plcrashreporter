@@ -28,46 +28,24 @@
 
 #import <Foundation/Foundation.h>
 
-typedef struct plcrash_signal_handler_callback_set plcrash_signal_handler_callback_set_t;
+typedef struct PLCrashSignalHandlerCallback PLCrashSignalHandlerCallback;
 
 /**
  * @internal
- * Signal handler callback.
+ * Signal handler callback function
  *
- * @param signal The received signal.
+ * @param signo The received signal.
  * @param info The signal info.
  * @param uap The signal thread context.
- * @param next The next set of signal handlers. May be used to forward the signal via PLCrashSignalHandlerForward().
  * @param context The previously specified context for this handler.
+ * @param next A borrowed reference to the next signal handler's callback, or NULL if this is the final registered callback.
+ * May be used to forward the signal via PLCrashSignalHandlerForward.
  *
  * @return Return true if the signal was handled and execution should continue, false if the signal was not handled.
  */
-typedef bool (*PLCrashSignalHandlerCallback)(int signal, siginfo_t *info, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next, void *context);
+typedef bool (*PLCrashSignalHandlerCallbackFunc)(int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next);
 
-/**
- * @internal
- *
- * A set of PLCrashSignalHandlerCallback and the signals/contexts for which they are registered.
- *
- * Up to NSIG entries may be returned. The actual count is provided via plcrash_signal_handler_callback_set::count.
- * The values stored in the arrays correspond positionally.
- */
-struct plcrash_signal_handler_callback_set {
-    /** Number of independent signal handler sets (up to NSIG). */
-    NSUInteger count;
-
-    /** Signal types. */
-    int signals[NSIG];
-
-    /** Signal handler functions. */
-    PLCrashSignalHandlerCallback funcs[NSIG];
-
-    /** Signal handler contexts. */
-    void *contexts[NSIG];
-};
-
-
-bool PLCrashSignalHandlerForward (int signal, siginfo_t *info, ucontext_t *uap, plcrash_signal_handler_callback_set_t *callback_set);
+bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int signal, siginfo_t *info, ucontext_t *uap);
 
 @interface PLCrashSignalHandler : NSObject {
 @private
@@ -77,6 +55,6 @@ bool PLCrashSignalHandlerForward (int signal, siginfo_t *info, ucontext_t *uap, 
 
 
 + (PLCrashSignalHandler *) sharedHandler;
-- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallback) crashCallback context: (void *) context error: (NSError **) outError;
+- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallbackFunc) crashCallback context: (void *) context error: (NSError **) outError;
 
 @end

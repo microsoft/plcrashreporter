@@ -56,16 +56,37 @@ static int fatal_signals[] = {
  * number of signals in the fatal signals list */
 static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
 
-/** @internal
- * A single registered signal callback. */
-typedef struct signal_callback_registration {
-    /** Callback function */
-    PLCrashSignalHandlerCallback callback;
+/**
+ * @internal
+ *
+ * PLCrashSignalHandlerCallbackFunc and associated context.
+ */
+struct PLCrashSignalHandlerCallback {
+    /** Signal handler callback function. */
+    PLCrashSignalHandlerCallbackFunc callback;
     
-    /** Callback context */
+    /** Signal handler context. */
     void *context;
-} signal_callback_registration_t;
+};
 
+/**
+ * @internal
+ *
+ * A set of registered signal handlers.
+ *
+ * Up to NSIG entries may be returned. The actual count is provided via plcrash_signal_handler_set::count.
+ * The values stored in the arrays correspond positionally.
+ */
+struct plcrash_signal_handler_set {
+    /** Number of independent signal handler sets (up to NSIG). */
+    uint32_t count;
+    
+    /** Signal types. */
+    int signals[NSIG];
+    
+    /** Signal handler actions. */
+    struct sigaction actions[NSIG];
+};
 
 /**
  * Signal handler context that must be global for async-safe
@@ -74,21 +95,53 @@ typedef struct signal_callback_registration {
 static struct {
     /** @internal
      * Registered callbacks. */
-    async_list<signal_callback_registration_t> registered_handlers;
+    async_list<PLCrashSignalHandlerCallback> registered_handlers;
     
     /** @internal
      * Originaly registered signal handlers */
-    plcrash_signal_handler_callback_set_t previous_handlers;
+    plcrash_signal_handler_set previous_handlers;
 } shared_handler_context;
+
+/*
+ * A signal handler callback used to recursively iterate the actual callbacks registered in our shared_handler_context. To begin iteration,
+ * provide a value of NULL for 'next'.
+ */
+static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
+    /* Call the next handler in the chain. If this is the last handler in the chain, pass it the original signal
+     * handlers. */
+    bool handled = false;
+    shared_handler_context.registered_handlers.set_reading(true); {
+        async_list<PLCrashSignalHandlerCallback>::node *prev = (async_list<PLCrashSignalHandlerCallback>::node *) context;
+        async_list<PLCrashSignalHandlerCallback>::node *current = shared_handler_context.registered_handlers.next(prev);
+        
+        /* Check if any additional handlers are registered. If so, provide the next handler as the forwarding target. */
+        if (shared_handler_context.registered_handlers.next(current) != NULL) {
+            PLCrashSignalHandlerCallback next_handler = {
+                .callback = internal_callback_iterator,
+                .context = current
+            };
+            handled = current->value().callback(signo, info, uap, current->value().context, &next_handler);
+        } else {
+            /* Otherwise, we've hit the final handler in the list. */
+            handled = current->value().callback(signo, info, uap, current->value().context, NULL);
+        }
+    } shared_handler_context.registered_handlers.set_reading(false);
+
+    return handled;
+};
 
 /** @internal
  * Root fatal signal handler */
-static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
+static void fatal_signal_handler (int signo, siginfo_t *info, void *uapVoid) {
     /* Remove all signal handlers -- if the dump code fails, the default terminate
      * action will occur.
      *
      * NOTE: SA_RESETHAND breaks SA_SIGINFO on ARM, so we reset the handlers manually.
      * http://openradar.appspot.com/11839803
+     *
+     * TODO: When forwarding signals (eg, to Mono's runtime), resetting the signal handlers
+     * could result in incorrect runtime behavior; we should revisit resetting the
+     * signal handlers once we address double-fault handling.
      */
     for (int i = 0; i < n_fatal_signals; i++) {
         struct sigaction sa;
@@ -99,46 +152,29 @@ static void fatal_signal_handler (int signal, siginfo_t *info, void *uapVoid) {
         
         sigaction(fatal_signals[i], &sa, NULL);
     }
-
-    /* Call the callback handlers */
-    bool handled = false;
-    shared_handler_context.registered_handlers.set_reading(true); {
-        async_list<signal_callback_registration_t>::node *next = NULL;
-        while ((next = shared_handler_context.registered_handlers.next(next)) != NULL) {
-            handled = next->value().callback(signal, info, (ucontext_t *) uapVoid, NULL /* TODO */, next->value().context);
-            if (handled)
-                break;
-        }
-    } shared_handler_context.registered_handlers.set_reading(false);
-
-    /* Re-raise the signal */
-    if (!handled)
-        raise(signal);
+    
+    /* Start iteration; we currently re-raise the signal if not handled by callbacks; this should be revisited
+     * in the future, as the signal may not be raised on the expected thread.
+     */
+    if (!internal_callback_iterator(signo, info, (ucontext_t *) uapVoid, NULL, NULL))
+        raise(signo);
 }
 
 /**
- * Forward a signal to the first matching handler in @a next, if any.
+ * Forward a signal to the first matching callback in @a next, if any.
  *
+ * @param next The signal handler callback to which the signal should be forwarded. This value may be NULL,
+ * in which case false will be returned.
  * @param sig The signal number.
  * @param info The signal info.
  * @param uap The signal thread context.
- * @param next The set of signal handlers to which the message may be forwarded.
  *
  * @return Returns true if the exception was handled by a registered signal handler, or false
  * if the exception was not handled, or no signal handler was registered for @a signo.
  *
- * @par In-Process Operation
- *
- * When operating in-process, handling the exception replies internally breaks external debuggers,
- * as they assume it is safe to leave our thread suspended. This results in the target thread never resuming,
- * as our thread never wakes up to reply to the message, or to handle future messages.
- *
- * The recommended solution is to simply not register a Mach exception handler in the case where a debugger
- * is already attached.
- *
- * @note This function may be called at crash-time.
+ * @note This function is async-safe.
  */
-bool PLCrashSignalHandlerForward (int sig, siginfo_t *info, ucontext_t *uap, plcrash_signal_handler_callback_set_t *next) {
+bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int sig, siginfo_t *info, ucontext_t *uap) {
     // TODO
     return false;
 }
@@ -234,8 +270,9 @@ static PLCrashSignalHandler *sharedHandler;
  * registered. If no error occurs, this parameter will be left unmodified. You may specify
  * NULL for this parameter, and no error information will be provided. 
  */
-- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallback) crashCallback context: (void *) context error: (NSError **) outError {
-    /* TODO */
+- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallbackFunc) crashCallback context: (void *) context error: (NSError **) outError {
+    /* TODO - we should register the actual signal handlers just once, though any number of PLCrashSignalHandler instances may be 
+     * enabled. */
 #if 0
     /* Prevent duplicate registrations */
     if (SharedHandlerContext.handlerRegistered)
@@ -244,7 +281,7 @@ static PLCrashSignalHandler *sharedHandler;
 #endif
 
     /* Save the callback function in the shared state list. */
-    signal_callback_registration_t reg = {
+    PLCrashSignalHandlerCallback reg = {
         .callback = crashCallback,
         .context = context
     };
