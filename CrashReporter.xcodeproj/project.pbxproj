@@ -291,6 +291,17 @@
 		05A7E78F173C130200ACA689 /* PLCrashFrameCompactUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD5F16DD6A3B007911FB /* PLCrashFrameCompactUnwind.c */; };
 		05A7E7AE174284E700ACA689 /* PLCrashFrameCompactUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD5F16DD6A3B007911FB /* PLCrashFrameCompactUnwind.c */; };
 		05A7E7AF174284EE00ACA689 /* PLCrashFrameCompactUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F3CD5F16DD6A3B007911FB /* PLCrashFrameCompactUnwind.c */; };
+		05B929E817C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */; };
+		05B929E917C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */; };
+		05B929EA17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */; };
+		05B929EB17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */; };
+		05B929EC17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */; };
+		05B929ED17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */; };
+		05B929EE17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */; };
+		05B929EF17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */; };
+		05B929F117C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
+		05B929F217C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
+		05B929F317C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
 		05BB83CD1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
 		05BB83CE1364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
 		05BB83CF1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
@@ -1126,6 +1137,9 @@
 		05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PLCrashAsyncLinkedList.cpp; sourceTree = "<group>"; };
 		05A5E28717C04188008A75E5 /* PLCrashAsyncLinkedList.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PLCrashAsyncLinkedList.hpp; sourceTree = "<group>"; };
 		05A5E29317C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncLinkedListTests.mm; sourceTree = "<group>"; };
+		05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashUncaughtExceptionHandler.h; sourceTree = "<group>"; };
+		05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashUncaughtExceptionHandler.m; sourceTree = "<group>"; };
+		05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashUncaughtExceptionHandlerTests.m; sourceTree = "<group>"; };
 		05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportProcessorInfo.h; sourceTree = "<group>"; };
 		05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessorInfo.m; sourceTree = "<group>"; };
 		05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportMachineInfo.h; sourceTree = "<group>"; };
@@ -1570,6 +1584,7 @@
 			children = (
 				0573B4281681097200395F2A /* Mach Exception Server */,
 				05BB84AE1364F5BC00D53B84 /* Signal Handler */,
+				05B929E517C9333800B051E3 /* ObjC Exception Handler */,
 				05BB84AF1364F5C600D53B84 /* Async-Safe APIs */,
 				05BB84B01364F5DB00D53B84 /* Host and Process Info */,
 				059670210EEF5459008A0601 /* Crash Log Writer */,
@@ -1621,6 +1636,16 @@
 				05A5E29317C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm */,
 			);
 			name = "Linked List";
+			sourceTree = "<group>";
+		};
+		05B929E517C9333800B051E3 /* ObjC Exception Handler */ = {
+			isa = PBXGroup;
+			children = (
+				05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */,
+				05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */,
+				05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */,
+			);
+			name = "ObjC Exception Handler";
 			sourceTree = "<group>";
 		};
 		05BB4C9D166D3BE10075171B /* Mach-O ABI */ = {
@@ -2162,6 +2187,7 @@
 				05BEC41917BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
 				05BEC43817BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				05A5E29117C04188008A75E5 /* PLCrashAsyncLinkedList.hpp in Headers */,
+				05B929EA17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2209,6 +2235,7 @@
 				05BEC41A17BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
 				05BEC43917BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				05A5E29217C04188008A75E5 /* PLCrashAsyncLinkedList.hpp in Headers */,
+				05B929EB17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2240,6 +2267,7 @@
 				05BEC41717BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
 				05BEC43617BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				05A5E28F17C04188008A75E5 /* PLCrashAsyncLinkedList.hpp in Headers */,
+				05B929E817C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2297,6 +2325,7 @@
 				05BEC42E17BD4F400082CBFB /* PLCrashAsyncMachExceptionInfo.h in Headers */,
 				05BEC43717BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				05A5E29017C04188008A75E5 /* PLCrashAsyncLinkedList.hpp in Headers */,
+				05B929E917C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2826,6 +2855,7 @@
 				05BEC42817BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43C17BF1CB10082CBFB /* PLCrashReporterConfig.m in Sources */,
 				05A5E28A17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
+				05B929EE17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2892,6 +2922,7 @@
 				05BEC42917BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43D17BF1CB10082CBFB /* PLCrashReporterConfig.m in Sources */,
 				05A5E28B17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
+				05B929EF17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2994,6 +3025,7 @@
 				05BEC43117BD4F540082CBFB /* PLCrashAsyncMachExceptionInfoTests.m in Sources */,
 				05A5E28C17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29417C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
+				05B929F117C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3096,6 +3128,7 @@
 				05BEC43217BD4F540082CBFB /* PLCrashAsyncMachExceptionInfoTests.m in Sources */,
 				05A5E28D17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29517C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
+				05B929F217C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3198,6 +3231,7 @@
 				05BEC43317BD4F540082CBFB /* PLCrashAsyncMachExceptionInfoTests.m in Sources */,
 				05A5E28E17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29617C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
+				05B929F317C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3271,6 +3305,7 @@
 				05BEC42617BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43A17BF1CB10082CBFB /* PLCrashReporterConfig.m in Sources */,
 				05A5E28817C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
+				05B929EC17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3346,6 +3381,7 @@
 				05BEC42717BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43B17BF1CB10082CBFB /* PLCrashReporterConfig.m in Sources */,
 				05A5E28917C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
+				05B929ED17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
