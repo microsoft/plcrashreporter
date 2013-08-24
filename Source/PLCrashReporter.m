@@ -67,13 +67,6 @@ static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
 
 /**
  * @internal
- * Crash reporter singleton.
- */
-static PLCrashReporter *sharedReporter = nil;
-
-
-/**
- * @internal
  * Signal handler context
  */
 typedef struct signal_handler_ctx {
@@ -231,6 +224,10 @@ static void uncaught_exception_handler (NSException *exception) {
     _dyld_register_func_for_remove_image(image_remove_callback);
 }
 
+
+/* (Deprecated) Crash reporter singleton. */
+static PLCrashReporter *sharedReporter = nil;
+
 /**
  * Return the default crash reporter instance. The returned instance will be configured
  * appropriately for release deployment.
@@ -239,8 +236,12 @@ static void uncaught_exception_handler (NSException *exception) {
  * clients should initialize a crash reporter instance directly.
  */
 + (PLCrashReporter *) sharedReporter {
-    if (sharedReporter == nil)
-        sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] configuration: [PLCrashReporterConfig defaultConfiguration]];
+    /* Once we drop 10.5 support, this may be converted to dispatch_once() */
+    static OSSpinLock onceLock = OS_SPINLOCK_INIT;
+    OSSpinLockLock(&onceLock); {
+        if (sharedReporter == nil)
+            sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] configuration: [PLCrashReporterConfig defaultConfiguration]];
+    } OSSpinLockUnlock(&onceLock);
 
     return sharedReporter;
 }
