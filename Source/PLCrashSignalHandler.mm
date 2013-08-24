@@ -382,7 +382,8 @@ static PLCrashSignalHandler *sharedHandler;
 }
 
 /**
- * Register a signal handler with the provided callback function.
+ * Register a new signal callback, and if not yet enabled, register POSIX signal handlers for the signals
+ * handled by PLCrashSignalHandler.
  *
  * @param crashCallback Callback called upon receipt of a signal. The callback will execute on the crashed
  * thread, using an alternate, limited stack.
