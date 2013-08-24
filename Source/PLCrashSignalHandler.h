@@ -48,6 +48,8 @@ typedef struct PLCrashSignalHandlerCallback PLCrashSignalHandlerCallback;
  */
 typedef bool (*PLCrashSignalHandlerCallbackFunc)(int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next);
 
+void plcrash_signal_handler (int signo, siginfo_t *info, void *uapVoid);
+
 bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int signal, siginfo_t *info, ucontext_t *uap);
 
 @interface PLCrashSignalHandler : NSObject {

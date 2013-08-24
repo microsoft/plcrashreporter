@@ -80,6 +80,7 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, voi
 }
 
 static void sa_action_cb (int signo, siginfo_t *info, void *uapVoid) {
+    /* Note that we ran */
     crash_page[1] = 0xFB;
 }
 
@@ -90,7 +91,8 @@ static void sa_handler_cb (int signo) {
 #endif
 
 static bool noop_crash_cb (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
-    mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
+    /* Note that we ran */
+    crash_page[0] = 0xFA;
     
     // Let the original signal handler run
     return PLCrashSignalHandlerForward(next, signal, siginfo, uap);
@@ -113,18 +115,13 @@ static bool noop_crash_cb (int signal, siginfo_t *siginfo, ucontext_t *uap, void
     /* Register our callback */
     STAssertTrue([[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &noop_crash_cb context: NULL error: &error], @"Could not register signal handler: %@", error);
 
-    /* Verify that the callback is dispatched; if the process doesn't lock up here, the signal handler is working. Unfortunately, this
-     * test will halt when run under a debugger due to their catching of fatal signals, so we only perform the test if we're not
-     * currently being traced */
-    if (![[PLCrashProcessInfo currentProcessInfo] isTraced]) {
-        mprotect(crash_page, sizeof(crash_page), PROT_NONE);
-        crash_page[0] = 0xCA;
-        
-        STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Byte should have been set to test value");
-        STAssertEquals(crash_page[1], (uint8_t)0xFB, @"Crash callback did not run");
-    } else {
-        NSLog(@"Running under debugger; skipping signal callback validation.");
-    }
+    /* Verify that the callbacks are dispatched */
+    siginfo_t si;
+    ucontext_t uc;
+    plcrash_signal_handler(SIGBUS, &si, &uc);
+
+    STAssertEquals(crash_page[0], (uint8_t)0xFA, @"Crash callback did not run");
+    STAssertEquals(crash_page[1], (uint8_t)0xFB, @"Signal handler did not run");
 }
 
 

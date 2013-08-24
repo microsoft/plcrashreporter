@@ -59,12 +59,29 @@ static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
 /**
  * @internal
  *
- * PLCrashSignalHandlerCallbackFunc and associated context.
+ * Manages the internal state for a user-registered callback and context.
  */
-struct PLCrashSignalHandlerCallback {
-    /** Signal handler internal callback function. */
+struct plcrash_signal_user_callback {
+    /** Signal handler callback function. */
     PLCrashSignalHandlerCallbackFunc callback;
     
+    /** Signal handler context. */
+    void *context;
+};
+
+/**
+ * @internal
+ *
+ * A signal handler callback context.
+ */
+struct PLCrashSignalHandlerCallback {
+    /**
+     * Internal callback function. This function is responsible for determining the next
+     * signal handler in the chain of handlers, and issueing the actual PLCrashSignalHandlerCallback()
+     * invocation.
+     */
+    bool (*callback)(int signo, siginfo_t *info, ucontext_t *uap, void *context);
+
     /** Signal handler context. */
     void *context;
 };
@@ -91,7 +108,7 @@ struct plcrash_signal_handler_action {
 static struct {
     /** @internal
      * Registered callbacks. */
-    async_list<PLCrashSignalHandlerCallback> callbacks;
+    async_list<plcrash_signal_user_callback> callbacks;
     
     /** @internal
      * Originaly registered signal handlers */
@@ -99,12 +116,16 @@ static struct {
 } shared_handler_context;
 
 /*
- * A signal handler callback used to execute the first matching signal handler in the shared previous_actions list; this is used
+ * Finds and executes the first matching signal handler in the shared previous_actions list; this is used
  * to support executing process-wide POSIX signal handlers that were previously registered before being replaced by
  * PLCrashSignalHandler::registerHandlerForSignal:.
  */
 static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     bool handled = false;
+
+    /* Let any additional handler execute */
+    if (PLCrashSignalHandlerForward(next, signo, info, uap))
+        return true;
 
     shared_handler_context.previous_actions.set_reading(true); {
         /* Find the first matching handler */
@@ -149,16 +170,22 @@ static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *ua
 }
 
 /*
- * A signal handler callback used to recursively iterate the actual callbacks registered in our shared_handler_context. To begin iteration,
+ * Recursively iterates the actual callbacks registered in our shared_handler_context. To begin iteration,
  * provide a value of NULL for 'context'.
  */
-static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
+static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *uap, void *context) {
     /* Call the next handler in the chain. If this is the last handler in the chain, pass it the original signal
      * handlers. */
     bool handled = false;
     shared_handler_context.callbacks.set_reading(true); {
-        async_list<PLCrashSignalHandlerCallback>::node *prev = (async_list<PLCrashSignalHandlerCallback>::node *) context;
-        async_list<PLCrashSignalHandlerCallback>::node *current = shared_handler_context.callbacks.next(prev);
+        async_list<plcrash_signal_user_callback>::node *prev = (async_list<plcrash_signal_user_callback>::node *) context;
+        async_list<plcrash_signal_user_callback>::node *current = shared_handler_context.callbacks.next(prev);
+
+        /* Check for end-of-list */
+        if (current == NULL) {
+            shared_handler_context.callbacks.set_reading(false);
+            return false;
+        }
         
         /* Check if any additional handlers are registered. If so, provide the next handler as the forwarding target. */
         if (shared_handler_context.callbacks.next(current) != NULL) {
@@ -176,9 +203,17 @@ static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *
     return handled;
 };
 
-/** @internal
- * Root fatal signal handler */
-static void fatal_signal_handler (int signo, siginfo_t *info, void *uapVoid) {
+/** 
+ * @internal
+ *
+ * The signal handler function used by PLCrashSignalHandler. This function should not be called or referenced directly,
+ * but is exposed to allow simulating signal handling behavior from unit tests.
+ *
+ * @param signo The signal number.
+ * @param info The signal information.
+ * @param uapVoid A ucontext_t pointer argument.
+ */
+void plcrash_signal_handler (int signo, siginfo_t *info, void *uapVoid) {
     /* Remove all signal handlers -- if the dump code fails, the default terminate
      * action will occur.
      *
@@ -202,7 +237,7 @@ static void fatal_signal_handler (int signo, siginfo_t *info, void *uapVoid) {
     /* Start iteration; we currently re-raise the signal if not handled by callbacks; this should be revisited
      * in the future, as the signal may not be raised on the expected thread.
      */
-    if (!internal_callback_iterator(signo, info, (ucontext_t *) uapVoid, NULL, NULL))
+    if (!internal_callback_iterator(signo, info, (ucontext_t *) uapVoid, NULL))
         raise(signo);
 }
 
@@ -224,8 +259,7 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int sig, s
     if (next == NULL)
         return false;
 
-    /* The 'next' value will be populated by our internal handlers; we supply a NULL value here. */
-    return next->callback(sig, info, uap, next->context, NULL);
+    return next->callback(sig, info, uap, next->context);
 }
 
 /***
@@ -306,7 +340,7 @@ static PLCrashSignalHandler *sharedHandler;
         }
         
         /* Add the pass-through sigaction callback as the last element in the callback list. */
-        PLCrashSignalHandlerCallback sa = {
+        plcrash_signal_user_callback sa = {
             .callback = previous_action_callback,
             .context = NULL
         };
@@ -321,7 +355,7 @@ static PLCrashSignalHandler *sharedHandler;
             memset(&sa, 0, sizeof(sa));
             sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
             sigemptyset(&sa.sa_mask);
-            sa.sa_sigaction = &fatal_signal_handler;
+            sa.sa_sigaction = &plcrash_signal_handler;
             
             /* Set new sigaction */
             if (sigaction(fatal_signals[i], &sa, &sa_prev) != 0) {
@@ -338,7 +372,7 @@ static PLCrashSignalHandler *sharedHandler;
                 .signo = fatal_signals[i],
                 .action = sa_prev
             };
-            shared_handler_context.previous_actions.nasync_prepend(act);
+            shared_handler_context.previous_actions.nasync_append(act);
         }
     } pthread_mutex_unlock(&registerHandlers);
     
@@ -365,7 +399,7 @@ static PLCrashSignalHandler *sharedHandler;
         return NO;
 
     /* Add the new callback to the shared state list. */
-    PLCrashSignalHandlerCallback reg = {
+    plcrash_signal_user_callback reg = {
         .callback = crashCallback,
         .context = context
     };
