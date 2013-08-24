@@ -60,7 +60,13 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int signal
 
 
 + (PLCrashSignalHandler *) sharedHandler;
-- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallbackFunc) crashCallback context: (void *) context error: (NSError **) outError;
+
++ (void) resetHandlers;
+
+- (BOOL) registerHandlerForSignal: (int) signo
+                         callback: (PLCrashSignalHandlerCallbackFunc) callback
+                          context: (void *) context
+                            error: (NSError **) outError;
 
 @end
 

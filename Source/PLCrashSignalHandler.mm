@@ -41,23 +41,6 @@ using namespace plcrash::async;
 
 /**
  * @internal
- * List of monitored fatal signals.
- */
-static int fatal_signals[] = {
-    SIGABRT,
-    SIGBUS,
-    SIGFPE,
-    SIGILL,
-    SIGSEGV,
-    SIGTRAP
-};
-
-/** @internal
- * number of signals in the fatal signals list */
-static int n_fatal_signals = (sizeof(fatal_signals) / sizeof(fatal_signals[0]));
-
-/**
- * @internal
  *
  * Manages the internal state for a user-registered callback and context.
  */
@@ -111,7 +94,8 @@ static struct {
     async_list<plcrash_signal_user_callback> callbacks;
     
     /** @internal
-     * Originaly registered signal handlers */
+     * Originaly registered signal handlers. This list should only be mutated in
+     * -[PLCrashSignalHandler registerHandlerWithSignal:error:] with the appropriate locks held. */
     async_list<plcrash_signal_handler_action> previous_actions;
 } shared_handler_context;
 
@@ -214,26 +198,6 @@ static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *
  * @param uapVoid A ucontext_t pointer argument.
  */
 void plcrash_signal_handler (int signo, siginfo_t *info, void *uapVoid) {
-    /* Remove all signal handlers -- if the dump code fails, the default terminate
-     * action will occur.
-     *
-     * NOTE: SA_RESETHAND breaks SA_SIGINFO on ARM, so we reset the handlers manually.
-     * http://openradar.appspot.com/11839803
-     *
-     * TODO: When forwarding signals (eg, to Mono's runtime), resetting the signal handlers
-     * could result in incorrect runtime behavior; we should revisit resetting the
-     * signal handlers once we address double-fault handling.
-     */
-    for (int i = 0; i < n_fatal_signals; i++) {
-        struct sigaction sa;
-        
-        memset(&sa, 0, sizeof(sa));
-        sa.sa_handler = SIG_DFL;
-        sigemptyset(&sa.sa_mask);
-        
-        sigaction(fatal_signals[i], &sa, NULL);
-    }
-    
     /* Start iteration; we currently re-raise the signal if not handled by callbacks; this should be revisited
      * in the future, as the signal may not be raised on the expected thread.
      */
@@ -267,6 +231,8 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int sig, s
  *
  * Manages a process-wide signal handler, including async-safe registration of multiple callbacks, and pass-through
  * to previously registered signal handlers.
+ *
+ * @todo Remove the signal handler's registered callbacks from the callback chain when the instance is deallocated.
  */
 @implementation PLCrashSignalHandler
 
@@ -286,6 +252,28 @@ static PLCrashSignalHandler *sharedHandler;
  */
 + (PLCrashSignalHandler *) sharedHandler {
     return sharedHandler;
+}
+
+/**
+ * @internal
+ *
+ * Reset <em>all</em> currently registered callbacks. This is primarily useful for testing purposes,
+ * and should be avoided in production code.
+ */
++ (void) resetHandlers {
+    /* Reset all saved signal handlers */
+    shared_handler_context.previous_actions.set_reading(true); {
+        async_list<plcrash_signal_handler_action>::node *next = NULL;
+        while ((next = shared_handler_context.previous_actions.next(next)) != NULL)
+            shared_handler_context.previous_actions.nasync_remove_node(next);
+    } shared_handler_context.previous_actions.set_reading(false);
+
+    /* Reset all callbacks */
+    shared_handler_context.callbacks.set_reading(true); {
+        async_list<plcrash_signal_user_callback>::node *next = NULL;
+        while ((next = shared_handler_context.callbacks.next(next)) != NULL)
+            shared_handler_context.callbacks.nasync_remove_node(next);
+    } shared_handler_context.callbacks.set_reading(false);
 }
 
 /**
@@ -313,46 +301,66 @@ static PLCrashSignalHandler *sharedHandler;
 }
 
 /**
- * Register all process-wide signal handlers, if not yet registered. We register the actual signal handlers just once across all instances,
- * though any number of PLCrashSignalHandler instances may be instantiated. All instances share the same async-safe/thread-safe
+ * Register a signal handler for the given @a signo, if not yet registered. If a handler has already been registered,
+ * no changes will be made to the existing handler.
+ *
+ * We register only one signal handler for any given signal number; All instances share the same async-safe/thread-safe
  * ordered list of callbacks.
  *
+ * @param signo The signal number for which a handler should be registered.
  * @param outError A pointer to an NSError object variable. If an error occurs, this
  * pointer will contain an error object indicating why the signal handlers could not be
  * registered. If no error occurs, this parameter will be left unmodified.
- *
- * @note If this method returns NO, some signal handlers may have been registered
- * successfully.
  */
-- (BOOL) registerSignalHandlers: (NSError **) outError {
+- (BOOL) registerHandlerWithSignal: (int) signo error: (NSError **) outError {
     static pthread_mutex_t registerHandlers = PTHREAD_MUTEX_INITIALIZER;
-    static BOOL handlersRegistered = NO;
     pthread_mutex_lock(&registerHandlers); {
-        /* If already registered, nothing to do */
-        if (handlersRegistered) {
-            pthread_mutex_unlock(&registerHandlers);
-            return YES;
-        }
-        
-        /* Register our signal stack */
-        if (sigaltstack(&_sigstk, 0) < 0) {
-            /* This should only fail if we supply invalid arguments to sigaltstack() */
-            plcrash_populate_posix_error(outError, errno, @"Could not initialize alternative signal stack");
-            return NO;
-        }
-        
-        /* Add the pass-through sigaction callback as the last element in the callback list. */
-        plcrash_signal_user_callback sa = {
-            .callback = previous_action_callback,
-            .context = NULL
-        };
-        shared_handler_context.callbacks.nasync_append(sa);
+        static BOOL singleShotInitialization = NO;
 
-        /* Register handler for signals */
-        for (int i = 0; i < n_fatal_signals; i++) {
+        /* Perform operations that only need to be done once per process.
+         */
+        if (!singleShotInitialization) {
+            /*
+             * Register our signal stack. Right now, we register our signal stack on the calling thread; this may,
+             * in the future, be moved to an exposed instance method, as to allow registering a custom signal stack on any thread.
+             *
+             * For now, this supports the legacy behavior of registering a signal stack on the thread on
+             * which the signal handlers are enabled.
+             */
+            if (sigaltstack(&_sigstk, 0) < 0) {
+                /* This should only fail if we supply invalid arguments to sigaltstack() */
+                plcrash_populate_posix_error(outError, errno, @"Could not initialize alternative signal stack");
+                return NO;
+            }
+            
+            /*
+             * Add the pass-through sigaction callback as the last element in the callback list.
+             */
+            plcrash_signal_user_callback sa = {
+                .callback = previous_action_callback,
+                .context = NULL
+            };
+            shared_handler_context.callbacks.nasync_append(sa);
+        }
+        
+        /* Check whether the signal already has a registered handler. */
+        BOOL isRegistered = NO;
+        shared_handler_context.previous_actions.set_reading(true); {
+            /* Find the first matching handler */
+            async_list<plcrash_signal_handler_action>::node *next = NULL;
+            while ((next = shared_handler_context.previous_actions.next(next)) != NULL) {
+                if (next->value().signo == signo) {
+                    isRegistered = YES;
+                    break;
+                }
+            }
+        } shared_handler_context.previous_actions.set_reading(false);
+
+        /* Register handler for the requested signal */
+        if (!isRegistered) {
             struct sigaction sa;
             struct sigaction sa_prev;
-
+            
             /* Configure action */
             memset(&sa, 0, sizeof(sa));
             sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
@@ -360,10 +368,9 @@ static PLCrashSignalHandler *sharedHandler;
             sa.sa_sigaction = &plcrash_signal_handler;
             
             /* Set new sigaction */
-            if (sigaction(fatal_signals[i], &sa, &sa_prev) != 0) {
+            if (sigaction(signo, &sa, &sa_prev) != 0) {
                 int err = errno;
                 plcrash_populate_posix_error(outError, err, @"Failed to register signal handler");
-                NSLog(@"Signal registration for %s failed: %s", strsignal(fatal_signals[i]), strerror(err));
                 return NO;
             }
             
@@ -371,7 +378,7 @@ static PLCrashSignalHandler *sharedHandler;
              * we may not call the previous signal handler if signal occurs prior to our saving
              * the caller's handler. */
             plcrash_signal_handler_action act = {
-                .signo = fatal_signals[i],
+                .signo = signo,
                 .action = sa_prev
             };
             shared_handler_context.previous_actions.nasync_append(act);
@@ -382,32 +389,37 @@ static PLCrashSignalHandler *sharedHandler;
 }
 
 /**
- * Register a new signal callback, and if not yet enabled, register POSIX signal handlers for the signals
- * handled by PLCrashSignalHandler.
+ * Register a new signal @a callback for @a signo.
  *
- * @param crashCallback Callback called upon receipt of a signal. The callback will execute on the crashed
- * thread, using an alternate, limited stack.
+ * @param signo The signal for which a signal handler should be registered. Note that multiple callbacks may be registered
+ * for a single signal, with chaining handled appropriately by the receiver. If multiple callbacks are registered, they may
+ * <em>optionally</em> forward the signal to the next callback (and the original signal handler, if any was registered) via PLCrashSignalHandlerForward.
+ * @param callback Callback to be issued upon receipt of a signal. The callback will execute on the crashed thread.
  * @param context Context to be passed to the callback. May be NULL.
- * @param outError A pointer to an NSError object variable. If an error occurs, this
- * pointer will contain an error object indicating why the signal handlers could not be
- * registered. If no error occurs, this parameter will be left unmodified. You may specify
- * NULL for this parameter, and no error information will be provided. 
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer will contain an error object indicating why
+ * the signal handlers could not be registered. If no error occurs, this parameter will be left unmodified. You may specify
+ * NULL for this parameter, and no error information will be provided.
  *
- * @note If this method returns NO, some process-wide signal handlers may have been registered
- * successfully.
+ * @warning Once registered, a callback may not be deregistered. This restriction may be removed in a future release.
+ * @warning Callers must ensure that the PLCrashSignalHandler instance is not released and deallocated while callbacks remain active; in
+ * a future release, this may result in the callbacks also being deregistered.
  */
-- (BOOL) registerHandlerWithCallback: (PLCrashSignalHandlerCallbackFunc) crashCallback context: (void *) context error: (NSError **) outError {
-    /* Register the actual signal handlers, if necessary */
-    if (![self registerSignalHandlers: outError])
+- (BOOL) registerHandlerForSignal: (int) signo
+                         callback: (PLCrashSignalHandlerCallbackFunc) callback
+                          context: (void *) context
+                            error: (NSError **) outError
+{
+    /* Register the actual signal handler, if necessary */
+    if (![self registerHandlerWithSignal: signo error: outError])
         return NO;
-
+    
     /* Add the new callback to the shared state list. */
     plcrash_signal_user_callback reg = {
-        .callback = crashCallback,
+        .callback = callback,
         .context = context
     };
     shared_handler_context.callbacks.nasync_prepend(reg);
-
+    
     return YES;
 }
 

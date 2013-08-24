@@ -67,6 +67,23 @@ static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
 
 /**
  * @internal
+ * Fatal signals to be monitored.
+ */
+static int monitored_signals[] = {
+    SIGABRT,
+    SIGBUS,
+    SIGFPE,
+    SIGILL,
+    SIGSEGV,
+    SIGTRAP
+};
+
+/** @internal
+ * number of signals in the fatal signals list */
+static int monitored_signals_count = (sizeof(monitored_signals) / sizeof(monitored_signals[0]));
+
+/**
+ * @internal
  * Signal handler context
  */
 typedef struct signal_handler_ctx {
@@ -113,6 +130,26 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrashreporter_handler_ctx_t *sigctx = context;
     plcrash_async_thread_state_t thread_state;
     plcrash_async_file_t file;
+    
+    /* Remove all signal handlers -- if the crash reporting code fails, the default terminate
+     * action will occur.
+     *
+     * NOTE: SA_RESETHAND breaks SA_SIGINFO on ARM, so we reset the handlers manually.
+     * http://openradar.appspot.com/11839803
+     *
+     * TODO: When forwarding signals (eg, to Mono's runtime), resetting the signal handlers
+     * could result in incorrect runtime behavior; we should revisit resetting the
+     * signal handlers once we address double-fault handling.
+     */
+    for (int i = 0; i < monitored_signals_count; i++) {
+        struct sigaction sa;
+        
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = SIG_DFL;
+        sigemptyset(&sa.sa_mask);
+        
+        sigaction(monitored_signals[i], &sa, NULL);
+    }
 
     /* Extract the thread state */
     plcrash_async_thread_state_mcontext_init(&thread_state, uap->uc_mcontext);
@@ -364,8 +401,10 @@ static PLCrashReporter *sharedReporter = nil;
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, false);
 
     /* Enable the signal handler */
-    if (![[PLCrashSignalHandler sharedHandler] registerHandlerWithCallback: &signal_handler_callback context: &signal_handler_context error: outError])
-        return NO;
+    for (size_t i = 0; i < monitored_signals_count; i++) {
+        if (![[PLCrashSignalHandler sharedHandler] registerHandlerForSignal: monitored_signals[i] callback: &signal_handler_callback context: &signal_handler_context error: outError])
+            return NO;
+    }
 
     /* Set the uncaught exception handler */
     NSSetUncaughtExceptionHandler(&uncaught_exception_handler);
