@@ -109,6 +109,24 @@ public:
     void nasync_remove_node (node *deleted_node);
     void set_reading (bool enable);
     node *next (node *current);
+    
+    /**
+     * Sanity check list validity. Intended to be used from the unit tests; will fire
+     * an assertion if the list structure is invalid.
+     *
+     * This method acquires no locks and is not thread-safe. It should not be used
+     * when making concurrent changes to the list, or otherwise outside of a test environment.
+     */
+    inline void assert_list_valid (void) {
+        /* Verify list linkage in both directions. */
+        node *prev = NULL;
+        for (node *cur = _head; cur != NULL; cur = cur->_next) {
+            PLCF_ASSERT(cur->_prev == prev);
+            prev = cur;
+        }
+        
+        PLCF_ASSERT(prev == _tail);
+    }
 
 private:
     void free_list (node *next);
@@ -191,8 +209,12 @@ template <typename V> void async_list<V>::nasync_prepend (V value) {
         else {
             new_node->_next = _head;
             new_node->_prev = NULL;
+            
+            /* Update the prev pointers. This is never accessed without a lock, so no additional synchronization
+             * is required here. */
+            _head->_prev = new_node;
 
-            /* Issue a memory barrier to ensure a consistent view of the node. */
+            /* Issue a memory barrier to ensure a consistent view of the nodes. */
             OSMemoryBarrier();
 
             /* Atomically slot the new record into place; this may be iterated on by a lockless reader. */

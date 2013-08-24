@@ -73,6 +73,8 @@ using namespace plcrash::async;
         STAssertEquals(item->value(), (4-i), @"Incorrect value");
     }
     _list.set_reading(false);
+    
+    _list.assert_list_valid();
 }
 
 - (void) testAppendItem {
@@ -105,6 +107,8 @@ using namespace plcrash::async;
         STAssertEquals(item->value(), i, @"Incorrect value");
     }
     _list.set_reading(false);
+    
+    _list.assert_list_valid();
 }
 
 
@@ -120,6 +124,8 @@ using namespace plcrash::async;
     // head/tail are marked private
     // STAssertNULL(_list.head, @"List HEAD should now be NULL");
     // STAssertNULL(_list.tail, @"List TAIL should now be NULL");
+    
+    _list.assert_list_valid();
 }
 
 - (void) testRemoveItem {
@@ -157,6 +163,8 @@ using namespace plcrash::async;
         val += 0x2;
     }
     _list.set_reading(false);
+
+    _list.assert_list_valid();
 }
 
 @end
