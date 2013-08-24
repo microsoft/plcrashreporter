@@ -196,8 +196,8 @@ static void uncaught_exception_handler (NSException *exception) {
 
 @interface PLCrashReporter (PrivateMethods)
 
-- (id) initWithBundle: (NSBundle *) bundle;
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion;
+- (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration;
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion configuration: (PLCrashReporterConfig *) configuration;
 
 - (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
 - (NSString *) crashReportDirectory;
@@ -216,7 +216,8 @@ static void uncaught_exception_handler (NSException *exception) {
  *
  * Depending on the underlying signal handling mechanism (refer to @ref PLCrashReporterSignalHandlerType), PLCrashReporter
  * may permit registering more than one crash reporter instance at a time and correctly handle forwarding of signal/exception
- * data. This is not currently considered a supported configuration.
+ * data. This behavior may change in future releases; API clients should not rely on this behavior by assuming that
+ * multiple-registered crash reporters will not be invoked.
  */
 @implementation PLCrashReporter
 
@@ -239,7 +240,7 @@ static void uncaught_exception_handler (NSException *exception) {
  */
 + (PLCrashReporter *) sharedReporter {
     if (sharedReporter == nil)
-        sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle]];
+        sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] configuration: [PLCrashReporterConfig defaultConfiguration]];
 
     return sharedReporter;
 }
@@ -247,11 +248,10 @@ static void uncaught_exception_handler (NSException *exception) {
 /**
  * Initialize a new PLCrashReporter instance with the given configuration.
  *
- * @param config The configuration to be used by this reporter instance.
+ * @param configuration The configuration to be used by this reporter instance.
  */
-- (instancetype) initWithConfiguration: (PLCrashReporterConfig *) config {
-    // TODO - Implement configuration handling
-    return [self initWithBundle: [NSBundle mainBundle]];
+- (instancetype) initWithConfiguration: (PLCrashReporterConfig *) configuration {
+    return [self initWithBundle: [NSBundle mainBundle] configuration: configuration];
 }
 
 
@@ -562,19 +562,21 @@ cleanup:
  *
  * This is the designated initializer, but it is not intended
  * to be called externally.
+ *
+ * @param applicationIdentifier The application identifier to be included in crash reports.
+ * @param applicationVersion The application version number to be included in crash reports.
+ * @param configuration The PLCrashReporter configuration.
+ *
+ * @todo The appId and version values should be fetched from the PLCrashReporterConfig, once the API
+ * has been extended to allow supplying these values.
  */
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion {
-    /* Only allow one instance to be created, no matter what */
-    if (sharedReporter != NULL) {
-        [self release];
-        return sharedReporter;
-    }
-    
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion configuration: (PLCrashReporterConfig *) configuration {
     /* Initialize our superclass */
     if ((self = [super init]) == nil)
         return nil;
 
-    /* Save application ID and version */
+    /* Save the configuration */
+    _config = [configuration retain];
     _applicationIdentifier = [applicationIdentifier retain];
     _applicationVersion = [applicationVersion retain];
     
@@ -592,9 +594,12 @@ cleanup:
 /**
  * @internal
  * 
- * Initialize with the provided bundle's ID and version.
+ * Derive the bundle identifier and version from @a bundle.
+ *
+ * @param bundle The application's main bundle.
+ * @param configuration The PLCrashReporter configuration to use for this instance.
  */
-- (id) initWithBundle: (NSBundle *) bundle {
+- (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration {
     NSString *bundleIdentifier = [bundle bundleIdentifier];
     NSString *bundleVersion = [[bundle infoDictionary] objectForKey: (NSString *) kCFBundleVersionKey];
     
@@ -617,14 +622,16 @@ cleanup:
         bundleVersion = @"";
     }
     
-    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion];
+    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion configuration: configuration];
 }
 
 
 - (void) dealloc {
     [_crashReportDirectory release];
+    [_config release];
     [_applicationIdentifier release];
     [_applicationVersion release];
+
     [super dealloc];
 }
 

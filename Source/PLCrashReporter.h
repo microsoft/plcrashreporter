@@ -69,6 +69,9 @@ typedef struct PLCrashReporterCallbacks {
 
 @interface PLCrashReporter : NSObject {
 @private
+    /** Reporter configuration */
+    PLCrashReporterConfig *_config;
+
     /** YES if the crash reporter has been enabled */
     BOOL _enabled;
 
