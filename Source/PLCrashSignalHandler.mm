@@ -264,7 +264,9 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int sig, s
 
 /***
  * @internal
- * Implements Crash Reporter signal handling. Singleton.
+ *
+ * Manages a process-wide signal handler, including async-safe registration of multiple callbacks, and pass-through
+ * to previously registered signal handlers.
  */
 @implementation PLCrashSignalHandler
 
