@@ -28,6 +28,15 @@
 
 #import "PLCrashUncaughtExceptionHandler.h"
 
+/***
+ * @internal
+ *
+ * Manages a process-wide Objective-C uncaught exception handlers, including pass-through
+ * to previously registered handlers.
+ *
+ * @todo Unimplemented.
+ */
 @implementation PLCrashUncaughtExceptionHandler
+
 
 @end
