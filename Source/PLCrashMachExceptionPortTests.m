@@ -33,6 +33,11 @@
 #import "GTMSenTestCase.h"
 #import "PLCrashMachExceptionPort.h"
 
+/* EXC_MASK_GUARD isn't supported on Mac OS X 10.8, but the iOS Simulator includes it in
+ * EXC_MASK_ALL; we don't actually need to use it for our tests, so we define a safe subset
+ * of EXC_MASK_ALL here. */
+#define EXC_MASK_ALL_SAFE (EXC_MASK_ALL & ~(EXC_MASK_GUARD|EXC_MASK_RESOURCE))
+
 @interface PLCrashMachExceptionPortTests : SenTestCase {
 
 }
@@ -46,9 +51,9 @@
     kern_return_t kr;
     
     /* Fetch the current ports */
-    kr = task_get_exception_ports(mach_task_self(), EXC_MASK_ALL, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
+    kr = task_get_exception_ports(mach_task_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
-    PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_ALL error: &error];
+    PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_ALL_SAFE error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
 
     /* Compare the sets */
@@ -74,9 +79,9 @@
     kern_return_t kr;
     
     /* Fetch the current ports */
-    kr = thread_get_exception_ports(mach_thread_self(), EXC_MASK_ALL, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
+    kr = thread_get_exception_ports(mach_thread_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
-    PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForThread: mach_thread_self() mask: EXC_MASK_ALL error: &error];
+    PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForThread: mach_thread_self() mask: EXC_MASK_ALL_SAFE error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
     
     /* Compare the sets */
