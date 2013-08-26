@@ -581,14 +581,10 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
     kern_return_t kr;
     
     /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
-#if USE_MACH64_CODES
     exception_data_type_t code32[code_count];
     for (mach_msg_type_number_t i = 0; i < code_count; i++) {
         code32[i] = (uint64_t) code[i];
     }
-#else
-    int32_t *code32 = request->code;
-#endif
     
     /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
     bool mach_exc_codes = false;
