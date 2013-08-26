@@ -125,7 +125,12 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
      * of the Objective-C runtime data, including undefined flags and other runtime internals. As such,
      * it may return incorrect data should the runtime be changed incompatibly.
      */
-    PLCrashReporterSymbolicationStrategyObjC = 1 << 1
+    PLCrashReporterSymbolicationStrategyObjC = 1 << 1,
+    
+    /**
+     * Enable all available symbolication strategies.
+     */
+    PLCrashReporterSymbolicationStrategyAll = (PLCrashReporterSymbolicationStrategySymbolTable|PLCrashReporterSymbolicationStrategyObjC)
 };
 
 @interface PLCrashReporterConfig : NSObject {
