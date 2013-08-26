@@ -240,14 +240,7 @@ static void uncaught_exception_handler (NSException *exception) {
 /**
  * Crash Reporter.
  *
- * A PLCrashReporter instance manages process-wide (and in-process) handling of crashes.
- *
- * @par Registering Multiple Reporters
- *
- * Depending on the underlying signal handling mechanism (refer to @ref PLCrashReporterSignalHandlerType), PLCrashReporter
- * may permit registering more than one crash reporter instance at a time and correctly handle forwarding of signal/exception
- * data. This behavior may change in future releases; API clients should not rely on this behavior by assuming that
- * multiple-registered crash reporters will not be invoked.
+ * A PLCrashReporter instance manages process-wide handling of crashes.
  */
 @implementation PLCrashReporter
 
@@ -363,6 +356,11 @@ static PLCrashReporter *sharedReporter = nil;
  *
  * @return Returns YES on success, or NO if the crash reporter could
  * not be enabled.
+ *
+ * @par Registering Multiple Reporters
+ *
+ * Only one PLCrashReporter instance may be enabled in a process; attempting to enable an additional instance
+ * will return NO, and the reporter will not be enabled. This restriction may be removed in a future release.
  */
 - (BOOL) enableCrashReporter {
     return [self enableCrashReporterAndReturnError: nil];
@@ -378,14 +376,38 @@ static PLCrashReporter *sharedReporter = nil;
  * a PLCrashReporterException.
  *
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
- * will contain an error object indicating why the Crash Reporter could not be enabled.
- * If no error occurs, this parameter will be left unmodified. You may specify nil for this
- * parameter, and no error information will be provided.
+ * will contain an error in the PLCrashReporterErrorDomain indicating why the Crash Reporter
+ * could not be enabled. If no error occurs, this parameter will be left unmodified. You may
+ * specify nil for this parameter, and no error information will be provided.
  *
  * @return Returns YES on success, or NO if the crash reporter could
  * not be enabled.
+ *
+ * @par Registering Multiple Reporters
+ *
+ * Only one PLCrashReporter instance may be enabled in a process; attempting to enable an additional instance
+ * will return NO and a PLCrashReporterErrorResourceBusy error, and the reporter will not be enabled.
+ * This restriction may be removed in a future release.
  */
 - (BOOL) enableCrashReporterAndReturnError: (NSError **) outError {
+    /* Prevent enabling more than one crash reporter, process wide. We can not support multiple chained reporters
+     * due to the use of NSUncaughtExceptionHandler (it doesn't support chaining or assocation of context with the callbacks), as
+     * well as our legacy approach of deregistering any signal handlers upon the first signal. Once PLCrashUncaughtExceptionHandler is
+     * implemented, and we support double-fault handling without resetting the signal handlers, we can support chaining of multiple
+     * crash reporters. */
+    {
+        static BOOL enforceOne = NO;
+        pthread_mutex_t enforceOneLock = PTHREAD_MUTEX_INITIALIZER;
+        pthread_mutex_lock(&enforceOneLock); {
+            if (enforceOne) {
+                pthread_mutex_unlock(&enforceOneLock);
+                plcrash_populate_error(outError, PLCrashReporterErrorResourceBusy, @"A PLCrashReporter instance has already been enabled", nil);
+                return NO;
+            }
+            enforceOne = YES;
+        } pthread_mutex_unlock(&enforceOneLock);
+    }
+
     /* Check for programmer error */
     if (_enabled)
         [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];

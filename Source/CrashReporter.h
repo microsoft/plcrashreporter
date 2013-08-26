@@ -93,6 +93,9 @@ typedef enum {
 
     /** The crash report log file is corrupt or invalid */
     PLCrashReporterErrorCrashReportInvalid = 2,
+
+    /** An attempt to use a resource which was in use at the time in a manner which would have conflicted with the request. */
+    PLCrashReporterErrorResourceBusy = 3
 } PLCrashReporterError;
 
 
