@@ -29,6 +29,8 @@
 #import "PLCrashReporter.h"
 #import "CrashReporter.h"
 
+#import "PLCrashHostInfo.h"
+
 #import "PLCrashSignalHandler.h"
 #import "PLCrashMachExceptionServer.h"
 
