@@ -88,6 +88,8 @@
 		051F068217B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m */; };
 		051F068317B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m */; };
 		051F068417B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F068117B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m */; };
+		0527062F17CBCCA100E6A5D8 /* PLCrashMachExceptionPort.m in Sources */ = {isa = PBXBuildFile; fileRef = 051F067A17B6B0D4006D0EFA /* PLCrashMachExceptionPort.m */; };
+		0527063017CBCCC200E6A5D8 /* PLCrashProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05102E1517B0151000B5D925 /* PLCrashProcessInfo.m */; };
 		052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EB1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
 		052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052951E91696965E006EDA8A /* PLCrashLogWriterEncodingTests.m */; };
@@ -3301,11 +3303,13 @@
 				057C9BC017970F77006B242E /* PLCrashAsyncDwarfExpression.cpp in Sources */,
 				057C9BBE17970F54006B242E /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05102E2817B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
+				0527062F17CBCCA100E6A5D8 /* PLCrashMachExceptionPort.m in Sources */,
 				05BEC41B17BAF92A0082CBFB /* PLCrashMachExceptionPortSet.m in Sources */,
 				05BEC42617BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43A17BF1CB10082CBFB /* PLCrashReporterConfig.m in Sources */,
 				05A5E28817C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05B929EC17C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m in Sources */,
+				0527063017CBCCC200E6A5D8 /* PLCrashProcessInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
