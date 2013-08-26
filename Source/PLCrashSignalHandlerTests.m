@@ -74,19 +74,6 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, voi
     /* Check for SIGBUS registration */
     sigaction (SIGBUS, NULL, &action);
     STAssertNotEquals(action.sa_handler, SIG_DFL, @"Action not registered for SIGBUS");
-
-    /* Verify that the callback is dispatched; if the process doesn't lock up here, the signal handler is working. Unfortunately, this
-     * test will halt when run under a debugger due to their catching of fatal signals, so we only perform the test if we're not
-     * currently being traced */
-    if (![[PLCrashProcessInfo currentProcessInfo] isTraced]) {
-        mprotect(crash_page, sizeof(crash_page), PROT_NONE);
-        crash_page[0] = 0xCA;
-        
-        STAssertEquals(crash_page[0], (uint8_t)0xCA, @"Byte should have been set to test value");
-        STAssertEquals(crash_page[1], (uint8_t)0xFE, @"Crash callback did not run");
-    } else {
-        NSLog(@"Running under debugger; skipping signal callback validation.");
-    }
 }
 
 static void sa_action_cb (int signo, siginfo_t *info, void *uapVoid) {
