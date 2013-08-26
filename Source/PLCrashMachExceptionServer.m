@@ -255,9 +255,9 @@ struct plcrash_exception_server_context {
  * on the exception server's thread, distinctly from the crashed thread.
  * @param context Context to be passed to the callback. May be NULL.
  * @param outError A pointer to an NSError object variable. If an error occurs initializing the exception server,
- * this pointer will contain an error object indicating why the exception handler could not be registered. If no
- * error occurs, this parameter will be left unmodified. You may specify NULL for this parameter, and no error
- * information will be provided.
+ * this pointer will contain an error object in the NSMachErrorDomain or NSPOSIXErrorDomain indicating why the
+ * exception handler could not be registered. If no error occurs, this parameter will be left unmodified.
+ * You may specify NULL for this parameter, and no error information will be provided.
  */
 - (id) initWithCallBack: (PLCrashMachExceptionHandlerCallback) callback
                 context: (void *) context
@@ -456,7 +456,7 @@ struct plcrash_exception_server_context {
  * send right for the exception server.
  *
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
- * will contain an error object indicating why the Mach send right could not be created. If no error
+ * will contain an error object in the NSMachErrorDomain indicating why the Mach send right could not be created. If no error
  * occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no error information
  * will be provided.
  * @return Returns a valid Mach port instance on success; on error, nil will be returned.

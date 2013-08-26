@@ -31,6 +31,9 @@
 
 #import "PLCrashReporterConfig.h"
 
+@class PLCrashMachExceptionServer;
+@class PLCrashMachExceptionPortSet;
+
 /**
  * @ingroup functions
  *
@@ -62,8 +65,10 @@ typedef struct PLCrashReporterCallbacks {
     /** An arbitrary user-supplied context value. This value may be NULL. */
     void *context;
 
-    /** The callback used to report caught signal information. In version 0 of this structure, all crashes will be
-     * reported via this function. */
+    /**
+     * The callback used to report caught signal information. In version 0 of this structure, all crashes will be
+     * reported via this function.
+     */
     PLCrashReporterPostCrashSignalCallback handleSignal;
 } PLCrashReporterCallbacks;
 
@@ -74,6 +79,15 @@ typedef struct PLCrashReporterCallbacks {
 
     /** YES if the crash reporter has been enabled */
     BOOL _enabled;
+    
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+    /** The backing Mach exception server, if any. Nil if the reporter has not been enabled, or if
+     * the configured signal handler type is not PLCrashReporterSignalHandlerTypeMach. */
+    PLCrashMachExceptionServer *_machServer;
+    
+    /** Previously registered Mach exception ports, if any. */
+    PLCrashMachExceptionPortSet *_previousMachPorts;
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
 
     /** Application identifier */
     NSString *_applicationIdentifier;

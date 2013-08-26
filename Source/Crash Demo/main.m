@@ -45,8 +45,8 @@ void stackFrame (void) {
 }
 
 /* If a crash report exists, make it accessible via iTunes document sharing. This is a no-op on Mac OS X. */
-static void save_crash_report () {
-    if (![[PLCrashReporter sharedReporter] hasPendingCrashReport]) 
+static void save_crash_report (PLCrashReporter *reporter) {
+    if (![reporter hasPendingCrashReport]) 
         return;
 
 #if TARGET_OS_IPHONE
@@ -126,9 +126,14 @@ int main (int argc, char *argv[]) {
         NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");
         return 0;
     }
+    
+    /* Configure our reporter */
+    PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
+                                                                        symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll] autorelease];
+    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: config] autorelease];
 
     /* Save any existing crash report. */
-    save_crash_report();
+    save_crash_report(reporter);
     
     /* Set up post-crash callbacks */
     PLCrashReporterCallbacks cb = {
@@ -136,10 +141,10 @@ int main (int argc, char *argv[]) {
         .context = (void *) 0xABABABAB,
         .handleSignal = post_crash_callback
     };
-    [[PLCrashReporter sharedReporter] setCrashCallbacks: &cb];
+    [reporter setCrashCallbacks: &cb];
 
     /* Enable the crash reporter */
-    if (![[PLCrashReporter sharedReporter] enableCrashReporterAndReturnError: &error]) {
+    if (![reporter enableCrashReporterAndReturnError: &error]) {
         NSLog(@"Could not enable crash reporter: %@", error);
     }
 
