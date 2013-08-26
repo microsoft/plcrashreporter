@@ -4052,6 +4052,7 @@
 					Foundation,
 					"-framework",
 					AppKit,
+					"-lstdc++",
 				);
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
@@ -4073,6 +4074,7 @@
 					Foundation,
 					"-framework",
 					AppKit,
+					"-lstdc++",
 				);
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
