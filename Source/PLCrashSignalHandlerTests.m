@@ -31,6 +31,8 @@
 #import "PLCrashSignalHandler.h"
 #import "PLCrashProcessInfo.h"
 
+#import <sys/mman.h>
+
 @interface PLCrashSignalHandlerTests : SenTestCase {
 }
 @end
