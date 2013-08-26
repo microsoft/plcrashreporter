@@ -376,7 +376,11 @@ static PLCrashSignalHandler *sharedHandler;
             
             /* Save the previous action. Note that there's an inescapable race condition here, such that
              * we may not call the previous signal handler if signal occurs prior to our saving
-             * the caller's handler. */
+             * the caller's handler.
+             *
+             * TODO - Investigate use of async-safe locking to avoid this condition. See also:
+             * The PLCrashReporter class's enabling of Mach exceptions.
+             */
             plcrash_signal_handler_action act = {
                 .signo = signo,
                 .action = sa_prev
