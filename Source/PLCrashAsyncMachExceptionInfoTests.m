@@ -40,7 +40,7 @@
 
 #define TEST_ME(cpu, exc_type, code, subcode, signo, sicode, siaddr) do { \
     siginfo_t siginfo; \
-    exception_data_type_t codes[] = { \
+    mach_exception_data_type_t codes[] = { \
         code, \
         subcode \
     }; \
