@@ -31,9 +31,9 @@
 #import "PLCrashSignalHandler.h"
 #import "PLCrashProcessInfo.h"
 
-@interface PLCrashUncaughtExceptionHandler : SenTestCase {
+@interface PLCrashUncaughtExceptionHandlerTests : SenTestCase {
 }
 @end
 
-@implementation PLCrashUncaughtExceptionHandler
+@implementation PLCrashUncaughtExceptionHandlerTests
 @end
