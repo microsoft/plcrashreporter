@@ -32,6 +32,8 @@
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
+#import <mach/mach.h>
+
 @class PLCrashMachExceptionPort;
 
 /**
