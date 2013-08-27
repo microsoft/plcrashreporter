@@ -506,6 +506,12 @@ static PLCrashReporter *sharedReporter = nil;
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
         case PLCrashReporterSignalHandlerTypeMach: {
+            /* We still need to use signal handlers to catch SIGABRT in-process. The kernel sends an EXC_CRASH mach exception
+             * to denote SIGABRT termination. In that case, catching the Mach exception in-process leads to process deadlock
+             * in an uninterruptable wait. Thus, we fall back on BSD signal handlers for SIGABRT, and do not register for
+             * EXC_CRASH. */
+            if (![[PLCrashSignalHandler sharedHandler] registerHandlerForSignal: SIGABRT callback: &signal_handler_callback context: &signal_handler_context error: outError])
+                return NO;
             
             /* Enable the server. */
             _machServer = [self enableMachExceptionServerWithPreviousPortSet: &_previousMachPorts
