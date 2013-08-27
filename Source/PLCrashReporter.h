@@ -68,6 +68,11 @@ typedef struct PLCrashReporterCallbacks {
     /**
      * The callback used to report caught signal information. In version 0 of this structure, all crashes will be
      * reported via this function.
+     *
+     * @warning When using PLCrashReporterSignalHandlerTypeMach, the siginfo_t and ucontex_t arguments to this
+     * function will be derived from the Mach exception data, and may be incorrect, or may otherwise not
+     * match the expected data as provided via PLCrashReporterSignalHandlerTypeBSD. This callback may be deprecated
+     * in favor of a Mach-compatible replacement in a future release.
      */
     PLCrashReporterPostCrashSignalCallback handleSignal;
 } PLCrashReporterCallbacks;
