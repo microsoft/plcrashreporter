@@ -83,6 +83,12 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterSignalHandlerType) {
      * Mach exception handling as an optional feature, with both build-time and runtime configuration
      * to disable its inclusion or use, respectively.
      *
+     * @par Debugger Incompatibility
+     *
+     * The Mach exception handler executes in-process, and will interfere with debuggers when they attempt to
+     * suspend all active threads (which will include the Mach exception handler). Mach-based handling
+     * should not be used when a debugger is attached.
+     *
      * @par More Details
      *
      * For more information, refer to @ref mach_exceptions.
