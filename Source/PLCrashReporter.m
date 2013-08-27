@@ -243,23 +243,14 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     if (crashCallbacks.handleSignal != NULL) {
         /*
          * The legacy signal-based callback assumes the availability of a ucontext_t; we mock
-         * one up here for the purpose of maintaining backwards compatibility. This compatibility 
-         * code is best-effort; the thread state may be inaccurate.
+         * an empty value here for the purpose of maintaining backwards compatibility. This behavior
+         * is defined in the PLCrashReporterCallbacks API documentation.
          */
         ucontext_t uctx;
         _STRUCT_MCONTEXT mctx;
         
         /* Populate the mctx */
         plcrash_async_memset(&mctx, 0, sizeof(mctx));
-#ifdef __i386__
-        plcrash_async_memcpy(&mctx.__ss, &thread_state.x86_state.thread.uts.ts32, sizeof(mctx.__ss));
-#elif __x86_64__
-        plcrash_async_memcpy(&mctx.__ss, &thread_state.x86_state.thread.uts.ts64, sizeof(mctx.__ss));
-#elif __arm__
-        plcrash_async_memcpy(&mctx.__ss, &thread_state.arm_state.thread, sizeof(mctx.__ss));
-#else
-        // Do nothing; leave it zero'd
-#endif
 
         /* Configure the ucontext */
         plcrash_async_memset(&uctx, 0, sizeof(uctx));
