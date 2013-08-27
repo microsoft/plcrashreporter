@@ -218,6 +218,10 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     plcrash_async_thread_state_t thread_state;
     plcrash_error_t err;
 
+    /* Let any other registered server attempt to handle the exception */
+    if (PLCrashMachExceptionForward(task, thread, exception_type, code, code_count, &sigctx->port_set) == KERN_SUCCESS)
+        return KERN_SUCCESS;
+
     /* Map to a POSIX signal */
     siginfo_t si;
     if (!plcrash_async_mach_exception_get_siginfo(exception_type, code, code_count, CPU_TYPE_ANY, &si)) {
