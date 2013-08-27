@@ -41,11 +41,6 @@
 static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
 static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
-    mprotect(crash_page, sizeof(crash_page), PROT_READ|PROT_WRITE);
-    
-    // Success
-    crash_page[1] = 0xFE;
-    
     return true;
 }
 
