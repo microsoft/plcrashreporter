@@ -60,6 +60,16 @@ public:
     public:
         friend class async_list<V>;
         
+        // Custom new/delete that do not rely on the stdlib
+        void *operator new (size_t size) {
+            void *ptr = malloc(size);
+            PLCF_ASSERT(ptr != NULL);
+            return ptr;
+        };
+        void operator delete (void *ptr) {
+            free(ptr);
+        };
+        
         /**
          * Return the list item value.
          */
@@ -109,6 +119,14 @@ public:
     void nasync_remove_node (node *deleted_node);
     void set_reading (bool enable);
     node *next (node *current);
+    
+    // Custom new/delete that do not rely on the stdlib
+    void *operator new (size_t size) {
+        void *ptr = malloc(size);
+        PLCF_ASSERT(ptr != NULL);
+        return ptr;
+    };
+    void operator delete (void *ptr) { free(ptr); };
     
     /**
      * Sanity check list validity. Intended to be used from the unit tests; will fire
