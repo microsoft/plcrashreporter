@@ -319,6 +319,8 @@ static void uncaught_exception_handler (NSException *exception) {
                                                                       context: (void *) context
                                                                         error: (NSError **) outError;
 
+- (plcrash_async_symbol_strategy_t) mapToAsyncSymbolicationStrategy: (PLCrashReporterSymbolicationStrategy) strategy;
+
 - (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
 - (NSString *) crashReportDirectory;
 - (NSString *) queuedCrashReportDirectory;
@@ -510,7 +512,7 @@ static PLCrashReporter *sharedReporter = nil;
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
-    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, false);
+    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);
     
     
     /* Enable the signal handler */
@@ -635,7 +637,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     }
 
     /* Initialize the output context */
-    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, true);
+    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
     
     /* Mock up a SIGTRAP-based siginfo_t */
@@ -914,6 +916,25 @@ cleanup:
     [super dealloc];
 }
 
+/**
+ * Map the configuration defined @a strategy to the backing plcrash_async_symbol_strategy_t representation.
+ *
+ * @param strategy The strategy value to map.
+ */
+- (plcrash_async_symbol_strategy_t) mapToAsyncSymbolicationStrategy: (PLCrashReporterSymbolicationStrategy) strategy {
+    plcrash_async_symbol_strategy_t result = PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE;
+    
+    if (strategy == PLCrashReporterSymbolicationStrategyNone)
+        return PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE;
+    
+    if (strategy & PLCrashReporterSymbolicationStrategySymbolTable)
+        result &= PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE;
+    
+    if (strategy & PLCrashReporterSymbolicationStrategyObjC)
+        result &= PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC;
+    
+    return result;
+}
 
 /**
  * Validate (and create if necessary) the crash reporter directory structure.

@@ -36,6 +36,9 @@
 /* EXC_MASK_GUARD isn't supported on Mac OS X 10.8, but the iOS Simulator includes it in
  * EXC_MASK_ALL; we don't actually need to use it for our tests, so we define a safe subset
  * of EXC_MASK_ALL here. */
+#ifndef EXC_MASK_GUARD
+#define EXC_MASK_GUARD 0
+#endif
 #define EXC_MASK_ALL_SAFE (EXC_MASK_ALL & ~(EXC_MASK_GUARD|EXC_MASK_RESOURCE))
 
 @interface PLCrashMachExceptionPortTests : SenTestCase {

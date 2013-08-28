@@ -247,6 +247,7 @@ enum {
  * @param writer Writer instance to be initialized.
  * @param app_identifier Unique per-application identifier. On Mac OS X, this is likely the CFBundleIdentifier.
  * @param app_version Application version string.
+ * @param symbol_strategy The strategy to use for local symbolication.
  * @param user_requested If true, the written report will be marked as a 'generated' non-crash report, rather than as
  * a true crash report created upon an actual crash.
  *
@@ -258,10 +259,14 @@ enum {
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          NSString *app_identifier,
                                          NSString *app_version,
+                                         plcrash_async_symbol_strategy_t symbol_strategy,
                                          BOOL user_requested)
 {
     /* Default to 0 */
     memset(writer, 0, sizeof(*writer));
+
+    /* Initialize configuration */
+    writer->symbol_strategy = symbol_strategy;
 
     /* Default to false */
     writer->report_info.user_requested = user_requested;
@@ -816,7 +821,7 @@ static void plcrash_writer_write_thread_frame_symbol_cb (pl_vm_address_t address
  * @param file Output file
  * @param pcval The frame PC value.
  */
-static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uint64_t pcval, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
+static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plcrash_log_writer_t *writer, uint64_t pcval, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
     size_t rv = 0;
 
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &pcval);
@@ -824,7 +829,7 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
     plcrash_async_image_list_set_reading(image_list, true);
     plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pcval);
     
-    if (image != NULL) {
+    if (image != NULL && writer->symbol_strategy != PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE) {
         struct pl_symbol_cb_ctx ctx;
         plcrash_error_t ret;
         
@@ -832,13 +837,13 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
          * our callback is called and PLCRASH_ESUCCESS is returned. */
         ctx.file = NULL;
         ctx.msgsize = 0x0;
-        ret = plcrash_async_find_symbol(&image->macho_image, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+        ret = plcrash_async_find_symbol(&image->macho_image, writer->symbol_strategy, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
         if (ret == PLCRASH_ESUCCESS) {
             /* Write the header and message */
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &ctx.msgsize);
 
             ctx.file = file;
-            ret = plcrash_async_find_symbol(&image->macho_image, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+            ret = plcrash_async_find_symbol(&image->macho_image, writer->symbol_strategy, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
             if (ret == PLCRASH_ESUCCESS) {
                 rv += ctx.msgsize;
             } else {
@@ -870,6 +875,7 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, uin
  * @param crashed If true, mark this as a crashed thread.
  */
 static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
+                                           plcrash_log_writer_t *writer,
                                            task_t task,
                                            thread_t thread,
                                            uint32_t thread_number,
@@ -935,10 +941,10 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
             }
 
             /* Determine the size */
-            frame_size = plcrash_writer_write_thread_frame(NULL, pc, image_list, findContext);
+            frame_size = plcrash_writer_write_thread_frame(NULL, writer, pc, image_list, findContext);
             
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
-            rv += plcrash_writer_write_thread_frame(file, pc, image_list, findContext);
+            rv += plcrash_writer_write_thread_frame(file, writer, pc, image_list, findContext);
             frame_count++;
         }
 
@@ -1034,10 +1040,10 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
         uint64_t pc = (uint64_t)(uintptr_t) writer->uncaught_exception.callstack[i];
         
         /* Determine the size */
-        uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, pc, image_list, findContext);
+        uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, writer, pc, image_list, findContext);
         
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
-        rv += plcrash_writer_write_thread_frame(file, pc, image_list, findContext);
+        rv += plcrash_writer_write_thread_frame(file, writer, pc, image_list, findContext);
         frame_count++;
     }
 
@@ -1261,11 +1267,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         }
 
         /* Determine the size */
-        size = plcrash_writer_write_thread(NULL, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
+        size = plcrash_writer_write_thread(NULL, writer, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
 
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_thread(file, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
+        plcrash_writer_write_thread(file, writer, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
 
         thread_number++;
     }

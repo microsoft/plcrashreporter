@@ -101,18 +101,47 @@ void PLCrashAsyncLocalSymbolicationTestsDummyFunction(void) {}
     err = plcrash_async_symbol_cache_init(&findContext);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"pl_async_local_find_symbol_context_init failed (that should not be possible, how did you do that?)");
     
-    err = plcrash_async_find_symbol(&_image, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
+    err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
     STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Got bad address finding symbol");
     STAssertEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Got wrong symbol name");
     
     pl_vm_address_t localPC = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] longLongValue];
-    err = plcrash_async_find_symbol(&_image, &findContext, localPC, testFindSymbol_cb, &ctx);
+    err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, &findContext, localPC, testFindSymbol_cb, &ctx);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
     STAssertEquals(ctx.addr, (pl_vm_address_t)[self methodForSelector: _cmd], @"Got bad address finding symbol");
     STAssertEqualCStrings(ctx.name, "-[PLCrashAsyncSymbolicationTests testFindSymbol]", @"Got wrong symbol name");
     
     plcrash_async_symbol_cache_free(&findContext);
+}
+
+- (void) testStrategyFlags {
+    struct testFindSymbol_cb_ctx ctx = {};
+    plcrash_error_t err;
+    
+    plcrash_async_symbol_cache_t findContext;
+    err = plcrash_async_symbol_cache_init(&findContext);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"pl_async_local_find_symbol_context_init failed (that should not be possible, how did you do that?)");
+
+    /* Verify that C function lookup fails when only the Obj-C strategy is enabled (verifying that the symbol table strategy is disabled) */
+    err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
+    if (err == PLCRASH_ESUCCESS) {
+        STAssertNotEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Obj-C based symblication should not have found a C function symbol");
+        STAssertNotEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Obj-C based symblication should not have found a C function symbol");
+    }
+    
+    /* Verify that lookups of Obj-C methods *do* still work when the Obj-C strategy is enabled. */
+    pl_vm_address_t localPC = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] longLongValue];
+    err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC, &findContext, localPC, testFindSymbol_cb, &ctx);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
+    STAssertEquals(ctx.addr, (pl_vm_address_t)[self methodForSelector: _cmd], @"Got bad address finding symbol");
+    STAssertEqualCStrings(ctx.name, "-[PLCrashAsyncSymbolicationTests testStrategyFlags]", @"Got wrong symbol name");
+    
+    /* Verify that C symbol lookup succeeds once we enable the symbol table lookup strategy. */
+    err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Symbol table-based symblication should have found the C function symbol");
+    STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Got bad address finding symbol");
+    STAssertEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Got wrong symbol name");
 }
 
 @end

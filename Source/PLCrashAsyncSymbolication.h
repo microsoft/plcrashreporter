@@ -32,9 +32,48 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+    
+/**
+ * @defgroup plcrash_async_symbol Async-Safe Symbol Lookup
+ * @ingroup plcrash_async
+ * @{
+ */
 
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncObjCSection.h"
+    
+/**
+ * @internal
+ * @ingroup enums
+ * Supported mechanisms for performing local symbolication.
+ *
+ * Local symbolication is performed using inexact heuristics and symbol data available at runtime; it may
+ * return information that is incorrect. This may still be useful in the case where DWARF data is unavailable
+ * for a given build; in that case, it can provide function and method names (though not line numbers) for a
+ * crash report that may otherwise be unusable.
+ */
+typedef enum {
+    /** No symbolication. */
+    PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE = 0,
+    
+    /**
+     * Use the standard binary symbol table. On iOS, this alone will return
+     * incomplete results, as most symbols are rewritten to the common '<redacted>' string.
+     */
+    PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE = 1 << 0,
+    
+    /**
+     * Use Objective-C metadata to find method and class names. This relies on detailed parsing
+     * of the Objective-C runtime data, including undefined flags and other runtime internals. As such,
+     * it may return incorrect data should the runtime be changed incompatibly.
+     */
+    PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC = 1 << 1,
+    
+    /**
+     * Enable all available symbolication strategies.
+     */
+    PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL = (PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE|PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC)
+} plcrash_async_symbol_strategy_t;
 
 /**
  * Context object that helps speed up repeated symbol lookups.
@@ -62,7 +101,12 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache);
  */
 typedef void (*plcrash_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
-plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *cache, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx);
+plcrash_error_t plcrash_async_find_symbol(plcrash_async_macho_t *image,
+                                          plcrash_async_symbol_strategy_t strategy,
+                                          plcrash_async_symbol_cache_t *cache,
+                                          pl_vm_address_t pc,
+                                          plcrash_async_found_symbol_cb callback,
+                                          void *ctx);
     
 #ifdef __cplusplus
 }

@@ -39,6 +39,8 @@ extern "C" {
 #import "PLCrashAsync.h"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashFrameWalker.h"
+    
+#import "PLCrashAsyncSymbolication.h"
 
 #include <uuid/uuid.h>
 
@@ -59,6 +61,9 @@ extern "C" {
  * Crash log writer context.
  */
 typedef struct plcrash_log_writer {
+    /** The strategy to use for symbolication */
+    plcrash_async_symbol_strategy_t symbol_strategy;
+
     /** Report data */
     struct {
         /** If true, the report should be marked as a 'generated' user-requested report, rather than as a true crash
@@ -152,6 +157,7 @@ typedef struct plcrash_log_writer {
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          NSString *app_identifier,
                                          NSString *app_version,
+                                         plcrash_async_symbol_strategy_t symbol_strategy,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 

@@ -70,6 +70,7 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache) {
  * Find the best-guess matching symbol name for a given @a pc address, using heuristics based on symbol and @a pc address locality.
  *
  * @param image The Mach-O image to search for this symbol.
+ * @param strategy The look-up strategy to be used to find the symbol.
  * @param cache The task-specific cache to use for lookups.
  * @param pc The program counter (instruction pointer) address for which a symbol will be searched.
  * @param callback The callback to be issued when a matching symbol is found. If no symbol is found, the provided function will not be called, and an error other than PLCRASH_ESUCCESS
@@ -78,18 +79,27 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache) {
  *
  * @return Calls @a callback and returns PLCRASH_ESUCCESS if a matching symbol is found. Otherwise, returns one of the other defined plcrash_error_t error values.
  */
-plcrash_error_t plcrash_async_find_symbol (plcrash_async_macho_t *image, plcrash_async_symbol_cache_t *cache, pl_vm_address_t pc, plcrash_async_found_symbol_cb callback, void *ctx) {
+plcrash_error_t plcrash_async_find_symbol (plcrash_async_macho_t *image,
+                                           plcrash_async_symbol_strategy_t strategy,
+                                           plcrash_async_symbol_cache_t *cache,
+                                           pl_vm_address_t pc,
+                                           plcrash_async_found_symbol_cb callback,
+                                           void *ctx)
+{
     struct symbol_lookup_ctx lookup_ctx;
-    plcrash_error_t machoErr;
-    plcrash_error_t objcErr;
+    plcrash_error_t machoErr = PLCRASH_ENOTFOUND;
+    plcrash_error_t objcErr = PLCRASH_ENOTFOUND;
 
     lookup_ctx.symbol_address = 0x0;
     lookup_ctx.found = false;
 
     /* Perform lookups; our callbacks will only update the lookup_ctx if they find a better match than the
      * previously run callbacks */
-    machoErr = plcrash_async_macho_find_symbol_by_pc(image, pc, macho_symbol_callback, &lookup_ctx);
-    objcErr = plcrash_async_objc_find_method(image, &cache->objc_cache, pc, objc_symbol_callback, &lookup_ctx);
+    if (strategy & PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE)
+        machoErr = plcrash_async_macho_find_symbol_by_pc(image, pc, macho_symbol_callback, &lookup_ctx);
+    
+    if (strategy & PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC)
+        objcErr = plcrash_async_objc_find_method(image, &cache->objc_cache, pc, objc_symbol_callback, &lookup_ctx);
 
     if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Could not find symbol for PC %" PRIx64 "image %p", (uint64_t) pc, image);
