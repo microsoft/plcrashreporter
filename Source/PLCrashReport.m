@@ -49,6 +49,7 @@ struct _PLCrashReportDecoder {
 - (NSArray *) extractImageInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (PLCrashReportExceptionInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
 - (PLCrashReportSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
+- (PLCrashReportMachExceptionInfo *) extractMachExceptionInfo: (Plcrash__CrashReport__Signal__MachException *) machExceptionInfo error: (NSError **) outError;
 
 @end
 
@@ -140,6 +141,13 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     if (!_signalInfo)
         goto error;
 
+    /* Mach exception info */
+    if (_decoder->crashReport->signal != NULL && _decoder->crashReport->signal->mach_exception != NULL) {
+        _machExceptionInfo = [[self extractMachExceptionInfo: _decoder->crashReport->signal->mach_exception error: outError] retain];
+        if (!_machExceptionInfo)
+            goto error;
+    }
+
     /* Thread info */
     _threads = [[self extractThreadInfo: _decoder->crashReport error: outError] retain];
     if (!_threads)
@@ -171,6 +179,7 @@ error:
     [_applicationInfo release];
     [_processInfo release];
     [_signalInfo release];
+    [_machExceptionInfo release];
     [_threads release];
     [_images release];
     [_exceptionInfo release];
@@ -233,6 +242,7 @@ error:
 @synthesize applicationInfo = _applicationInfo;
 @synthesize processInfo = _processInfo;
 @synthesize signalInfo = _signalInfo;
+@synthesize machExceptionInfo = _machExceptionInfo;
 @synthesize threads = _threads;
 @synthesize images = _images;
 @synthesize exceptionInfo = _exceptionInfo;
@@ -711,6 +721,38 @@ error:
     NSString *code = [NSString stringWithUTF8String: signalInfo->code];
     
     return [[[PLCrashReportSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address] autorelease];
+}
+
+/**
+ * Extract Mach exception information from the crash log. Returns nil on error.
+ */
+- (PLCrashReportMachExceptionInfo *) extractMachExceptionInfo: (Plcrash__CrashReport__Signal__MachException *) machExceptionInfo
+                                                        error: (NSError **) outError
+{
+    /* Validate */
+    if (machExceptionInfo == NULL) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
+                         NSLocalizedString(@"Crash report is missing Mach Exception Information section",
+                                           @"Missing mach exception info in crash report"));
+        return nil;
+    }
+    
+    /* Sanity check; there should really only ever be 2 */
+    if (machExceptionInfo->n_codes > UINT8_MAX) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
+                         NSLocalizedString(@"Crash report includes too many Mach Exception codes",
+                                           @"Invalid mach exception info in crash report"));
+        return nil;
+    }
+    
+    /* Extract the codes */
+    NSMutableArray *codes = [NSMutableArray arrayWithCapacity: machExceptionInfo->n_codes];
+    for (size_t i = 0; i < machExceptionInfo->n_codes; i++) {
+        [codes addObject: [NSNumber numberWithUnsignedLongLong: machExceptionInfo->codes[i]]];
+    }
+    
+    /* Done */
+    return [[[PLCrashReportMachExceptionInfo alloc] initWithType: machExceptionInfo->type codes: codes] autorelease];
 }
 
 @end

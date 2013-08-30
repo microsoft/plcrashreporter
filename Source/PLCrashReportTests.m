@@ -85,12 +85,20 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     /* Initialze faux crash data */
     plcrash_log_signal_info_t info;
     plcrash_log_bsd_signal_info_t bsd_info;
+    plcrash_log_mach_signal_info_t mach_info;
+    mach_exception_data_type_t mach_codes[2];
     {
         bsd_info.address = method_getImplementation(class_getInstanceMethod([self class], _cmd));
         bsd_info.code = SEGV_MAPERR;
         bsd_info.signo = SIGSEGV;
+        
+        mach_info.type = EXC_BAD_ACCESS;
+        mach_info.code = mach_codes;
+        mach_info.code_count = sizeof(mach_codes) / sizeof(mach_codes[0]);
+        mach_codes[0] = KERN_PROTECTION_FAILURE;
+        mach_codes[1] = (uintptr_t) bsd_info.address;
 
-        info.mach_info = NULL;
+        info.mach_info = &mach_info;
         info.bsd_info = &bsd_info;
     }
 
@@ -183,6 +191,13 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertEqualStrings(@"SIGSEGV", crashLog.signalInfo.name, @"Signal is incorrect");
     STAssertEqualStrings(@"SEGV_MAPERR", crashLog.signalInfo.code, @"Signal code is incorrect");
     
+    /* Mach exception info */
+    STAssertNotNil(crashLog.machExceptionInfo, @"Missing mach exception info");
+    STAssertEquals((exception_type_t) crashLog.machExceptionInfo.type, EXC_BAD_ACCESS, @"Type is incorrect");
+    STAssertEquals((NSUInteger)2, [crashLog.machExceptionInfo.codes count], @"Incorrect number of exception codes");
+    STAssertEquals((mach_exception_data_type_t) [[crashLog.machExceptionInfo.codes objectAtIndex: 0] unsignedLongLongValue], mach_info.code[0], @"Incorrect code[0]");
+    STAssertEquals((mach_exception_data_type_t) [[crashLog.machExceptionInfo.codes objectAtIndex: 1] unsignedLongLongValue], mach_info.code[1], @"Incorrect code[0]");
+
     /* Exception info */
     STAssertNotNil(crashLog.exceptionInfo, @"Exception info is nil");
     STAssertEqualStrings(crashLog.exceptionInfo.exceptionName, [exception name], @"Exceptio name is incorrect");
