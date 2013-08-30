@@ -157,6 +157,8 @@ static exception_mask_t exception_to_mask (exception_type_t exception) {
 }
 
 /**
+ * @internal
+ *
  * Exception handler context.
  */
 struct plcrash_exception_server_context {

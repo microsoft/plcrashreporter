@@ -43,6 +43,8 @@ namespace plcrash { namespace async {
  */
 
 /**
+ * @internal
+ *
  * DWARF Frame Descriptor Entry.
  */
 typedef struct plcrash_async_dwarf_fde_info {

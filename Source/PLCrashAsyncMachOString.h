@@ -32,6 +32,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+    
+/**
+ * @internal
+ * @ingroup plcrash_async_image
+ * @{
+ */
 
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncMObject.h"
@@ -62,6 +68,10 @@ plcrash_error_t plcrash_async_macho_string_get_length (plcrash_async_macho_strin
 plcrash_error_t plcrash_async_macho_string_get_pointer (plcrash_async_macho_string_t *string, const char **outPointer);
 
 void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string);
+    
+/**
+ * @}
+ */
     
 #ifdef __cplusplus
 }

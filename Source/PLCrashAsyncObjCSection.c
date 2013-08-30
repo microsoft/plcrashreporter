@@ -29,6 +29,16 @@
 #include "PLCrashAsyncObjCSection.h"
 #include <mach/mach_time.h>
 
+/**
+ * @internal
+ * @ingroup plcrash_async_image
+ * @defgroup plcrash_async_image_objc Objective-C Metadata Parsing
+ *
+ * Implements async-safe Objective-C binary parsing, for use at crash time when extracting binary information
+ * from the crashed process.
+ * @{
+ */
+
 
 static char * const kObjCSegmentName = "__OBJC";
 static char * const kDataSegmentName = "__DATA";

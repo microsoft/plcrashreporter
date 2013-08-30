@@ -276,6 +276,8 @@ typedef enum {
 
 
 /**
+ * @internal
+ *
  * GNU eh_frame pointer reader. Implements reading of pointer values encoded using the GNU eh_frame scheme.
  *
  * @tparam machine_ptr The target's native unsigned word type.

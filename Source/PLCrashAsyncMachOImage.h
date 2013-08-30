@@ -47,6 +47,8 @@ extern "C" {
  */
 
 /**
+ * @internal
+ *
  * A Mach-O image instance.
  */
 typedef struct plcrash_async_macho {    
@@ -90,6 +92,8 @@ typedef struct plcrash_async_macho {
 } plcrash_async_macho_t;
 
 /**
+ * @internal
+ *
  * A mapped Mach-O segment.
  */
 typedef struct plcrash_async_macho_mapped_segment_t {
@@ -104,6 +108,8 @@ typedef struct plcrash_async_macho_mapped_segment_t {
 } pl_async_macho_mapped_segment_t;
 
 /**
+ * @internal
+ *
  * A 32-bit/64-bit neutral symbol table entry. The values will be returned in host byte order.
  */
 typedef struct plcrash_async_macho_symtab_entry {
@@ -130,6 +136,8 @@ typedef struct plcrash_async_macho_symtab_entry {
 } plcrash_async_macho_symtab_entry_t;
 
 /**
+ * @internal
+ *
  * A Mach-O symtab reader. Provides support for iterating the contents of a Mach-O symbol table.
  */
 typedef struct plcrash_async_macho_symtab_reader {

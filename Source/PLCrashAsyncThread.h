@@ -80,6 +80,8 @@ typedef enum {
 } plcrash_async_thread_stack_direction_t;
 
 /**
+ * @internal
+ *
  * Target-neutral thread-state.
  *
  * The thread state maintains a set of valid registers; this may be used to implement delta

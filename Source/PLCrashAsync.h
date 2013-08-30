@@ -208,6 +208,7 @@ kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source,
 bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off_t offset, pl_vm_address_t *result);
 
 /**
+ * @internal
  * @ingroup plcrash_async
  *
  * Provides a set of byteswap functions that will swap from the target byte order to the host byte order.

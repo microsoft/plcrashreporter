@@ -78,6 +78,8 @@ extern "C" {
  * @ingroup plframe_backtrace
  *
  * API private to the frame walker implementation.
+ *
+ * @{
  */
 
 /**
@@ -109,7 +111,11 @@ typedef enum  {
     PLFRAME_EBADREG
 } plframe_error_t;
 
-/** The current stack frame data */
+/**
+ * @internal
+ *
+ * The current stack frame data
+ */
 typedef struct plframe_stackframe {
     /** Thread state */
     plcrash_async_thread_state_t thread_state;

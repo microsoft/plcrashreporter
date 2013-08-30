@@ -44,6 +44,7 @@
  */
 
 /**
+ * @internal
  * A CFE reader instance. Performs CFE data parsing from a backing memory object.
  */
 typedef struct plcrash_async_cfe_reader {
@@ -116,6 +117,8 @@ typedef enum {
 #define PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX 6
 
 /**
+ * @internal
+ *
  * A decoded CFE entry. The entry represents the data necessary to unwind the stack frame at a given PC, including
  * restoration of saved registers.
  */

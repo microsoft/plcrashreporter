@@ -44,6 +44,7 @@ namespace plcrash { namespace async {
  */
 
 /**
+ * @internal
  * DWARF Common Information Entry.
  */
 typedef struct plcrash_async_dwarf_cie_info {

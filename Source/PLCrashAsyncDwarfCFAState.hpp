@@ -77,6 +77,7 @@ typedef enum {
 } dwarf_cfa_state_cfa_type_t;
 
 /**
+ * @internal
  * A CFA value rule. The rule is interpreted to derive the Canonical Frame Address, as defined in
  * DWARF section 6.4.2.2.
  *
@@ -231,6 +232,8 @@ public:
 };
 
 /**
+ * @internal
+ *
  * Manages CFA register table row, using sparsely allocated register column entries. The class represents
  * a single address-based row within the CFA register table, and supports applying deltas to the row
  * register state as required for evaluation of a CFA opcode stream.
@@ -340,6 +343,8 @@ public:
 };
 
 /**
+ * @internal
+ *
  * A dwarf_cfa_state iterator; iterates DWARF CFA register records. The target stack must
  * not be modified while iteration is performed.
  */

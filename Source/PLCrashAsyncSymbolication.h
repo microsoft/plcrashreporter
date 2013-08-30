@@ -46,6 +46,7 @@ extern "C" {
     
 /**
  * @ingroup enums
+ *
  * Supported mechanisms for performing local symbolication.
  *
  * Local symbolication is performed using inexact heuristics and symbol data available at runtime; it may
@@ -77,6 +78,8 @@ typedef enum {
 } plcrash_async_symbol_strategy_t;
 
 /**
+ * @internal
+ *
  * Context object that helps speed up repeated symbol lookups.
  *
  * @warning It is invalid to reuse this context for multiple Mach tasks.

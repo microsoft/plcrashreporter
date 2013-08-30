@@ -35,9 +35,17 @@ extern "C" {
 
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncMachOString.h"
+    
+/**
+ * @internal
+ * @ingroup plcrash_async_image_objc
+ * @{
+ */
 
 
 /**
+ * @internal
+ *
  * Caches Objective-C data across API calls.
  *
  * This is used to speed up ObjC parsing.
@@ -100,6 +108,10 @@ typedef void (*plcrash_async_objc_found_method_cb)(bool isClassMethod, plcrash_a
 
 plcrash_error_t plcrash_async_objc_find_method (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *cache, pl_vm_address_t imp, plcrash_async_objc_found_method_cb callback, void *ctx);
     
+/**
+ * @}
+ */
+
 #ifdef __cplusplus
 }
 #endif

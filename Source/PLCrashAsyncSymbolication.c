@@ -30,6 +30,12 @@
 
 #include <inttypes.h>
 
+/**
+ * @internal
+ * @ingroup plcrash_async_symbol
+ * @{
+ */
+
 /* Maximum symbol name size */
 #define SYMBOL_NAME_BUFLEN 256
 
@@ -237,3 +243,6 @@ static void objc_symbol_callback (bool isClassMethod, plcrash_async_macho_string
     lookup_ctx->found = true;
 }
 
+/**
+ * @}
+ */

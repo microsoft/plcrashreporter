@@ -38,14 +38,15 @@
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
 /**
- * @internal
  * @ingroup plcrash_async_dwarf_private_opstream
+ * @internal
  * @{
  */
 
 namespace plcrash { namespace async {
 
 /**
+ * @internal
  * A simple opcode stream reader for use with DWARF opcode/CFA evaluation.
  */
 class dwarf_opstream {

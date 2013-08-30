@@ -47,6 +47,8 @@ namespace plcrash { namespace async {
  */
 
 /**
+ * @internal
+ *
  * A DWARF frame reader. Performs DWARF eh_frame/debug_frame parsing from a backing memory object.
  *
  * @tparam machine_ptr The target machine's unsigned native pointer type.

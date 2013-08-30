@@ -28,6 +28,11 @@
 
 #include "PLCrashAsyncMachoString.h"
 
+/**
+ * @internal
+ * @ingroup plcrash_async_image
+ * @{
+ */
 
 /**
  * Initialize a string object from a NUL-terminated C string.
@@ -132,3 +137,7 @@ void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string) {
     if (string->mobjIsInitialized)
         plcrash_async_mobject_free(&string->mobj);
 }
+
+/**
+ * @}
+ */
