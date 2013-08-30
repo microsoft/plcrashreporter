@@ -69,7 +69,7 @@ struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
     plcrash_async_file_t *file;
     plcrash_async_image_list_t *images;
-    siginfo_t *info;
+    plcrash_log_signal_info_t *info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
@@ -77,21 +77,21 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 }
 
 - (void) testWriteReport {
-    siginfo_t info;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
     NSError *error = nil;
     
     /* Initialze faux crash data */
+    plcrash_log_signal_info_t info;
+    plcrash_log_bsd_signal_info_t bsd_info;
     {
-        info.si_addr = method_getImplementation(class_getInstanceMethod([self class], _cmd));
-        info.si_errno = 0;
-        info.si_pid = getpid();
-        info.si_uid = getuid();
-        info.si_code = SEGV_MAPERR;
-        info.si_signo = SIGSEGV;
-        info.si_status = 0;
+        bsd_info.address = method_getImplementation(class_getInstanceMethod([self class], _cmd));
+        bsd_info.code = SEGV_MAPERR;
+        bsd_info.signo = SIGSEGV;
+
+        info.mach_info = NULL;
+        info.bsd_info = &bsd_info;
     }
 
     /* Open the output file */

@@ -280,7 +280,6 @@
 
 
 - (void) testWriteReport {
-    siginfo_t info;
     plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
@@ -294,14 +293,15 @@
         plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
 
     /* Initialze faux crash data */
+    plcrash_log_signal_info_t info;
+    plcrash_log_bsd_signal_info_t bsd_info;
     {
-        info.si_addr = (void *) 0x42;
-        info.si_errno = 0;
-        info.si_pid = getpid();
-        info.si_uid = getuid();
-        info.si_code = SEGV_MAPERR;
-        info.si_signo = SIGSEGV;
-        info.si_status = 0;
+        bsd_info.address = (void *) 0x42;
+        bsd_info.code = SEGV_MAPERR;
+        bsd_info.signo = SIGSEGV;
+        
+        info.mach_info = NULL;
+        info.bsd_info = &bsd_info;
         
         /* Steal the test thread's stack for iteration */
         thread = pthread_mach_thread_np(_thr_args.thread);

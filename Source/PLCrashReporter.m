@@ -145,7 +145,7 @@ static PLCrashReporterCallbacks crashCallbacks = {
  *
  * @return Returns true on success, or false if the report could not be written.
  */
-static bool plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_t crashed_thread, plcrash_async_thread_state_t *thread_state, siginfo_t *siginfo) {
+static bool plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_t crashed_thread, plcrash_async_thread_state_t *thread_state, plcrash_log_signal_info_t *siginfo) {
     plcrash_async_file_t file;
 
     /* Open the output file */
@@ -177,6 +177,8 @@ static bool plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_
 static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     plcrashreporter_handler_ctx_t *sigctx = context;
     plcrash_async_thread_state_t thread_state;
+    plcrash_log_signal_info_t signal_info;
+    plcrash_log_bsd_signal_info_t bsd_signal_info;
     
     /* Remove all signal handlers -- if the crash reporting code fails, the default terminate
      * action will occur.
@@ -200,9 +202,17 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
 
     /* Extract the thread state */
     plcrash_async_thread_state_mcontext_init(&thread_state, uap->uc_mcontext);
+    
+    /* Set up the BSD signal info */
+    bsd_signal_info.signo = info->si_signo;
+    bsd_signal_info.code = info->si_code;
+    bsd_signal_info.address = info->si_addr;
+    
+    signal_info.bsd_info = &bsd_signal_info;
+    signal_info.mach_info = NULL;
 
     /* Write the report */
-    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, info))
+    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &signal_info))
         return false;
 
     /* Call any post-crash callback */
@@ -216,18 +226,14 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
 static kern_return_t mach_exception_callback (task_t task, thread_t thread, exception_type_t exception_type, mach_exception_data_t code, mach_msg_type_number_t code_count, void *context) {
     plcrashreporter_handler_ctx_t *sigctx = context;
     plcrash_async_thread_state_t thread_state;
+    plcrash_log_signal_info_t signal_info;
+    plcrash_log_bsd_signal_info_t bsd_signal_info;
+    plcrash_log_mach_signal_info_t mach_signal_info;
     plcrash_error_t err;
 
     /* Let any other registered server attempt to handle the exception */
     if (PLCrashMachExceptionForward(task, thread, exception_type, code, code_count, &sigctx->port_set) == KERN_SUCCESS)
         return KERN_SUCCESS;
-
-    /* Map to a POSIX signal */
-    siginfo_t si;
-    if (!plcrash_async_mach_exception_get_siginfo(exception_type, code, code_count, CPU_TYPE_ANY, &si)) {
-        PLCF_DEBUG("Unexpected error mapping Mach exception to a POSIX signal");
-        return KERN_FAILURE;
-    }
     
     /* Extract the thread state */
     if ((err = plcrash_async_thread_state_mach_thread_init(&thread_state, thread)) != PLCRASH_ESUCCESS) {
@@ -235,8 +241,27 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
         return KERN_FAILURE;
     }
     
+    /* Set up the BSD signal info */
+    siginfo_t si;
+    if (!plcrash_async_mach_exception_get_siginfo(exception_type, code, code_count, CPU_TYPE_ANY, &si)) {
+        PLCF_DEBUG("Unexpected error mapping Mach exception to a POSIX signal");
+        return KERN_FAILURE;
+    }
+
+    bsd_signal_info.signo = si.si_signo;
+    bsd_signal_info.code = si.si_code;
+    bsd_signal_info.address = si.si_addr;
+
+    signal_info.bsd_info = &bsd_signal_info;
+    
+    /* Set up the Mach signal info */
+    mach_signal_info.type = exception_type;
+    mach_signal_info.code = code;
+    mach_signal_info.code_count = code_count;
+    signal_info.mach_info = &mach_signal_info;
+    
     /* Write the report */
-    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &si))
+    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &signal_info))
         return false;
     
     /* Call any post-crash callback */
@@ -604,7 +629,7 @@ static PLCrashReporter *sharedReporter = nil;
 struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
     plcrash_async_file_t *file;
-    siginfo_t *info;
+    plcrash_log_signal_info_t *info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
@@ -648,23 +673,26 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
     
-    /* Mock up a SIGTRAP-based siginfo_t */
-    siginfo_t info;
-    memset(&info, 0, sizeof(info));
-    info.si_signo = SIGTRAP;
-    info.si_code = TRAP_TRACE;
-    info.si_addr = __builtin_return_address(0);
+    /* Mock up a SIGTRAP-based signal info */
+    plcrash_log_bsd_signal_info_t bsd_signal_info;
+    plcrash_log_signal_info_t signal_info;
+    bsd_signal_info.signo = SIGTRAP;
+    bsd_signal_info.code = TRAP_TRACE;
+    bsd_signal_info.address = __builtin_return_address(0);
+
+    signal_info.bsd_info = &bsd_signal_info;
+    signal_info.mach_info = NULL;
     
     /* Write the crash log using the already-initialized writer */
     if (thread == pl_mach_thread_self()) {
         struct plcr_live_report_context ctx = {
             .writer = &writer,
             .file = &file,
-            .info = &info
+            .info = &signal_info
         };
         err = plcrash_async_thread_state_current(plcr_live_report_callback, &ctx);
     } else {
-        err = plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &info, NULL);
+        err = plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &signal_info, NULL);
     }
     plcrash_log_writer_close(&writer);
 

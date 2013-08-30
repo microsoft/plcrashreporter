@@ -1058,29 +1058,33 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
  * @param file Output file
  * @param siginfo The signal information
  */
-static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, siginfo_t *siginfo) {
+static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, plcrash_log_signal_info_t *siginfo) {
     size_t rv = 0;
+    
+    /* BSD signal info is always required in the current report format; this restriction will be lifted
+     * once we switch to the 2.0 format. */
+    PLCF_ASSERT(siginfo->bsd_info != NULL);
     
     /* Fetch the signal name */
     char name_buf[10];
     const char *name;
-    if ((name = plcrash_async_signal_signame(siginfo->si_signo)) == NULL) {
-        PLCF_DEBUG("Warning -- unhandled signal number (signo=%d). This is a bug.", siginfo->si_signo);
-        snprintf(name_buf, sizeof(name_buf), "#%d", siginfo->si_signo);
+    if ((name = plcrash_async_signal_signame(siginfo->bsd_info->signo)) == NULL) {
+        PLCF_DEBUG("Warning -- unhandled signal number (signo=%d). This is a bug.", siginfo->bsd_info->signo);
+        snprintf(name_buf, sizeof(name_buf), "#%d", siginfo->bsd_info->signo);
         name = name_buf;
     }
 
     /* Fetch the signal code string */
     char code_buf[10];
     const char *code;
-    if ((code = plcrash_async_signal_sigcode(siginfo->si_signo, siginfo->si_code)) == NULL) {
-        PLCF_DEBUG("Warning -- unhandled signal sicode (signo=%d, code=%d). This is a bug.", siginfo->si_signo, siginfo->si_code);
-        snprintf(code_buf, sizeof(code_buf), "#%d", siginfo->si_code);
+    if ((code = plcrash_async_signal_sigcode(siginfo->bsd_info->signo, siginfo->bsd_info->code)) == NULL) {
+        PLCF_DEBUG("Warning -- unhandled signal sicode (signo=%d, code=%d). This is a bug.", siginfo->bsd_info->signo, siginfo->bsd_info->code);
+        snprintf(code_buf, sizeof(code_buf), "#%d", siginfo->bsd_info->code);
         code = code_buf;
     }
     
     /* Address value */
-    uint64_t addr = (uintptr_t) siginfo->si_addr;
+    uint64_t addr = (uintptr_t) siginfo->bsd_info->address;
 
     /* Write it out */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
@@ -1132,7 +1136,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file,
-                                          siginfo_t *siginfo,
+                                          plcrash_log_signal_info_t *siginfo,
                                           plcrash_async_thread_state_t *current_state)
 {
     thread_act_array_t threads;
