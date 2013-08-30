@@ -33,6 +33,8 @@
 
 
 /**
+ * @internal
+ *
  * This class manages a reference to a Mach exception server port, and the associated
  * mask, behavior, and thread state flavor expected by the given Mach exception server.
  */
