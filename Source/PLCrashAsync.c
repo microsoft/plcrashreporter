@@ -188,6 +188,21 @@ bool plcrash_async_address_apply_offset (pl_vm_address_t base_address, pl_vm_off
     return true;
 }
 
+
+/**
+ * Return a borrowed reference to the current thread's mach port. This differs
+ * from mach_thread_self(), which acquires a new reference to the backing thread.
+ *
+ * @note The mach_thread_self() reference counting semantics differ from mach_task_self();
+ * mach_task_self() returns a borrowed reference, and will not leak -- a wrapper
+ * function such as this is not required for mach_task_self().
+ */
+thread_t pl_mach_thread_self (void) {
+    thread_t result = mach_thread_self();
+    mach_port_deallocate(mach_task_self(), result);
+    return result;
+}
+
 /**
  * Copy @a len bytes from @a task, at @a address + @a offset, storing in @a dest. If the page(s) at the
  * given @a address + @a offset are unmapped or unreadable, no copy will be performed and an error will

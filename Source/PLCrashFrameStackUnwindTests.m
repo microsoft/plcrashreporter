@@ -72,7 +72,7 @@ struct stack_frame {
 
     /* Configure thread state */
     plcrash_async_thread_state_t state;
-    plcrash_async_thread_state_mach_thread_init(&state, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&state, pl_mach_thread_self());
     plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[0].fp);
     plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[0].pc);
 
@@ -120,7 +120,7 @@ struct stack_frame {
     
     /* Configure thread state */
     plcrash_async_thread_state_t state;
-    plcrash_async_thread_state_mach_thread_init(&state, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&state, pl_mach_thread_self());
     plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_FP, frames[0].fp);
     plcrash_async_thread_state_set_reg(&state, PLCRASH_REG_IP, frames[0].pc);
     

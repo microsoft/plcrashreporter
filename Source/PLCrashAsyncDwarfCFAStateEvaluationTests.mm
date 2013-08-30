@@ -467,7 +467,7 @@ using namespace plcrash::async;
     uint8_t opcodes[] = { 1, DW_OP_lit15 };
 
     /* Populate initial state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
@@ -506,7 +506,7 @@ using namespace plcrash::async;
 
 
     /* Populate initial state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
@@ -548,7 +548,7 @@ using namespace plcrash::async;
     dwarf_cfa_state<uint64_t, int64_t> cfa_state;
     plcrash_error_t err;
     
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     err = cfa_state.apply_state(mach_task_self(), &_cie, &prev_ts, &plcrash_async_byteorder_direct, &new_ts);
     STAssertEquals(err, PLCRASH_EINVAL, @"Attempt to apply an incomplete CFA state did not return EINVAL");
 }
@@ -563,7 +563,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
 
     /* Populate initial state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
 
     /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
      * that it actually is interpreted as an */
@@ -591,7 +591,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
     
     /* Populate initial state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     
     /* Set the CFA-required register and associated CFA rule; we use a negative value here intentionally, and verify
      * that it actually is interpreted as an */
@@ -619,7 +619,7 @@ using namespace plcrash::async;
     uint8_t opcodes = { DW_OP_lit15 };
 
     /* Populate initial state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     
     /* Target our sample opcodes */
     cfa_state.set_cfa_expression((pl_vm_address_t)&opcodes, sizeof(opcodes));
@@ -652,7 +652,7 @@ using namespace plcrash::async;
     target_val.u64 = 0xABABABABABABABABULL;
 
     /* Initial thread state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
     
@@ -686,7 +686,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
     
     /* Initial thread state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
     
@@ -716,7 +716,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
     
     /* Initial thread state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     
     /* Find a set of two GP registers for the target architecture */
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
@@ -763,7 +763,7 @@ using namespace plcrash::async;
     target_val.u64 = 0xABABABABABABABABULL;
     
     /* Initial thread state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());    
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());    
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
 
@@ -810,7 +810,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
     
     /* Initial thread state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
     
@@ -850,7 +850,7 @@ using namespace plcrash::async;
     plcrash_error_t err;
     
     /* Initial thread state */
-    plcrash_async_thread_state_mach_thread_init(&prev_ts, mach_thread_self());
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
     dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
     plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
     plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);

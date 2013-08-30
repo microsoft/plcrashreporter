@@ -889,7 +889,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
     plframe_error_t ferr;
 
     /* A context must be supplied when walking the current thread */
-    PLCF_ASSERT(task != mach_task_self() || thread_ctx != NULL || thread != mach_thread_self());
+    PLCF_ASSERT(task != mach_task_self() || thread_ctx != NULL || thread != pl_mach_thread_self());
 
     /* Write the required elements first; fatal errors may occur below, in which case we need to have
      * written out required elements before returning. */
@@ -1140,7 +1140,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 
     /* A context must be supplied if the current thread is marked as the crashed thread; otherwise,
      * the thread's stack can not be safely walked. */
-    PLCF_ASSERT(mach_thread_self() != crashed_thread || current_state != NULL);
+    PLCF_ASSERT(pl_mach_thread_self() != crashed_thread || current_state != NULL);
 
     /* Get a list of all threads */
     if (task_threads(mach_task_self(), &threads, &thread_count) != KERN_SUCCESS) {
@@ -1150,7 +1150,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     /* Suspend all but the current thread. */
     for (mach_msg_type_number_t i = 0; i < thread_count; i++) {
-        if (threads[i] != mach_thread_self())
+        if (threads[i] != pl_mach_thread_self())
             thread_suspend(threads[i]);
     }
 
@@ -1253,7 +1253,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         uint32_t size;
 
         /* If executing on the target thread, we need to a valid context to walk */
-        if (mach_thread_self() == thread) {
+        if (pl_mach_thread_self() == thread) {
             /* Can't log a report for the current thread without a valid context. */
             if (current_state == NULL)
                 continue;
@@ -1315,7 +1315,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     /* Clean up the thread array */
     for (mach_msg_type_number_t i = 0; i < thread_count; i++) {
-        if (threads[i] != mach_thread_self())
+        if (threads[i] != pl_mach_thread_self())
             thread_resume(threads[i]);
 
         mach_port_deallocate(mach_task_self(), threads[i]);

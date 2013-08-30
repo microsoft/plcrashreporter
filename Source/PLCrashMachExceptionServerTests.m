@@ -35,6 +35,7 @@
 #import "PLCrashMachExceptionServer.h"
 #import "PLCrashMachExceptionPort.h"
 #import "PLCrashHostInfo.h"
+#import "PLCrashAsync.h"
 
 #include <sys/mman.h>
 
@@ -65,7 +66,7 @@
                                    _task_ports.flavors);
     STAssertEquals(kr, KERN_SUCCESS, @"Failed to reset task ports");
     
-    kr = thread_swap_exception_ports(mach_thread_self(),
+    kr = thread_swap_exception_ports(pl_mach_thread_self(),
                                      EXC_MASK_BAD_ACCESS,
                                      MACH_PORT_NULL,
                                      EXCEPTION_DEFAULT,
@@ -94,7 +95,7 @@
         if (MACH_PORT_VALID(!_thread_ports.ports[i]))
             continue;
         
-        kr = thread_set_exception_ports(mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors);
+        kr = thread_set_exception_ports(pl_mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors);
         STAssertEquals(kr, KERN_SUCCESS, @"Failed to set thread ports");
     }
 }
@@ -183,7 +184,7 @@ static kern_return_t exception_callback (task_t task,
                            previousPortSet: NULL
                                      error: &error], @"Failed to configure handler: %@", error);
 
-    STAssertTrue([thrPort registerForThread: mach_thread_self()
+    STAssertTrue([thrPort registerForThread: pl_mach_thread_self()
                             previousPortSet: NULL
                                       error: &error], @"Failed to configure handler: %@", error);
 
@@ -230,7 +231,7 @@ static kern_return_t exception_callback (task_t task,
 
     plcrash_mach_exception_port_set_t port_set = portSet.asyncSafeRepresentation;
     kern_return_t kt = PLCrashMachExceptionForward(mach_task_self(),
-                                                   mach_thread_self(),
+                                                   pl_mach_thread_self(),
                                                    EXC_BAD_ACCESS,
                                                    codes,
                                                    2,

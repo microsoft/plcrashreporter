@@ -73,7 +73,7 @@ struct plcr_live_report_context {
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
-    return plcrash_log_writer_write(plcr_ctx->writer, mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, state);
+    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, state);
 }
 
 - (void) testWriteReport {

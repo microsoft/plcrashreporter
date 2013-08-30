@@ -159,7 +159,7 @@ static bool plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
     
     /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write(&sigctx->writer, mach_thread_self(), &shared_image_list, &file, siginfo, thread_state);
+    plcrash_log_writer_write(&sigctx->writer, pl_mach_thread_self(), &shared_image_list, &file, siginfo, thread_state);
     plcrash_log_writer_close(&sigctx->writer);
     
     /* Finished */
@@ -202,7 +202,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     plcrash_async_thread_state_mcontext_init(&thread_state, uap->uc_mcontext);
 
     /* Write the report */
-    if (!plcrash_write_report(sigctx, mach_thread_self(), &thread_state, info))
+    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, info))
         return false;
 
     /* Call any post-crash callback */
@@ -236,7 +236,7 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     }
     
     /* Write the report */
-    if (!plcrash_write_report(sigctx, mach_thread_self(), &thread_state, &si))
+    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &si))
         return false;
     
     /* Call any post-crash callback */
@@ -608,7 +608,7 @@ struct plcr_live_report_context {
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
-    return plcrash_log_writer_write(plcr_ctx->writer, mach_thread_self(), &shared_image_list, plcr_ctx->file, plcr_ctx->info, state);
+    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), &shared_image_list, plcr_ctx->file, plcr_ctx->info, state);
 }
 
 
@@ -656,7 +656,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     info.si_addr = __builtin_return_address(0);
     
     /* Write the crash log using the already-initialized writer */
-    if (thread == mach_thread_self()) {
+    if (thread == pl_mach_thread_self()) {
         struct plcr_live_report_context ctx = {
             .writer = &writer,
             .file = &file,
@@ -727,7 +727,7 @@ cleanup:
  * @return Returns nil if the crash report data could not be loaded.
  */
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
-    return [self generateLiveReportWithThread: mach_thread_self() error: outError];
+    return [self generateLiveReportWithThread: pl_mach_thread_self() error: outError];
 }
 
 

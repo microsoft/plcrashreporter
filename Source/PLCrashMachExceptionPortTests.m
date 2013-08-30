@@ -32,6 +32,7 @@
 
 #import "GTMSenTestCase.h"
 #import "PLCrashMachExceptionPort.h"
+#import "PLCrashAsync.h"
 
 /* EXC_MASK_GUARD isn't supported on Mac OS X 10.8, but the iOS Simulator includes it in
  * EXC_MASK_ALL; we don't actually need to use it for our tests, so we define a safe subset
@@ -82,9 +83,9 @@
     kern_return_t kr;
     
     /* Fetch the current ports */
-    kr = thread_get_exception_ports(mach_thread_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
+    kr = thread_get_exception_ports(pl_mach_thread_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
-    PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForThread: mach_thread_self() mask: EXC_MASK_ALL_SAFE error: &error];
+    PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForThread: pl_mach_thread_self() mask: EXC_MASK_ALL_SAFE error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
     
     /* Compare the sets */
@@ -148,21 +149,21 @@
                                                                                          flavor: MACHINE_THREAD_STATE] autorelease];
     
     /* Fetch the current state to compare against */
-    PLCrashMachExceptionPortSet *initialState = [PLCrashMachExceptionPort exceptionPortsForThread: mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
+    PLCrashMachExceptionPortSet *initialState = [PLCrashMachExceptionPort exceptionPortsForThread: pl_mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
     STAssertNotNil(initialState, @"Failed to fetch port state: %@", error);
     
     /* Set new state */
-    STAssertTrue([state registerForThread: mach_thread_self() previousPortSet: &previousStates error: &error], @"Failed to register exception ports: %@", error);
+    STAssertTrue([state registerForThread: pl_mach_thread_self() previousPortSet: &previousStates error: &error], @"Failed to register exception ports: %@", error);
     
     /* Verify that new state matches our expectations */
-    PLCrashMachExceptionPortSet *newState = [PLCrashMachExceptionPort exceptionPortsForThread: mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
+    PLCrashMachExceptionPortSet *newState = [PLCrashMachExceptionPort exceptionPortsForThread: pl_mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];
     for (PLCrashMachExceptionPort *expected in newState) {
         STAssertEquals((mach_port_t)MACH_PORT_NULL, expected.server_port, @"Incorrect port");
     }
     
     /* Restore */
     for (PLCrashMachExceptionPort *prev in previousStates)
-        STAssertTrue([prev registerForThread: mach_thread_self() previousPortSet: NULL error: &error], @"Failed to restore port: %@", error);
+        STAssertTrue([prev registerForThread: pl_mach_thread_self() previousPortSet: NULL error: &error], @"Failed to restore port: %@", error);
     
     /* Verify that final state matches our expectations */
     for (PLCrashMachExceptionPort *expected in initialState) {
