@@ -38,6 +38,8 @@
  */
 
 /**
+ * @internal
+ *
  * The PLCrashHostInfo provides methods to access basic information about the current host.
  */
 @implementation PLCrashHostInfo
