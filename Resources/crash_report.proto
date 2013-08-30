@@ -260,7 +260,7 @@ message CrashReport {
          */
         message MachException {
             /* The exception type. These values will generally be common across most Apple platforms. */
-            required uint32 type = 1;
+            required uint64 type = 1;
             
             /* The exception codes. Interpretation of these values depends on the exception type, and/or the
              * faulting platform. */

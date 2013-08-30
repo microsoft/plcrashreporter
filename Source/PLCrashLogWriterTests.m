@@ -295,12 +295,20 @@
     /* Initialze faux crash data */
     plcrash_log_signal_info_t info;
     plcrash_log_bsd_signal_info_t bsd_info;
+    plcrash_log_mach_signal_info_t mach_info;
+    mach_exception_data_type_t mach_codes[2];
     {
         bsd_info.address = (void *) 0x42;
         bsd_info.code = SEGV_MAPERR;
         bsd_info.signo = SIGSEGV;
         
-        info.mach_info = NULL;
+        mach_info.type = EXC_BAD_ACCESS;
+        mach_info.code = mach_codes;
+        mach_info.code_count = sizeof(mach_codes) / sizeof(mach_codes[0]);
+        mach_codes[0] = KERN_PROTECTION_FAILURE;
+        mach_codes[1] = 0x42;
+    
+        info.mach_info = &mach_info;
         info.bsd_info = &bsd_info;
         
         /* Steal the test thread's stack for iteration */
@@ -367,6 +375,13 @@
     STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
     STAssertTrue(strcmp(crashReport->signal->code, "SEGV_MAPERR") == 0, @"Signal code incorrect");
     STAssertEquals((uint64_t) 0x42, crashReport->signal->address, @"Signal address incorrect");
+    
+    /* Check the mach exception info */
+    STAssertNotNULL(crashReport->signal->mach_exception, @"Missing mach exceptiond info");
+    STAssertEquals(crashReport->signal->mach_exception->type, (uint64_t)EXC_BAD_ACCESS, @"Exception type incorrect");
+    STAssertEquals((size_t)2, crashReport->signal->mach_exception->n_codes, @"Code count incorrect");
+    STAssertEquals((uint64_t) KERN_PROTECTION_FAILURE, crashReport->signal->mach_exception->codes[0], @"code[0] incorrect");
+    STAssertEquals((uint64_t) 0x42, crashReport->signal->mach_exception->codes[1], @"code[1] incorrect");
 
 
     /* Validate the 'crashed' flag is on a thread with the expected PC. */

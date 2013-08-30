@@ -178,7 +178,17 @@ enum {
     /** CrashReport.signal.address */
     PLCRASH_PROTO_SIGNAL_ADDRESS_ID = 3,
     
+    /** CrashReport.signal.mach_exception */
+    PLCRASH_PROTO_SIGNAL_MACH_EXCEPTION_ID = 4,
     
+    
+    /** CrashReport.signal.mach_exception.type */
+    PLCRASH_PROTO_SIGNAL_MACH_EXCEPTION_TYPE_ID = 1,
+    
+    /** CrashReport.signal.mach_exception.codes */
+    PLCRASH_PROTO_SIGNAL_MACH_EXCEPTION_CODES_ID = 2,
+
+
     /** CrashReport.process_info */
     PLCRASH_PROTO_PROCESS_INFO_ID = 7,
     
@@ -1053,6 +1063,30 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
 /**
  * @internal
  *
+ * Write the crash signal's mach exception info.
+ *
+ * @param file Output file
+ * @param siginfo The signal information
+ */
+static size_t plcrash_writer_write_mach_signal (plcrash_async_file_t *file, plcrash_log_mach_signal_info_t *siginfo) {
+    size_t rv = 0;
+
+    /* Type */
+    uint64_t type = siginfo->type;
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_MACH_EXCEPTION_TYPE_ID, PLPROTOBUF_C_TYPE_UINT64, &type);
+    
+    /* Code(s) */
+    for (mach_msg_type_number_t i = 0; i < siginfo->code_count; i++) {
+        uint64_t code = siginfo->code[i];
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_MACH_EXCEPTION_CODES_ID, PLPROTOBUF_C_TYPE_UINT64, &code);
+    }
+
+    return rv;
+}
+
+/**
+ * @internal
+ *
  * Write the crash signal message
  *
  * @param file Output file
@@ -1090,6 +1124,18 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, plcrash_l
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_NAME_ID, PLPROTOBUF_C_TYPE_STRING, name);
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_CODE_ID, PLPROTOBUF_C_TYPE_STRING, code);
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ADDRESS_ID, PLPROTOBUF_C_TYPE_UINT64, &addr);
+    
+    /* Mach exception info */
+    if (siginfo->mach_info != NULL) {
+        uint32_t size;
+        
+        /* Determine size */
+        size = plcrash_writer_write_mach_signal(NULL, siginfo->mach_info);
+        
+        /* Write message */
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_MACH_EXCEPTION_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        rv += plcrash_writer_write_mach_signal(file, siginfo->mach_info);
+    }
 
     return rv;
 }
