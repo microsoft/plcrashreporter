@@ -34,6 +34,8 @@ extern "C" {
 #endif
     
 /**
+ * @internal
+ *
  * @defgroup plcrash_async_symbol Async-Safe Symbol Lookup
  * @ingroup plcrash_async
  * @{
@@ -43,7 +45,6 @@ extern "C" {
 #include "PLCrashAsyncObjCSection.h"
     
 /**
- * @internal
  * @ingroup enums
  * Supported mechanisms for performing local symbolication.
  *
