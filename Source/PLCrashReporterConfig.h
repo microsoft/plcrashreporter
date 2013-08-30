@@ -122,7 +122,7 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
 
     /**
      * Use the standard binary symbol table. On iOS, this alone will return
-     * incomplete results, as most symbols are rewritten to the common '<redacted>' string.
+     * incomplete results, as most symbols are rewritten to the common '\<redacted>' string.
      */
     PLCrashReporterSymbolicationStrategySymbolTable = 1 << 0,
 

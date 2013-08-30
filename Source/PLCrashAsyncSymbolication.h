@@ -58,7 +58,7 @@ typedef enum {
     
     /**
      * Use the standard binary symbol table. On iOS, this alone will return
-     * incomplete results, as most symbols are rewritten to the common '<redacted>' string.
+     * incomplete results, as most symbols are rewritten to the common '\<redacted>' string.
      */
     PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE = 1 << 0,
     
