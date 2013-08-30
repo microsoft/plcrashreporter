@@ -274,7 +274,7 @@ typedef enum {
  * codes handled in-kernel at the time of exception dispatch. It is generally recommended by Apple as the preferred
  * interface, and should generally be preferred by PLCrashReporter API clients.
  *
- * @section mach_exceptions_compatibility
+ * @section mach_exceptions_compatibility Compatibility Issues
  *
  * @subsection Debuggers
  *
@@ -294,7 +294,7 @@ typedef enum {
  * handle the failure. This can result in unexpected delays in application execution, increased I/O to
  * disk, and other undesirable operations.
  *
- * @section mach_exceptions_ios iOS
+ * @section mach_exceptions_ios Mach Exceptions on iOS
  *
  * The APIs required for Mach exception handling are not fully public on iOS. Unfortunately, there are a number
  * of crash states that can only be handled with Mach exception handlers:
