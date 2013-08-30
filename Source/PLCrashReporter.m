@@ -369,6 +369,14 @@ static PLCrashReporter *sharedReporter = nil;
 }
 
 /**
+ * Initialize a new PLCrashReporter instance with a default configuration appropraite
+ * for release deployment.
+ */
+- (instancetype) init {
+    return [self initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+}
+
+/**
  * Initialize a new PLCrashReporter instance with the given configuration.
  *
  * @param configuration The configuration to be used by this reporter instance.
