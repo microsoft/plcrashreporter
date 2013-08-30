@@ -66,5 +66,14 @@
 #define PLCrashReportHostOperatingSystem    PLNS(PLCrashReportHostOperatingSystem)
 #define PLCrashReporterErrorDomain          PLNS(PLCrashReporterErrorDomain)
 #define PLCrashReporterException            PLNS(PLCrashReporterException)
+#define PLCrashHostInfo                     PLNS(PLCrashHostInfo)
+#define PLCrashMachExceptionPort            PLNS(PLCrashMachExceptionPort)
+#define PLCrashMachExceptionPortSet         PLNS(PLCrashMachExceptionPortSet)
+#define PLCrashProcessInfo                  PLNS(PLCrashProcessInfo)
+#define PLCrashReporterConfig               PLNS(PLCrashReporterConfig)
+#define PLCrashUncaughtExceptionHandler     PLNS(PLCrashUncaughtExceptionHandler)
+#define PLCrashMachExceptionForward         PLNS(PLCrashMachExceptionForward)
+#define PLCrashSignalHandlerForward         PLNS(PLCrashSignalHandlerForward)
+#define plcrash_signal_handler              PLNS(plcrash_signal_handler)
 
 #endif

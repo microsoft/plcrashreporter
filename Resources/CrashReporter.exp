@@ -22,10 +22,10 @@ _*PLCrashReportHostArchitecture
 # PLCrashSignalHandler functions. These are currently exposed to simplify unit testing,
 # though the entirity of the current internal set of symbols will likely be exposed as unsupported
 # API in a future release.
-_plcrash_signal_handler
-_PLCrashSignalHandlerForward
+_*plcrash_signal_handler
+_*PLCrashSignalHandlerForward
 
 # PLCrashMachExceptionServer functions. These are currently exposed to simplify unit testing,
 # though the entirity of the current internal set of symbols will likely be exposed as unsupported
 # API in a future release.
-_PLCrashMachExceptionForward
+_*PLCrashMachExceptionForward
