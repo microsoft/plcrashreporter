@@ -964,10 +964,10 @@ cleanup:
         return PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE;
     
     if (strategy & PLCrashReporterSymbolicationStrategySymbolTable)
-        result &= PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE;
+        result |= PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE;
     
     if (strategy & PLCrashReporterSymbolicationStrategyObjC)
-        result &= PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC;
+        result |= PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC;
     
     return result;
 }
