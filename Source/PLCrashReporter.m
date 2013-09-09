@@ -159,7 +159,7 @@ static bool plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
     
     /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write(&sigctx->writer, pl_mach_thread_self(), &shared_image_list, &file, siginfo, thread_state);
+    plcrash_log_writer_write(&sigctx->writer, crashed_thread, &shared_image_list, &file, siginfo, thread_state);
     plcrash_log_writer_close(&sigctx->writer);
     
     /* Finished */
@@ -223,9 +223,24 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
 }
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
+/* State and callback used to generate thread state for the calling mach thread. */
+struct mach_exception_callback_live_cb_ctx {
+    plcrashreporter_handler_ctx_t *sigctx;
+    thread_t crashed_thread;
+    plcrash_log_signal_info_t *siginfo;
+};
+
+static plcrash_error_t mach_exception_callback_live_cb (plcrash_async_thread_state_t *state, void *ctx) {
+    struct mach_exception_callback_live_cb_ctx *plcr_ctx = ctx;
+    
+    if (!plcrash_write_report(plcr_ctx->sigctx, plcr_ctx->crashed_thread, state, plcr_ctx->siginfo))
+        return PLCRASH_EINTERNAL;
+
+    return PLCRASH_ESUCCESS;
+}
+
 static kern_return_t mach_exception_callback (task_t task, thread_t thread, exception_type_t exception_type, mach_exception_data_t code, mach_msg_type_number_t code_count, void *context) {
     plcrashreporter_handler_ctx_t *sigctx = context;
-    plcrash_async_thread_state_t thread_state;
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
     plcrash_log_mach_signal_info_t mach_signal_info;
@@ -234,12 +249,6 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     /* Let any other registered server attempt to handle the exception */
     if (PLCrashMachExceptionForward(task, thread, exception_type, code, code_count, &sigctx->port_set) == KERN_SUCCESS)
         return KERN_SUCCESS;
-    
-    /* Extract the thread state */
-    if ((err = plcrash_async_thread_state_mach_thread_init(&thread_state, thread)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Unexpected error fetching thread state: %d", err);
-        return KERN_FAILURE;
-    }
     
     /* Set up the BSD signal info */
     siginfo_t si;
@@ -261,9 +270,16 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     signal_info.mach_info = &mach_signal_info;
     
     /* Write the report */
-    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &signal_info))
+    struct mach_exception_callback_live_cb_ctx live_ctx = {
+        .sigctx = sigctx,
+        .crashed_thread = thread,
+        .siginfo = &signal_info
+    };
+    if ((err = plcrash_async_thread_state_current(mach_exception_callback_live_cb, &live_ctx)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to write live report: %d", err);
         return false;
-    
+    }
+
     /* Call any post-crash callback */
     if (crashCallbacks.handleSignal != NULL) {
         /*
