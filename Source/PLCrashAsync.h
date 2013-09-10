@@ -48,8 +48,9 @@ extern "C" {
  * iOS does not provide the mach_vm_* APIs, and as such, we can't support both
  * 32-bit/64-bit tasks via the same APIs.
  *
- * In practice, this currently does not matter for iOS, as no 64-bit ARM CPU
- * exists.
+ * In practice, this currently does not matter for iOS as out-of-process execution
+ * is not permitted; in-process reporting will always target the host process'
+ * address width.
  */
 
 /** The largest address value that can be represented via the pl_vm_address_t type. */
