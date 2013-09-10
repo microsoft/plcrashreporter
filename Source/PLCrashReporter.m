@@ -143,30 +143,45 @@ static PLCrashReporterCallbacks crashCallbacks = {
  * @param thread_state The crashed thread's state.
  * @param siginfo The signal information.
  *
- * @return Returns true on success, or false if the report could not be written.
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate error value if the report could not be written.
  */
-static bool plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_t crashed_thread, plcrash_async_thread_state_t *thread_state, plcrash_log_signal_info_t *siginfo) {
+static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_t crashed_thread, plcrash_async_thread_state_t *thread_state, plcrash_log_signal_info_t *siginfo) {
     plcrash_async_file_t file;
+    plcrash_error_t err;
 
     /* Open the output file */
     int fd = open(sigctx->path, O_RDWR|O_CREAT|O_TRUNC, 0644);
     if (fd < 0) {
         PLCF_DEBUG("Could not open the crashlog output file: %s", strerror(errno));
-        return false;
+        return PLCRASH_EINTERNAL;
     }
     
     /* Initialize the output context */
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
     
     /* Write the crash log using the already-initialized writer */
-    plcrash_log_writer_write(&sigctx->writer, crashed_thread, &shared_image_list, &file, siginfo, thread_state);
-    plcrash_log_writer_close(&sigctx->writer);
+    err = plcrash_log_writer_write(&sigctx->writer, crashed_thread, &shared_image_list, &file, siginfo, thread_state);
+
+    /* Close the writer; this may also fail (but shouldn't) */
+    if (plcrash_log_writer_close(&sigctx->writer) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to close the log writer");
+        plcrash_async_file_close(&file);
+        return PLCRASH_EINTERNAL;
+    }
     
     /* Finished */
-    plcrash_async_file_flush(&file);
-    plcrash_async_file_close(&file);
+    if (!plcrash_async_file_flush(&file)) {
+        PLCF_DEBUG("Failed to flush output file");
+        plcrash_async_file_close(&file);
+        return PLCRASH_EINTERNAL;
+    }
     
-    return true;
+    if (!plcrash_async_file_close(&file)) {
+        PLCF_DEBUG("Failed to close output file");
+        return PLCRASH_EINTERNAL;
+    }
+
+    return err;
 }
 
 /**
@@ -212,7 +227,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     signal_info.mach_info = NULL;
 
     /* Write the report */
-    if (!plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &signal_info))
+    if (plcrash_write_report(sigctx, pl_mach_thread_self(), &thread_state, &signal_info) != PLCRASH_ESUCCESS)
         return false;
 
     /* Call any post-crash callback */
@@ -232,11 +247,7 @@ struct mach_exception_callback_live_cb_ctx {
 
 static plcrash_error_t mach_exception_callback_live_cb (plcrash_async_thread_state_t *state, void *ctx) {
     struct mach_exception_callback_live_cb_ctx *plcr_ctx = ctx;
-    
-    if (!plcrash_write_report(plcr_ctx->sigctx, plcr_ctx->crashed_thread, state, plcr_ctx->siginfo))
-        return PLCRASH_EINTERNAL;
-
-    return PLCRASH_ESUCCESS;
+    return plcrash_write_report(plcr_ctx->sigctx, plcr_ctx->crashed_thread, state, plcr_ctx->siginfo);
 }
 
 static kern_return_t mach_exception_callback (task_t task, thread_t thread, exception_type_t exception_type, mach_exception_data_t code, mach_msg_type_number_t code_count, void *context) {
