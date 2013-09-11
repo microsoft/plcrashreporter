@@ -218,8 +218,7 @@ inline bool dwarf_opstream::read_sleb128 (int64_t *result) {
  * @tparam machine_ptr The native pointer word size of the target.
  */
 template <typename machine_ptr>
-inline bool dwarf_opstream::read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reader, DW_EH_PE_t encoding, machine_ptr *result)
-{
+inline bool dwarf_opstream::read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reader, DW_EH_PE_t encoding, machine_ptr *result) {
     pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
     plcrash_error_t err;
     size_t size;
@@ -232,10 +231,13 @@ inline bool dwarf_opstream::read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reade
     }
 
     /* Sanity check the size; this should never occur */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
     if (size > PL_VM_OFF_MAX) {
         PLCF_DEBUG("GNU EH pointer size exceeds our maximum supported offset size");
         return false;
     }
+#pragma clang diagnostic pop
 
     /* Advance the position */
     if (!skip(size)) {
