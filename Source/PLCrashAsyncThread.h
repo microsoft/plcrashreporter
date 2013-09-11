@@ -57,15 +57,31 @@ extern "C" {
 typedef mcontext_t pl_mcontext_t;
 #endif
 
-#if defined(__arm__)
-
-/** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
-#define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
-
+#if defined(__arm__) || defined(__arm64__)
+    
 #include <mach/arm/thread_state.h>
-
+    
 /** Host architecture mcontext_t-compatible type. */
 typedef struct __darwin_mcontext *pl_mcontext_t;
+
+#if defined(__arm__)
+   /** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
+#  define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
+#endif
+    
+#if defined(__arm64__)
+    /** Defined if ARM64 thread states are supported by the PLCrashReporter thread state API. */
+#  define PLCRASH_ASYNC_THREAD_ARM64_SUPPORT 1
+#endif
+
+#endif
+    
+#if defined(__arm64__)
+    
+/** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
+#define PLCRASH_ASYNC_THREAD_ARM64_SUPPORT 1
+    
+#include <mach/arm/thread_state.h>
 #endif
 
 /**
@@ -148,7 +164,7 @@ typedef enum {
 
 #import "PLCrashAsyncThread_x86.h"
 #import "PLCrashAsyncThread_arm.h"
-
+#import "PLCrashAsyncThread_arm64.h"
 
 /** Platform word type */
 typedef plcrash_pdef_greg_t plcrash_greg_t;
