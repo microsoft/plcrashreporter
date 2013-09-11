@@ -517,7 +517,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
             pl_vm_size_t sectsize;
             if (image->m64) {
                 sectaddr = image->byteorder->swap64(sect_64->addr) + image->vmaddr_slide;
-                sectsize = image->byteorder->swap32(sect_64->size);
+                sectsize = image->byteorder->swap64(sect_64->size);
             } else {
                 sectaddr = image->byteorder->swap32(sect_32->addr) + image->vmaddr_slide;
                 sectsize = image->byteorder->swap32(sect_32->size);
