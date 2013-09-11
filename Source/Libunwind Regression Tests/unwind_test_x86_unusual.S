@@ -89,7 +89,7 @@ pushl	%ebp
 LCFI27a:
 movl	%esp, %ebp
 LCFI28a:
-subl	$140, %esp
+subl	$152, %esp
 LCFI29a:
 movl	%edi, -44(%ebp)
 LCFI30a:
@@ -111,7 +111,7 @@ pushl	%ebp
 LCFI27b:
 movl	%esp, %ebp
 LCFI28b:
-subl	$140, %esp
+subl	$152, %esp
 LCFI29b:
 movl	%edi, -44(%ebp)
 LCFI30b:
