@@ -91,11 +91,6 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                                                                            pl_vm_off_t offset,
                                                                            pl_vm_size_t length)
 {
-// We assert on 'tautologically' true conditions to detect whether incompatible code changes
-// are made in the future
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
-
     plcrash::async::dwarf_opstream opstream;
     plcrash_error_t err;
     machine_ptr location = initial_pc_value;
@@ -448,8 +443,6 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
     }
 
     return PLCRASH_ESUCCESS;
-
-#pragma clang diagnostic pop // "-Wtautological-constant-out-of-range-compare"
 }
 
 /**
