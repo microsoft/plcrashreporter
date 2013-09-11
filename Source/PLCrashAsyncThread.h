@@ -176,7 +176,6 @@ typedef enum {
 
 #import "PLCrashAsyncThread_x86.h"
 #import "PLCrashAsyncThread_arm.h"
-#import "PLCrashAsyncThread_arm64.h"
 
 /** Platform word type */
 typedef plcrash_pdef_greg_t plcrash_greg_t;

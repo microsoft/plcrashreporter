@@ -33,11 +33,18 @@
 extern "C" {
 #endif
 
-#ifdef __arm__
 
-// 32-bit
+#if defined(__arm__) && !defined(PLCRASH_ASYNC_THREAD_ARM_UNIFIED_SUPPORT)
+
+// Legacy 32-bit only
 typedef uintptr_t plcrash_pdef_greg_t;
 typedef uintptr_t plcrash_pdef_fpreg_t;
+    
+#elif defined(__arm__) || defined(__arm64__)
+
+// Large enough for 64-bit or 32-bit
+typedef uint64_t plcrash_pdef_greg_t;
+typedef uint64_t plcrash_pdef_fpreg_t;
 
 #endif /* __arm__ */
 
