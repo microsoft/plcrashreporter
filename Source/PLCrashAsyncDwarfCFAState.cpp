@@ -115,11 +115,8 @@ dwarf_cfa_state<machine_ptr, machine_ptr_s>::dwarf_cfa_state (void) {
  */
 template <typename machine_ptr, typename machine_ptr_s>
 bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::set_register (dwarf_cfa_state_regnum_t regnum, plcrash_dwarf_cfa_reg_rule_t rule, machine_ptr value) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
     PLCF_ASSERT(rule <= UINT8_MAX);
-#pragma clang diagnostic pop
-
+    
     /* Check for an existing entry, or find the target entry off which we'll chain our entry */
     unsigned int bucket = regnum % (sizeof(_table_stack[0]) / sizeof(_table_stack[0][0]));
     

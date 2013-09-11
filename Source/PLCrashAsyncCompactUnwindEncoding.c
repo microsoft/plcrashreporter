@@ -158,11 +158,6 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
  * the entry can not be found, PLFRAME_ENOTFOUND will be returned.
  */
 plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *reader, pl_vm_address_t pc, pl_vm_address_t *function_base, uint32_t *encoding) {
-// We assert on 'tautologically' true conditions to detect whether incompatible code changes
-// are made in the future
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
-
     const plcrash_async_byteorder_t *byteorder = reader->byteorder;
     const pl_vm_address_t base_addr = plcrash_async_mobject_base_address(reader->mobj);
 
@@ -363,7 +358,6 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
     // Unreachable
     __builtin_trap();
     return PLCRASH_ENOTFOUND;
-#pragma clang diagnostic pop // "-Wtautological-constant-out-of-range-compare"
 }
 
 /**
