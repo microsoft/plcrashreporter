@@ -4283,7 +4283,6 @@
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
-					"-Wno-tautological-constant-out-of-range-compare",
 				);
 			};
 			name = Debug;
@@ -4313,7 +4312,6 @@
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
-					"-Wno-tautological-constant-out-of-range-compare",
 				);
 			};
 			name = Release;
