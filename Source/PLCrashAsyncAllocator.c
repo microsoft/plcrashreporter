@@ -32,7 +32,7 @@
 #include <libkern/OSAtomic.h>
 
 /* These assume 16-byte malloc() alignment, which is true for just about everything */
-#if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
+#if defined(__arm__) || defined(__arm64__) || defined(__i386__) || defined(__x86_64__)
 #define PL_NATURAL_ALIGNMENT 16
 #else
 #error Define required alignment
