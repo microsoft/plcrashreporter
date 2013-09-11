@@ -36,12 +36,12 @@
 #ifdef __arm__
 
 #define RETGEN(name, type, ts) {\
-    return (ts->arm_state. type . __ ## name); \
+    return (ts->arm_state. type .ts_32. __ ## name); \
 }
 
 #define SETGEN(name, type, ts, regnum, value) {\
     ts->valid_regs |= 1<<regnum; \
-    (ts->arm_state. type . __ ## name) = value; \
+    (ts->arm_state. type .ts_32. __ ## name) = value; \
     break; \
 }
 

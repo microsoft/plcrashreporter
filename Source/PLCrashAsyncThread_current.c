@@ -38,12 +38,17 @@
  */
 plcrash_error_t plcrash_async_thread_state_current_stub (plcrash_async_thread_state_current_callback callback,
                                                         void *context,
-                                                        _STRUCT_MCONTEXT *mctx)
+                                                        pl_mcontext_t *mctx)
 {
     /* Zero unsupported thread states */
     plcrash_async_memset(&mctx->__es, 0, sizeof(mctx->__es));
+#ifdef __arm64__
+    /* On arm64, NEON state is named _ns instead of _fs. */
+    plcrash_async_memset(&mctx->__ns, 0, sizeof(mctx->__ns));
+#else
     plcrash_async_memset(&mctx->__fs, 0, sizeof(mctx->__fs));
-
+#endif
+    
     /* Convert to standard thread state */
     plcrash_async_thread_state_t thread_state;
     plcrash_async_thread_state_mcontext_init(&thread_state, mctx);
@@ -68,11 +73,7 @@ plcrash_error_t plcrash_async_thread_state_current_stub (plcrash_async_thread_st
  */
 
 /* sizeof(struct mcontext) */
-VALIDATE(MCONTEXT_SIZE, sizeof(_STRUCT_MCONTEXT) == PL_MCONTEXT_SIZE);
-
-/* sizeof(struct ucontext) */
-VALIDATE(UCONTEXT_SIZE, sizeof(_STRUCT_UCONTEXT) == PL_UCONTEXT_SIZE);
-
+VALIDATE(MCONTEXT_SIZE, sizeof(pl_mcontext_t) == PL_MCONTEXT_SIZE);
 
 #if __x86_64__
 

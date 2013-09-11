@@ -35,24 +35,20 @@ extern "C" {
 
 #if __x86_64__
 
-/* sizeof(struct ucontext) */
-#define PL_UCONTEXT_SIZE 56
-
 /* sizeof(struct mcontext) */
 #define PL_MCONTEXT_SIZE 712
 
 #elif __i386__
 
-/* sizeof(struct ucontext) */
-#define PL_UCONTEXT_SIZE 32
-
 /* sizeof(struct mcontext) */
 #define PL_MCONTEXT_SIZE 600
+    
+#elif defined(__arm64__)
+
+/* sizeof(struct mcontext64) */
+#define PL_MCONTEXT_SIZE 816
 
 #elif defined(__arm__)
-
-/* sizeof(struct ucontext) */
-#define PL_UCONTEXT_SIZE 32
 
 /* sizeof(struct mcontext) */
 #define PL_MCONTEXT_SIZE 340

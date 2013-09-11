@@ -260,7 +260,7 @@
 /* Test plcrash_async_thread_state_ucontext_init() */
 - (void) testThreadStateContextInit {
     plcrash_async_thread_state_t thr_state;
-    _STRUCT_MCONTEXT mctx;
+    pl_mcontext_t mctx;
 
     memset(&mctx, 'A', sizeof(mctx));
     

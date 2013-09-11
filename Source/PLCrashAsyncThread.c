@@ -74,11 +74,20 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
 
 #if PLCRASH_ASYNC_THREAD_ARM_SUPPORT
         case CPU_TYPE_ARM:
+            thread_state->arm_state.thread.ash.flavor = ARM_THREAD_STATE32;
+            thread_state->arm_state.thread.ash.count = ARM_THREAD_STATE32_COUNT;
             thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
             thread_state->greg_size = 4;
             break;
-#endif /* PLCRASH_ASYNC_THREAD_ARM_SUPPORT */
 
+        case CPU_TYPE_ARM64:
+            thread_state->arm_state.thread.ash.flavor = ARM_THREAD_STATE64;
+            thread_state->arm_state.thread.ash.count = ARM_THREAD_STATE64_COUNT;
+            thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+            thread_state->greg_size = 8;
+            break;
+#endif /* PLCRASH_ASYNC_THREAD_ARM_SUPPORT */
+            
         default:
             return PLCRASH_ENOTSUP;
     }
@@ -95,19 +104,28 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
  *
  * All registers will be marked as available.
  */
-void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, pl_mcontext_t mctx) {
+void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, pl_mcontext_t *mctx) {
     /*
      * Copy in the thread state. Unlike the mach thread variants, mcontext_t may only represent
      * the thread state of the host process, and we may assume that the compilation target matches the mcontext_t
      * thread type.
      */
-#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
+    
+#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT) && defined(__LP64__)
+    plcrash_async_thread_state_init(thread_state, CPU_TYPE_ARM64);
+    
+    /* Sanity check. */
+    PLCF_ASSERT(sizeof(mctx->__ss) == sizeof(thread_state->arm_state.thread.ts_64));
+    
+    plcrash_async_memcpy(&thread_state->arm_state.thread.ts_64, &mctx->__ss, sizeof(thread_state->arm_state.thread.ts_64));
+
+#elif defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     plcrash_async_thread_state_init(thread_state, CPU_TYPE_ARM);
 
     /* Sanity check. */
-    PLCF_ASSERT(sizeof(mctx->__ss) == sizeof(thread_state->arm_state.thread));
+    PLCF_ASSERT(sizeof(mctx->__ss) == sizeof(thread_state->arm_state.thread.ts_32));
 
-    plcrash_async_memcpy(&thread_state->arm_state.thread, &mctx->__ss, sizeof(thread_state->arm_state.thread));
+    plcrash_async_memcpy(&thread_state->arm_state.thread.ts_32, &mctx->__ss, sizeof(thread_state->arm_state.thread.ts_32));
     
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT) && defined(__LP64__)
     plcrash_async_thread_state_init(thread_state, CPU_TYPE_X86_64);
@@ -151,10 +169,10 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
     mach_msg_type_number_t state_count;
     kern_return_t kr;
     
-#ifdef PLCRASH_ASYNC_THREAD_ARM_SUPPORT
+#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT) && defined(PLCRASH_ASYNC_THREAD_ARM_UNIFIED_SUPPORT)
     /* Fetch the thread state */
-    state_count = ARM_THREAD_STATE_COUNT;
-    kr = thread_get_state(thread, ARM_THREAD_STATE, (thread_state_t) &thread_state->arm_state.thread, &state_count);
+    state_count = ARM_UNIFIED_THREAD_STATE_COUNT;
+    kr = thread_get_state(thread, ARM_UNIFIED_THREAD_STATE, (thread_state_t) &thread_state->arm_state.thread, &state_count);
     if (kr != KERN_SUCCESS) {
         PLCF_DEBUG("Fetch of ARM thread state failed with Mach error: %d", kr);
         return PLCRASH_EINTERNAL;
@@ -162,7 +180,29 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
     
     /* Platform meta-data */
     thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
+    if (thread_state->arm_state.thread.ash.flavor == ARM_THREAD_STATE64) {
+        thread_state->greg_size = 8;
+    } else {
+        thread_state->greg_size = 4;
+    }
+
+#elif defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT) && !defined(PLCRASH_ASYNC_THREAD_ARM_UNIFIED_SUPPORT)
+    /* Legacy non-unified ARM32 thread state. */
+    state_count = ARM_THREAD_STATE32_COUNT;
+    kr = thread_get_state(thread, ARM_THREAD_STATE32, (thread_state_t) &thread_state->arm_state.thread.ts_32, &state_count);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Fetch of ARM thread state failed with Mach error: %d", kr);
+        return PLCRASH_EINTERNAL;
+    }
+    
+    /* Configure the state header */
+    thread_state->arm_state.thread.ash.flavor = ARM_THREAD_STATE32;
+    thread_state->arm_state.thread.ash.count = ARM_THREAD_STATE32_COUNT;
+    
+    /* Platform meta-data */
+    thread_state->stack_direction = PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN;
     thread_state->greg_size = 4;
+    
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT)
     /* Fetch the thread state */
     state_count = x86_THREAD_STATE_COUNT;

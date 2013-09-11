@@ -189,7 +189,7 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
  *
  * Signal handler callback.
  */
-static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
+static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     plcrashreporter_handler_ctx_t *sigctx = context;
     plcrash_async_thread_state_t thread_state;
     plcrash_log_signal_info_t signal_info;
@@ -216,7 +216,10 @@ static bool signal_handler_callback (int signal, siginfo_t *info, ucontext_t *ua
     }
 
     /* Extract the thread state */
-    plcrash_async_thread_state_mcontext_init(&thread_state, uap->uc_mcontext);
+    // XXX_ARM64 rdar://14970271 -- In the Xcode 5 GM SDK, _STRUCT_MCONTEXT is not correctly
+    // defined as _STRUCT_MCONTEXT64 when building for arm64; this requires the pl_mcontext_t
+    // cast.
+    plcrash_async_thread_state_mcontext_init(&thread_state, (pl_mcontext_t *) uap->uc_mcontext);
     
     /* Set up the BSD signal info */
     bsd_signal_info.signo = info->si_signo;

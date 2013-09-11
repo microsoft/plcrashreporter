@@ -1633,8 +1633,8 @@
 		05A17DC316D7F7FB00888448 /* Thread State */ = {
 			isa = PBXGroup;
 			children = (
-				05A17DC416D7F81600888448 /* PLCrashAsyncThread.c */,
 				05A17DCC16D7F82700888448 /* PLCrashAsyncThread.h */,
+				05A17DC416D7F81600888448 /* PLCrashAsyncThread.c */,
 				05A17DD216D8080A00888448 /* PLCrashAsyncThreadTests.m */,
 				05EB2B0215B4597B0066EB4D /* Current Thread Trampoline */,
 				05A17DE916DBCD5B00888448 /* Platforms */,

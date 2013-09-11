@@ -54,34 +54,45 @@ extern "C" {
 #include <mach/i386/thread_state.h>
 
 /** Host architecture mcontext_t type. */
-typedef mcontext_t pl_mcontext_t;
+typedef _STRUCT_MCONTEXT pl_mcontext_t;
+
+/** Host architecture ucontext_t type. */
+typedef _STRUCT_UCONTEXT pl_ucontext_t;
+
 #endif
 
 #if defined(__arm__) || defined(__arm64__)
     
 #include <mach/arm/thread_state.h>
     
-/** Host architecture mcontext_t-compatible type. */
-typedef struct __darwin_mcontext *pl_mcontext_t;
+/**
+ * Host architecture mcontext_t-compatible type.
+ */
+#ifdef __LP64__
+// XXX_ARM64 rdar://14970271 -- In the Xcode 5 GM SDK, _STRUCT_MCONTEXT is not correctly
+// defined as _STRUCT_MCONTEXT64 when building for arm64; this requires defining
+// 32-bit and 64-bit pl_*context types.
+typedef _STRUCT_UCONTEXT pl_ucontext_t;
+typedef _STRUCT_MCONTEXT64 pl_mcontext_t;
+#else
+typedef _STRUCT_UCONTEXT pl_ucontext_t;
+typedef _STRUCT_MCONTEXT pl_mcontext_t;
+#endif
 
-#if defined(__arm__)
-   /** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
-#  define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
-#endif
-    
-#if defined(__arm64__)
-    /** Defined if ARM64 thread states are supported by the PLCrashReporter thread state API. */
-#  define PLCRASH_ASYNC_THREAD_ARM64_SUPPORT 1
-#endif
-
-#endif
-    
-#if defined(__arm64__)
-    
 /** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
-#define PLCRASH_ASYNC_THREAD_ARM64_SUPPORT 1
+#define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
+
+#if defined(__arm64__) || __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
+    /** ARM unified thread state support was not available until iOS 7.0, and iOS 7.0 is the minimum
+     * release that will run on an ARM64 device. */
+    #define PLCRASH_ASYNC_THREAD_ARM_UNIFIED_SUPPORT 1
+#endif
     
-#include <mach/arm/thread_state.h>
+/* Note that we can remove the non-unified thread state support once we target iOS >= 7.0 */
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
+#warning Support for non-unified thread state should be removed if targeting only iOS >= 7.0.
+#endif
+
 #endif
 
 /**
@@ -117,12 +128,13 @@ typedef struct plcrash_async_thread_state {
     /* Union used to hold thread state for any supported architecture */
     union {
     #ifdef PLCRASH_ASYNC_THREAD_ARM_SUPPORT
+        /** Combined ARM 32/64 thread state */
         struct {
             /** ARM thread state */
-            arm_thread_state_t thread;
+            arm_unified_thread_state_t thread;
         } arm_state;
     #endif
-        
+
     #ifdef PLCRASH_ASYNC_THREAD_X86_SUPPORT
         /** Combined x86 32/64 thread state */
         struct {
@@ -170,7 +182,7 @@ typedef enum {
 typedef plcrash_pdef_greg_t plcrash_greg_t;
 
 plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *thread_state, cpu_type_t cpu_type);
-void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, pl_mcontext_t mctx);
+void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thread_state, pl_mcontext_t *mctx);
 plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_thread_state_t *thread_state, thread_t thread);
 
 /**
