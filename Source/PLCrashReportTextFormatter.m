@@ -34,13 +34,19 @@
 #import "PLCrashReportTextFormatter.h"
 
 /*
- * XXX: The ARM_V7S and ARM_V8 Mach-O CPU subtype is not defined in the Mac OS X 10.8
- * headers.
+ * XXX: The ARM64 CPU type, and ARM_V7S and ARM_V8 Mach-O CPU subtypes are not
+ * defined in the Mac OS X 10.8 headers.
  */
 #ifndef CPU_SUBTYPE_ARM_V7S
 # define CPU_SUBTYPE_ARM_V7S 11
 #elif !TARGET_OS_IPHONE
 # error CPU_SUBTYPE_ARM_V7S is now defined by the SDK. Please remove this define.
+#endif
+
+#ifndef CPU_TYPE_ARM64
+#define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#elif !TARGET_OS_IPHONE
+# error CPU_TYPE_ARM64 is now defined by the SDK. Please remove this define.
 #endif
 
 #ifndef CPU_SUBTYPE_ARM_V8
@@ -365,12 +371,21 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
                         case CPU_SUBTYPE_ARM_V7S:
                             archName = @"armv7s";
                             break;
-                            
-                        case CPU_SUBTYPE_ARM_V8:
-                            archName = @"armv8";
 
                         default:
                             archName = @"arm-unknown";
+                            break;
+                    }
+                    break;
+                    
+                case CPU_TYPE_ARM64:
+                    /* Apple includes subtype for ARM64 binaries. */
+                    switch (imageInfo.codeType.subtype) {
+                        case CPU_SUBTYPE_ARM_V8:
+                            archName = @"armv8";
+                            
+                        default:
+                            archName = @"arm64-unknown";
                             break;
                     }
                     break;
