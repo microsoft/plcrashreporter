@@ -187,9 +187,13 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
     }
 
 #elif defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT) && !defined(PLCRASH_ASYNC_THREAD_ARM_UNIFIED_SUPPORT)
-    /* Legacy non-unified ARM32 thread state. */
-    state_count = ARM_THREAD_STATE32_COUNT;
-    kr = thread_get_state(thread, ARM_THREAD_STATE32, (thread_state_t) &thread_state->arm_state.thread.ts_32, &state_count);
+    /* Legacy non-unified ARM32 thread state */
+    // Sanity check to assert that the state32 and legacy state structures are identical.
+    PLCF_ASSERT_STATIC(ARM_STATE_COUNT, ARM_THREAD_STATE32_COUNT == ARM_THREAD_STATE_COUNT);
+    PLCF_ASSERT_STATIC(ARM_STATE_SIZE, sizeof(arm_thread_state_t) == sizeof(arm_thread_state32_t));
+    
+    state_count = ARM_THREAD_STATE_COUNT;
+    kr = thread_get_state(thread, ARM_THREAD_STATE, (thread_state_t) &thread_state->arm_state.thread.ts_32, &state_count);
     if (kr != KERN_SUCCESS) {
         PLCF_DEBUG("Fetch of ARM thread state failed with Mach error: %d", kr);
         return PLCRASH_EINTERNAL;

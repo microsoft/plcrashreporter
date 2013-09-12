@@ -35,6 +35,8 @@ extern "C" {
 
 #include <sys/ucontext.h>
 #include "PLCrashAsync.h"
+    
+#include <Availability.h>
 
 /**
  * @internal
