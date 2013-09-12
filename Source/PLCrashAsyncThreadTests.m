@@ -89,7 +89,19 @@
     
 #define REQ_REG(_reg) STAssertTrue(plcrash_async_thread_state_has_reg(&ts, _reg), @"Missing required register");
     
-#ifdef __arm__
+#if defined(__arm64__)
+    REQ_REG(PLCRASH_ARM64_X19);
+    REQ_REG(PLCRASH_ARM64_X20);
+    REQ_REG(PLCRASH_ARM64_X21);
+    REQ_REG(PLCRASH_ARM64_X22);
+    REQ_REG(PLCRASH_ARM64_X23);
+    REQ_REG(PLCRASH_ARM64_X24);
+    REQ_REG(PLCRASH_ARM64_X25);
+    REQ_REG(PLCRASH_ARM64_X26);
+    REQ_REG(PLCRASH_ARM64_X27);
+    REQ_REG(PLCRASH_ARM64_X28);
+    STAssertEquals((size_t)10, nv_count, @"Incorrect number of registers preserved");
+#elif defined(__arm__)
     REQ_REG(PLCRASH_ARM_R4);
     REQ_REG(PLCRASH_ARM_R5);
     REQ_REG(PLCRASH_ARM_R6);
@@ -365,7 +377,7 @@
     STAssertEquals(plcrash_async_thread_state_get_greg_size(&thr_state), (size_t)4, @"Incorrect greg size");
 #endif
 
-#if defined(__arm__) || defined(__i386__) || defined(__x86_64__)
+#if defined(__arm64__) || defined(__arm__) || defined(__i386__) || defined(__x86_64__)
     // This is true on just about every modern platform
     STAssertEquals(plcrash_async_thread_state_get_stack_direction(&thr_state), PLCRASH_ASYNC_THREAD_STACK_DIRECTION_DOWN, @"Incorrect stack growth direction");
 #else

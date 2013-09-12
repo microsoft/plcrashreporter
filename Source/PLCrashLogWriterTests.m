@@ -391,7 +391,9 @@
 #elif __i386__
     expectedPC = cursor.frame.thread_state.x86_state.thread.uts.ts32.__eip;
 #elif __arm__
-    expectedPC = cursor.frame.thread_state.arm_state.thread.__pc;
+    expectedPC = cursor.frame.thread_state.arm_state.thread.ts_32.__pc;
+#elif __arm64__
+    expectedPC = cursor.frame.thread_state.arm_state.thread.ts_64.__pc;
 #else
 #error Unsupported Platform
 #endif

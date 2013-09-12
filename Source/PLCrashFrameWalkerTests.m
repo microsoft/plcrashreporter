@@ -70,14 +70,17 @@
 /* Test plframe_thread_state_ucontext_init() */
 - (void) testThreadStateContextInit {
     plcrash_async_thread_state_t thr_state;
-    _STRUCT_MCONTEXT mctx;
+    pl_mcontext_t mctx;
 
     memset(&mctx, 'A', sizeof(mctx));
 
     plcrash_async_thread_state_mcontext_init(&thr_state, &mctx);
 
-#if defined(PLFRAME_ARM_SUPPORT)
-    STAssertTrue(memcmp(&thr_state.arm_state.thread, &mctx.__ss, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
+#if defined(PLFRAME_ARM_SUPPORT) && defined(__LP64__)
+    STAssertTrue(memcmp(&thr_state.arm_state.thread.ts_64, &mctx.__ss, sizeof(thr_state.arm_state.thread.ts_64)) == 0, @"Incorrectly copied");
+
+#elif defined(PLFRAME_ARM_SUPPORT)
+    STAssertTrue(memcmp(&thr_state.arm_state.thread.ts_32, &mctx.__ss, sizeof(thr_state.arm_state.thread.ts_32)) == 0, @"Incorrectly copied");
 
 #elif defined(PLFRAME_X86_SUPPORT) && defined(__LP64__)
     STAssertEquals(thr_state.x86_state.thread.tsh.count, (int)x86_THREAD_STATE64_COUNT, @"Incorrect thread state count for a 64-bit system");
