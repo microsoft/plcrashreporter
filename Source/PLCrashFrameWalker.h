@@ -54,7 +54,7 @@ extern "C" {
 #include <mach/i386/thread_state.h>
 #endif
 
-#if defined(__arm__)
+#if defined(__arm__) || defined(__arm64__)
 #define PLFRAME_ARM_SUPPORT 1
 #include <mach/arm/thread_state.h>
 #endif
