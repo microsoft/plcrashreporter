@@ -227,11 +227,11 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                 break;
                 
             case DW_OP_const8u:
-                dw_expr_push(dw_expr_read_int(uint64_t));
+                dw_expr_push((machine_ptr) dw_expr_read_int(uint64_t));
                 break;
                 
             case DW_OP_const8s:
-                dw_expr_push((int64_t) dw_expr_read_int(int64_t));
+                dw_expr_push((machine_ptr) (int64_t) dw_expr_read_int(int64_t));
                 break;
                 
             case DW_OP_constu:
@@ -387,7 +387,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                         PLCF_DEBUG("DW_OP_deref_size referenced an invalid target address 0x%" PRIx64, (uint64_t) addr); \
                         return err; \
                     } \
-                    value = r; \
+                    value = (__typeof__(value)) r; \
                     break; \
                 }
                 machine_ptr value = 0;

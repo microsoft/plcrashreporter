@@ -41,7 +41,7 @@
 
 #define SETGEN(name, type, ts, regnum, value) {\
     ts->valid_regs |= 1<<regnum; \
-    (ts->arm_state. type . __ ## name) = value; \
+    (ts->arm_state. type . __ ## name) = (__typeof__(ts->arm_state. type . __ ## name)) value; \
     break; \
 }
 
@@ -685,7 +685,7 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
     }
     
     size_t reg_count = plcrash_async_thread_state_get_reg_count(thread_state);
-    for (size_t reg = 0; reg < reg_count; reg++) {
+    for (plcrash_regnum_t reg = 0; reg < reg_count; reg++) {
         /* Skip unset registers */
         if (!plcrash_async_thread_state_has_reg(thread_state, reg))
             continue;

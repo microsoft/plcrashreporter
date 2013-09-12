@@ -612,7 +612,7 @@ static size_t plcrash_writer_write_machine_info (plcrash_async_file_t *file, plc
 
     /* Processor */
     {
-        uint32_t size;
+        size_t size;
 
         /* Determine size */
         size = plcrash_writer_write_processor_info(NULL, writer->machine_info.cpu_type, writer->machine_info.cpu_subtype);
@@ -749,14 +749,14 @@ static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, 
  */
 static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, task_t task, plframe_cursor_t *cursor) {
     plframe_error_t frame_err;
-    uint32_t regCount = plframe_cursor_get_regcount(cursor);
+    size_t regCount = plframe_cursor_get_regcount(cursor);
     size_t rv = 0;
     
     /* Write out register messages */
-    for (int i = 0; i < regCount; i++) {
+    for (plcrash_regnum_t i = 0; i < regCount; i++) {
         plcrash_greg_t regVal;
         const char *regname;
-        uint32_t msgsize;
+        size_t msgsize;
 
         /* Fetch the register value */
         if ((frame_err = plframe_cursor_get_reg(cursor, i, &regVal)) != PLFRAME_ESUCCESS) {
@@ -809,7 +809,7 @@ struct pl_symbol_cb_ctx {
     plcrash_async_file_t *file;
 
     /** Size of the symbol entry, to be written by the callback function upon writing an entry. */
-    uint32_t msgsize;
+    size_t msgsize;
 };
 
 /**
@@ -936,7 +936,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
         /* Walk the stack, limiting the total number of frames that are output. */
         uint32_t frame_count = 0;
         while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < MAX_THREAD_FRAMES) {
-            uint32_t frame_size;
+            size_t frame_size;
             
             /* On the first frame, dump registers for the crashed thread */
             if (frame_count == 0 && crashed) {
@@ -1018,7 +1018,7 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plc
     }
     
     /* Get the processor message size */
-    uint32_t msgsize = plcrash_writer_write_processor_info(NULL, cpu_type, cpu_subtype);
+    size_t msgsize = plcrash_writer_write_processor_info(NULL, cpu_type, cpu_subtype);
 
     /* Write the header and message */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_CODE_TYPE_ID, PLPROTOBUF_C_TYPE_MESSAGE, &msgsize);
@@ -1050,7 +1050,7 @@ static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcras
         uint64_t pc = (uint64_t)(uintptr_t) writer->uncaught_exception.callstack[i];
         
         /* Determine the size */
-        uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, writer, pc, image_list, findContext);
+        size_t frame_size = plcrash_writer_write_thread_frame(NULL, writer, pc, image_list, findContext);
         
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &frame_size);
         rv += plcrash_writer_write_thread_frame(file, writer, pc, image_list, findContext);
@@ -1127,7 +1127,7 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, plcrash_l
     
     /* Mach exception info */
     if (siginfo->mach_info != NULL) {
-        uint32_t size;
+        size_t size;
         
         /* Determine size */
         size = plcrash_writer_write_mach_signal(NULL, siginfo->mach_info);
@@ -1223,7 +1223,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     /* Report Info */
     {
-        uint32_t size;
+        size_t size;
         
         /* Determine size */
         size = plcrash_writer_write_report_info(NULL, writer);
@@ -1236,7 +1236,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     /* System Info */
     {
         time_t timestamp;
-        uint32_t size;
+        size_t size;
 
         /* Must stay the same across both calls, so get the timestamp here */
         if (time(&timestamp) == (time_t)-1) {
@@ -1254,7 +1254,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     /* Machine Info */
     {
-        uint32_t size;
+        size_t size;
 
         /* Determine size */
         size = plcrash_writer_write_machine_info(NULL, writer);
@@ -1266,7 +1266,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 
     /* App info */
     {
-        uint32_t size;
+        size_t size;
 
         /* Determine size */
         size = plcrash_writer_write_app_info(NULL, writer->application_info.app_identifier, writer->application_info.app_version);
@@ -1278,7 +1278,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     /* Process info */
     {
-        uint32_t size;
+        size_t size;
         
         /* Determine size */
         size = plcrash_writer_write_process_info(NULL, writer->process_info.process_name, writer->process_info.process_id, 
@@ -1300,7 +1300,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         thread_t thread = threads[i];
         plcrash_async_thread_state_t *thr_ctx = NULL;
         bool crashed = false;
-        uint32_t size;
+        size_t size;
 
         /* If executing on the target thread, we need to a valid context to walk */
         if (pl_mach_thread_self() == thread) {
@@ -1331,7 +1331,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 
     plcrash_async_image_t *image = NULL;
     while ((image = plcrash_async_image_list_next(image_list, image)) != NULL) {
-        uint32_t size;
+        size_t size;
 
         /* Calculate the message size */
         size = plcrash_writer_write_binary_image(NULL, &image->macho_image);
@@ -1343,7 +1343,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 
     /* Exception */
     if (writer->uncaught_exception.has_exception) {
-        uint32_t size;
+        size_t size;
 
         /* Calculate the message size */
         size = plcrash_writer_write_exception(NULL, writer, image_list, &findContext);
@@ -1353,7 +1353,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     /* Signal */
     {
-        uint32_t size;
+        size_t size;
         
         /* Calculate the message size */
         size = plcrash_writer_write_signal(NULL, siginfo);

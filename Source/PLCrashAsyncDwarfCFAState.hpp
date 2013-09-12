@@ -272,6 +272,11 @@ private:
         
         /** Next entry in the list, or NULL */
         uint8_t next;
+        
+        /** Cast value to its unsigned representation */
+        uint64_t unsigned_value (void) {
+            return (uint64_t) value;
+        }
     } dwarf_cfa_reg_entry_t;
     
     /** Current call frame value configuration. */

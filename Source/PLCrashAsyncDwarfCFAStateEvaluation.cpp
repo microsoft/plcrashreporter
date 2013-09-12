@@ -227,11 +227,11 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 break;
                 
             case DW_CFA_def_cfa:
-                set_cfa_register(dw_expr_read_uleb128_regnum(), dw_expr_read_uleb128());
+                set_cfa_register(dw_expr_read_uleb128_regnum(), (machine_ptr) dw_expr_read_uleb128());
                 break;
                 
             case DW_CFA_def_cfa_sf:
-                set_cfa_register_signed(dw_expr_read_uleb128_regnum(), dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                set_cfa_register_signed(dw_expr_read_uleb128_regnum(), (machine_ptr) (dw_expr_read_sleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_def_cfa_register: {
@@ -260,7 +260,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is unsigned, so all register rules are converted to unsigned here */
-                        set_cfa_register(rule.register_number(), dw_expr_read_uleb128());
+                        set_cfa_register(rule.register_number(), (machine_ptr) dw_expr_read_uleb128());
                         break;
                         
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -278,7 +278,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is signed, so all register rules are converted to signed here */
-                        set_cfa_register_signed(rule.register_number(), dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                        set_cfa_register_signed(rule.register_number(), (machine_ptr) (dw_expr_read_sleb128() * cie_info->data_alignment_factor));
                         break;
 
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
@@ -332,27 +332,27 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 break;
                 
             case DW_CFA_offset:
-                dw_expr_set_register(const_operand, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(const_operand, PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (machine_ptr) (dw_expr_read_uleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_offset_extended:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (machine_ptr) (dw_expr_read_uleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_offset_extended_sf:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_OFFSET, (machine_ptr) (dw_expr_read_sleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_val_offset:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_uleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (machine_ptr) (dw_expr_read_uleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_val_offset_sf:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, dw_expr_read_sleb128() * cie_info->data_alignment_factor);
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_VAL_OFFSET, (machine_ptr) (dw_expr_read_sleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_register:
-                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_REGISTER, dw_expr_read_uleb128());
+                dw_expr_set_register(dw_expr_read_uleb128_regnum(), PLCRASH_DWARF_CFA_REG_RULE_REGISTER, (machine_ptr) (dw_expr_read_uleb128()));
                 break;
             
             case DW_CFA_expression:
@@ -499,7 +499,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::apply_state (task_t
             }
 
             /* Fetch the current value, apply the offset, and save as the new thread's CFA. */
-            cfa_val = plcrash_async_thread_state_get_reg(thread_state, regnum);
+            cfa_val = (machine_ptr) plcrash_async_thread_state_get_reg(thread_state, regnum);
             if (cfa_rule.type() == DWARF_CFA_STATE_CFA_TYPE_REGISTER)
                 cfa_val += cfa_rule.register_offset();
             else
@@ -660,6 +660,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
             }
             
             /* Perform the evaluation */
+            // TODO: This should be unified via the templating, rather than using a m64 conditional.
             plcrash_greg_t regval;
             if (m64) {
                 uint64_t initial_state[] = { cfa_val };
@@ -671,7 +672,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
                 
                 regval = rvalue.v64;
             } else {
-                uint32_t initial_state[] = { cfa_val };
+                uint32_t initial_state[] = { (uint32_t) cfa_val };
                 if ((err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
                     plcrash_async_mobject_free(&mobj);
                     PLCF_DEBUG("CFA eval_32 failed");

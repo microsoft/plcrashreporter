@@ -186,7 +186,7 @@ static size_t
 uint64_pack (uint64_t value, uint8_t *out)
 {
     uint32_t hi = value>>32;
-    uint32_t lo = value;
+    uint32_t lo = value & UINT32_MAX;
     unsigned rv;
     if (hi == 0)
         return uint32_pack ((uint32_t)lo, out);
@@ -244,10 +244,22 @@ static inline size_t boolean_pack (bool value, uint8_t *out)
     *out = value ? 1 : 0;
     return 1;
 }
+
+static inline size_t size_pack(size_t value, uint8_t *out)
+{
+#ifdef __LP64__
+    PLCF_ASSERT_STATIC(SIZE_EXPECTED, sizeof(size_t) == sizeof(uint64_t));
+    return uint64_pack(value, out);
+#else
+    PLCF_ASSERT_STATIC(SIZE_EXPECTED, sizeof(size_t) == sizeof(uint32_t));
+    return uint64_pack(value, out);
+#endif
+}
+
 static inline size_t string_pack (const char * str, uint8_t *out)
 {
     size_t len = strlen (str);
-    size_t rv = uint32_pack (len, out);
+    size_t rv = size_pack (len, out);
     plcrash_async_memcpy (out + rv, str, len);
     return rv + len;
 }
@@ -328,7 +340,7 @@ size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLPro
         {
             size_t sublen = strlen (value);
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
-            rv += uint32_pack (sublen, scratch + rv);
+            rv += size_pack (sublen, scratch + rv);
             if (file != NULL) {
                 plcrash_async_file_write(file, scratch, rv);
                 plcrash_async_file_write(file, value, sublen);
@@ -342,7 +354,7 @@ size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLPro
             const PLProtobufCBinaryData * bd = ((const PLProtobufCBinaryData*) value);
             size_t sublen = bd->len;
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
-            rv += uint32_pack (sublen, scratch + rv);
+            rv += size_pack (sublen, scratch + rv);
             if (file != NULL) {
                 plcrash_async_file_write(file, scratch, rv);
                 plcrash_async_file_write(file, bd->data, sublen);
@@ -355,7 +367,7 @@ size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLPro
         case PLPROTOBUF_C_TYPE_MESSAGE:
         {
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
-            rv += uint32_pack (*(const uint32_t *) value, scratch + rv);
+            rv += size_pack (*(const size_t *) value, scratch + rv);
             if (file != NULL)
                 plcrash_async_file_write(file, scratch, rv);
             break;

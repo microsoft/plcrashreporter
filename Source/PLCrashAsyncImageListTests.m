@@ -72,7 +72,7 @@
     plcrash_async_image_t *item = NULL;
     
     plcrash_async_image_list_set_reading(&_list, true);
-    for (uintptr_t i = 0; i <= 5; i++) {
+    for (uint32_t i = 0; i <= 5; i++) {
         /* Fetch the next item */
         item = plcrash_async_image_list_next(&_list, item);
         if (i <= 4) {

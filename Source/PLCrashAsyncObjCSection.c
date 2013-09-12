@@ -773,10 +773,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     
     /* Figure out how many classes are in the class list based on its length and
      * the size of a pointer in the image. */
-    unsigned classCount = objcContext->classMobj.length / (image->m64 ? sizeof(*classPtrs_64) : sizeof(*classPtrs_32));
+    size_t classCount = objcContext->classMobj.length / (image->m64 ? sizeof(*classPtrs_64) : sizeof(*classPtrs_32));
     
     /* Iterate over all classes. */
-    for(unsigned i = 0; i < classCount; i++) {
+    for (size_t i = 0; i < classCount; i++) {
         /* Read a class pointer at the current index from the appropriate pointer. */
         pl_vm_address_t ptr = (image->m64
                                ? image->byteorder->swap64(classPtrs_64[i])

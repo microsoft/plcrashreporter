@@ -192,7 +192,7 @@ bool dwarf_cfa_state<machine_ptr, machine_ptr_s>::get_register_rule (dwarf_cfa_s
         }
         
         /* Existing entry found, we can re-use it directly */
-        *value = entry->value;
+        *value = (machine_ptr) entry->unsigned_value();
         *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
         return true;
     }
@@ -337,7 +337,7 @@ bool dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::next (dwarf_cfa_state
     
     typename dwarf_cfa_state<machine_ptr, machine_ptr_s>::dwarf_cfa_reg_entry_t *entry = &_stack->_entries[_cur_entry_idx];
     *regnum = entry->regnum;
-    *value = entry->value;
+    *value = (machine_ptr) entry->unsigned_value();
     *rule = (plcrash_dwarf_cfa_reg_rule_t) entry->rule;
     return true;
 }

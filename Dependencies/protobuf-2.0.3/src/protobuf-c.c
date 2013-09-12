@@ -212,6 +212,16 @@ sint64_size (int64_t v)
 {
   return uint64_size(zigzag64(v));
 }
+static inline size_t size_size(size_t value)
+{
+#ifdef __LP64__
+    assert(sizeof(size_t) == sizeof(uint64_t));
+    return uint64_size(value);
+#else
+    assert(sizeof(size_t) == sizeof(uint32_t));
+    return uint32_size(value);
+#endif
+}
 
 static size_t
 required_field_get_packed_size (const ProtobufCFieldDescriptor *field,
@@ -249,18 +259,18 @@ required_field_get_packed_size (const ProtobufCFieldDescriptor *field,
     case PROTOBUF_C_TYPE_STRING:
       {
         size_t len = strlen (*(char * const *) member);
-        return rv + uint32_size (len) + len;
+        return rv + size_size (len) + len;
       }
     case PROTOBUF_C_TYPE_BYTES:
       {
         size_t len = ((const ProtobufCBinaryData*) member)->len;
-        return rv + uint32_size (len) + len;
+        return rv + size_size (len) + len;
       }
     //case PROTOBUF_C_TYPE_GROUP:
     case PROTOBUF_C_TYPE_MESSAGE:
       {
         size_t subrv = protobuf_c_message_get_packed_size (*(ProtobufCMessage * const *) member);
-        return rv + uint32_size (subrv) + subrv;
+        return rv + size_size (subrv) + subrv;
       }
     }
   PROTOBUF_C_ASSERT_NOT_REACHED ();
@@ -336,7 +346,7 @@ repeated_field_get_packed_size (const ProtobufCFieldDescriptor *field,
       for (i = 0; i < count; i++)
         {
           size_t len = strlen (((char**) array)[i]);
-          rv += uint32_size (len) + len;
+          rv += size_size (len) + len;
         }
       break;
       
@@ -344,14 +354,14 @@ repeated_field_get_packed_size (const ProtobufCFieldDescriptor *field,
       for (i = 0; i < count; i++)
         {
           size_t len = ((ProtobufCBinaryData*) array)[i].len;
-          rv += uint32_size (len) + len;
+          rv += size_size (len) + len;
         }
       break;
     case PROTOBUF_C_TYPE_MESSAGE:
       for (i = 0; i < count; i++)
         {
           size_t len = protobuf_c_message_get_packed_size (((ProtobufCMessage **) array)[i]);
-          rv += uint32_size (len) + len;
+          rv += size_size (len) + len;
         }
       break;
     //case PROTOBUF_C_TYPE_GROUP:          // NOT SUPPORTED
@@ -442,7 +452,7 @@ static size_t
 uint64_pack (uint64_t value, uint8_t *out)
 {
   uint32_t hi = value>>32;
-  uint32_t lo = value;
+  uint32_t lo = value & UINT32_MAX;
   unsigned rv;
   if (hi == 0)
     return uint32_pack ((uint32_t)lo, out);
@@ -500,17 +510,27 @@ static inline size_t boolean_pack (protobuf_c_boolean value, uint8_t *out)
   *out = value ? 1 : 0;
   return 1;
 }
+static inline size_t size_pack(size_t value, uint8_t *out)
+{
+#ifdef __LP64__
+    assert(sizeof(size_t) == sizeof(uint64_t));
+    return uint64_pack(value, out);
+#else
+    assert(sizeof(size_t) == sizeof(uint32_t));
+    return uint32_pack(value, out);
+#endif
+}
 static inline size_t string_pack (const char * str, uint8_t *out)
 {
   size_t len = strlen (str);
-  size_t rv = uint32_pack (len, out);
+  size_t rv = size_pack (len, out);
   memcpy (out + rv, str, len);
   return rv + len;
 }
 static inline size_t binary_data_pack (const ProtobufCBinaryData *bd, uint8_t *out)
 {
   size_t len = bd->len;
-  size_t rv = uint32_pack (len, out);
+  size_t rv = size_pack (len, out);
   memcpy (out + rv, bd->data, len);
   return rv + len;
 }
@@ -519,10 +539,10 @@ static inline size_t
 prefixed_message_pack (const ProtobufCMessage *message, uint8_t *out)
 {
   size_t rv = protobuf_c_message_pack (message, out + 1);
-  uint32_t rv_packed_size = uint32_size (rv);
+  size_t rv_packed_size = size_size (rv);
   if (rv_packed_size != 1)
     memmove (out + rv_packed_size, out + 1, rv);
-  return uint32_pack (rv, out) + rv;
+  return size_pack (rv, out) + rv;
 }
 
 /* wire-type will be added in required_field_pack() */
@@ -562,7 +582,7 @@ required_field_pack (const ProtobufCFieldDescriptor *field,
     case PROTOBUF_C_TYPE_FIXED32:
     case PROTOBUF_C_TYPE_FLOAT:
       out[0] |= PROTOBUF_C_WIRE_TYPE_32BIT;
-      return rv + fixed32_pack (*(const uint64_t *) member, out + rv);
+      return rv + fixed32_pack (*(const uint32_t *) member, out + rv);
     case PROTOBUF_C_TYPE_SFIXED64:
     case PROTOBUF_C_TYPE_FIXED64:
     case PROTOBUF_C_TYPE_DOUBLE:
@@ -741,7 +761,7 @@ required_field_pack_to_buffer (const ProtobufCFieldDescriptor *field,
     case PROTOBUF_C_TYPE_FIXED32:
     case PROTOBUF_C_TYPE_FLOAT:
       scratch[0] |= PROTOBUF_C_WIRE_TYPE_32BIT;
-      rv += fixed32_pack (*(const uint64_t *) member, scratch + rv);
+      rv += fixed32_pack (*(const uint32_t *) member, scratch + rv);
       buffer->append (buffer, rv, scratch);
       break;
     case PROTOBUF_C_TYPE_SFIXED64:
@@ -760,7 +780,7 @@ required_field_pack_to_buffer (const ProtobufCFieldDescriptor *field,
       {
         size_t sublen = strlen (*(char * const *) member);
         scratch[0] |= PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
-        rv += uint32_pack (sublen, scratch + rv);
+        rv += size_pack (sublen, scratch + rv);
         buffer->append (buffer, rv, scratch);
         buffer->append (buffer, sublen, *(uint8_t * const *)member);
         rv += sublen;
@@ -772,7 +792,7 @@ required_field_pack_to_buffer (const ProtobufCFieldDescriptor *field,
         const ProtobufCBinaryData * bd = ((const ProtobufCBinaryData*) member);
         size_t sublen = bd->len;
         scratch[0] |= PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
-        rv += uint32_pack (sublen, scratch + rv);
+        rv += size_pack (sublen, scratch + rv);
         buffer->append (buffer, rv, scratch);
         buffer->append (buffer, sublen, bd->data);
         rv += sublen;
@@ -788,7 +808,7 @@ required_field_pack_to_buffer (const ProtobufCFieldDescriptor *field,
         scratch[0] |= PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
         sublen = protobuf_c_message_pack_to_buffer (*(ProtobufCMessage * const *) member,
                                            &simple_buffer.base);
-        rv += uint32_pack (sublen, scratch + rv);
+        rv += size_pack (sublen, scratch + rv);
         buffer->append (buffer, rv, scratch);
         buffer->append (buffer, sublen, simple_buffer.data);
         rv += sublen;
@@ -824,15 +844,15 @@ optional_field_pack_to_buffer (const ProtobufCFieldDescriptor *field,
 
 static size_t
 repeated_field_pack_to_buffer (const ProtobufCFieldDescriptor *field,
-                               unsigned count,
+                               size_t count,
                                const void *member,
                                ProtobufCBuffer *buffer)
 {
   char *array = * (char * const *) member;
   size_t siz;
-  unsigned i;
+  size_t i;
   /* CONSIDER: optimize this case a bit (by putting the loop inside the switch) */
-  unsigned rv = 0;
+  size_t rv = 0;
   siz = sizeof_elt_in_repeated_array (field->type);
   for (i = 0; i < count; i++)
     {
@@ -931,10 +951,10 @@ parse_tag_and_wiretype (size_t len,
                         uint32_t *tag_out,
                         ProtobufCWireType *wiretype_out)
 {
-  unsigned max_rv = len > 5 ? 5 : len;
+  size_t max_rv = len > 5 ? 5 : len;
   uint32_t tag = (data[0]&0x7f) >> 3;
   unsigned shift = 4;
-  unsigned rv;
+  size_t rv;
   *wiretype_out = data[0] & 7;
   if ((data[0] & 0x80) == 0)
     {
@@ -971,13 +991,13 @@ struct _ScannedMember
   STRUCT_MEMBER_PTR (ProtobufCMessageUnknownFieldArray, \
                      (message), (message)->descriptor->unknown_field_array_offset)
 
-static inline uint32_t
+static inline size_t
 scan_length_prefixed_data (size_t len, const uint8_t *data, size_t *prefix_len_out)
 {
-  unsigned hdr_max = len < 5 ? len : 5;
-  unsigned hdr_len;
+  size_t hdr_max = len < 5 ? len : 5;
+  size_t hdr_len;
   uint32_t val = 0;
-  unsigned i;
+  size_t i;
   unsigned shift = 0;
   for (i = 0; i < hdr_max; i++)
     {
@@ -1003,7 +1023,7 @@ scan_length_prefixed_data (size_t len, const uint8_t *data, size_t *prefix_len_o
 }
 
 static inline uint32_t
-parse_uint32 (unsigned len, const uint8_t *data)
+parse_uint32 (size_t len, const uint8_t *data)
 {
   unsigned rv = data[0] & 0x7f;
   if (len > 1)
@@ -1023,7 +1043,7 @@ parse_uint32 (unsigned len, const uint8_t *data)
   return rv;
 }
 static inline uint32_t
-parse_int32 (unsigned len, const uint8_t *data)
+parse_int32 (size_t len, const uint8_t *data)
 {
   return parse_uint32 (len, data);
 }
@@ -1047,9 +1067,10 @@ parse_fixed_uint32 (const uint8_t *data)
 #endif
 }
 static uint64_t
-parse_uint64 (unsigned len, const uint8_t *data)
+parse_uint64 (size_t len, const uint8_t *data)
 {
-  unsigned shift, i;
+  size_t i;
+  unsigned shift;
   if (len < 5)
     return parse_uint32 (len, data);
   uint64_t rv = ((data[0] & 0x7f))
@@ -1085,9 +1106,9 @@ parse_fixed_uint64 (const uint8_t *data)
 #endif
 }
 static protobuf_c_boolean
-parse_boolean (unsigned len, const uint8_t *data)
+parse_boolean (size_t len, const uint8_t *data)
 {
-  unsigned i;
+  size_t i;
   for (i = 0; i < len; i++)
     if (data[i] & 0x7f)
       return 1;
@@ -1099,7 +1120,7 @@ parse_required_member (ScannedMember *scanned_member,
                        ProtobufCAllocator *allocator,
                        protobuf_c_boolean maybe_clear)
 {
-  unsigned len = scanned_member->len;
+  size_t len = scanned_member->len;
   const uint8_t *data = scanned_member->data;
   ProtobufCWireType wire_type = scanned_member->wire_type;
   switch (scanned_member->field->type)
@@ -1402,8 +1423,8 @@ protobuf_c_message_unpack         (const ProtobufCMessageDescriptor *desc,
         {
         case PROTOBUF_C_WIRE_TYPE_VARINT:
           {
-            unsigned max_len = rem < 10 ? rem : 10;
-            unsigned i;
+            size_t max_len = rem < 10 ? rem : 10;
+            size_t i;
             for (i = 0; i < max_len; i++)
               if ((at[i] & 0x80) == 0)
                 break;
