@@ -33,7 +33,7 @@
 #import <stdlib.h>
 #import <assert.h>
 
-#ifdef __arm__
+#if defined(__arm__) || defined(__arm64__)
 
 #define RETGEN(name, type, ts) {\
     return (ts->arm_state. type . __ ## name); \
@@ -753,4 +753,4 @@ bool plcrash_async_thread_state_map_dwarf_to_reg (const plcrash_async_thread_sta
     return false;
 }
 
-#endif /* __arm__ */
+#endif /* __arm__ || __arm64__ */
