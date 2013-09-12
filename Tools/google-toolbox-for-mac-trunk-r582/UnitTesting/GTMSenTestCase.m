@@ -329,7 +329,7 @@ NSString *const SenTestLineNumberKey = @"SenTestLineNumberKey";
 }
 
 // Used for sorting methods below
-static int MethodSort(id a, id b, void *context) {
+static NSInteger MethodSort(id a, id b, void *context) {
   NSInvocation *invocationA = a;
   NSInvocation *invocationB = b;
   const char *nameA = sel_getName([invocationA selector]);

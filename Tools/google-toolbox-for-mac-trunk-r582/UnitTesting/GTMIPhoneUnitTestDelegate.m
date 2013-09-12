@@ -102,7 +102,7 @@
     // and classes that depend on this signal to exit cleanly.
     if ([application respondsToSelector:@selector(_terminateWithStatus:)]) {
       [application performSelector:@selector(_terminateWithStatus:)
-                        withObject:(id)exitStatus];
+                        withObject:(id)(uintptr_t)exitStatus];
     } else {
       exit(exitStatus);
     }
@@ -219,11 +219,11 @@ static int ClassSort(const void *a, const void *b) {
     = [suiteEndDate timeIntervalSinceDate:suiteStartDate];
   NSString *suiteEndString
     = [NSString stringWithFormat:@"Test Suite '%@' finished at %@.\n"
-                                 "Executed %d tests, with %d failures (%d "
+                                 "Executed %lu tests, with %lu failures (%lu "
                                  "unexpected) in %0.3f (%0.3f) seconds\n\n",
                                  suiteName, suiteEndDate,
-                                 totalSuccesses_ + totalFailures_,
-                                 totalFailures_, totalFailures_,
+                                 (unsigned long)(totalSuccesses_ + totalFailures_),
+                                 (unsigned long)totalFailures_, (unsigned long)totalFailures_,
                                  suiteEndTime, suiteEndTime];
   fputs([suiteEndString UTF8String], stderr);
   fflush(stderr);
