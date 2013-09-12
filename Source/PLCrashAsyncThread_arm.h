@@ -89,6 +89,64 @@ typedef enum {
     /** Last register */
     PLCRASH_ARM_LAST_REG = PLCRASH_ARM_CPSR
 } plcrash_arm_regnum_t;
+    
+/**
+ * @internal
+ * ARM64 registers
+ */
+typedef enum {
+    /*
+     * General
+     */
+    
+    /** Program counter */
+    PLCRASH_ARM64_PC = PLCRASH_REG_IP,
+    
+    /** Frame pointer (x29) */
+    PLCRASH_ARM64_FP = PLCRASH_REG_FP,
+    
+    /* stack pointer (x31) */
+    PLCRASH_ARM64_SP = PLCRASH_REG_SP,
+    
+    PLCRASH_ARM64_X0,
+    PLCRASH_ARM64_X1,
+    PLCRASH_ARM64_X2,
+    PLCRASH_ARM64_X3,
+    PLCRASH_ARM64_X4,
+    PLCRASH_ARM64_X5,
+    PLCRASH_ARM64_X6,
+    PLCRASH_ARM64_X7,
+    PLCRASH_ARM64_X8,
+    PLCRASH_ARM64_X9,
+    PLCRASH_ARM64_X10,
+    PLCRASH_ARM64_X11,
+    PLCRASH_ARM64_X12,
+    PLCRASH_ARM64_X13,
+    PLCRASH_ARM64_X14,
+    PLCRASH_ARM64_X15,
+    PLCRASH_ARM64_X16,
+    PLCRASH_ARM64_X17,
+    PLCRASH_ARM64_X18,
+    PLCRASH_ARM64_X19,
+    PLCRASH_ARM64_X20,
+    PLCRASH_ARM64_X21,
+    PLCRASH_ARM64_X22,
+    PLCRASH_ARM64_X23,
+    PLCRASH_ARM64_X24,
+    PLCRASH_ARM64_X25,
+    PLCRASH_ARM64_X26,
+    PLCRASH_ARM64_X27,
+    PLCRASH_ARM64_X28,
+
+    /* link register (x30) */
+    PLCRASH_ARM64_LR,
+    
+    /** Current program status register */
+    PLCRASH_ARM64_CPSR,
+    
+    /** Last register */
+    PLCRASH_ARM64_LAST_REG = PLCRASH_ARM64_CPSR
+} plcrash_arm64_regnum_t;
 
 #ifdef __cplusplus
 }
