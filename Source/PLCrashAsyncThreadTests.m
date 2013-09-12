@@ -285,8 +285,11 @@
         STAssertTrue(plcrash_async_thread_state_has_reg(&thr_state, i), @"Register should be marked as set");
     }
     
-#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
-    STAssertTrue(memcmp(&thr_state.arm_state.thread, &mctx.__ss, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
+#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT) && defined(__LP64__)
+    STAssertTrue(memcmp(&thr_state.arm_state.thread.ts_64, &mctx.__ss, sizeof(thr_state.arm_state.thread.ts_64)) == 0, @"Incorrectly copied");
+
+#elif defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
+    STAssertTrue(memcmp(&thr_state.arm_state.thread.ts_32, &mctx.__ss, sizeof(thr_state.arm_state.thread.ts_32)) == 0, @"Incorrectly copied");
     
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT) && defined(__LP64__)
     STAssertEquals(thr_state.x86_state.thread.tsh.count, (int)x86_THREAD_STATE64_COUNT, @"Incorrect thread state count for a 64-bit system");
@@ -330,12 +333,19 @@
     }
 
     /* Test the results */
-#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
+#if defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT) && defined(__LP64__)
+    arm_thread_state64_t local_thr_state;
+    state_count = ARM_THREAD_STATE64_COUNT;
+    
+    STAssertEquals(thread_get_state(thr, ARM_THREAD_STATE64, (thread_state_t) &local_thr_state, &state_count), KERN_SUCCESS, @"Failed to fetch thread state");
+    STAssertTrue(memcmp(&thr_state.arm_state.thread.ts_64, &local_thr_state, sizeof(thr_state.arm_state.thread.ts_64)) == 0, @"Incorrectly copied");
+
+#elif defined(PLCRASH_ASYNC_THREAD_ARM_SUPPORT)
     arm_thread_state_t local_thr_state;
     state_count = ARM_THREAD_STATE_COUNT;
     
     STAssertEquals(thread_get_state(thr, ARM_THREAD_STATE, (thread_state_t) &local_thr_state, &state_count), KERN_SUCCESS, @"Failed to fetch thread state");
-    STAssertTrue(memcmp(&thr_state.arm_state.thread, &local_thr_state, sizeof(thr_state.arm_state.thread)) == 0, @"Incorrectly copied");
+    STAssertTrue(memcmp(&thr_state.arm_state.thread.ts_32, &local_thr_state, sizeof(thr_state.arm_state.thread.ts_32)) == 0, @"Incorrectly copied");
     
 #elif defined(PLCRASH_ASYNC_THREAD_X86_SUPPORT) && defined(__LP64__)
     state_count = x86_THREAD_STATE64_COUNT;
