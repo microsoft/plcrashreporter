@@ -162,6 +162,74 @@ addl    $616, %esp
 popl    %ebp
 ret
 
+#elif defined(__arm64__)
+
+// TODO_ARM64: This was implemented blind; it assembles, but
+// it has not been tested.
+
+stp     fp, lr, [sp, #-16]!
+add     fp, sp, 0
+sub     sp, sp, #816 // Size of 340 for context
+
+// These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
+
+/* Save x0 before we stomp it. The destination address is our SP + 16 (offset to x[] array) */
+str     x0, [sp, #16]
+
+/* Save the mcontext_t pointer */
+mov     x0, sp
+
+/* Write out GP registers. The base offset of x[1] is SP + 24. */
+add     x0, x0, #24
+
+stp     x1, x2, [x0], #16
+stp     x3, x4, [x0], #16
+stp     x5, x6, [x0], #16
+stp     x7, x8, [x0], #16
+stp     x9, x10, [x0], #16
+stp     x11, x12, [x0], #16
+stp     x13, x14, [x0], #16
+stp     x15, x16, [x0], #16
+stp     x17, x18, [x0], #16
+stp     x19, x20, [x0], #16
+stp     x21, x22, [x0], #16
+stp     x23, x24, [x0], #16
+stp     x25, x26, [x0], #16
+stp     x27, x28, [x0], #16
+
+/* Fetch caller's frame pointer, save to fp */
+ldr     x2, [sp]
+str     x2, [x0], #8
+
+/* Fetch the link register from our caller's frame */
+ldr     x1, [x2, #8]
+str     x1, [x0], #8
+
+/* Use the caller's SP value */
+add     x1, fp, #16      // account for the 16 byte push in prologue
+str     x1, [x0], #8
+
+/* Use the return address as the PC value */
+ldr     x1, [fp, #8]
+str     x1, [x0], #8
+
+/* Fetch CPSR */
+// mrs     x1, spsr_el1 // TODO_ARM64: The architecture manual says we can read CPSR bits individually,
+// str     x1, [x0], #8 // but we still need to figure out how.
+str     wzr, [x0], #8   // In the meantime, just zero out the 32-bit value.
+
+/* Restore the r0-r1 argument values. The source address is our SP + 16 (offset to r[] array). */
+ldr     x0, [sp, #16];
+ldr     x1, [sp, #24];
+
+/* Provide arg 3 (mctx) */
+mov     x2, sp
+
+bl      _plcrash_async_thread_state_current_stub
+add	sp, fp, 0
+ldp	fp, lr, [sp], #16
+ret	lr
+
 #elif defined(__arm__)
 
 
