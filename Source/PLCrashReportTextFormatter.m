@@ -383,7 +383,8 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
                     switch (imageInfo.codeType.subtype) {
                         case CPU_SUBTYPE_ARM_V8:
                             archName = @"armv8";
-                            
+                            break;
+
                         default:
                             archName = @"arm64-unknown";
                             break;
