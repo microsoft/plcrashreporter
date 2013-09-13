@@ -45,6 +45,7 @@ extern "C" {
 #include "PLCrashAsyncObjCSection.h"
     
 /**
+ * @internal
  * @ingroup enums
  *
  * Supported mechanisms for performing local symbolication.

@@ -23,7 +23,7 @@ int main (int argc, char *argv[]) {
         exit(1);
     }
 
-    PLCrashReporter *report = [[PLCrashReport alloc] initWithData: data error: &error];
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: data error: &error];
     if (report)
         [report release];
 
