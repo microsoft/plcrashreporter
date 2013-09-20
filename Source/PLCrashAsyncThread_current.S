@@ -198,7 +198,7 @@ stp     x25, x26, [x0], #16
 stp     x27, x28, [x0], #16
 
 /* Fetch caller's frame pointer, save to fp */
-ldr     x2, [sp]
+ldr     x2, [fp]
 str     x2, [x0], #8
 
 /* Fetch the link register from our caller's frame */
