@@ -125,7 +125,7 @@ typedef struct plcrash_async_thread_state {
     size_t greg_size;
     
     /** The set of available registers. */
-    uint32_t valid_regs;
+    uint64_t valid_regs;
 
     /* Union used to hold thread state for any supported architecture */
     union {

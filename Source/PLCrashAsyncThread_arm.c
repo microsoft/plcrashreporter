@@ -40,7 +40,7 @@
 }
 
 #define SETGEN(name, type, ts, regnum, value) {\
-    ts->valid_regs |= 1<<regnum; \
+    ts->valid_regs |= 1ULL<<regnum; \
     (ts->arm_state. type . __ ## name) = value; \
     break; \
 }
