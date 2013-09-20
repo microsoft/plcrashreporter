@@ -200,11 +200,11 @@
     pl_async_macho_mapped_segment_t seg;
 
     /* Try to map the segment */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_macho_map_segment(&_image, "__LINKEDIT", &seg), @"Failed to map segment");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_macho_map_segment(&_image, "__TEXT", &seg), @"Failed to map segment");
     
     /* Fetch the segment directly for comparison */
     unsigned long segsize = 0;
-    uint8_t *data = getsegmentdata((void *)_image.header_addr, "__LINKEDIT", &segsize);
+    uint8_t *data = getsegmentdata((void *)_image.header_addr, "__TEXT", &segsize);
     STAssertNotNULL(data, @"Could not fetch segment data");
 
     /* Compare the address and length. We have to apply the slide to determine the original source address. */    
@@ -212,7 +212,7 @@
     STAssertEquals((pl_vm_size_t)segsize, seg.mobj.length, @"Sizes do not match");
     
     /* Fetch the segment command for further comparison */
-    struct load_command *cmd = plcrash_async_macho_find_segment_cmd(&_image, "__LINKEDIT");
+    struct load_command *cmd = plcrash_async_macho_find_segment_cmd(&_image, "__TEXT");
     STAssertNotNULL(data, @"Could not fetch segment command");
     if (_image.byteorder->swap32(cmd->cmd) == LC_SEGMENT) {
         struct segment_command *segcmd = (struct segment_command *) cmd;
