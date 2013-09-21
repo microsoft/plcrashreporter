@@ -674,8 +674,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
                                   ? image->byteorder->swap64(classDataRO_64->baseMethods)
                                   : image->byteorder->swap32(classDataRO_32->baseMethods));
     if (methodsPtr == 0) {
-        PLCF_DEBUG("NULL methods list in class R/O data");
-        err = PLCRASH_ENOTFOUND;
+        /* The base method list will be NULL if no methods are defined for the class/metaclass; skip the class */
+        err = PLCRASH_ESUCCESS;
         goto cleanup;
     }
     
