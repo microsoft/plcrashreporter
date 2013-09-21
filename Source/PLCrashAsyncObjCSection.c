@@ -27,7 +27,6 @@
  */
 
 #include "PLCrashAsyncObjCSection.h"
-#include <mach/mach_time.h>
 
 /**
  * @internal
