@@ -544,6 +544,90 @@ cleanup:
 }
 
 /**
+ * Parse an ObjC 2.0 method_list_t structure at @a method_list_addr and call @a callback with all
+ * parsed methods.
+ *
+ * @param image The image to read from.
+ * @param objc_cache The Objective-C cache object.
+ * @param class_name The name of the class being parsed.
+ * @param is_meta_class true if this is a metaclass.
+ * @param method_list_addr The address of the method list data.
+ * @param callback The callback to be invoked for each method found.
+ * @param ctx A context pointer to pass to the callback.
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate error on failure.
+ */
+static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_macho_t *image,
+                                                              plcrash_async_objc_cache_t *objc_cache,
+                                                              plcrash_async_macho_string_t *class_name,
+                                                              bool is_meta_class,
+                                                              pl_vm_address_t method_list_addr,
+                                                              plcrash_async_objc_found_method_cb callback,
+                                                              void *ctx)
+{
+    PLCF_ASSERT(method_list_addr != 0);
+    
+    /* Read the method list header. */
+    struct pl_objc2_list_header *header;
+    header = plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_addr, 0, sizeof(*header));
+    if (header == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in objCConstMobj failed to map methods pointer 0x%llx", (long long) method_list_addr);
+        return PLCRASH_EINVAL;
+    }
+    
+    /* Extract the entry size and count from the list header. */
+    uint32_t entsize = image->byteorder->swap32(header->entsize) & ~(uint32_t)3;
+    uint32_t count = image->byteorder->swap32(header->count);
+    
+    /* Compute the method list start position and length. */
+    pl_vm_address_t method_list_start = method_list_addr + sizeof(*header);
+    pl_vm_size_t method_list_length = (pl_vm_size_t)entsize * count;
+    
+    const char *cursor = plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_start, 0, method_list_length);
+    if (cursor == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx length %llu returned NULL", (long long)method_list_start, (unsigned long long)method_list_length);
+        return PLCRASH_EINVAL;
+    }
+    
+    /* Extract methods from the list. */
+    for (uint32_t i = 0; i < count; i++) {
+        plcrash_error_t err;
+
+        /* Read an architecture-appropriate method structure from the
+         * current cursor. */
+        const struct pl_objc2_method_32 *method_32 = (void *)cursor;
+        const struct pl_objc2_method_64 *method_64 = (void *)cursor;
+        
+        /* Extract the method name pointer. */
+        pl_vm_address_t methodNamePtr = (image->m64
+                                         ? image->byteorder->swap64(method_64->name)
+                                         : image->byteorder->swap32(method_32->name));
+        
+        /* Read the method name. */
+        plcrash_async_macho_string_t method_name;
+        if ((err = plcrash_async_macho_string_init(&method_name, image, methodNamePtr)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
+            return err;
+        }
+    
+        /* Extract the method IMP. */
+        pl_vm_address_t imp = (image->m64
+                               ? image->byteorder->swap64(method_64->imp)
+                               : image->byteorder->swap32(method_32->imp));
+        
+        /* Call the callback. */
+        callback(is_meta_class, class_name, &method_name, imp, ctx);
+
+        /* Clean up the method name. */
+        plcrash_async_macho_string_free(&method_name);
+        
+        /* Increment the cursor by the entry size for the next iteration of the loop. */
+        cursor += entsize;
+    }
+
+    return PLCRASH_ESUCCESS;
+}
+
+/**
  * Parse a single class from ObjC2 class data.
  *
  * @param image The image to read from.
@@ -669,75 +753,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
     }
     classNameInitialized = true;
     
-    /* Fetch the pointer to the method list. */
-    pl_vm_address_t methodsPtr = (image->m64
-                                  ? image->byteorder->swap64(classDataRO_64->baseMethods)
-                                  : image->byteorder->swap32(classDataRO_32->baseMethods));
-    if (methodsPtr == 0) {
-        /* The base method list will be NULL if no methods are defined for the class/metaclass; skip the class */
-        err = PLCRASH_ESUCCESS;
-        goto cleanup;
-    }
-    
-    /* Read the method list header. */
-    struct pl_objc2_list_header *header;
-    header = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, methodsPtr, 0, sizeof(*header));
-    if (header == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address in objCConstMobj failed to map methods pointer 0x%llx", (long long)methodsPtr);
-        err = PLCRASH_EINVAL;
-        goto cleanup;
-    }
-    
-    /* Extract the entry size and count from the list header. */
-    uint32_t entsize = image->byteorder->swap32(header->entsize) & ~(uint32_t)3;
-    uint32_t count = image->byteorder->swap32(header->count);
-    
-    /* Compute the method list start position and length. */
-    pl_vm_address_t methodListStart = methodsPtr + sizeof(*header);
-    pl_vm_size_t methodListLength = (pl_vm_size_t)entsize * count;
+    /* Fetch and parse the method list. The base method list will be NULL if no methods are defined for the class/metaclass; in that case, we simply skip the class. */
+    pl_vm_address_t methods_ptr = (image->m64 ? image->byteorder->swap64(classDataRO_64->baseMethods) : image->byteorder->swap32(classDataRO_32->baseMethods));
+    if (methods_ptr == 0)
+        return PLCRASH_ESUCCESS;
 
-    const char *cursor = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, methodListStart, 0, methodListLength);
-    if (cursor == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx length %llu returned NULL", (long long)methodListStart, (unsigned long long)methodListLength);
-        err = PLCRASH_EINVAL;
+    if ((err = pl_async_objc_parse_objc2_method_list(image, objcContext, &className, isMetaClass, methods_ptr, callback, ctx)) != PLCRASH_ESUCCESS)
         goto cleanup;
-    }
-    
-    /* Extract methods from the list. */
-    for (uint32_t i = 0; i < count; i++) {
-        /* Read an architecture-appropriate method structure from the
-         * current cursor. */
-        const struct pl_objc2_method_32 *method_32 = (void *)cursor;
-        const struct pl_objc2_method_64 *method_64 = (void *)cursor;
-        
-        /* Extract the method name pointer. */
-        pl_vm_address_t methodNamePtr = (image->m64
-                                         ? image->byteorder->swap64(method_64->name)
-                                         : image->byteorder->swap32(method_32->name));
-        
-        /* Read the method name. */
-        plcrash_async_macho_string_t methodName;
-        err = plcrash_async_macho_string_init(&methodName, image, methodNamePtr);
-        if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
-            goto cleanup;
-        }
-        
-        /* Extract the method IMP. */
-        pl_vm_address_t imp = (image->m64
-                               ? image->byteorder->swap64(method_64->imp)
-                               : image->byteorder->swap32(method_32->imp));
-        
-        /* Call the callback. */
-        callback(isMetaClass, &className, &methodName, imp, ctx);
-        
-        /* Clean up the method name. */
-        plcrash_async_macho_string_free(&methodName);
-        
-        /* Increment the cursor by the entry size for the next iteration of the loop. */
-        cursor += entsize;
-    }
-    
+
 cleanup:
     if (classNameInitialized)
         plcrash_async_macho_string_free(&className);
