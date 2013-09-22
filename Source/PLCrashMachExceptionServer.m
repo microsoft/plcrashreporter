@@ -93,21 +93,6 @@
 #import <mach/mach.h>
 #import <mach/exc.h>
 
-/* On Mac OS X, we are free to use the 64-bit mach_* APIs. No headers are provided for these,
- * but the MIG defs are available and may be included directly in the build.
- *
- * On iOS, we can set MACH_EXCEPTION_CODES (which is vended, and necessary for arm64 operation),
- * but we can not forward the mach_*-style messages via the mach_exc API.
- */
-#if !TARGET_OS_IPHONE
-#  define HAS_MACH_EXC_API 1
-#  define USE_MACH64_CODES 1
-#  import "mach_exc.h"
-#elif defined(__LP64__)
-#  define USE_MACH64_CODES 1
-#endif
-
-
 /* The msgh_id to use for thread termination messages. This value most not conflict with the MACH_NOTIFY_NO_SENDERS msgh_id, which
  * is the only other value currently sent on the server notify port */
 #define PLCRASH_TERMINATE_MSGH_ID 0xDEADBEEF
@@ -116,7 +101,8 @@
 #error The allocated message identifiers conflict.
 #endif
 
-#if HAS_MACH_EXC_API
+#if PL_MACH64_EXC_API
+#  import "mach_exc.h"
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
 #else
@@ -124,7 +110,7 @@ typedef __Request__exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__exception_raise_t PLReply_exception_raise_t;
 #endif
 
-#ifdef USE_MACH64_CODES
+#ifdef PL_MACH64_EXC_CODES
 #  define PLCRASH_DEFAULT_BEHAVIOR (EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES)
 #else
 #  define PLCRASH_DEFAULT_BEHAVIOR EXCEPTION_DEFAULT
@@ -622,7 +608,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
     switch (behavior) {
         case EXCEPTION_DEFAULT:
             if (mach_exc_codes) {
-#if HAS_MACH_EXC_API
+#if PL_MACH64_EXC_API
                 return mach_exception_raise(port, thread, task, exception_type, code, code_count);
 #endif
             } else {
@@ -632,7 +618,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
             
         case EXCEPTION_STATE:
             if (mach_exc_codes) {
-#if HAS_MACH_EXC_API
+#if PL_MACH64_EXC_API
                 return mach_exception_raise_state(port, exception_type, code, code_count, &flavor, thread_state,
                                                   thread_state_count, thread_state, &thread_state_count);
 #endif
@@ -644,7 +630,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
             
         case EXCEPTION_STATE_IDENTITY:
             if (mach_exc_codes) {
-#if HAS_MACH_EXC_API
+#if PL_MACH64_EXC_API
                 return mach_exception_raise_state_identity(port, thread, task, exception_type, code,
                                                            code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
 #endif
@@ -774,12 +760,12 @@ static void *exception_server_thread (void *arg) {
             }
             
             /* Map 32-bit codes to 64-bit types. */
-#if !USE_MACH64_CODES
+#if !PL_MACH64_EXC_CODES
             mach_exception_data_type_t code64[request->codeCnt];
             for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
                 code64[i] = (uint32_t) request->code[i];
             }
-#elif HAS_MACH_EXC_API
+#elif PL_MACH64_EXC_API
             mach_exception_data_type_t *code64 = request->code;
 #else
             /* XXX: When the mach_exc* types are unavailable (eg, iOS), we're forced to cast the 32-bit values to

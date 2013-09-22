@@ -236,8 +236,15 @@ static kern_return_t exception_callback (task_t task,
                                                    codes,
                                                    2,
                                                    &port_set);
+
+    /* Forwarding is documented as broken in the case where 64-bit codes are used, but
+     * the mach_exc_* 64-bit APIs are not available. */
+#if (PL_MACH64_EXC_API || !PL_MACH64_EXC_CODES)
     STAssertEquals(KERN_SUCCESS, kt, @"Callback did not return KERN_SUCCESS");
     STAssertTrue(didRun, @"Calback was not executed");
+#else
+    STAssertNotEquals(KERN_SUCCESS, kt, @"Callback returned KERN_SUCCESS despite missing mach_exc* APIs");
+#endif
 }
 
 /**
