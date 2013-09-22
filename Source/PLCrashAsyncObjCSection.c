@@ -50,6 +50,21 @@ static char * const kObjCDataSectionName = "__objc_data";
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
 
+/*
+ * On ARM64, isa pointers masked to allow for refcounting and (what seems to be) side-table lookup. This
+ * is done entirely in libobjc, and could be changed in any future release; increasing
+ * the usable pointer range will result in our lookups failing.
+ *
+ * The tagged isa pointers seem to be used even within the writable class data; as such, we must
+ * perform masking here, as well. This is another reason we should migrate the code to
+ * work directly on the backing unmodified pages, as that provides us with a stable ABI.
+ */
+#ifdef __arm64__
+#define TAGGED_ISA(x) ((x) & 0x1fffffff8ULL)
+#else
+#define TAGGED_ISA(x) x
+#endif
+
 /**
  * @internal
  *
@@ -835,12 +850,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         }
         
         /* Read an architecture-appropriate class structure for the metaclass. */
-        pl_vm_address_t isa = (image->m64
-                               ? image->byteorder->swap64(class_64->isa)
-                               : image->byteorder->swap32(class_32->isa));
+        pl_vm_address_t isa = (image->m64 ? image->byteorder->swap64(class_64->isa) : image->byteorder->swap32(class_32->isa));
         struct pl_objc2_class_32 *metaclass_32;
         struct pl_objc2_class_64 *metaclass_64;
-        void *metaclassPtr = plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, 0, image->m64 ? sizeof(*class_64) : sizeof(*class_32));
+        void *metaclassPtr = plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, TAGGED_ISA(isa), 0, image->m64 ? sizeof(*class_64) : sizeof(*class_32));
         if (metaclassPtr == NULL) {
             PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)isa);
             err = PLCRASH_EINVAL;
