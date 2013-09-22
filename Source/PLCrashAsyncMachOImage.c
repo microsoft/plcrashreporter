@@ -238,6 +238,19 @@ pl_vm_size_t plcrash_async_macho_header_size (plcrash_async_macho_t *image) {
 }
 
 /**
+ * Return true if @a address is mapped within @a image's __TEXT segment, false otherwise.
+ *
+ * @param image The Mach-O image.
+ * @param address The address to be searched for.
+ */
+bool plcrash_async_macho_contains_address (plcrash_async_macho_t *image, pl_vm_address_t address) {
+    if (address >= image->header_addr && address < image->header_addr + image->text_size)
+        return true;
+    
+    return false;
+}
+
+/**
  * Return the Mach CPU type of @a image.
  *
  * @param image The image from which the CPU type should be returned.

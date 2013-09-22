@@ -101,6 +101,16 @@
     }
 }
 
+/** Address range testing. */
+- (void) testContainsAddress {
+    STAssertTrue(plcrash_async_macho_contains_address(&_image, _image.header_addr), @"The base address should be contained within the image");
+    STAssertTrue(_image.header_addr > 0, @"This should always be true ...");
+    STAssertFalse(plcrash_async_macho_contains_address(&_image, _image.header_addr-1), @"Returned true for an address outside the mapped range");
+
+    STAssertFalse(plcrash_async_macho_contains_address(&_image, _image.header_addr+_image.text_size), @"Returned true for an address outside the mapped range");
+    STAssertTrue(plcrash_async_macho_contains_address(&_image, _image.header_addr+_image.text_size-1), @"The final byte should be within the mapped range");
+}
+
 /**
  * Test CPU type/subtype getters.
  */
