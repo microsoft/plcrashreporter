@@ -200,6 +200,9 @@ typedef enum  {
 
     /** The requested resource could not be found. */
     PLCRASH_ENOTFOUND,
+    
+    /** The input data is in an unknown or invalid format. */
+    PLCRASH_EINVALID_DATA,
 } plcrash_error_t;
 
 const char *plcrash_async_strerror (plcrash_error_t error);
