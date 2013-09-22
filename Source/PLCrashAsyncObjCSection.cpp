@@ -415,7 +415,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             uint32_t ptr;
             err = plcrash_async_task_memcpy(image->task, methodListCursor, 0, &ptr, sizeof(ptr));
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListCursor, err);
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)methodListCursor, err);
                 goto cleanup;
             }
             
@@ -440,7 +440,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
         struct pl_objc1_method_list methodList;
         err = plcrash_async_task_memcpy(image->task, thisListPtr, 0, &methodList, sizeof(methodList));
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodListPtr, err);
+            PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)methodListPtr, err);
             goto cleanup;
         }
         
@@ -453,7 +453,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             pl_vm_address_t methodPtr = thisListPtr + sizeof(methodList) + i * sizeof(method);
             err = plcrash_async_task_memcpy(image->task, methodPtr, 0, &method, sizeof(method));
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)methodPtr, err);
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)methodPtr, err);
                 goto cleanup;
             }
             
@@ -537,7 +537,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
         struct pl_objc1_symtab symtab;
         err = plcrash_async_task_memcpy(image->task, symtabPtr, 0, &symtab, sizeof(symtab));
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)symtabPtr, err);
+            PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)symtabPtr, err);
             goto cleanup;
         }
         
@@ -550,7 +550,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
             pl_vm_address_t cursor = symtabPtr + sizeof(symtab) + i * sizeof(classPtr);
             err = plcrash_async_task_memcpy(image->task, cursor, 0, &classPtr, sizeof(classPtr));
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)cursor, err);
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)cursor, err);
                 goto cleanup;
             }
             classPtr = image->byteorder->swap32(classPtr);
@@ -559,7 +559,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
             struct pl_objc1_class cls;
             err = plcrash_async_task_memcpy(image->task, classPtr, 0, &cls, sizeof(cls));
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)classPtr, err);
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)classPtr, err);
                 goto cleanup;
             }
             
@@ -574,7 +574,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
             struct pl_objc1_class metaclass;
             err = plcrash_async_task_memcpy(image->task, isa, 0, &metaclass, sizeof(metaclass));
             if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)isa, err);
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)isa, err);
                 goto cleanup;
             }
             
@@ -731,7 +731,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
             err = plcrash_async_task_memcpy(image->task, dataPtr, 0, &classDataRW_32, sizeof(classDataRW_32));
         
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_read_addr at 0x%llx error %d", (long long)dataPtr, err);
+            PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)dataPtr, err);
             goto cleanup;
         }
         
@@ -758,7 +758,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
          * __objc_const section */
         if ((flags & RW_COPIED_RO) != 0) {
             if ((err = plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, &cls_copied_ro, class_ro_length)) != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("plcrash_async_read_addr at 0x%llx returned NULL", (long long)cached_data_ro_addr);
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx returned NULL", (long long)cached_data_ro_addr);
                 goto cleanup;
             }
 
@@ -785,7 +785,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
         if ((classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, cached_data_ro_addr, 0, class_ro_length)) != NULL) {
             classDataRO_32 = (struct pl_objc2_class_data_ro_32 *) classDataROPtr;
             classDataRO_64 = (struct pl_objc2_class_data_ro_64 *) classDataROPtr;
-        } else if (plcrash_async_read_addr(image->task, cached_data_ro_addr, &cls_copied_ro, class_ro_length) == PLCRASH_ESUCCESS) {
+        } else if (plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, &cls_copied_ro, class_ro_length) == PLCRASH_ESUCCESS) {
             classDataRO_32 = &cls_copied_ro.cls32;
             classDataRO_64 = &cls_copied_ro.cls64;
         } else {
