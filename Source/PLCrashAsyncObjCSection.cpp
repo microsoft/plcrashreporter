@@ -682,67 +682,53 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
  * Parse a single class from ObjC2 class data.
  *
  * @param image The image to read from.
- * @param objcContext An ObjC context object.
- * @param class_32 A pointer to a 32-bit class structure. Only needs to be
- * filled out if the image is 32 bits.
- * @param class_64 A pointer to a 64-bit class structure. Only needs to be
- * filled out if the image is 64 bits.
+ * @param objc_cache The Objective-C cache object.
+ * @param cls A pointer to the class structure to be parsed
+ * @param is_meta_class true if this is a metaclass.
  * @param callback The callback to invoke for each method found.
  * @param ctx A context pointer to pass to the callback.
+ *
+ * @tparam class_t The class type, one of pl_objc2_class_32 or pl_objc2_class_64.
+ * @tparam class_ro_t The read-only class type, one of pl_objc2_class_data_ro_32 or pl_objc2_class_data_ro_64.
+ * @tparam class_rw_t The read-write class type, one of pl_objc2_class_data_rw_32 or pl_objc2_class_data_rw_64.
+ *
  * @return An error code.
  */
-static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objcContext, struct pl_objc2_class_32 *class_32, struct pl_objc2_class_64 *class_64, bool isMetaClass, plcrash_async_objc_found_method_cb callback, void *ctx) {
-    plcrash_error_t err;
-    pl_vm_address_t classNamePtr;
+template<typename class_t, typename class_ro_t, typename class_rw_t>
+static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objc_cache, class_t *cls, bool is_meta_class, plcrash_async_objc_found_method_cb callback, void *ctx) {
+    pl_vm_address_t class_name_ptr;
     pl_vm_address_t methods_ptr;
+    plcrash_error_t err;
 
     /* Set up the class name string and a flag to determine whether it needs cleanup. */
-    plcrash_async_macho_string_t className;
-    bool classNameInitialized = false;
+    plcrash_async_macho_string_t class_name;
+    bool class_name_initialized = false;
     
     /* Grab the class's data_rw pointer. This needs masking because it also
      * can contain flags. */
-    pl_vm_address_t dataPtr = (image->m64
-                               ? image->byteorder->swap64(class_64->data_rw)
-                               : image->byteorder->swap32(class_32->data_rw));
-    dataPtr &= ~(pl_vm_address_t)3;
-    
+    pl_vm_address_t data_ptr = image->byteorder->swap(cls->data_rw);
+    data_ptr &= ~(pl_vm_address_t)3;
+
     
     /* References to the class' RO data. */
-    struct pl_objc2_class_data_ro_32 *classDataRO_32 = NULL;
-    struct pl_objc2_class_data_ro_64 *classDataRO_64 = NULL;
-    union {
-        struct pl_objc2_class_data_ro_32 cls32;
-        struct pl_objc2_class_data_ro_64 cls64;
-    } cls_copied_ro;
-    pl_vm_size_t class_ro_length = (image->m64 ? sizeof(*classDataRO_64) : sizeof(*classDataRO_32));
-
+    class_ro_t *cls_data_ro = NULL;
+    class_ro_t cls_copied_ro;
+    pl_vm_size_t class_ro_length = sizeof(*cls_data_ro);
 
     /* Grab the data RO pointer from the cache. If unavailable, we'll fetch the data and populate the class. */
-    pl_vm_address_t cached_data_ro_addr = cache_lookup(objcContext, dataPtr);
+    pl_vm_address_t cached_data_ro_addr = cache_lookup(objc_cache, data_ptr);
     if (cached_data_ro_addr == 0) {
-        struct pl_objc2_class_data_rw_32 classDataRW_32;
-        struct pl_objc2_class_data_rw_64 classDataRW_64;
+        class_rw_t cls_data_rw;
 
-        /* Read an architecture-appropriate class_rw structure for the class. */
-        if (image->m64)
-            err = plcrash_async_task_memcpy(image->task, dataPtr, 0, &classDataRW_64, sizeof(classDataRW_64));
-        else
-            err = plcrash_async_task_memcpy(image->task, dataPtr, 0, &classDataRW_32, sizeof(classDataRW_32));
-        
+        /* Read the class_rw structure. */
+        err = plcrash_async_task_memcpy(image->task, data_ptr, 0, &cls_data_rw, sizeof(cls_data_rw));
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)dataPtr, err);
+            PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)data_ptr, err);
             goto cleanup;
         }
         
         /* Check the flags. If it's not yet realized, then we need to skip the class. */
-        uint32_t flags;
-        if (image->m64)
-            flags = classDataRW_64.flags;
-        else
-            flags = classDataRW_32.flags;
-        
-        if ((flags & RW_REALIZED) == 0)  {
+        if ((cls_data_rw.flags & RW_REALIZED) == 0)  {
             // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
             err = PLCRASH_ENOTFOUND;
             goto cleanup;
@@ -750,44 +736,35 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
 
         /* Grab the data_ro pointer. The RO data (read-only) contains the class name
          * and method list. */
-        cached_data_ro_addr = (image->m64
-                     ? image->byteorder->swap64(classDataRW_64.data_ro)
-                     : image->byteorder->swap32(classDataRW_32.data_ro));
+        cached_data_ro_addr = image->byteorder->swap(cls_data_rw.data_ro);
         
         /* Validate the data pointer. It will either be heap allocated (RW_COPIED_RO), or found within the
          * __objc_const section */
-        if ((flags & RW_COPIED_RO) != 0) {
+        if ((cls_data_rw.flags & RW_COPIED_RO) != 0) {
             if ((err = plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, &cls_copied_ro, class_ro_length)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx returned NULL", (long long)cached_data_ro_addr);
                 goto cleanup;
             }
 
-            classDataRO_32 = &cls_copied_ro.cls32;
-            classDataRO_64 = &cls_copied_ro.cls64;
+            cls_data_ro = &cls_copied_ro;
         } else {
-            void *classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, cached_data_ro_addr, 0, class_ro_length);
-            if (classDataROPtr == NULL) {
+            cls_data_ro = (class_ro_t *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, cached_data_ro_addr, 0, class_ro_length);
+            if (cls_data_ro == NULL) {
                 PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx returned NULL", (long long)cached_data_ro_addr);
                 err = PLCRASH_EINVAL;
                 goto cleanup;
             }
-            
-            classDataRO_32 = (struct pl_objc2_class_data_ro_32 *) classDataROPtr;
-            classDataRO_64 = (struct pl_objc2_class_data_ro_64 *) classDataROPtr;
         }
         
         /* Add a new cache entry. */
-        cache_set(objcContext, dataPtr, cached_data_ro_addr);
+        cache_set(objc_cache, data_ptr, cached_data_ro_addr);
     } else {
         /* We know that the address is valid (it wouldn't be in the cache otherwise). We try the cheaper memory mapping first,
          * and then fall back to a memory copy. */
-        void *classDataROPtr;
-        if ((classDataROPtr = plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, cached_data_ro_addr, 0, class_ro_length)) != NULL) {
-            classDataRO_32 = (struct pl_objc2_class_data_ro_32 *) classDataROPtr;
-            classDataRO_64 = (struct pl_objc2_class_data_ro_64 *) classDataROPtr;
+        if ((cls_data_ro = (class_ro_t *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, cached_data_ro_addr, 0, class_ro_length)) != NULL) {
+            // Do nothing; success!
         } else if (plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, &cls_copied_ro, class_ro_length) == PLCRASH_ESUCCESS) {
-            classDataRO_32 = &cls_copied_ro.cls32;
-            classDataRO_64 = &cls_copied_ro.cls64;
+            cls_data_ro = &cls_copied_ro;
         } else {
             PLCF_DEBUG("Failed to read validated class_ro data at 0x%llx", (long long)cached_data_ro_addr);
             err = PLCRASH_EINVAL;
@@ -796,25 +773,25 @@ static plcrash_error_t pl_async_objc_parse_objc2_class(plcrash_async_macho_t *im
     }
     
     /* Fetch the pointer to the class name, and make the string. */
-    classNamePtr = (image->m64 ? image->byteorder->swap64(classDataRO_64->name) : image->byteorder->swap32(classDataRO_32->name));
-    err = plcrash_async_macho_string_init(&className, image, classNamePtr);
+    class_name_ptr = image->byteorder->swap(cls_data_ro->name);
+    err = plcrash_async_macho_string_init(&class_name, image, class_name_ptr);
     if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)classNamePtr, err);
+        PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)class_name_ptr, err);
         goto cleanup;
     }
-    classNameInitialized = true;
+    class_name_initialized = true;
     
     /* Fetch and parse the method list. The base method list will be NULL if no methods are defined for the class/metaclass; in that case, we simply skip the class. */
-    methods_ptr = (image->m64 ? image->byteorder->swap64(classDataRO_64->baseMethods) : image->byteorder->swap32(classDataRO_32->baseMethods));
+    methods_ptr = image->byteorder->swap(cls_data_ro->baseMethods);
     if (methods_ptr == 0)
         return PLCRASH_ESUCCESS;
 
-    if ((err = pl_async_objc_parse_objc2_method_list(image, objcContext, &className, isMetaClass, methods_ptr, callback, ctx)) != PLCRASH_ESUCCESS)
+    if ((err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, is_meta_class, methods_ptr, callback, ctx)) != PLCRASH_ESUCCESS)
         goto cleanup;
 
 cleanup:
-    if (classNameInitialized)
-        plcrash_async_macho_string_free(&className);
+    if (class_name_initialized)
+        plcrash_async_macho_string_free(&class_name);
     
     return err;
 }
@@ -894,7 +871,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         class_64 = (struct pl_objc2_class_64 *) classPtr;
         
         /* Parse the class. */
-        err = pl_async_objc_parse_objc2_class(image, objcContext, class_32, class_64, false, callback, ctx);
+        if (image->m64)
+            err = pl_async_objc_parse_objc2_class<struct pl_objc2_class_64, struct pl_objc2_class_data_ro_64, struct pl_objc2_class_data_rw_64>(image, objcContext, class_64, false, callback, ctx);
+        else
+            err = pl_async_objc_parse_objc2_class<struct pl_objc2_class_32, struct pl_objc2_class_data_ro_32, struct pl_objc2_class_data_rw_32>(image, objcContext, class_32, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             return err;
@@ -914,7 +894,11 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         metaclass_64 = (struct pl_objc2_class_64 *) metaclassPtr;
         
         /* Parse the metaclass. */
-        err = pl_async_objc_parse_objc2_class(image, objcContext, metaclass_32, metaclass_64, true, callback, ctx);
+        if (image->m64)
+            err = pl_async_objc_parse_objc2_class<struct pl_objc2_class_64, struct pl_objc2_class_data_ro_64, struct pl_objc2_class_data_rw_64>(image, objcContext, metaclass_64, true, callback, ctx);
+        else
+            err = pl_async_objc_parse_objc2_class<struct pl_objc2_class_32, struct pl_objc2_class_data_ro_32, struct pl_objc2_class_data_rw_32>(image, objcContext, metaclass_32, true, callback, ctx);
+        
         if (err != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing metaclass", err);
             return err;

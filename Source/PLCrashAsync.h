@@ -230,13 +230,13 @@ typedef struct plcrash_async_byteorder {
 #ifdef __cplusplus
 public:
     /** Byte swap a 16-bit value */
-    uint16_t swap (uint16_t v) { return swap16(v); }
+    uint16_t swap (uint16_t v) const { return swap16(v); }
     
     /** Byte swap a 32-bit value */
-    uint32_t swap (uint32_t v) { return swap32(v); }
+    uint32_t swap (uint32_t v) const { return swap32(v); }
     
     /** Byte swap a 64-bit value */
-    uint64_t swap (uint64_t v) { return swap64(v); }
+    uint64_t swap (uint64_t v) const { return swap64(v); }
 #endif
 } plcrash_async_byteorder_t;
 
