@@ -226,6 +226,18 @@ typedef struct plcrash_async_byteorder {
     
     /** The byte-swap function to use for 64-bit values. */
     uint64_t (*swap64)(uint64_t);
+    
+#ifdef __cplusplus
+public:
+    /** Byte swap a 16-bit value */
+    uint16_t swap (uint16_t v) { return swap16(v); }
+    
+    /** Byte swap a 32-bit value */
+    uint32_t swap (uint32_t v) { return swap32(v); }
+    
+    /** Byte swap a 64-bit value */
+    uint64_t swap (uint64_t v) { return swap64(v); }
+#endif
 } plcrash_async_byteorder_t;
 
 extern const plcrash_async_byteorder_t plcrash_async_byteorder_swapped;
