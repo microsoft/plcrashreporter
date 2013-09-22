@@ -44,6 +44,7 @@ static char * const kDataSegmentName = "__DATA";
 
 static char * const kObjCModuleInfoSectionName = "__module_info";
 static char * const kClassListSectionName = "__objc_classlist";
+static char * const kCategoryListSectionName = "__objc_catlist";
 static char * const kObjCConstSectionName = "__objc_const";
 static char * const kObjCDataSectionName = "__objc_data";
 
@@ -172,6 +173,26 @@ struct pl_objc2_class_data_ro_64 {
     uint64_t baseProperties;
 };
 
+/** Category list entry (32-bit representation). */
+struct pl_objc2_category_32 {
+    uint32_t name;
+    uint32_t cls;
+    uint32_t instanceMethods;
+    uint32_t classMethods;
+    uint32_t protocols;
+    uint32_t instanceProperties;
+};
+
+/** Category list entry (64-bit representation). */
+struct pl_objc2_category_64 {
+    uint32_t name;
+    uint32_t cls;
+    uint32_t instanceMethods;
+    uint32_t classMethods;
+    uint32_t protocols;
+    uint32_t instanceProperties;
+};
+
 struct pl_objc2_method_32 {
     uint32_t name;
     uint32_t types;
@@ -282,6 +303,10 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
         plcrash_async_mobject_free(&context->classMobj);
         context->classMobjInitialized = false;
     }
+    if (context->catMobjInitialized) {
+        plcrash_async_mobject_free(&context->catMobj);
+        context->catMobjInitialized = false;
+    }
     if (context->objcDataMobjInitialized) {
         plcrash_async_mobject_free(&context->objcDataMobj);
         context->objcDataMobjInitialized = false;
@@ -325,6 +350,15 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
         goto cleanup;
     }
     context->classMobjInitialized = true;
+    
+    /* Map in the category list section.  */
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kCategoryListSectionName, &context->catMobj);
+    if (err != PLCRASH_ESUCCESS) {
+        if (err != PLCRASH_ENOTFOUND)
+            PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kCategoryListSectionName, &context->catMobj, err);
+        goto cleanup;
+    }
+    context->catMobjInitialized = true;
     
     /* Map in the __objc_data section, which is where the actual classes live. */
     err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj);
@@ -784,6 +818,23 @@ cleanup:
 }
 
 /**
+ * Parse a single ObjC 2.0 category_t structure and call @a callback with all parsed methods.
+ *
+ * @param image The image to read from.
+ * @param objc_cache The Objective-C cache object.
+ * @param cat_32 A pointer to a 32-bit category structure. Only needs to be filled out if the image is 32 bits.
+ * @param cat_64 A pointer to a 64-bit category structure. Only needs to be filled out if the image is 64 bits.
+ * @param callback The callback to invoke for each method found.
+ * @param ctx A context pointer to pass to the callback.
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate error on failure.
+ */
+static plcrash_error_t pl_async_objc_parse_objc2_category(plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objcContext, struct pl_objc2_category_32 *cat_32, struct pl_objc2_category_64 *cat_64, plcrash_async_objc_found_method_cb callback, void *ctx) {
+    // TODO
+    return PLCRASH_ESUCCESS;
+}
+
+
+/**
  * Parse ObjC2 class data from a __objc_classlist section.
  *
  * @param image The Mach-O image to parse.
@@ -871,6 +922,47 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         }
     }
     
+    /* Get a pointer out of the mapped category list. */
+    void *catPtrs = plcrash_async_mobject_remap_address(&objcContext->catMobj, objcContext->catMobj.task_address, 0, objcContext->catMobj.length);
+    if (catPtrs == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in catMobj for pointer %llx returned NULL", (long long)objcContext->catMobj.address);
+        err = PLCRASH_EINVAL;
+        goto cleanup;
+    }
+    
+    /* Category pointers are 32 or 64 bits depending on architectures. Set up one pointer for each. */
+    uint32_t *catPtrs_32 = classPtrs;
+    uint64_t *catPtrs_64 = classPtrs;
+    
+    /* Figure out how many categories are in the category list based on its length and the size of a pointer in the image. */
+    unsigned catCount = objcContext->catMobj.length / (image->m64 ? sizeof(*catPtrs_64) : sizeof(*catPtrs_32));
+    
+    /* Iterate over all classes. */
+    for(unsigned i = 0; i < catCount; i++) {
+        /* Read a category pointer at the current index from the appropriate pointer. */
+        pl_vm_address_t ptr = (image->m64 ? image->byteorder->swap64(catPtrs_64[i]) : image->byteorder->swap32(catPtrs_32[i]));
+        
+        /* Read an architecture-appropriate class structure. */
+        struct pl_objc2_category_32 *cat_32;
+        struct pl_objc2_category_64 *cat_64;
+        void *catPtr = plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr, 0, image->m64 ? sizeof(*cat_64) : sizeof(*cat_32));
+        if (catPtr == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
+            err = PLCRASH_EINVAL;
+            goto cleanup;
+        }
+        
+        cat_32 = catPtr;
+        cat_64 = catPtr;
+
+        /* Parse the category. */
+        err = pl_async_objc_parse_objc2_category(image, objcContext, cat_32, cat_64, callback, ctx);
+        if (err != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
+            goto cleanup;
+        }
+    }
+    
 cleanup:
     return err;
 }
@@ -886,6 +978,7 @@ plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *cache
     cache->lastImage = NULL;
     cache->objcConstMobjInitialized = false;
     cache->classMobjInitialized = false;
+    cache->catMobjInitialized = false;
     cache->objcDataMobjInitialized = false;
     cache->classCacheSize = 0;
     cache->classCacheKeys = NULL;

@@ -76,6 +76,12 @@ typedef struct plcrash_async_objc_cache {
     /** A memory object for the __objc_classlist section. */
     plcrash_async_mobject_t classMobj;
     
+    /** Whether the category memory object is initialized. */
+    bool catMobjInitialized;
+    
+    /** A memory object for the __objc_catlist section. */
+    plcrash_async_mobject_t catMobj;
+    
     /** Whether the objcData object is initialized. */
     bool objcDataMobjInitialized;
     
