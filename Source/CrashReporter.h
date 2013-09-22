@@ -341,10 +341,15 @@ typedef enum {
  *
  *  - The mach_* structure/type variants required by MACH_EXCEPTION_CODES are not publicly defined (on Mac OS X,
  *    these are provided by mach_exc.defs). This prevents one from forwarding exception messages to an existing
- *    handler that was registered with a MACH_EXCEPTION_CODES behavior.
+ *    handler that was registered with a MACH_EXCEPTION_CODES behavior (eg, forwarding is entirely non-functional
+ *    on ARM64 devices).
  *
  *    Impact:
- *      This can break forwarding to any task exception handler that registers itself with MACH_EXCEPTION_CODES.
+ *      This can break forwarding to any task exception handler that registers itself with MACH_EXCEPTION_CODES,
+ *      including other handlers registered within the current process, eg, by a managed runtime. This could
+ *      also result in misinterpretation of a Mach exception message, in the case where the message format is
+ *      modified by Apple to be incompatible with the existing 32-bit format.
+ *
  *      This is the case with LLDB; it will register a task exception handler with MACH_EXCEPTION_CODES set. Failure
  *      to correctly forward these exceptions will result in the debugger breaking in interesting ways; for example,
  *      changes to the set of dyld-loaded images are detected by setting a breakpoint on the dyld image registration
