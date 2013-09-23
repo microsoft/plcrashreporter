@@ -718,7 +718,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
         }
         
         /* Check the flags. If it's not yet realized, then we need to skip the class. */
-        if ((cls_data_rw.flags & RW_REALIZED) == 0)  {
+        uint32_t flags = image->byteorder->swap(cls_data_rw.flags);
+        if ((flags & RW_REALIZED) == 0)  {
             // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
             return PLCRASH_ENOTFOUND;
         }
@@ -729,7 +730,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
         
         /* Copy the R/O data; it will either be heap allocated (RW_COPIED_RO), found within the __objc_const section of the current cached image,
          * or found within the __objc_const section of a non-cached image. */
-        if ((cls_data_rw.flags & RW_COPIED_RO) != 0 || !plcrash_async_macho_contains_address(image, cached_data_ro_addr)) {
+        if ((flags & RW_COPIED_RO) != 0 || !plcrash_async_macho_contains_address(image, cached_data_ro_addr)) {
             if ((err = plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, cls_data_ro, sizeof(*cls_data_ro))) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx returned NULL", (long long)cached_data_ro_addr);
                 return PLCRASH_EINVALID_DATA;
