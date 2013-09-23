@@ -52,8 +52,8 @@ static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
 
 /*
- * On ARM64, isa pointers masked to allow for refcounting and (what seems to be) side-table lookup. This
- * is done entirely in libobjc, and could be changed in any future release; increasing
+ * On ARM64, isa pointers are masked to allow for refcounting and (what seems to be) side-table lookup.
+ * This is done entirely in libobjc, and could be changed in any future release; increasing
  * the usable pointer range will result in our lookups failing.
  *
  * The tagged isa pointers seem to be used even within the writable class data; as such, we must
