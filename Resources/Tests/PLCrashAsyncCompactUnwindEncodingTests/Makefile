@@ -3,11 +3,11 @@ PLATFORMS?=	$(DEVELOPER)/Platforms/
 CFLAGS?=	-Os -std=c99
 LDFLAGS?=	-dynamiclib
 
-DEVICE_SDK?=		iPhoneOS6.1
+DEVICE_SDK?=		iPhoneOS7.0
 DEVICE_PLATFORM?=	$(PLATFORMS)/iPhoneOS.platform
 DEVICE_ROOT?=		$(DEVICE_PLATFORM)/Developer/SDKs/$(DEVICE_SDK).sdk
 DEVICE_CC?=		$(shell xcrun -sdk `echo ${DEVICE_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
-DEVICE_CFLAGS?=		-arch armv7 -arch armv7s -isysroot "$(DEVICE_ROOT)" -gdwarf-2 -miphoneos-version-min=3.0 $(CFLAGS)
+DEVICE_CFLAGS?=		-arch armv7 -arch armv7s -arch arm64 -isysroot "$(DEVICE_ROOT)" -gdwarf-2 -miphoneos-version-min=7.0 $(CFLAGS)
 
 SIM_SDK?=		iPhoneSimulator6.1
 SIM_PLATFORM?=		$(PLATFORMS)/iPhoneSimulator.platform

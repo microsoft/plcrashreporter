@@ -67,6 +67,7 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
     switch (cputype) {
         case CPU_TYPE_X86:
         case CPU_TYPE_X86_64:
+        case CPU_TYPE_ARM64:
             reader->byteorder = plcrash_async_byteorder_little_endian();
             break;
 
@@ -836,6 +837,56 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
         // Unreachable
         __builtin_trap();
         return PLCRASH_EINTERNAL;
+    } else if (cpu_type == CPU_TYPE_ARM64) {
+        uint32_t mode = encoding & UNWIND_ARM64_MODE_MASK;
+        switch (mode) {
+            case UNWIND_ARM64_MODE_FRAME:
+                // TODO
+                return PLCRASH_ENOTSUP;
+            
+            case UNWIND_ARM64_MODE_FRAMELESS:
+                /*
+                 * The compact_unwind header documents this as UNWIND_ARM64_MODE_LEAF, but actually defines UNWIND_ARM64_MODE_FRAMELESS.
+                 * Reviewing the libunwind stepWithCompactEncodingFrameless() assembly demonstrates that this actually uses the
+                 * i386/x86-64 frameless immediate style of encoding an offset from the stack pointer. Unlike x86, however, the
+                 * offset is multipled by 16 bytes (since each register is stored in pairs), rather than the platform word size.
+                 *
+                 * The header discrepancy was reported as rdar://15057141
+                 */
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) * (sizeof(uint64_t) * 2);
+                
+                /* Extract the register values */
+                // TODO
+                
+                return PLCRASH_ENOTSUP;
+                
+            case UNWIND_ARM64_MODE_FRAME_OLD:
+                // TODO
+                __builtin_trap();
+                return PLCRASH_ENOTSUP;
+                
+            case UNWIND_ARM64_MODE_DWARF:
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF;
+                
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_DWARF_SECTION_OFFSET);
+                entry->register_count = 0;
+                return PLCRASH_ESUCCESS;
+                
+            case 0:
+                /* Handle a NULL encoding. This interpretation is derived from Apple's actual implementation; the correct interpretation of
+                 * a 0x0 value is not defined in what documentation exists. */
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE;
+                entry->stack_offset = 0;
+                entry->register_count = 0;
+                return PLCRASH_ESUCCESS;
+                
+            default:
+                PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
+                return PLCRASH_ENOTSUP;
+        }
+
     }
 
     PLCF_DEBUG("Unsupported CPU type: %" PRIu32, cpu_type);

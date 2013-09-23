@@ -118,9 +118,9 @@
     
     
     /* Initialize the CFE reader */
-#if !defined(__i386__) || !defined(__x86_64__)
-    /* CFE is currently only supported for x86/x86-64, but our target binaries are not architecture specific;
-     * we fudge the type reported to the reader to allow us to test the reader on ARM anyway. */
+#if !defined(__i386__) || !defined(__x86_64__) || !defined(__arm64__)
+    /* CFE is currently only supported for x86/x86-64/arm64, but our target binaries are not architecture specific;
+     * we fudge the type reported to the reader to allow us to test the reader on ARM32 anyway. */
     cpu_type_t cputype = CPU_TYPE_X86;
 #else
     cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
