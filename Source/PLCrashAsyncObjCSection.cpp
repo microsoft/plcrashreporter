@@ -798,12 +798,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_class_methods (plcrash_async_ma
     if ((err = pl_async_objc_parse_objc2_class<class_t, class_ro_t, class_rw_t>(image, objc_cache, cls, &class_name, &cls_data_ro)) != PLCRASH_ESUCCESS)
         return err;
 
-    /* Fetch and parse the method list. The base method list will be NULL if no methods are defined for the class/metaclass; in that case, we simply skip the class. */
+    /* Fetch and parse the method list. */
     pl_vm_address_t methods_ptr = image->byteorder->swap(cls_data_ro.baseMethods);
-    if (methods_ptr == 0)
-        return PLCRASH_ESUCCESS;
-
-    err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, is_meta_class, methods_ptr, callback, ctx);
+    if (methods_ptr != 0) {
+        err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, is_meta_class, methods_ptr, callback, ctx);
+    } else {
+        /* The base method list will be NULL if no methods are defined for the class/metaclass; in that case, we simply skip the class. */
+        err = PLCRASH_ESUCCESS;
+    }
 
     /* Clean up */
     plcrash_async_macho_string_free(&class_name);
