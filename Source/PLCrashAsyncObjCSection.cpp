@@ -52,8 +52,8 @@ static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
 
 /*
- * On ARM64, isa pointers masked to allow for refcounting and (what seems to be) side-table lookup. This
- * is done entirely in libobjc, and could be changed in any future release; increasing
+ * On ARM64, isa pointers are masked to allow for refcounting and (what seems to be) side-table lookup.
+ * This is done entirely in libobjc, and could be changed in any future release; increasing
  * the usable pointer range will result in our lookups failing.
  *
  * The tagged isa pointers seem to be used even within the writable class data; as such, we must
@@ -622,7 +622,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_addr, 0, sizeof(*header));
     if (header == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address in objCConstMobj failed to map methods pointer 0x%llx", (long long) method_list_addr);
-        return PLCRASH_EINVAL;
+        return PLCRASH_EINVALID_DATA;
     }
     
     /* Extract the entry size and count from the list header. */
@@ -636,7 +636,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     const char *cursor = (const char *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_start, 0, method_list_length);
     if (cursor == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx length %llu returned NULL", (long long)method_list_start, (unsigned long long)method_list_length);
-        return PLCRASH_EINVAL;
+        return PLCRASH_EINVALID_DATA;
     }
     
     /* Extract methods from the list. */
@@ -718,7 +718,8 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
         }
         
         /* Check the flags. If it's not yet realized, then we need to skip the class. */
-        if ((cls_data_rw.flags & RW_REALIZED) == 0)  {
+        uint32_t flags = image->byteorder->swap(cls_data_rw.flags);
+        if ((flags & RW_REALIZED) == 0)  {
             // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
             return PLCRASH_ENOTFOUND;
         }
@@ -729,7 +730,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
         
         /* Copy the R/O data; it will either be heap allocated (RW_COPIED_RO), found within the __objc_const section of the current cached image,
          * or found within the __objc_const section of a non-cached image. */
-        if ((cls_data_rw.flags & RW_COPIED_RO) != 0 || !plcrash_async_macho_contains_address(image, cached_data_ro_addr)) {
+        if ((flags & RW_COPIED_RO) != 0 || !plcrash_async_macho_contains_address(image, cached_data_ro_addr)) {
             if ((err = plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, cls_data_ro, sizeof(*cls_data_ro))) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx returned NULL", (long long)cached_data_ro_addr);
                 return PLCRASH_EINVALID_DATA;
@@ -798,12 +799,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_class_methods (plcrash_async_ma
     if ((err = pl_async_objc_parse_objc2_class<class_t, class_ro_t, class_rw_t>(image, objc_cache, cls, &class_name, &cls_data_ro)) != PLCRASH_ESUCCESS)
         return err;
 
-    /* Fetch and parse the method list. The base method list will be NULL if no methods are defined for the class/metaclass; in that case, we simply skip the class. */
+    /* Fetch and parse the method list. */
     pl_vm_address_t methods_ptr = image->byteorder->swap(cls_data_ro.baseMethods);
-    if (methods_ptr == 0)
-        return PLCRASH_ESUCCESS;
-
-    err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, is_meta_class, methods_ptr, callback, ctx);
+    if (methods_ptr != 0) {
+        err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, is_meta_class, methods_ptr, callback, ctx);
+    } else {
+        /* The base method list will be NULL if no methods are defined for the class/metaclass; in that case, we simply skip the class. */
+        err = PLCRASH_ESUCCESS;
+    }
 
     /* Clean up */
     plcrash_async_macho_string_free(&class_name);
@@ -904,7 +907,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     machine_ptr_t *classPtrs = (machine_ptr_t *) plcrash_async_mobject_remap_address(&objcContext->classMobj, objcContext->classMobj.task_address, 0, objcContext->classMobj.length);
     if (classPtrs == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address in objcConstMobj for pointer %llx returned NULL", (long long)objcContext->classMobj.address);
-        return PLCRASH_EINVAL;
+        return PLCRASH_EINVALID_DATA;
     }
     
     /* Figure out how many classes are in the class list based on its length and
@@ -918,7 +921,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         class_t *classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr, 0, sizeof(*classPtr));
         if (classPtr == NULL) {
             PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
-            return PLCRASH_EINVAL;
+            return PLCRASH_EINVALID_DATA;
         }
         
         /* Parse the class. */
@@ -937,7 +940,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         class_t *metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, TAGGED_ISA(isa), 0, sizeof(*metaclass));
         if (metaclass == NULL) {
             PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)isa);
-            return PLCRASH_EINVAL;
+            return PLCRASH_EINVALID_DATA;
         }
 
         /* Parse the metaclass. */
@@ -952,7 +955,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     machine_ptr_t *catPtrs = (machine_ptr_t *) plcrash_async_mobject_remap_address(&objcContext->catMobj, objcContext->catMobj.task_address, 0, objcContext->catMobj.length);
     if (catPtrs == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address in catMobj for pointer %llx returned NULL", (long long)objcContext->catMobj.address);
-        return PLCRASH_EINVAL;
+        return PLCRASH_EINVALID_DATA;
     }
     
     /* Figure out how many categories are in the category list based on its length and the size of a pointer in the image. */
@@ -968,7 +971,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         category = (category_t *) plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, ptr, 0, sizeof(*category));
         if (category == NULL) {
             PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
-            return PLCRASH_EINVAL;
+            return PLCRASH_EINVALID_DATA;
         }
 
         /* Parse the category. */
