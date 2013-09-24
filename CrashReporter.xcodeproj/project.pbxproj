@@ -4150,6 +4150,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
+				);
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4174,6 +4178,10 @@
 				GCC_MODEL_TUNING = G5;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
+				);
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4257,6 +4265,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
+				);
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
@@ -4278,6 +4290,10 @@
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
+				);
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
@@ -4302,6 +4318,7 @@
 				);
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
+				PL_MIN_MACOSX_SDK = 1080;
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64 arm64";
 				WARNING_CFLAGS = (
@@ -4333,6 +4350,7 @@
 				);
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
+				PL_MIN_MACOSX_SDK = 1080;
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64 arm64";
 				WARNING_CFLAGS = (

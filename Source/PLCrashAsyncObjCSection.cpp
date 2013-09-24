@@ -51,6 +51,13 @@ static const char * const kObjCDataSectionName = "__objc_data";
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
 
+/* XXX: The ARM64 CPU type is not defined in the Mac OS X 10.8 headers. */
+#ifndef CPU_TYPE_ARM64
+# define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#elif TARGET_OS_MAC && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
+# error CPU_TYPE_ARM64 is now defined by the minimum supported Mac SDK. Please remove this define.
+#endif
+
 /* TAGGED_ISA() returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
  * used to designate a non-pointer isa; see the plcrash_async_objc_supports_nonptr_isa documentation for more details */
 #define TAGGED_ISA(img, isa) (\
