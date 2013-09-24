@@ -42,6 +42,18 @@ extern "C" {
  * @{
  */
 
+/**
+ * @internal
+ * Flag set for non-ptr ISAs. This flag is not ABI stable, and may change.
+ */
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG 0x1
+    
+/**
+ * @internal
+ * The pointer mask for non-pointer ISAs. This flag is not ABI stable, and may change; it is validated
+ * at development time via our unit tests.
+ */
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x1fffffff8ULL
 
 /**
  * @internal
@@ -100,6 +112,8 @@ typedef struct plcrash_async_objc_cache {
 
 plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *context);
 void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *context);
+    
+bool plcrash_async_objc_supports_nonptr_isa (cpu_type_t type);
 
 /**
  * A callback to invoke when an Objective-C method is found.
