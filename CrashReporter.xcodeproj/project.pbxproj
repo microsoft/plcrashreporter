@@ -4324,7 +4324,6 @@
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
-					"-Wno-tautological-constant-out-of-range-compare",
 					"-Wno-shorten-64-to-32",
 				);
 			};
@@ -4356,7 +4355,6 @@
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
-					"-Wno-tautological-constant-out-of-range-compare",
 					"-Wno-shorten-64-to-32",
 				);
 			};

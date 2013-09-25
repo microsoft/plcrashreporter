@@ -33,6 +33,7 @@
 #include "PLCrashAsyncMObject.h"
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
+#include "PLCrashMacros.h"
 #include "PLCrashFeatureConfig.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
@@ -232,10 +233,18 @@ inline bool dwarf_opstream::read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reade
     }
 
     /* Sanity check the size; this should never occur */
+    // This issue triggers clang's new 'tautological' warnings on some host platforms with some types of pl_vm_off_t.
+    // Testing tautological correctness and *documenting* the issue is the whole point of the check, even though it
+    // may always be true on some hosts.
+    // Since older versions of clang do not support -Wtautological, we have to enable -Wunknown-pragmas first
+    PLCR_PRAGMA_CLANG("clang diagnostic push");
+    PLCR_PRAGMA_CLANG("clang diagnostic ignored \"-Wunknown-pragmas\"");
+    PLCR_PRAGMA_CLANG("clang diagnostic ignored \"-Wtautological-constant-out-of-range-compare\"");
     if (size > PL_VM_OFF_MAX) {
         PLCF_DEBUG("GNU EH pointer size exceeds our maximum supported offset size");
         return false;
     }
+    PLCR_PRAGMA_CLANG("clang diagnostic pop");
 
     /* Advance the position */
     if (!skip(size)) {
