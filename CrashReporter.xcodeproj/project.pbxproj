@@ -818,6 +818,29 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
+		0522F8F617F2B31600AECBAB /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.mig;
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
+				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
+				"",
+			);
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
+		};
+		0522F8F717F2B48000AECBAB /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.mig;
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
+				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
+			);
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
+		};
 		059670E20EEFAD8C008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
@@ -901,6 +924,17 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
 			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-2.0.3/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+		};
+		6549BDE617E74C3E00605A2C /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.mig;
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
+				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
+			);
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
 		};
 /* End PBXBuildRule section */
 
@@ -2497,6 +2531,7 @@
 				05CD32670EE93DC3000FDE88 /* Run Tests */,
 			);
 			buildRules = (
+				0522F8F717F2B48000AECBAB /* PBXBuildRule */,
 				059670E20EEFAD8C008A0601 /* PBXBuildRule */,
 			);
 			dependencies = (
@@ -2572,6 +2607,7 @@
 				05E731F10EFA1AAB005EDFB7 /* Frameworks */,
 			);
 			buildRules = (
+				6549BDE617E74C3E00605A2C /* PBXBuildRule */,
 				05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */,
 			);
 			dependencies = (
@@ -2610,6 +2646,7 @@
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
 			buildRules = (
+				0522F8F617F2B31600AECBAB /* PBXBuildRule */,
 				05F411F10EF8DF79008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
