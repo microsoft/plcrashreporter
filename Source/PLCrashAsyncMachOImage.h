@@ -191,6 +191,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
 const plcrash_async_byteorder_t *plcrash_async_macho_byteorder (plcrash_async_macho_t *image);
 const struct mach_header *plcrash_async_macho_header (plcrash_async_macho_t *image);
 pl_vm_size_t plcrash_async_macho_header_size (plcrash_async_macho_t *image);
+    
+bool plcrash_async_macho_contains_address (plcrash_async_macho_t *image, pl_vm_address_t address);
 
 cpu_type_t plcrash_async_macho_cpu_type (plcrash_async_macho_t *image);
 cpu_subtype_t plcrash_async_macho_cpu_subtype (plcrash_async_macho_t *image);

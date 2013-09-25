@@ -31,8 +31,31 @@
 
 #import "PLCrashFeatureConfig.h"
 #import "PLCrashMachExceptionPort.h"
+#include <AvailabilityMacros.h>
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
+
+
+/*
+ * On Mac OS X, we are free to use the 64-bit mach_* APIs. No headers are provided for these,
+ * but the MIG defs are available and may be included directly in the build.
+ *
+ * On iOS, we can set MACH_EXCEPTION_CODES (which is vended, and necessary for arm64 operation),
+ * but we can not forward the mach_*-style messages via the mach_exc API.
+ *
+ * @sa mach_exceptions
+ */
+#if !TARGET_OS_IPHONE
+/* If true, the mach_exc* APIs are available. */
+#  define PL_MACH64_EXC_API 1
+
+/* If true, MACH_EXCEPTION_CODES should be used */
+#  define PL_MACH64_EXC_CODES 1
+#elif defined(__LP64__)
+
+/* If true, MACH_EXCEPTION_CODES should be used */
+#  define PL_MACH64_EXC_CODES 1
+#endif
 
 /**
  * @internal

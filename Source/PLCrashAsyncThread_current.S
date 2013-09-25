@@ -164,9 +164,6 @@ ret
 
 #elif defined(__arm64__)
 
-// TODO_ARM64: This was implemented blind; it assembles, but
-// it has not been tested.
-
 stp     fp, lr, [sp, #-16]!
 add     fp, sp, 0
 sub     sp, sp, #816 // Size of 340 for context
@@ -198,7 +195,7 @@ stp     x25, x26, [x0], #16
 stp     x27, x28, [x0], #16
 
 /* Fetch caller's frame pointer, save to fp */
-ldr     x2, [sp]
+ldr     x2, [fp]
 str     x2, [x0], #8
 
 /* Fetch the link register from our caller's frame */

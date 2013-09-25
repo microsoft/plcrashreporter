@@ -136,6 +136,8 @@ const char *plcrash_async_strerror (plcrash_error_t error) {
             return "Access denied";
         case PLCRASH_ENOTFOUND:
             return "Not found";
+        case PLCRASH_EINVALID_DATA:
+            return "The input data is in an unknown or invalid format.";
     }
     
     /* Should be unreachable */

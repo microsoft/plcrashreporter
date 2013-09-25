@@ -139,14 +139,14 @@
     size_t regcount = plcrash_async_thread_state_get_reg_count(&ts);
 
     /* Verify that all registers are marked as available */
-    STAssertTrue(__builtin_popcount(ts.valid_regs) >= regcount, @"Incorrect number of 1 bits");
+    STAssertTrue(__builtin_popcountl(ts.valid_regs) >= regcount, @"Incorrect number of 1 bits");
     for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
         STAssertTrue(plcrash_async_thread_state_has_reg(&ts, i), @"Register should be marked as set");
     }
 
     /* Clear all registers */
     plcrash_async_thread_state_clear_all_regs(&ts);
-    STAssertEquals(ts.valid_regs, (uint32_t)0, @"Registers not marked as clear");
+    STAssertEquals(ts.valid_regs, (uint64_t)0, @"Registers not marked as clear");
 
     /* Now set+get each individually */
     for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&ts); i++) {
@@ -157,7 +157,7 @@
         STAssertEquals(reg, (plcrash_greg_t)5, @"Unexpected register value");
         
         STAssertTrue(plcrash_async_thread_state_has_reg(&ts, i), @"Register should be marked as set");
-        STAssertEquals(__builtin_popcount(ts.valid_regs), i+1, @"Incorrect number of 1 bits");
+        STAssertEquals(__builtin_popcountl(ts.valid_regs), i+1, @"Incorrect number of 1 bits");
     }
 }
 
@@ -280,7 +280,7 @@
     
     /* Verify that all registers are marked as available */
     size_t regcount = plcrash_async_thread_state_get_reg_count(&thr_state);
-    STAssertTrue(__builtin_popcount(thr_state.valid_regs) >= regcount, @"Incorrect number of 1 bits");
+    STAssertTrue(__builtin_popcountl(thr_state.valid_regs) >= regcount, @"Incorrect number of 1 bits");
     for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&thr_state); i++) {
         STAssertTrue(plcrash_async_thread_state_has_reg(&thr_state, i), @"Register should be marked as set");
     }
@@ -327,7 +327,7 @@
     
     /* Verify that all registers are marked as available */
     size_t regcount = plcrash_async_thread_state_get_reg_count(&thr_state);
-    STAssertTrue(__builtin_popcount(thr_state.valid_regs) >= regcount, @"Incorrect number of 1 bits");
+    STAssertTrue(__builtin_popcountl(thr_state.valid_regs) >= regcount, @"Incorrect number of 1 bits");
     for (int i = 0; i < plcrash_async_thread_state_get_reg_count(&thr_state); i++) {
         STAssertTrue(plcrash_async_thread_state_has_reg(&thr_state, i), @"Register should be marked as set");
     }

@@ -93,13 +93,6 @@
 #import <mach/mach.h>
 #import <mach/exc.h>
 
-/* On Mac OS X, we are free to use the 64-bit mach_* APIs. No headers are provided for these,
- * but the MIG defs are available and may be included directly in the build */
-#if !TARGET_OS_IPHONE
-#define USE_MACH64_CODES 1
-#import "mach_exc.h"
-#endif
-
 /* The msgh_id to use for thread termination messages. This value most not conflict with the MACH_NOTIFY_NO_SENDERS msgh_id, which
  * is the only other value currently sent on the server notify port */
 #define PLCRASH_TERMINATE_MSGH_ID 0xDEADBEEF
@@ -108,16 +101,19 @@
 #error The allocated message identifiers conflict.
 #endif
 
-#if USE_MACH64_CODES
+#if PL_MACH64_EXC_API
+#  import "mach_exc.h"
 typedef __Request__mach_exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__mach_exception_raise_t PLReply_exception_raise_t;
-#define PLCRASH_DEFAULT_BEHAVIOR (EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES)
-#define PLCRASH_DEFAULT_THREAD_FLAVOR MACHINE_THREAD_STATE
 #else
 typedef __Request__exception_raise_t PLRequest_exception_raise_t;
 typedef __Reply__exception_raise_t PLReply_exception_raise_t;
-#define PLCRASH_DEFAULT_BEHAVIOR EXCEPTION_DEFAULT
-#define PLCRASH_DEFAULT_THREAD_FLAVOR MACHINE_THREAD_STATE
+#endif
+
+#ifdef PL_MACH64_EXC_CODES
+#  define PLCRASH_DEFAULT_BEHAVIOR (EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES)
+#else
+#  define PLCRASH_DEFAULT_BEHAVIOR EXCEPTION_DEFAULT
 #endif
 
 /**
@@ -478,7 +474,7 @@ struct plcrash_exception_server_context {
     result = [[[PLCrashMachExceptionPort alloc] initWithServerPort: port
                                                               mask: mask
                                                           behavior: PLCRASH_DEFAULT_BEHAVIOR
-                                                            flavor: PLCRASH_DEFAULT_THREAD_FLAVOR] autorelease];
+                                                            flavor: MACHINE_THREAD_STATE] autorelease];
 
     /* Drop our send right */
     mach_port_deallocate(mach_task_self(), port);
@@ -612,7 +608,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
     switch (behavior) {
         case EXCEPTION_DEFAULT:
             if (mach_exc_codes) {
-#if USE_MACH64_CODES
+#if PL_MACH64_EXC_API
                 return mach_exception_raise(port, thread, task, exception_type, code, code_count);
 #endif
             } else {
@@ -622,7 +618,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
             
         case EXCEPTION_STATE:
             if (mach_exc_codes) {
-#if USE_MACH64_CODES
+#if PL_MACH64_EXC_API
                 return mach_exception_raise_state(port, exception_type, code, code_count, &flavor, thread_state,
                                                   thread_state_count, thread_state, &thread_state_count);
 #endif
@@ -634,7 +630,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
             
         case EXCEPTION_STATE_IDENTITY:
             if (mach_exc_codes) {
-#if USE_MACH64_CODES
+#if PL_MACH64_EXC_API
                 return mach_exception_raise_state_identity(port, thread, task, exception_type, code,
                                                            code_count, &flavor, thread_state, thread_state_count, thread_state, &thread_state_count);
 #endif
@@ -764,13 +760,26 @@ static void *exception_server_thread (void *arg) {
             }
             
             /* Map 32-bit codes to 64-bit types. */
-#if !USE_MACH64_CODES
+#if !PL_MACH64_EXC_CODES
             mach_exception_data_type_t code64[request->codeCnt];
             for (mach_msg_type_number_t i = 0; i < request->codeCnt; i++) {
                 code64[i] = (uint32_t) request->code[i];
             }
-#else
+#elif PL_MACH64_EXC_API
             mach_exception_data_type_t *code64 = request->code;
+#else
+            /* XXX: When the mach_exc* types are unavailable (eg, iOS), we're forced to cast the 32-bit values to
+             * 64-bit values. Our check below verifies that we won't crash here, but this is arguably inappropriate
+             * use of the API. A request for access to the mach_* APIs has been filed as rdar://12939497 */
+    
+            /* We round up our allocation to a full page, and reallocate if the allocation isn't large enough;
+             * this verifies that the returned request is large enough to contain 64-bit mach exception code data,
+             * even when using the 32-bit types. */
+            if (request_size - sizeof(*request) < (sizeof(mach_exception_data_type_t) * request->codeCnt)) {
+                PLCF_DEBUG("Request is too small to contain 64-bit mach exception codes (0x%zu", request_size);
+                continue;
+            }
+            mach_exception_data_type_t *code64 = (mach_exception_data_type_t *) request->code;
 #endif
             
             /* Call our handler. */

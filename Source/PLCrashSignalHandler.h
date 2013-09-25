@@ -27,7 +27,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "PLCrashConstants.h"
+#import "PLCrashMacros.h"
 
 PLCR_C_BEGIN_DECLS
 

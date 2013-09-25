@@ -38,7 +38,7 @@
 }
 
 #define SETGEN(name, type, ts, regnum, value) {\
-    ts->valid_regs |= 1<<regnum; \
+    ts->valid_regs |= 1ULL<<regnum; \
     (ts->x86_state. type . __ ## name) = value; \
     break; \
 }

@@ -173,9 +173,8 @@ void plcrash_async_image_list_set_reading (plcrash_async_image_list_t *list, boo
 plcrash_async_image_t *plcrash_async_image_containing_address (plcrash_async_image_list_t *list, pl_vm_address_t address) {
     plcrash_async_image_t *image = NULL;
     while ((image = plcrash_async_image_list_next(list, image)) != NULL) {
-        if (address >= image->macho_image.header_addr && address < image->macho_image.header_addr + image->macho_image.text_size) {
+        if (plcrash_async_macho_contains_address(&image->macho_image, address))
             return image;
-        }
     }
 
     /* Not found */

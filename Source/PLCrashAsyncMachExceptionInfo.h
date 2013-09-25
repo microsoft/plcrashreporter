@@ -30,7 +30,7 @@
 #define PLCRASH_ASYNC_MACH_EXCEPTION_INFO_H
 
 #include "PLCrashFeatureConfig.h"
-#include "PLCrashConstants.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 

@@ -261,7 +261,7 @@ void plcrash_async_thread_state_copy (plcrash_async_thread_state_t *dest, const 
  * @param regnum The register number to test for.
  */
 bool plcrash_async_thread_state_has_reg (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
-    if ((thread_state->valid_regs & (1<<regnum)) != 0)
+    if ((thread_state->valid_regs & (1ULL<<regnum)) != 0)
         return true;
     
     return false;
@@ -274,7 +274,7 @@ bool plcrash_async_thread_state_has_reg (const plcrash_async_thread_state_t *thr
  * @param regnum The register to unset.
  */
 void plcrash_async_thread_state_clear_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
-    thread_state->valid_regs &= ~(1<<regnum);
+    thread_state->valid_regs &= ~(1ULL<<regnum);
 }
 
 
