@@ -268,7 +268,7 @@ private:
         dwarf_cfa_state_regnum_t regnum;
 
         /** DWARF register rule */
-        uint8_t rule;
+        plcrash_dwarf_cfa_reg_rule_t rule;
         
         /** Next entry in the list, or NULL */
         uint8_t next;
