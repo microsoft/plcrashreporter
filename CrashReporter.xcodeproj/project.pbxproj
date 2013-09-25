@@ -3888,7 +3888,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -3908,7 +3908,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
@@ -4014,6 +4014,7 @@
 		05CD32AC0EE94063000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -4043,6 +4044,7 @@
 		05CD32AD0EE94063000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
