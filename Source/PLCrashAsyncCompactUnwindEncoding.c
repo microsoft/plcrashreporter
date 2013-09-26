@@ -436,7 +436,7 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
      * in the list requires fewer elements; eg, position 0 may include 0-5, position 1 0-4, and position 2 0-3. This
      * allows us to allocate smaller overall ranges to represent all possible elements.
      */
-    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX == 6);
+    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 6);
     switch (count) {
         case 1:
             permutation |= renumbered[0];
@@ -497,7 +497,7 @@ permunreg[pos] = permutation/factor; \
 permutation -= (permunreg[pos]*factor); \
 } while (0)
     
-    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX == 6);
+    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 6);
 	switch (count) {
 		case 6:
             PERMUTE(0, 120);
@@ -841,25 +841,44 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
         uint32_t mode = encoding & UNWIND_ARM64_MODE_MASK;
         switch (mode) {
             case UNWIND_ARM64_MODE_FRAME:
-                // TODO
-                return PLCRASH_ENOTSUP;
-            
+                // Fall through
             case UNWIND_ARM64_MODE_FRAMELESS:
-                /*
-                 * The compact_unwind header documents this as UNWIND_ARM64_MODE_LEAF, but actually defines UNWIND_ARM64_MODE_FRAMELESS.
-                 * Reviewing the libunwind stepWithCompactEncodingFrameless() assembly demonstrates that this actually uses the
-                 * i386/x86-64 frameless immediate style of encoding an offset from the stack pointer. Unlike x86, however, the
-                 * offset is multipled by 16 bytes (since each register is stored in pairs), rather than the platform word size.
-                 *
-                 * The header discrepancy was reported as rdar://15057141
-                 */
-                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
-                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) * (sizeof(uint64_t) * 2);
+                if (mode == UNWIND_ARM64_MODE_FRAME) {
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
+                    entry->stack_offset = 0;
+                } else {
+                    /*
+                     * The compact_unwind header documents this as UNWIND_ARM64_MODE_LEAF, but actually defines UNWIND_ARM64_MODE_FRAMELESS.
+                     * Reviewing the libunwind stepWithCompactEncodingFrameless() assembly demonstrates that this actually uses the
+                     * i386/x86-64 frameless immediate style of encoding an offset from the stack pointer. Unlike x86, however, the
+                     * offset is multipled by 16 bytes (since each register is stored in pairs), rather than the platform word size.
+                     *
+                     * The header discrepancy was reported as rdar://15057141
+                     */
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
+                    entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) * (sizeof(uint64_t) * 2);
+                }
+                
                 
                 /* Extract the register values */
-                // TODO
+                size_t reg_pos = 0;
+                entry->register_count = 0;
+                #define CHECK_REG(name, val1, val2) do { \
+                    if ((encoding & name) == name) { \
+                        PLCF_ASSERT(entry->register_count < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX); \
+                        entry->register_list[reg_pos++] = val1; \
+                        entry->register_list[reg_pos++] = val2; \
+                        entry->register_count += 2; \
+                    } \
+                } while(0)
+                CHECK_REG(UNWIND_ARM64_FRAME_X19_X20_PAIR, PLCRASH_ARM64_X19, PLCRASH_ARM64_X20);
+                CHECK_REG(UNWIND_ARM64_FRAME_X21_X22_PAIR, PLCRASH_ARM64_X21, PLCRASH_ARM64_X22);
+                CHECK_REG(UNWIND_ARM64_FRAME_X23_X24_PAIR, PLCRASH_ARM64_X23, PLCRASH_ARM64_X24);
+                CHECK_REG(UNWIND_ARM64_FRAME_X25_X26_PAIR, PLCRASH_ARM64_X25, PLCRASH_ARM64_X26);
+                CHECK_REG(UNWIND_ARM64_FRAME_X27_X28_PAIR, PLCRASH_ARM64_X27, PLCRASH_ARM64_X28);
+                #undef CHECK_REG
                 
-                return PLCRASH_ENOTSUP;
+                return PLCRASH_ESUCCESS;
                 
             case UNWIND_ARM64_MODE_FRAME_OLD:
                 // TODO

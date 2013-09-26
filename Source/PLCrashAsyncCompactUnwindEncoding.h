@@ -113,8 +113,16 @@ typedef enum {
 } plcrash_async_cfe_entry_type_t;
 
 
+/** Maximum number of saved non-volatile registers that may be represented in an i386 or x86-64 CFE entry */
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_X86_MAX 6
+
+/** Maximum number of saved non-volatile registers that may be represented in an ARM64 CFE entry */
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_ARM64_MAX 10
+
+#define _PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 /** Maximum number of saved non-volatile registers that may be represented in a CFE entry */
-#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX 6
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX _PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX(PLCRASH_ASYNC_CFE_SAVED_REGISTER_X86_MAX, PLCRASH_ASYNC_CFE_SAVED_REGISTER_ARM64_MAX)
 
 /**
  * @internal
@@ -131,7 +139,8 @@ typedef struct plcrash_async_cfe_entry {
 
     /**
      * Encoded stack offset. Interpretation of this value depends on the CFE type:
-     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Unused.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Saved non-volatile registers may be found at ± offset from the frame
+     *   pointer (eg, ebp/rbp).
      * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD: The return address may be found at ± offset from the stack
      *   pointer (eg, esp/rsp), and is followed all non-volatile registers that need to be restored.
      * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT: The actual offset may be loaded from the target function's

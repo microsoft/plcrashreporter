@@ -536,6 +536,106 @@
 }
 
 /**
+ * Decode an ARM64 FP frame encoding.
+ */
+- (void) testARM64DecodeFrame {
+    /* Create a frame encoding */
+    uint32_t encoding = UNWIND_ARM64_MODE_FRAME |
+                        UNWIND_ARM64_FRAME_X21_X22_PAIR |
+                        UNWIND_ARM64_FRAME_X25_X26_PAIR;
+    
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    uint32_t reg_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    STAssertEquals(reg_count, (uint32_t)4, @"Incorrect register count extracted");
+    STAssertEquals(reg_offset, (uint32_t)0, @"Incorrect register offset extracted");
+
+    /* Extract the registers. */
+    plcrash_regnum_t expected_reg[] = {
+        PLCRASH_ARM64_X21,
+        PLCRASH_ARM64_X22,
+        PLCRASH_ARM64_X25,
+        PLCRASH_ARM64_X26
+    };
+    plcrash_regnum_t reg[reg_count];
+    
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    for (uint32_t i = 0; i < (sizeof(expected_reg)/sizeof(expected_reg[0])); i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Decode an ARM 'frameless' encoding.
+ */
+- (void) testARMDecodeFrameless {
+    /* Create a frame encoding, with registers saved at sp+1008 bytes */
+    const uint32_t encoded_stack_size = 1008;
+    uint32_t encoding = UNWIND_ARM64_MODE_FRAMELESS |
+                        INSERT_BITS((encoded_stack_size/16), UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) |
+                        UNWIND_ARM64_FRAME_X25_X26_PAIR |
+                        UNWIND_ARM64_FRAME_X27_X28_PAIR;
+    uint32_t encoded_regs_count = 4;
+
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    
+    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
+    STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    
+    /* Verify the register decoding */
+    plcrash_regnum_t reg[reg_count];
+    
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    
+    plcrash_regnum_t expected_reg[] = {
+        PLCRASH_ARM64_X25,
+        PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X27,
+        PLCRASH_ARM64_X28
+    };
+    for (uint32_t i = 0; i < (sizeof(expected_reg)/sizeof(expected_reg[0])); i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Decode an ARM64 DWARF encoding.
+ */
+- (void) testARM64DecodeDWARF {
+    /* Create a frame encoding */
+    const uint32_t encoded_dwarf_offset = 1020;
+    uint32_t encoding = UNWIND_ARM64_MODE_DWARF |
+        INSERT_BITS(encoded_dwarf_offset, UNWIND_ARM64_DWARF_SECTION_OFFSET);
+    
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
  * Test decoding of a single non-zero permuted register.
  *
  * An implementation bug in plcrash_async_cfe_register_decode() would always result in the last register element
