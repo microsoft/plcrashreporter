@@ -881,8 +881,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 return PLCRASH_ESUCCESS;
                 
             case UNWIND_ARM64_MODE_FRAME_OLD:
-                // TODO
-                __builtin_trap();
+                PLCF_DEBUG("Unhandled UNWIND_ARM64_MODE_FRAME_OLD encoding");
                 return PLCRASH_ENOTSUP;
                 
             case UNWIND_ARM64_MODE_DWARF:
