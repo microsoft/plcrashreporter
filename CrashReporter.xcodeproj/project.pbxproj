@@ -2549,7 +2549,6 @@
 				05CD32A50EE94062000FDE88 /* Resources */,
 				05CD32A60EE94062000FDE88 /* Sources */,
 				05CD32A70EE94062000FDE88 /* Frameworks */,
-				05CD32B50EE940C8000FDE88 /* Simulator Run Tests */,
 			);
 			buildRules = (
 				0596747A0EF0BA2F008A0601 /* PBXBuildRule */,
@@ -2822,21 +2821,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SRCROOT}/Tools/google-toolbox-for-mac-trunk-r582/UnitTesting/RunMacOSUnitTests.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		05CD32B50EE940C8000FDE88 /* Simulator Run Tests */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Simulator Run Tests";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Only run at build-time on the simulator\nif [ \"${PLATFORM_NAME}\" != iphoneos ]; then\n\t${SRCROOT}/Tools/google-toolbox-for-mac-trunk-r582/UnitTesting/RuniOSUnitTestsUnderSimulator.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
