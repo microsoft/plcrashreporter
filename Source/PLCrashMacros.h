@@ -39,4 +39,10 @@
 #   define PLCR_C_END_DECLS
 #endif
 
+#ifdef __clang__
+#  define PLCR_PRAGMA_CLANG(_p) _Pragma(_p)
+#else
+#  define PLCR_PRAGMA_CLANG(_p)
+#endif
+
 #endif /* PLCRASH_CONSTANTS_H */

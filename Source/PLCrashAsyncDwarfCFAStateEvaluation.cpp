@@ -303,10 +303,18 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                     return PLCRASH_ENOTSUP;
                 }
                 
+                // This issue triggers clang's new 'tautological' warnings on some host platforms with some types of pl_vm_off_t/pl_vm_address_t.
+                // Testing tautological correctness and *documenting* the issue is the whole point of the check, even though it
+                // may always be true on some hosts.
+                // Since older versions of clang do not support -Wtautological, we have to enable -Wunknown-pragmas first
+                PLCR_PRAGMA_CLANG("clang diagnostic push");
+                PLCR_PRAGMA_CLANG("clang diagnostic ignored \"-Wunknown-pragmas\"");
+                PLCR_PRAGMA_CLANG("clang diagnostic ignored \"-Wtautological-constant-out-of-range-compare\"");
                 if (pos > PL_VM_ADDRESS_MAX || pos > PL_VM_OFF_MAX) {
                     PLCF_DEBUG("DWARF expression position exceeds PL_VM_ADDRESS_MAX/PL_VM_OFF_MAX in CFA opcode stream");
                     return PLCRASH_ENOTSUP;
                 }
+                PLCR_PRAGMA_CLANG("clang diagnostic pop");
                 
                 /* Calculate the absolute address of the expression opcodes. */
                 pl_vm_address_t abs_addr;
@@ -364,10 +372,14 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 uint64_t length = dw_expr_read_uleb128();
 
                 /* Calculate the absolute address of the expression opcodes (including verifying that pos won't overflow when applying the offset). */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
                 if (pos > PL_VM_ADDRESS_MAX || pos > PL_VM_OFF_MAX) {
                     PLCF_DEBUG("DWARF expression position exceeds PL_VM_ADDRESS_MAX/PL_VM_OFF_MAX in DW_CFA_expression evaluation");
                     return PLCRASH_ENOTSUP;
                 }
+#pragma clang diagnostic pop
                 
                 pl_vm_address_t abs_addr;
                 if (!plcrash_async_address_apply_offset(opstream_target_address, pos, &abs_addr)) {

@@ -143,7 +143,7 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
 
 /* Evaluates to true if the length of @a _ecount * @a sizof(_etype) can not be represented
  * by size_t. */
-#define VERIFY_SIZE_T(_etype, _ecount) (SIZE_MAX / sizeof(_etype) < _ecount)
+#define VERIFY_SIZE_T(_etype, _ecount) (SIZE_MAX / sizeof(_etype) < (size_t) _ecount)
 
 /**
  * Return the compact frame encoding entry for @a pc via @a encoding, if available.

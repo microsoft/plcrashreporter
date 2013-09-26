@@ -29,7 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "CrashReporter.h"
 
-#import "PLCrashConstants.h"
+#import "PLCrashMacros.h"
 
 PLCR_EXPORT void plcrash_populate_error (NSError **error, PLCrashReporterError code, NSString *description, NSError *cause);
 PLCR_EXPORT void plcrash_populate_mach_error (NSError **error, kern_return_t kr, NSString *description);

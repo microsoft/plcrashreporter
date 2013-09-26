@@ -39,20 +39,20 @@
  */
 #ifndef CPU_SUBTYPE_ARM_V7S
 # define CPU_SUBTYPE_ARM_V7S 11
-#elif !TARGET_OS_IPHONE
-# error CPU_SUBTYPE_ARM_V7S is now defined by the SDK. Please remove this define.
+#elif (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
+# error CPU_SUBTYPE_ARM_V7S is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
 #ifndef CPU_TYPE_ARM64
-#define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
-#elif !TARGET_OS_IPHONE
-# error CPU_TYPE_ARM64 is now defined by the SDK. Please remove this define.
+# define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#elif (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
+# error CPU_TYPE_ARM64 is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
 #ifndef CPU_SUBTYPE_ARM_V8
 # define CPU_SUBTYPE_ARM_V8 13
-#elif !TARGET_OS_IPHONE
-# error CPU_SUBTYPE_ARM_V8 is now defined by the SDK. Please remove this define.
+#elif (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
+# error CPU_SUBTYPE_ARM_V8 is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
 
