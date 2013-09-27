@@ -1198,6 +1198,7 @@
 		05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashUncaughtExceptionHandler.h; sourceTree = "<group>"; };
 		05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashUncaughtExceptionHandlerTests.m; sourceTree = "<group>"; };
+		05BB3E0A17F61A6E00F464E9 /* PLCrashCompatConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashCompatConstants.h; sourceTree = "<group>"; };
 		05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportProcessorInfo.h; sourceTree = "<group>"; };
 		05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessorInfo.m; sourceTree = "<group>"; };
 		05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportMachineInfo.h; sourceTree = "<group>"; };
@@ -1650,6 +1651,7 @@
 		059672EF0EF0853A008A0601 /* Private API */ = {
 			isa = PBXGroup;
 			children = (
+				05BB3E0A17F61A6E00F464E9 /* PLCrashCompatConstants.h */,
 				0573B4281681097200395F2A /* Mach Exception Server */,
 				05BB84AE1364F5BC00D53B84 /* Signal Handler */,
 				05B929E517C9333800B051E3 /* ObjC Exception Handler */,

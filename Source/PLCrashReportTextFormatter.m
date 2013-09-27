@@ -32,29 +32,7 @@
 #import "CrashReporter/CrashReporter.h"
 
 #import "PLCrashReportTextFormatter.h"
-
-/*
- * XXX: The ARM64 CPU type, and ARM_V7S and ARM_V8 Mach-O CPU subtypes are not
- * defined in the Mac OS X 10.8 headers.
- */
-#ifndef CPU_SUBTYPE_ARM_V7S
-# define CPU_SUBTYPE_ARM_V7S 11
-#elif (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
-# error CPU_SUBTYPE_ARM_V7S is now defined by the minimum supported Mac SDK. Please remove this define.
-#endif
-
-#ifndef CPU_TYPE_ARM64
-# define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
-#elif (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
-# error CPU_TYPE_ARM64 is now defined by the minimum supported Mac SDK. Please remove this define.
-#endif
-
-#ifndef CPU_SUBTYPE_ARM_V8
-# define CPU_SUBTYPE_ARM_V8 13
-#elif (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_8))
-# error CPU_SUBTYPE_ARM_V8 is now defined by the minimum supported Mac SDK. Please remove this define.
-#endif
-
+#import "PLCrashCompatConstants.h"
 
 @interface PLCrashReportTextFormatter (PrivateAPI)
 NSInteger binaryImageSort(id binary1, id binary2, void *context);

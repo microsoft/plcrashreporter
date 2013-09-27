@@ -30,6 +30,7 @@
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashCompatConstants.h"
 
 #include <inttypes.h>
 

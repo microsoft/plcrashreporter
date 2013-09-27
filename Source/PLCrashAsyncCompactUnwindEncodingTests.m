@@ -30,7 +30,8 @@
 #import "PLCrashAsyncCompactUnwindEncoding.h"
 #import "PLCrashAsyncMachOImage.h"
 
-#include "PLCrashFeatureConfig.h"
+#import "PLCrashFeatureConfig.h"
+#import "PLCrashCompatConstants.h"
 
 #import <TargetConditionals.h>
 
