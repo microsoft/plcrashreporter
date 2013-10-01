@@ -35,6 +35,11 @@
 
 #include "PLCrashFeatureConfig.h"
 
+#if defined(__arm64__)
+#include "libunwind.h"
+#define LIBUNWIND_VERIFICATION 1
+#endif
+
 extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];
 extern void *unwind_tester_list_x86_64_frameless[];
@@ -169,8 +174,14 @@ bool unwind_test_harness (void) {
     for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
-            PLCF_DEBUG("Calling tests with %p", *tests);
+#ifdef LIBUNWIND_VERIFICATION
+            if (unwind_tester(*tests, &tc->expected_sp) != 0) {
+                PLCF_DEBUG("Tester returned error");
+                __builtin_trap();
+            }
+#else
             unwind_tester(*tests, &tc->expected_sp);
+#endif
         }
     }
     
@@ -272,10 +283,27 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
 // we unwind through the test function
 // and resume at caller (unwind_tester)
 void uwind_to_main () {
+#ifdef LIBUNWIND_VERIFICATION
+    unw_cursor_t cursor;
+	unw_context_t uc;
+	
+	unw_getcontext(&uc);
+	unw_init_local(&cursor, &uc);
+	if (unw_step(&cursor) > 0) {
+		// in test implementation
+		if (unw_step(&cursor) > 0) {
+			// in unwind_tester
+			unw_resume(&cursor);
+		}
+	}
+	// error if we got here
+	exit(1);
+#else
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */
     if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
         __builtin_trap();
     }
+#endif
 }
 
