@@ -47,8 +47,12 @@ extern void *unwind_tester_list_x86_frameless_big[];
 extern void *unwind_tester_list_x86_unusual[];
 extern void *unwind_tester_list_x86_disable_compact_frame[];
 
+extern void *unwind_tester_list_arm64_frame[];
+
 extern int unwind_tester (void *test, void **sp);
 extern void unwind_tester_target_ip (void);
+
+void uwind_to_main ();
 
 plframe_cursor_frame_reader_t *frame_readers_frame[] = {
     plframe_cursor_read_frame_ptr,
@@ -136,6 +140,11 @@ static struct unwind_test_case unwind_test_cases[] = {
      * some of the tests rely on constructs that cannot be represented with DWARF. */
     { unwind_tester_list_x86_unusual,      true,   frame_readers_dwarf },
     { unwind_tester_list_x86_unusual,      true,   NULL },
+#elif defined(__arm64__)
+    { unwind_tester_list_arm64_frame,   false,  frame_readers_frame },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_compact },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf },
+    { unwind_tester_list_arm64_frame,   true,   NULL },
 #endif
     { NULL, false }
 };
@@ -160,6 +169,7 @@ bool unwind_test_harness (void) {
     for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
+            PLCF_DEBUG("Calling tests with %p", *tests);
             unwind_tester(*tests, &tc->expected_sp);
         }
     }
