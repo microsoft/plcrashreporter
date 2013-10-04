@@ -36,21 +36,26 @@ _unwind_tester_list_arm64_frame:
 
 
 .text
-
 .align 2
-.cfi_startproc
 .globl _unwind_test_arm64_frame_no_reg
 _unwind_test_arm64_frame_no_reg:
 stp	fp, lr, [sp, #-16]!
 mov	fp, sp
-.cfi_offset w29, -16
 bl _uwind_to_main
 
 mov	sp, fp
 ldp	fp, lr, [sp], #16
 ret	lr
-.cfi_endproc
+Lunwind_test_arm64_frame_no_reg_end:
 
 .subsections_via_symbols
+.section	__LD,__compact_unwind,regular,debug
+.align	3
+.quad	(_unwind_test_arm64_frame_no_reg) ; Range Start
+Ltmp_range = (Lunwind_test_arm64_frame_no_reg_end-_unwind_test_arm64_frame_no_reg)
+.long	Ltmp_range ; Range Length
+.long	0x4000000       ; Compact Unwind Encoding
+.quad	0               ; Personality Function
+.quad	0               ; LSDA
 
 #endif /* __arm64__ */

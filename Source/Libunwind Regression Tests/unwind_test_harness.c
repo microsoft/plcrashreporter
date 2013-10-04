@@ -35,7 +35,8 @@
 
 #include "PLCrashFeatureConfig.h"
 
-#if defined(__arm64__)
+/* unw_resume() et al are unsupported on 32-bit ARM */
+#if 1 && !defined(__arm__)
 #include "libunwind.h"
 #define LIBUNWIND_VERIFICATION 1
 #endif
@@ -55,7 +56,7 @@ extern void *unwind_tester_list_x86_disable_compact_frame[];
 extern void *unwind_tester_list_arm64_frame[];
 
 extern int unwind_tester (void *test, void **sp);
-extern void unwind_tester_target_ip (void);
+extern void *unwind_tester_target_ip;
 
 void uwind_to_main ();
 
@@ -148,7 +149,7 @@ static struct unwind_test_case unwind_test_cases[] = {
 #elif defined(__arm64__)
     { unwind_tester_list_arm64_frame,   false,  frame_readers_frame },
     { unwind_tester_list_arm64_frame,   true,   frame_readers_compact },
-    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf },
+    // { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf },
     { unwind_tester_list_arm64_frame,   true,   NULL },
 #endif
     { NULL, false }
@@ -266,10 +267,21 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
-#else
+#elif (__i386__)
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_EBX, 0x12344321);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_ESI, 0x56788765);
                 VERIFY_NV_REG(&cursor, PLCRASH_X86_EDI, 0xABCDDCBA);
+#elif (__arm64__)
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X19, 0x1234567887654321);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X20, 0x02468ACEECA86420);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X21, 0x13579BDFFDB97531);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X22, 0x1122334455667788);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X23, 0x0022446688AACCEE);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X24, 0x0033557799BBDDFF);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X25, 0x00446688AACCEE00);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X26, 0x006688AACCEEFF11);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X27, 0x0088AACCEEFF1133);
+                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X28, 0xCAFEDEADF00DBEEF);
 #endif
                 return PLCRASH_ESUCCESS;
             }
@@ -292,12 +304,11 @@ void uwind_to_main () {
 	if (unw_step(&cursor) > 0) {
 		// in test implementation
 		if (unw_step(&cursor) > 0) {
-			// in unwind_tester
 			unw_resume(&cursor);
 		}
 	}
 	// error if we got here
-	exit(1);
+	__builtin_trap();
 #else
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */

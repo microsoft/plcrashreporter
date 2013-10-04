@@ -128,7 +128,7 @@
 		053347A917E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AA17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AB17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
-		053347AC17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
+		053347AC17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		053347AD17E16B0200C52E50 /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
 		054627A911D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */; };
 		054627AA11D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 054627A811D998BB007891C7 /* PLCrashReportTextFormatter.m */; };
@@ -147,7 +147,7 @@
 		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
-		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
+		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A15177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
 		05507A16177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
@@ -326,7 +326,7 @@
 		05B929F317C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
 		05BB3E1717FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; };
 		05BB3E1817FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; };
-		05BB3E1917FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; };
+		05BB3E1917FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05BB83CD1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
 		05BB83CE1364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
 		05BB83CF1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
