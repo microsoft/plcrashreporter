@@ -150,7 +150,7 @@ static struct unwind_test_case unwind_test_cases[] = {
 #elif defined(__arm64__)
     { unwind_tester_list_arm64_frame,   false,  frame_readers_frame },
     { unwind_tester_list_arm64_frame,   true,   frame_readers_compact },
-    // { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf },
     { unwind_tester_list_arm64_frame,   true,   NULL },
 #endif
     { NULL, false }
