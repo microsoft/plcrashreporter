@@ -29,6 +29,8 @@ _unwind_tester_list_arm64_frame:
 .quad   _unwind_test_arm64_frame_x19_x20
 .quad   _unwind_test_arm64_frame_x19_x20_x21_x22
 .quad   _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24
+.quad   _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26
+.quad   _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
 .quad	0
 
 
@@ -109,6 +111,67 @@ LT4_pushed_regs:
     ldp	fp, lr, [sp], #16
     ret	lr
 LT4_end:
+
+.globl _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26
+_unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26:
+    stp	fp, lr, [sp, #-16]!
+LT5_stp:
+    mov	fp, sp
+LT5_fp:
+    stp	x20, x19, [sp, #-16]!
+    stp	x22, x21, [sp, #-16]!
+    stp	x24, x23, [sp, #-16]!
+    stp	x26, x25, [sp, #-16]!
+LT5_pushed_regs:
+    mov x19, xzr
+    mov x20, xzr
+    mov x21, xzr
+    mov x22, xzr
+    mov x23, xzr
+    mov x24, xzr
+    mov x25, xzr
+    mov x26, xzr
+    bl _uwind_to_main
+    mov	sp, fp
+    ldp     x26, x25, [sp], #16
+    ldp     x24, x23, [sp], #16
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ldp	fp, lr, [sp], #16
+    ret	lr
+LT5_end:
+
+.globl _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
+_unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28:
+    stp	fp, lr, [sp, #-16]!
+LT6_stp:
+    mov	fp, sp
+LT6_fp:
+    stp	x20, x19, [sp, #-16]!
+    stp	x22, x21, [sp, #-16]!
+    stp	x24, x23, [sp, #-16]!
+    stp	x26, x25, [sp, #-16]!
+    stp	x28, x27, [sp, #-16]!
+LT6_pushed_regs:
+    mov x19, xzr
+    mov x20, xzr
+    mov x21, xzr
+    mov x22, xzr
+    mov x23, xzr
+    mov x24, xzr
+    mov x25, xzr
+    mov x26, xzr
+    mov x27, xzr
+    mov x28, xzr
+    bl _uwind_to_main
+    mov	sp, fp
+    ldp     x26, x25, [sp], #16
+    ldp     x24, x23, [sp], #16
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ldp	fp, lr, [sp], #16
+    ret	lr
+LT6_end:
 
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 EH_frame1:
@@ -211,5 +274,54 @@ fde_header 4, x19_x20_x21_x22_x23_x24
 .byte	0x98	; DW_CFA_offset, column 0x18
 .byte	0x8	; uleb128 0x8
 fde_footer 4
+
+fde_header 5, x19_x20_x21_x22_x23_x24_x25_x26
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x3	; uleb128 0x3
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x4	; uleb128 0x4
+
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x5	; uleb128 0x5
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x6	; uleb128 0x6
+
+.byte	0x97	; DW_CFA_offset, column 0x17
+.byte	0x7	; uleb128 0x7
+.byte	0x98	; DW_CFA_offset, column 0x18
+.byte	0x8	; uleb128 0x8
+
+.byte	0x99	; DW_CFA_offset, column 0x19
+.byte	0x9	; uleb128 0x9
+.byte	0x9A	; DW_CFA_offset, column 0x1A
+.byte	0xA	; uleb128 0xA
+fde_footer 5
+
+fde_header 6, x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x3	; uleb128 0x3
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x4	; uleb128 0x4
+
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x5	; uleb128 0x5
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x6	; uleb128 0x6
+
+.byte	0x97	; DW_CFA_offset, column 0x17
+.byte	0x7	; uleb128 0x7
+.byte	0x98	; DW_CFA_offset, column 0x18
+.byte	0x8	; uleb128 0x8
+
+.byte	0x99	; DW_CFA_offset, column 0x19
+.byte	0x9	; uleb128 0x9
+.byte	0x9A	; DW_CFA_offset, column 0x1A
+.byte	0xA	; uleb128 0xA
+
+.byte	0x9B	; DW_CFA_offset, column 0x1B
+.byte	0xB	; uleb128 0xB
+.byte	0x9C	; DW_CFA_offset, column 0x1C
+.byte	0xC	; uleb128 0xC
+fde_footer 6
 
 #endif /* __arm64__ */
