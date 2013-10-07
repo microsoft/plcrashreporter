@@ -63,8 +63,8 @@ LSCIE1:
 .align 3
 LECIE1:
 
-.globl _unwind_test_x86_64_frame_no_reg.eh
-_unwind_test_x86_64_frame_no_reg.eh:
+.globl _unwind_test_arm64_frame_no_reg.eh
+_unwind_test_arm64_frame_no_reg.eh:
 LSFDE3:
 .set L$set$5,LEFDE3-LASFDE3
 .long L$set$5 ; FDE Length
