@@ -39,6 +39,7 @@ _unwind_test_arm64_frame_no_reg:
 LT1_stp:
     mov	fp, sp
 LT1_fp:
+LT1_pushed_regs:
     bl _uwind_to_main
     mov	sp, fp
     ldp	fp, lr, [sp], #16
@@ -102,20 +103,26 @@ LSCIE1:
 .align 3
 LECIE1:
 
-.globl _unwind_test_arm64_frame_no_reg.eh
-_unwind_test_arm64_frame_no_reg.eh:
-LSFDE1:
-.set L$set$5,LEFDE1-LASFDE1
-.long L$set$5 ; FDE Length
-LASFDE1:
-.long	LASFDE1-EH_frame1 ; FDE CIE offset
-.quad	_unwind_test_arm64_frame_no_reg-. ; FDE initial location
-.set L$set$6,LT1_end-_unwind_test_arm64_frame_no_reg
-.quad L$set$6 ; FDE address range
+; Generates our common FDE header
+; Arguments:
+; 0 - Test number (eg, 0, 1, 2). Used to resolve local label names for
+;     the given test, and to name FDE-specific labels.
+; 1 - Test name (eg, x19_x20, no_reg)
+.macro fde_header
+.globl _unwind_test_arm64_frame_$1.eh
+_unwind_test_arm64_frame_$1.eh:
+LSFDE$0:
+.set Lset0$0,LEFDE$0-LASFDE$0
+.long Lset0$0 ; FDE Length
+LASFDE$0:
+.long	LASFDE$0-EH_frame1 ; FDE CIE offset
+.quad	_unwind_test_arm64_frame_$1-. ; FDE initial location
+.set Lset1$0,LT$0_end-_unwind_test_arm64_frame_$1
+.quad Lset1$0 ; FDE address range
 .byte	0x0 ; uleb128 0x0; Augmentation size
 .byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$7,LT1_stp-_unwind_test_arm64_frame_no_reg
-.long L$set$7
+.set Lset2$0,LT$0_stp-_unwind_test_arm64_frame_$1
+.long Lset2$0
 .byte	0xe ; DW_CFA_def_cfa_offset
 .byte	0x10 ; uleb128 0x10
 .byte	0x9D ; DW_CFA_offset, column 0x1D
@@ -123,76 +130,34 @@ LASFDE1:
 .byte	0x9E ; DW_CFA_offset, column 0x1E
 .byte	0x1	; uleb128 0x1
 .byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$8,LT1_fp-LT1_stp
-.long L$set$8
-.byte	0xd ; DW_CFA_def_cfa_register
-.byte	0x1D ; uleb128 0x1D
-.align 3
-LEFDE1:
-
-.globl _unwind_test_arm64_frame_x19_x20.eh
-_unwind_test_arm64_frame_x19_x20.eh:
-LSFDE2:
-.set L$set$10,LEFDE2-LASFDE2
-.long L$set$10 ; FDE Length
-LASFDE2:
-.long	LASFDE2-EH_frame1 ; FDE CIE offset
-.quad	_unwind_test_arm64_frame_x19_x20-. ; FDE initial location
-.set L$set$11,LT2_end-_unwind_test_arm64_frame_x19_x20
-.quad L$set$11 ; FDE address range
-.byte	0x0 ; uleb128 0x0; Augmentation size
-.byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$12,LT2_stp-_unwind_test_arm64_frame_x19_x20
-.long L$set$12
-.byte	0xe ; DW_CFA_def_cfa_offset
-.byte	0x10 ; uleb128 0x10
-.byte	0x9D ; DW_CFA_offset, column 0x1D
-.byte	0x2 ; uleb128 0x2
-.byte	0x9E ; DW_CFA_offset, column 0x1E
-.byte	0x1	; uleb128 0x1
-.byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$13,LT2_fp-LT2_stp
-.long L$set$13
+.set Lset3$0,LT$0_fp-LT1_stp
+.long Lset3$0
 .byte	0xd ; DW_CFA_def_cfa_register
 .byte	0x1D ; uleb128 0x1D
 .byte	0x4 ; DW_CFA_advance_loc4
 .set L$set$14,LT2_pushed_regs-LT2_fp
 .long L$set$14
+.endmacro
+
+; Generates our common FDE printer
+; Arguments:
+; 0 - Test number (eg, 0, 1, 2).
+.macro fde_footer
+.align 3
+LEFDE$0:
+.endmacro
+
+fde_header 1, no_reg
+fde_footer 1
+
+fde_header 2, x19_x20
 .byte	0x93	; DW_CFA_offset, column 0x13
 .byte	0x3	; uleb128 0x3
 .byte	0x94	; DW_CFA_offset, column 0x14
 .byte	0x4	; uleb128 0x4
-.align 3
-LEFDE2:
+fde_footer 2
 
-.globl _unwind_test_arm64_frame_x19_x20_x21_x22.eh
-_unwind_test_arm64_frame_x19_x20_x21_x22.eh:
-LSFDE3:
-.set L$set$20,LEFDE3-LASFDE3
-.long L$set$20 ; FDE Length
-LASFDE3:
-.long	LASFDE3-EH_frame1 ; FDE CIE offset
-.quad	_unwind_test_arm64_frame_x19_x20_x21_x22-. ; FDE initial location
-.set L$set$21,LT3_end-_unwind_test_arm64_frame_x19_x20_x21_x22
-.quad L$set$21 ; FDE address range
-.byte	0x0 ; uleb128 0x0; Augmentation size
-.byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$22,LT3_stp-_unwind_test_arm64_frame_x19_x20_x21_x22
-.long L$set$22
-.byte	0xe ; DW_CFA_def_cfa_offset
-.byte	0x10 ; uleb128 0x10
-.byte	0x9D ; DW_CFA_offset, column 0x1D
-.byte	0x2 ; uleb128 0x2
-.byte	0x9E ; DW_CFA_offset, column 0x1E
-.byte	0x1	; uleb128 0x1
-.byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$23,LT3_fp-LT3_stp
-.long L$set$23
-.byte	0xd ; DW_CFA_def_cfa_register
-.byte	0x1D ; uleb128 0x1D
-.byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$24,LT3_pushed_regs-LT3_fp
-.long L$set$24
+fde_header 3, x19_x20_x21_x22
 .byte	0x93	; DW_CFA_offset, column 0x13
 .byte	0x3	; uleb128 0x3
 .byte	0x94	; DW_CFA_offset, column 0x14
@@ -202,8 +167,6 @@ LASFDE3:
 .byte	0x5	; uleb128 0x5
 .byte	0x96	; DW_CFA_offset, column 0x16
 .byte	0x6	; uleb128 0x6
-
-.align 3
-LEFDE3:
+fde_footer 3
 
 #endif /* __arm64__ */
