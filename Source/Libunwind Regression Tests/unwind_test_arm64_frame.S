@@ -24,7 +24,8 @@
 .data
 .globl _unwind_tester_list_arm64_frame
 _unwind_tester_list_arm64_frame:
-.quad	_unwind_test_arm64_frame_no_reg
+.quad   _unwind_test_arm64_frame_no_reg
+.quad   _unwind_test_arm64_frame_x19_x20
 .quad	0
 
 
@@ -32,17 +33,32 @@ _unwind_tester_list_arm64_frame:
 .align 2
 .globl _unwind_test_arm64_frame_no_reg
 _unwind_test_arm64_frame_no_reg:
-LFB13:
-stp	fp, lr, [sp, #-16]!
-LCFI2:
-mov	fp, sp
-LCFI3:
-bl _uwind_to_main
-
-mov	sp, fp
-ldp	fp, lr, [sp], #16
-ret	lr
+    stp	fp, lr, [sp, #-16]!
+Lunwind_test_arm64_frame_no_reg_stp:
+    mov	fp, sp
+Lunwind_test_arm64_frame_no_reg_fp:
+    bl _uwind_to_main
+    mov	sp, fp
+    ldp	fp, lr, [sp], #16
+    ret	lr
 Lunwind_test_arm64_frame_no_reg_end:
+
+.globl _unwind_test_arm64_frame_x19_x20
+_unwind_test_arm64_frame_x19_x20:
+    stp	fp, lr, [sp, #-16]!
+Lunwind_test_arm64_frame_x19_x20_stp:
+    mov	fp, sp
+Lunwind_test_arm64_frame_x19_x20_fp:
+    stp	x20, x19, [sp, #-16]!
+Lunwind_test_arm64_frame_x19_x20_pushed_regs:
+    mov x19, xzr
+    mov x20, xzr
+    bl _uwind_to_main
+    mov	sp, fp
+    ldp     x20, x19, [sp], #16
+    ldp	fp, lr, [sp], #16
+    ret	lr
+Lunwind_test_arm64_frame_x19_x20_end:
 
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 EH_frame1:
@@ -65,17 +81,17 @@ LECIE1:
 
 .globl _unwind_test_arm64_frame_no_reg.eh
 _unwind_test_arm64_frame_no_reg.eh:
-LSFDE3:
-.set L$set$5,LEFDE3-LASFDE3
+LSFDE1:
+.set L$set$5,LEFDE1-LASFDE1
 .long L$set$5 ; FDE Length
-LASFDE3:
-.long	LASFDE3-EH_frame1 ; FDE CIE offset
-.quad	LFB13-. ; FDE initial location
-.set L$set$6,Lunwind_test_arm64_frame_no_reg_end-LFB13
+LASFDE1:
+.long	LASFDE1-EH_frame1 ; FDE CIE offset
+.quad	_unwind_test_arm64_frame_no_reg-. ; FDE initial location
+.set L$set$6,Lunwind_test_arm64_frame_no_reg_end-_unwind_test_arm64_frame_no_reg
 .quad L$set$6 ; FDE address range
 .byte	0x0 ; uleb128 0x0; Augmentation size
 .byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$7,LCFI2-LFB13
+.set L$set$7,Lunwind_test_arm64_frame_no_reg_stp-_unwind_test_arm64_frame_no_reg
 .long L$set$7
 .byte	0xe ; DW_CFA_def_cfa_offset
 .byte	0x10 ; uleb128 0x10
@@ -84,11 +100,46 @@ LASFDE3:
 .byte	0x9E ; DW_CFA_offset, column 0x1E
 .byte	0x1	; uleb128 0x1
 .byte	0x4 ; DW_CFA_advance_loc4
-.set L$set$8,LCFI3-LCFI2
+.set L$set$8,Lunwind_test_arm64_frame_no_reg_fp-Lunwind_test_arm64_frame_no_reg_stp
 .long L$set$8
 .byte	0xd ; DW_CFA_def_cfa_register
 .byte	0x1D ; uleb128 0x1D
 .align 3
-LEFDE3:
+LEFDE1:
+
+.globl _unwind_test_arm64_frame_x19_x20.eh
+_unwind_test_arm64_frame_x19_x20.eh:
+LSFDE2:
+.set L$set$10,LEFDE2-LASFDE2
+.long L$set$10 ; FDE Length
+LASFDE2:
+.long	LASFDE2-EH_frame1 ; FDE CIE offset
+.quad	_unwind_test_arm64_frame_x19_x20-. ; FDE initial location
+.set L$set$11,Lunwind_test_arm64_frame_x19_x20_end-_unwind_test_arm64_frame_x19_x20
+.quad L$set$11 ; FDE address range
+.byte	0x0 ; uleb128 0x0; Augmentation size
+.byte	0x4 ; DW_CFA_advance_loc4
+.set L$set$12,Lunwind_test_arm64_frame_x19_x20_stp-_unwind_test_arm64_frame_x19_x20
+.long L$set$12
+.byte	0xe ; DW_CFA_def_cfa_offset
+.byte	0x10 ; uleb128 0x10
+.byte	0x9D ; DW_CFA_offset, column 0x1D
+.byte	0x2 ; uleb128 0x2
+.byte	0x9E ; DW_CFA_offset, column 0x1E
+.byte	0x1	; uleb128 0x1
+.byte	0x4 ; DW_CFA_advance_loc4
+.set L$set$13,Lunwind_test_arm64_frame_x19_x20_fp-Lunwind_test_arm64_frame_x19_x20_stp
+.long L$set$13
+.byte	0xd ; DW_CFA_def_cfa_register
+.byte	0x1D ; uleb128 0x1D
+.byte	0x4 ; DW_CFA_advance_loc4
+.set L$set$14,Lunwind_test_arm64_frame_x19_x20_pushed_regs-Lunwind_test_arm64_frame_x19_x20_fp
+.long L$set$14
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x3	; uleb128 0x3
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x4	; uleb128 0x4
+.align 3
+LEFDE2:
 
 #endif /* __arm64__ */
