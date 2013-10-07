@@ -1,8 +1,8 @@
 /*
- Copyright (c) 2008-2011 Apple Inc. All rights reserved.
-
- Rewritten for arm64 by Plausible Labs
  Copyright (c) 2013 Plausible Labs, Inc. All rights reserved.
+ Copyright (c) 2008-2011 Apple Inc. All rights reserved.
+ 
+ Ported from the x86-64 tests to arm64 by Plausible Labs.
 
  This file contains Original Code and/or Modifications of Original Code
  as defined in and that are subject to the Apple Public Source License
