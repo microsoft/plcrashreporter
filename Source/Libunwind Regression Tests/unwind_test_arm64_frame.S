@@ -26,6 +26,7 @@
 _unwind_tester_list_arm64_frame:
 .quad   _unwind_test_arm64_frame_no_reg
 .quad   _unwind_test_arm64_frame_x19_x20
+.quad   _unwind_test_arm64_frame_x19_x20_x21_x22
 .quad	0
 
 
@@ -59,6 +60,27 @@ LT2_pushed_regs:
     ldp	fp, lr, [sp], #16
     ret	lr
 LT2_end:
+
+.globl _unwind_test_arm64_frame_x19_x20_x21_x22
+_unwind_test_arm64_frame_x19_x20_x21_x22:
+    stp	fp, lr, [sp, #-16]!
+LT3_stp:
+    mov	fp, sp
+LT3_fp:
+    stp	x20, x19, [sp, #-16]!
+    stp	x22, x21, [sp, #-16]!
+LT3_pushed_regs:
+    mov x19, xzr
+    mov x20, xzr
+    mov x21, xzr
+    mov x22, xzr
+    bl _uwind_to_main
+    mov	sp, fp
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ldp	fp, lr, [sp], #16
+    ret	lr
+LT3_end:
 
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 EH_frame1:
@@ -141,5 +163,46 @@ LASFDE2:
 .byte	0x4	; uleb128 0x4
 .align 3
 LEFDE2:
+
+.globl _unwind_test_arm64_frame_x19_x20_x21_x22.eh
+_unwind_test_arm64_frame_x19_x20_x21_x22.eh:
+LSFDE3:
+.set L$set$20,LEFDE3-LASFDE3
+.long L$set$20 ; FDE Length
+LASFDE3:
+.long	LASFDE3-EH_frame1 ; FDE CIE offset
+.quad	_unwind_test_arm64_frame_x19_x20_x21_x22-. ; FDE initial location
+.set L$set$21,LT3_end-_unwind_test_arm64_frame_x19_x20_x21_x22
+.quad L$set$21 ; FDE address range
+.byte	0x0 ; uleb128 0x0; Augmentation size
+.byte	0x4 ; DW_CFA_advance_loc4
+.set L$set$22,LT3_stp-_unwind_test_arm64_frame_x19_x20_x21_x22
+.long L$set$22
+.byte	0xe ; DW_CFA_def_cfa_offset
+.byte	0x10 ; uleb128 0x10
+.byte	0x9D ; DW_CFA_offset, column 0x1D
+.byte	0x2 ; uleb128 0x2
+.byte	0x9E ; DW_CFA_offset, column 0x1E
+.byte	0x1	; uleb128 0x1
+.byte	0x4 ; DW_CFA_advance_loc4
+.set L$set$23,LT3_fp-LT3_stp
+.long L$set$23
+.byte	0xd ; DW_CFA_def_cfa_register
+.byte	0x1D ; uleb128 0x1D
+.byte	0x4 ; DW_CFA_advance_loc4
+.set L$set$24,LT3_pushed_regs-LT3_fp
+.long L$set$24
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x3	; uleb128 0x3
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x4	; uleb128 0x4
+
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x5	; uleb128 0x5
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x6	; uleb128 0x6
+
+.align 3
+LEFDE3:
 
 #endif /* __arm64__ */

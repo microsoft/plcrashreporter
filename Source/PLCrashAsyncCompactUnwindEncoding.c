@@ -873,11 +873,11 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                         entry->register_count += 2; \
                     } \
                 } while(0)
-                CHECK_REG(UNWIND_ARM64_FRAME_X19_X20_PAIR, PLCRASH_ARM64_X19, PLCRASH_ARM64_X20);
-                CHECK_REG(UNWIND_ARM64_FRAME_X21_X22_PAIR, PLCRASH_ARM64_X21, PLCRASH_ARM64_X22);
-                CHECK_REG(UNWIND_ARM64_FRAME_X23_X24_PAIR, PLCRASH_ARM64_X23, PLCRASH_ARM64_X24);
-                CHECK_REG(UNWIND_ARM64_FRAME_X25_X26_PAIR, PLCRASH_ARM64_X25, PLCRASH_ARM64_X26);
                 CHECK_REG(UNWIND_ARM64_FRAME_X27_X28_PAIR, PLCRASH_ARM64_X27, PLCRASH_ARM64_X28);
+                CHECK_REG(UNWIND_ARM64_FRAME_X25_X26_PAIR, PLCRASH_ARM64_X25, PLCRASH_ARM64_X26);
+                CHECK_REG(UNWIND_ARM64_FRAME_X23_X24_PAIR, PLCRASH_ARM64_X23, PLCRASH_ARM64_X24);
+                CHECK_REG(UNWIND_ARM64_FRAME_X21_X22_PAIR, PLCRASH_ARM64_X21, PLCRASH_ARM64_X22);
+                CHECK_REG(UNWIND_ARM64_FRAME_X19_X20_PAIR, PLCRASH_ARM64_X19, PLCRASH_ARM64_X20);
                 #undef CHECK_REG
 
                 /* Offset depends on the number of saved registers */

@@ -558,10 +558,10 @@
 
     /* Extract the registers. */
     plcrash_regnum_t expected_reg[] = {
+        PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X25,
         PLCRASH_ARM64_X22,
         PLCRASH_ARM64_X21,
-        PLCRASH_ARM64_X26,
-        PLCRASH_ARM64_X25
     };
     plcrash_regnum_t reg[reg_count];
     
@@ -603,10 +603,10 @@
     plcrash_async_cfe_entry_register_list(&entry, reg);
     
     plcrash_regnum_t expected_reg[] = {
-        PLCRASH_ARM64_X26,
-        PLCRASH_ARM64_X25,
         PLCRASH_ARM64_X28,
         PLCRASH_ARM64_X27,
+        PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X25,
     };
     for (uint32_t i = 0; i < (sizeof(expected_reg)/sizeof(expected_reg[0])); i++) {
         STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
