@@ -35,8 +35,9 @@
 
 #include "PLCrashFeatureConfig.h"
 
-/* unw_resume() et al are unsupported on 32-bit ARM */
-#if 1 && !defined(__arm__)
+/* Enable libunwind verification on supported platforms.
+ * unw_resume() et al are unsupported on 32-bit ARM */
+#if !defined(__arm__)
 #include "libunwind.h"
 #define LIBUNWIND_VERIFICATION 1
 #endif
@@ -175,14 +176,10 @@ bool unwind_test_harness (void) {
     for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
-#ifdef LIBUNWIND_VERIFICATION
             if (unwind_tester(*tests, &tc->expected_sp) != 0) {
                 PLCF_DEBUG("Tester returned error");
                 __builtin_trap();
             }
-#else
-            unwind_tester(*tests, &tc->expected_sp);
-#endif
         }
     }
     
@@ -196,7 +193,7 @@ bool unwind_test_harness (void) {
         __builtin_trap(); \
     } \
     if (reg != value) { \
-        PLCF_DEBUG("Incorrect register value"); \
+        PLCF_DEBUG("Incorrect register value (%" PRIx64 " != %" PRIx64 ")", (uint64_t)reg, (uint64_t)value); \
         __builtin_trap(); \
     } \
 } while (0)
@@ -295,6 +292,14 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
 // we unwind through the test function
 // and resume at caller (unwind_tester)
 void uwind_to_main () {
+    /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
+     * and verify that the expected registers are restored. */
+    if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
+        __builtin_trap();
+    }
+
+    /* Now use libunwind to verify that our test data can be unwound sucessfully. This will unwind the current
+     * thread to the unwind_tester, and we'll never return from this function */
 #ifdef LIBUNWIND_VERIFICATION
     unw_cursor_t cursor;
 	unw_context_t uc;
@@ -309,12 +314,6 @@ void uwind_to_main () {
 	}
 	// error if we got here
 	__builtin_trap();
-#else
-    /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
-     * and verify that the expected registers are restored. */
-    if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
-        __builtin_trap();
-    }
 #endif
 }
 
