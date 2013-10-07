@@ -551,17 +551,17 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    uint32_t reg_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    int32_t reg_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_count, (uint32_t)4, @"Incorrect register count extracted");
-    STAssertEquals(reg_offset, (uint32_t)0, @"Incorrect register offset extracted");
+    STAssertEquals(reg_offset, (int32_t)-32, @"Incorrect register offset extracted (wanted -32, got %"PRId32")", reg_offset);
 
     /* Extract the registers. */
     plcrash_regnum_t expected_reg[] = {
-        PLCRASH_ARM64_X21,
         PLCRASH_ARM64_X22,
-        PLCRASH_ARM64_X25,
-        PLCRASH_ARM64_X26
+        PLCRASH_ARM64_X21,
+        PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X25
     };
     plcrash_regnum_t reg[reg_count];
     
@@ -603,10 +603,10 @@
     plcrash_async_cfe_entry_register_list(&entry, reg);
     
     plcrash_regnum_t expected_reg[] = {
-        PLCRASH_ARM64_X25,
         PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X25,
+        PLCRASH_ARM64_X28,
         PLCRASH_ARM64_X27,
-        PLCRASH_ARM64_X28
     };
     for (uint32_t i = 0; i < (sizeof(expected_reg)/sizeof(expected_reg[0])); i++) {
         STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);

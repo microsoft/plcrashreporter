@@ -830,6 +830,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->register_count = 0;
                 return PLCRASH_ESUCCESS;
                 
+                
             default:
                 PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
                 return PLCRASH_ENOTSUP;
@@ -846,7 +847,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
             case UNWIND_ARM64_MODE_FRAMELESS:
                 if (mode == UNWIND_ARM64_MODE_FRAME) {
                     entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
-                    entry->stack_offset = 0;
+                    /* The stack offset will be calculated below */
                 } else {
                     /*
                      * The compact_unwind header documents this as UNWIND_ARM64_MODE_LEAF, but actually defines UNWIND_ARM64_MODE_FRAMELESS.
@@ -867,8 +868,8 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 #define CHECK_REG(name, val1, val2) do { \
                     if ((encoding & name) == name) { \
                         PLCF_ASSERT(entry->register_count < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX); \
-                        entry->register_list[reg_pos++] = val1; \
                         entry->register_list[reg_pos++] = val2; \
+                        entry->register_list[reg_pos++] = val1; \
                         entry->register_count += 2; \
                     } \
                 } while(0)
@@ -878,7 +879,11 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 CHECK_REG(UNWIND_ARM64_FRAME_X25_X26_PAIR, PLCRASH_ARM64_X25, PLCRASH_ARM64_X26);
                 CHECK_REG(UNWIND_ARM64_FRAME_X27_X28_PAIR, PLCRASH_ARM64_X27, PLCRASH_ARM64_X28);
                 #undef CHECK_REG
-                
+
+                /* Offset depends on the number of saved registers */
+                if (mode == UNWIND_ARM64_MODE_FRAME)
+                    entry->stack_offset = -(entry->register_count * sizeof(uint64_t));
+            
                 return PLCRASH_ESUCCESS;
                 
             case UNWIND_ARM64_MODE_FRAME_OLD:
