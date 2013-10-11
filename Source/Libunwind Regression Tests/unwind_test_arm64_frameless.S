@@ -36,34 +36,30 @@ _unwind_tester_list_arm64_frameless:
 ; encoding for our callers (which doesn't support save/restore of LR).
 .globl _unwind_test_arm64_frameless_trampoline
 _unwind_test_arm64_frameless_trampoline:
-    stp	fp, lr, [sp, #-16]! ; Set up our frame
+    stp	fp, x1, [sp, #-16]! ; Set up our frame
 Ltr_stp:
     mov	fp, sp
 Ltr_fp:
-    stp	x20, x19, [sp, #-16]!
+    str	lr, [sp, #-16]! ; Save our actual LR
 Ltr_pushed_regs:
-    mov x19, lr ; Save our own link register in x19; this is what we'll use with DWARF as the RA register.
-    mov x20, x0 ; The caller's link register in x20; this will be restored as LR when unwinding.
-Ltr_saved_regs:
     bl _uwind_to_main
+    ldr lr, [sp], #16
     mov	sp, fp
-    mov x0, x20 ; Fetch our caller's link register before restoring x19, x20
-    ldp x20, x19, [sp], #16
-    ldp	fp, lr, [sp], #16
+    ldp	fp, x0, [sp], #16
     ret	lr
 Ltr_end:
 
 .globl _unwind_test_arm64_frameless_no_reg
 _unwind_test_arm64_frameless_no_reg:
-sub     sp, sp, #16
+    sub     sp, sp, #16
 LT1_sub_sp:
-mov     x0, lr ; Pass our link register to the trampoline for preservation
-bl      _unwind_test_arm64_frameless_trampoline
-; The following is skipped during unwind, in which case we rely on the trampoline DWARF correctly
-; restoring our original LR value.
-mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
-add     sp, sp, #16
-ret
+    mov     x0, lr ; Pass our link register to the trampoline for preservation
+    bl      _unwind_test_arm64_frameless_trampoline
+    ; The following is skipped during unwind, in which case we rely on the trampoline DWARF correctly
+    ; restoring our original LR value.
+    mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
+    add     sp, sp, #16
+    ret
 LT1_end:
 
 ; Custom DWARF unwind data that allows us to unwind from our trampoline while restoring
@@ -79,7 +75,7 @@ LSCIE0:
 .ascii "zR\0" ; CIE Augmentation
 .byte	0x1 ; uleb128 0x1; CIE Code Alignment Factor
 .byte	0x78 ; sleb128 -8; CIE Data Alignment Factor
-.byte	0x13 ; CIE RA Column -- we abuse x19 as an unwind LR.
+.byte	0x0 ; CIE RA Column -- we restore the actual LR to x0
 .byte	0x1 ; uleb128 0x1; Augmentation size
 .byte	0x10 ; FDE Encoding (pcrel)
 .byte	0xc ; DW_CFA_def_cfa
@@ -106,8 +102,6 @@ LASFDE0:
 .byte	0x10 ; uleb128 0x10
 .byte	0x9D ; DW_CFA_offset, column 0x1D
 .byte	0x2 ; uleb128 0x2
-.byte	0x9E ; DW_CFA_offset, column 0x1E
-.byte	0x1	; uleb128 0x1
 .byte	0x4 ; DW_CFA_advance_loc4
 .set LsetT3,Ltr_fp-Ltr_stp
 .long LsetT3
@@ -116,16 +110,8 @@ LASFDE0:
 .byte	0x4 ; DW_CFA_advance_loc4
 .set LsetT4,Ltr_pushed_regs-Ltr_fp
 .long LsetT4
-.byte	0x93	; DW_CFA_offset, column 0x13
-.byte	0x3	; uleb128 0x3
-.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x80 ; DW_CFA_offset, column 0x0 (x0)
 .byte	0x4	; uleb128 0x4
-.byte	0x4 ; DW_CFA_advance_loc4
-.set LsetT5,Ltr_saved_regs-Ltr_pushed_regs
-.long LsetT5
-.byte   0x09 ; DW_CFA_register
-.byte   0x1E ; uleb128 0x1E (lr, x30)
-.byte   0x14 ; uleb128 0x14 (x20)
 LEFDE0:
 
 
