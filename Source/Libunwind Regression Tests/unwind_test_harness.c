@@ -55,6 +55,7 @@ extern void *unwind_tester_list_x86_unusual[];
 extern void *unwind_tester_list_x86_disable_compact_frame[];
 
 extern void *unwind_tester_list_arm64_frame[];
+extern void *unwind_tester_list_arm64_frameless[];
 
 extern int unwind_tester (void *test, void **sp);
 extern void *unwind_tester_target_ip;
@@ -91,7 +92,12 @@ struct unwind_test_case {
 
     /** Frame reader(s) to use for this test, or NULL to use the default set */
     plframe_cursor_frame_reader_t **frame_readers_dwarf;
-
+    
+    /* The number of frames that must be unwound prior to reaching the test function.
+     * This may be larger in the case that the test case requires a trampoline
+     * prior to calling the unwind function. */
+    uint32_t intermediate_frames;
+    
     /** The stack pointer value that should be restored. This is populated by
      * the unwind_tester() */
     void *expected_sp;
@@ -100,58 +106,64 @@ struct unwind_test_case {
 static struct unwind_test_case unwind_test_cases[] = {
 #ifdef __x86_64__
     /* DWARF unwinding (no compact frame data) */
-    { unwind_tester_list_x86_64_disable_compact_frame, true, frame_readers_dwarf },
+    { unwind_tester_list_x86_64_disable_compact_frame, true, frame_readers_dwarf, 2},
 
     /* frame-based unwinding */
-    { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame },
-    { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact },
-    { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_64_frame,      true,   NULL },
+    { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame, 2},
+    { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact, 2 },
+    { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_64_frame,      true,   NULL, 2 },
     
     /* frameless unwinding */
-    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_compact },
-    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_64_frameless,  true,   NULL },
+    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_compact, 2 },
+    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_64_frameless,  true,   NULL, 2 },
     
     /* frameless unwinding (large frames) */
-    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_compact },
-    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_64_frameless,      true,   NULL },
+    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_compact, 2 },
+    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_64_frameless,      true,   NULL, 2 },
 
     /* Unusual test cases. These can't be run with /only/ the compact unwinder, as
      * some of the tests rely on constructs that cannot be represented with DWARF. */
-    { unwind_tester_list_x86_64_unusual,      true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_64_unusual,      true,   NULL },
+    { unwind_tester_list_x86_64_unusual,      true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_64_unusual,      true,   NULL, 2 },
 
 #elif defined(__i386__)
     /* DWARF unwinding (no compact frame data) */
-    { unwind_tester_list_x86_disable_compact_frame, true, frame_readers_dwarf },
+    { unwind_tester_list_x86_disable_compact_frame, true, frame_readers_dwarf, 2 },
 
     /* frame-based unwinding */
-    { unwind_tester_list_x86_frame,      false,  frame_readers_frame },
-    { unwind_tester_list_x86_frame,      true,   frame_readers_compact },
-    { unwind_tester_list_x86_frame,      true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_frame,      true,   NULL },
+    { unwind_tester_list_x86_frame,      false,  frame_readers_frame, 2 },
+    { unwind_tester_list_x86_frame,      true,   frame_readers_compact, 2 },
+    { unwind_tester_list_x86_frame,      true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_frame,      true,   NULL, 2 },
     
     /* frameless unwinding */
-    { unwind_tester_list_x86_frameless,  true,   frame_readers_compact },
-    { unwind_tester_list_x86_frameless,  true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_frameless,  true,   NULL },
+    { unwind_tester_list_x86_frameless,  true,   frame_readers_compact, 2 },
+    { unwind_tester_list_x86_frameless,  true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_frameless,  true,   NULL, 2 },
     
     /* frameless unwinding (large frames) */
-    { unwind_tester_list_x86_frameless_big,  true,   frame_readers_compact },
-    { unwind_tester_list_x86_frameless_big,  true,   frame_readers_dwarf },
+    { unwind_tester_list_x86_frameless_big,  true,   frame_readers_compact, 2 },
+    { unwind_tester_list_x86_frameless_big,  true,   frame_readers_dwarf, 2 },
     { unwind_tester_list_x86_frameless,      true,   NULL },
 
     /* Unusual test cases. These can't be run with /only/ the compact unwinder, as
      * some of the tests rely on constructs that cannot be represented with DWARF. */
-    { unwind_tester_list_x86_unusual,      true,   frame_readers_dwarf },
-    { unwind_tester_list_x86_unusual,      true,   NULL },
+    { unwind_tester_list_x86_unusual,      true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_x86_unusual,      true,   NULL, 2 },
 #elif defined(__arm64__)
-    { unwind_tester_list_arm64_frame,   false,  frame_readers_frame },
-    { unwind_tester_list_arm64_frame,   true,   frame_readers_compact },
-    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf },
-    { unwind_tester_list_arm64_frame,   true,   NULL },
+    /* frame-based unwinding */
+    { unwind_tester_list_arm64_frame,   false,  frame_readers_frame, 2 },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_compact, 2 },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf, 2 },
+    { unwind_tester_list_arm64_frame,   true,   NULL, 2},
+    
+    /* frameless unwinding */
+    { unwind_tester_list_arm64_frameless,  true,   frame_readers_compact, 3 },
+//    { unwind_tester_list_arm64_frameless,  true,   frame_readers_dwarf, 3 },
+//    { unwind_tester_list_arm64_frameless,  true,   NULL, 3 },
 #endif
     { NULL, false }
 };
@@ -177,7 +189,7 @@ bool unwind_test_harness (void) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
             if (unwind_tester(*tests, &tc->expected_sp) != 0) {
-                PLCF_DEBUG("Tester returned error");
+                PLCF_DEBUG("Tester returned error for %p", *tests);
                 __builtin_trap();
             }
         }
@@ -220,72 +232,72 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
     /* Initialie our cursor */
     plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
 
-    if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
-
-        if (plframe_cursor_next(&cursor) == PLFRAME_ESUCCESS) {
-            // now in test function
-            
-            /* Unwind using the specified readers */
-            if (readers != NULL) {
-                /* Issue the read */
-                err = plframe_cursor_next_with_readers(&cursor, global_harness_state.test_case->frame_readers_dwarf, reader_count);
-            } else {
-                /* Use default readers */
-                err = plframe_cursor_next(&cursor);
-            }
-            
-            if (err == PLFRAME_ESUCCESS) {
-                // now in unwind_tester
-                
-                /* Verify that we unwound to the correct IP */
-                plcrash_greg_t ip;
-                if (plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &ip) != PLFRAME_ESUCCESS) {
-                    PLCF_DEBUG("Could not fetch IP from register state");
-                    __builtin_trap();
-                }
-                if (ip != (plcrash_greg_t) unwind_tester_target_ip) {
-                    PLCF_DEBUG("Incorrect IP. ip=%" PRIx64 " target_ip=%" PRIx64, (uint64_t) ip, (uint64_t) unwind_tester_target_ip);
-                    __builtin_trap();
-                }
-
-                /*
-                 * For tests using DWARF or compact unwinding, verify that non-volatile registers have been restored.
-                 * This replaces the use of thread state restoration in the original libunwind tests; rather
-                 * than letting the unwind_tester() perform these register value tests,
-                 * we just do so ourselves
-                 */
-                if (!global_harness_state.test_case->restores_callee_registers)
-                    return PLCRASH_ESUCCESS;
-
-                VERIFY_NV_REG(&cursor, PLCRASH_REG_SP, (plcrash_greg_t)global_harness_state.test_case->expected_sp);
-#ifdef __x86_64__
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
-#elif (__i386__)
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_EBX, 0x12344321);
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_ESI, 0x56788765);
-                VERIFY_NV_REG(&cursor, PLCRASH_X86_EDI, 0xABCDDCBA);
-#elif (__arm64__)
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X19, 0x1234567887654321);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X20, 0x02468ACEECA86420);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X21, 0x13579BDFFDB97531);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X22, 0x1122334455667788);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X23, 0x0022446688AACCEE);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X24, 0x0033557799BBDDFF);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X25, 0x00446688AACCEE00);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X26, 0x006688AACCEEFF11);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X27, 0x0088AACCEEFF1133);
-                VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X28, 0xCAFEDEADF00DBEEF);
-#endif
-                return PLCRASH_ESUCCESS;
-            }
+    /* Walk the frames until we hit the test function */
+    for (uint32_t i = 0; i < global_harness_state.test_case->intermediate_frames; i++) {
+        if ((err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
+            PLCF_DEBUG("Step failed: %d", err);
+            return PLCRASH_EINVAL;
         }
     }
+
+    /* Now in test function; Unwind using the specified readers */
+    if (readers != NULL) {
+        /* Issue the read */
+        err = plframe_cursor_next_with_readers(&cursor, global_harness_state.test_case->frame_readers_dwarf, reader_count);
+    } else {
+        /* Use default readers */
+        err = plframe_cursor_next(&cursor);
+    }
     
-    return PLCRASH_EINVAL;
+    if (err != PLFRAME_ESUCCESS) {
+        PLCF_DEBUG("Step within test function failed: %d", err);
+        return PLFRAME_EINVAL;
+    }
+
+    /* Now in unwind_tester; verify that we unwound to the correct IP */
+    plcrash_greg_t ip;
+    if (plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &ip) != PLFRAME_ESUCCESS) {
+        PLCF_DEBUG("Could not fetch IP from register state");
+        __builtin_trap();
+    }
+    if (ip != (plcrash_greg_t) unwind_tester_target_ip) {
+        PLCF_DEBUG("Incorrect IP. ip=%" PRIx64 " target_ip=%" PRIx64, (uint64_t) ip, (uint64_t) unwind_tester_target_ip);
+        __builtin_trap();
+    }
+
+    /*
+     * For tests using DWARF or compact unwinding, verify that non-volatile registers have been restored.
+     * This replaces the use of thread state restoration in the original libunwind tests; rather
+     * than letting the unwind_tester() perform these register value tests,
+     * we just do so ourselves
+     */
+    if (!global_harness_state.test_case->restores_callee_registers)
+        return PLCRASH_ESUCCESS;
+
+    VERIFY_NV_REG(&cursor, PLCRASH_REG_SP, (plcrash_greg_t)global_harness_state.test_case->expected_sp);
+#ifdef __x86_64__
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
+#elif (__i386__)
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_EBX, 0x12344321);
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_ESI, 0x56788765);
+    VERIFY_NV_REG(&cursor, PLCRASH_X86_EDI, 0xABCDDCBA);
+#elif (__arm64__)
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X19, 0x1234567887654321);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X20, 0x02468ACEECA86420);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X21, 0x13579BDFFDB97531);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X22, 0x1122334455667788);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X23, 0x0022446688AACCEE);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X24, 0x0033557799BBDDFF);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X25, 0x00446688AACCEE00);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X26, 0x006688AACCEEFF11);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X27, 0x0088AACCEEFF1133);
+    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X28, 0xCAFEDEADF00DBEEF);
+#endif
+    return PLCRASH_ESUCCESS;
 }
 
 // called by test function
@@ -306,13 +318,24 @@ void uwind_to_main () {
 	
 	unw_getcontext(&uc);
 	unw_init_local(&cursor, &uc);
-	if (unw_step(&cursor) > 0) {
-		// in test implementation
-		if (unw_step(&cursor) > 0) {
-			unw_resume(&cursor);
-		}
-	}
-	// error if we got here
+    
+    /* Walk the frames until we hit the test function. Unlike our unwinder, the first frame is implicitly
+     * available -- a step isn't required, and so we skip one call to unw_step(). */
+    for (uint32_t i = 1; i < global_harness_state.test_case->intermediate_frames; i++) {
+        int ret;
+        if ((ret = unw_step(&cursor)) <= 0) {
+            PLCF_DEBUG("Step failed: %d", ret);
+            __builtin_trap();
+        }
+    }
+
+
+    /* Once inside the test implementation, resume */
+    if (unw_step(&cursor) > 0) {
+        unw_resume(&cursor);
+    }
+
+	/* This should be unreachable */
 	__builtin_trap();
 #endif
 }
