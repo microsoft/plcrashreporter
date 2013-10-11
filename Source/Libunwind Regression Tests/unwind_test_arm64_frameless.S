@@ -36,7 +36,7 @@ _unwind_tester_list_arm64_frameless:
 ; encoding for our callers (which doesn't support save/restore of LR).
 .globl _unwind_test_arm64_frameless_trampoline
 _unwind_test_arm64_frameless_trampoline:
-    stp	fp, x1, [sp, #-16]! ; Set up our frame
+    stp	fp, x0, [sp, #-16]! ; Set up our frame
 Ltr_stp:
     mov	fp, sp
 Ltr_fp:
@@ -102,6 +102,8 @@ LASFDE0:
 .byte	0x10 ; uleb128 0x10
 .byte	0x9D ; DW_CFA_offset, column 0x1D
 .byte	0x2 ; uleb128 0x2
+.byte	0x9E ; DW_CFA_offset, column 0x1E
+.byte	0x1	; uleb128 0x1
 .byte	0x4 ; DW_CFA_advance_loc4
 .set LsetT3,Ltr_fp-Ltr_stp
 .long LsetT3
