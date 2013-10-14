@@ -77,11 +77,14 @@ Ltester_target_ip: ; IP that we'll unwind to
 
 ; verify that non-volatile registers still contain magic values
 .macro cmp64
-lit64 x1, $1, $2, $3, $4
-cmp x1, x$0
-b.eq L2
+lit64   x1, $1, $2, $3, $4
+cmp     x1, x$0
+b.eq    Leq$0
 mov     x0, #$0
+b       L2
+Leq$0:
 .endmacro
+
 cmp64   19, 0x1234, 0x5678, 0x8765, 0x4321
 cmp64   20, 0x0246, 0x8ACE, 0xECA8, 0x6420
 cmp64   21, 0x1357, 0x9BDF, 0xFDB9, 0x7531
