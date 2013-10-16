@@ -572,6 +572,28 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::apply_state (task_t
         }
     }
 
+    /*
+     * If the IP was not restored via a saved register above, the CIE's return_address_register may reference a live register in the
+     * current thread state. This will occur in leaf frames on platforms where lr has not been saved to the stack.
+     */
+    if (!plcrash_async_thread_state_has_reg(new_thread_state, PLCRASH_REG_IP)) {
+        /* Map the return_address_register number */
+        plcrash_regnum_t pl_regnum;
+        if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, cie_info->return_address_register, &pl_regnum)) {
+            PLCF_DEBUG("Return address register value references an unsupported DWARF register: 0x%" PRIx64, (uint64_t) cie_info->return_address_register);
+            return PLCRASH_EINVAL;
+        }
+        
+        /* Verify that the register is available */
+        if (!plcrash_async_thread_state_has_reg(thread_state, pl_regnum)) {
+            PLCF_DEBUG("CIE return_address_register references a register that is not available from the current thread state: %s", plcrash_async_thread_state_get_reg_name(thread_state, pl_regnum));
+            return PLCRASH_EINVAL;
+        }
+
+        /* Copy the value to the new state's IP. */
+        plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, plcrash_async_thread_state_get_reg(thread_state, pl_regnum));
+    }
+
     return PLCRASH_ESUCCESS;
 }
 
