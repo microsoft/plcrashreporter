@@ -98,6 +98,22 @@ struct unwind_test_case {
      * prior to calling the unwind function. */
     uint32_t intermediate_frames;
     
+    /* If true, the test function is incompatible with Apple's unwinder. Currently, the only
+     * case where this is true is with our ARM64 leaf unwind functions.
+     *
+     * To test leaf unwinding, we implement a custom trampoline to allow preserving/restoring
+     * the leaf function's state despite the leaf function not actually being a leaf function --
+     * we issue a function call back into our test harness (via the trampoline).
+     *
+     * To implement this, we make use of DWARF's CIE return_address_register, which allows us to
+     * preserve the ARM64 link register while also correctly unwinding frome the trampoline. However,
+     * Apple's libunwind ignores return_address_register, preventing its use for our leaf
+     * tests.
+     *
+     * A request for supporting return_address_register was filed as rdar://15223612.
+     */
+    bool skip_libunwind_verification;
+
     /** The stack pointer value that should be restored. This is populated by
      * the unwind_tester() */
     void *expected_sp;
@@ -106,64 +122,64 @@ struct unwind_test_case {
 static struct unwind_test_case unwind_test_cases[] = {
 #ifdef __x86_64__
     /* DWARF unwinding (no compact frame data) */
-    { unwind_tester_list_x86_64_disable_compact_frame, true, frame_readers_dwarf, 2},
+    { unwind_tester_list_x86_64_disable_compact_frame, true, frame_readers_dwarf, 2 },
 
     /* frame-based unwinding */
-    { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame, 2},
-    { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact, 2 },
-    { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_64_frame,      true,   NULL, 2 },
+    { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame,    2 },
+    { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact,  2 },
+    { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf,    2 },
+    { unwind_tester_list_x86_64_frame,      true,   NULL,                   2 },
     
     /* frameless unwinding */
-    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_compact, 2 },
-    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_64_frameless,  true,   NULL, 2 },
+    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_compact,  2 },
+    { unwind_tester_list_x86_64_frameless,  true,   frame_readers_dwarf,    2 },
+    { unwind_tester_list_x86_64_frameless,  true,   NULL,                   2 },
     
     /* frameless unwinding (large frames) */
-    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_compact, 2 },
-    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_64_frameless,      true,   NULL, 2 },
+    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_compact,  2 },
+    { unwind_tester_list_x86_64_frameless_big,  true,   frame_readers_dwarf,    2 },
+    { unwind_tester_list_x86_64_frameless,      true,   NULL,                   2 },
 
     /* Unusual test cases. These can't be run with /only/ the compact unwinder, as
      * some of the tests rely on constructs that cannot be represented with DWARF. */
-    { unwind_tester_list_x86_64_unusual,      true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_64_unusual,      true,   NULL, 2 },
+    { unwind_tester_list_x86_64_unusual,      true,   frame_readers_dwarf,  2 },
+    { unwind_tester_list_x86_64_unusual,      true,   NULL,                 2 },
 
 #elif defined(__i386__)
     /* DWARF unwinding (no compact frame data) */
     { unwind_tester_list_x86_disable_compact_frame, true, frame_readers_dwarf, 2 },
 
     /* frame-based unwinding */
-    { unwind_tester_list_x86_frame,      false,  frame_readers_frame, 2 },
+    { unwind_tester_list_x86_frame,      false,  frame_readers_frame,   2 },
     { unwind_tester_list_x86_frame,      true,   frame_readers_compact, 2 },
-    { unwind_tester_list_x86_frame,      true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_frame,      true,   NULL, 2 },
+    { unwind_tester_list_x86_frame,      true,   frame_readers_dwarf,   2 },
+    { unwind_tester_list_x86_frame,      true,   NULL,                  2 },
     
     /* frameless unwinding */
     { unwind_tester_list_x86_frameless,  true,   frame_readers_compact, 2 },
-    { unwind_tester_list_x86_frameless,  true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_frameless,  true,   NULL, 2 },
+    { unwind_tester_list_x86_frameless,  true,   frame_readers_dwarf,   2 },
+    { unwind_tester_list_x86_frameless,  true,   NULL,                  2 },
     
     /* frameless unwinding (large frames) */
     { unwind_tester_list_x86_frameless_big,  true,   frame_readers_compact, 2 },
-    { unwind_tester_list_x86_frameless_big,  true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_frameless,      true,   NULL },
+    { unwind_tester_list_x86_frameless_big,  true,   frame_readers_dwarf,   2 },
+    { unwind_tester_list_x86_frameless,      true,   NULL,                  2 },
 
     /* Unusual test cases. These can't be run with /only/ the compact unwinder, as
      * some of the tests rely on constructs that cannot be represented with DWARF. */
     { unwind_tester_list_x86_unusual,      true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_x86_unusual,      true,   NULL, 2 },
+    { unwind_tester_list_x86_unusual,      true,   NULL,                2 },
 #elif defined(__arm64__)
     /* frame-based unwinding */
-    { unwind_tester_list_arm64_frame,   false,  frame_readers_frame, 2 },
-    { unwind_tester_list_arm64_frame,   true,   frame_readers_compact, 2 },
-    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf, 2 },
-    { unwind_tester_list_arm64_frame,   true,   NULL, 2},
-    
+    { unwind_tester_list_arm64_frame,   false,  frame_readers_frame,        2 },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_compact,      2 },
+    { unwind_tester_list_arm64_frame,   true,   frame_readers_dwarf,        2 },
+    { unwind_tester_list_arm64_frame,   true,   NULL,                       2 },
+
     /* frameless unwinding */
-    { unwind_tester_list_arm64_frameless,  true,   frame_readers_compact, 3 },
-//    { unwind_tester_list_arm64_frameless,  true,   frame_readers_dwarf, 3 },
-//    { unwind_tester_list_arm64_frameless,  true,   NULL, 3 },
+    { unwind_tester_list_arm64_frameless,  true,   frame_readers_compact,   3,  true },
+    { unwind_tester_list_arm64_frameless,  true,   frame_readers_dwarf,     3,  true },
+    { unwind_tester_list_arm64_frameless,  true,   NULL,                    3,  true },
 #endif
     { NULL, false }
 };
@@ -188,8 +204,9 @@ bool unwind_test_harness (void) {
     for (struct unwind_test_case *tc = unwind_test_cases; tc->test_list != NULL; tc++) {
         global_harness_state.test_case = tc;
         for (void **tests = tc->test_list; *tests != NULL; tests++) {
-            if (unwind_tester(*tests, &tc->expected_sp) != 0) {
-                PLCF_DEBUG("Tester returned error for %p", *tests);
+            int ret;
+            if ((ret = unwind_tester(*tests, &tc->expected_sp)) != 0) {
+                PLCF_DEBUG("Tester returned error %d for %p", ret, *tests);
                 __builtin_trap();
             }
         }
@@ -313,6 +330,9 @@ void uwind_to_main () {
     /* Now use libunwind to verify that our test data can be unwound sucessfully. This will unwind the current
      * thread to the unwind_tester, and we'll never return from this function */
 #ifdef LIBUNWIND_VERIFICATION
+    if (global_harness_state.test_case->skip_libunwind_verification)
+        return;
+
     unw_cursor_t cursor;
 	unw_context_t uc;
 	
@@ -324,7 +344,7 @@ void uwind_to_main () {
     for (uint32_t i = 1; i < global_harness_state.test_case->intermediate_frames; i++) {
         int ret;
         if ((ret = unw_step(&cursor)) <= 0) {
-            PLCF_DEBUG("Step failed: %d", ret);
+            PLCF_DEBUG("Step %" PRIu32 " failed: %d", i, ret);
             __builtin_trap();
         }
     }
