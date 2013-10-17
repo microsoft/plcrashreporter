@@ -270,6 +270,9 @@
 
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
@@ -314,6 +317,9 @@
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     STAssertEquals(stack_adjust, encoded_stack_adjust, @"Incorrect stack adjustment decoded");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
@@ -418,7 +424,7 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, -encoded_reg_rbp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
-
+    
     /* Extract the registers. Up to 5 may be encoded */
     plcrash_regnum_t expected_reg[] = {
         PLCRASH_X86_64_R12,
@@ -461,6 +467,9 @@
     
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
     
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
@@ -574,9 +583,9 @@
 }
 
 /**
- * Decode an ARM 'frameless' encoding.
+ * Decode an ARM64 'frameless' encoding.
  */
-- (void) testARMDecodeFrameless {
+- (void) testARM64DecodeFrameless {
     /* Create a frame encoding, with registers saved at sp+1008 bytes */
     const uint32_t encoded_stack_size = 1008;
     uint32_t encoding = UNWIND_ARM64_MODE_FRAMELESS |
@@ -597,6 +606,9 @@
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
+    /* Verify the return address register value */
+    STAssertEquals(PLCRASH_ARM64_LR, plcrash_async_cfe_entry_return_address_register(&entry), @"Incorrect return address register set");
+
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
     
@@ -765,11 +777,8 @@
 
 
 /*
- * CFE is only supported on x86/x86-64, and the iOS SDK does not provide the thread state APIs necessary
- * to perform these tests on ARM
- *
- * TODO: Disable the entire CFE subsystem on ARM, eg, via a configuration system for enabling/disabling
- * functionality.
+ * The iOS SDK does not provide the thread state APIs necessary
+ * to perform the x86 tests on ARM
  */
 #if PLCRASH_ASYNC_THREAD_X86_SUPPORT
 - (void) testx86_64_ApplyFramePTRState {

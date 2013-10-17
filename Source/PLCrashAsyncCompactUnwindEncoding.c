@@ -703,6 +703,9 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                     entry->stack_adjust = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_ADJUST) * sizeof(uint32_t);
                 }
 
+                /* x86-64 frameless functions always use a stack-pushed return address */
+                entry->return_address_register = PLCRASH_REG_INVALID;
+
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
@@ -793,6 +796,9 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                     entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_SIZE);
                     entry->stack_adjust = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_ADJUST) * sizeof(uint64_t);
                 }
+
+                /* x86-64 frameless functions always use a stack-pushed return address */
+                entry->return_address_register = PLCRASH_REG_INVALID;
                 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
@@ -859,6 +865,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                      */
                     entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
                     entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) * (sizeof(uint64_t) * 2);
+                    entry->return_address_register = PLCRASH_ARM64_LR;
                 }
                 
                 
@@ -956,6 +963,17 @@ intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry)
  */
 uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *entry) {
     return entry->stack_adjust;
+}
+
+/**
+ * The register to be used for the return address (eg, such as in a ARM leaf frame, where the return address may be found in lr),
+ * or PLCRASH_REG_INVALID if the return address is found on the stack. This value is only supported for the following CFE types:
+ *
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD and
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT
+ */
+plcrash_regnum_t plcrash_async_cfe_entry_return_address_register (plcrash_async_cfe_entry_t *entry) {
+    return entry->return_address_register;
 }
 
 /**
@@ -1098,26 +1116,44 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                 stack_size = indirect + entry->stack_adjust;
             }
 
-            /* Compute the address of the saved registers */
-            plcrash_greg_t sp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
-            pl_vm_address_t retaddr = sp + stack_size - greg_size;
-            saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
+            /* Compute the stack pointer address */
+            plcrash_greg_t sp = stack_size + plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, sp);
 
-            /* Original SP is found just before the return address. */
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr + greg_size);
+            if (entry->return_address_register == PLCRASH_REG_INVALID) {
+                /* Return address is on the stack */
+                pl_vm_address_t retaddr = sp + stack_size - greg_size;
+                saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
 
-            /* Read the saved return address */
-            err = plcrash_async_task_memcpy(task, (pl_vm_address_t) retaddr, 0, dest, greg_size);
-            if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) retaddr, err);
-                return err;
-            }
-            
-            if (x64) {
-                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg64[0]);
+                /* Original SP is found just before the return address. */
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr + greg_size);
+
+                /* Read the saved return address */
+                err = plcrash_async_task_memcpy(task, (pl_vm_address_t) retaddr, 0, dest, greg_size);
+                if (err != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) retaddr, err);
+                    return err;
+                }
+                
+                if (x64) {
+                    plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg64[0]);
+                } else {
+                    plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[0]);
+                }
             } else {
-                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[0]);
+                /* Return address is in a register; verify that the register is available */
+                if (!plcrash_async_thread_state_has_reg(thread_state, entry->return_address_register)) {
+                    PLCF_DEBUG("The specified return_address_register '%s' is not available", plcrash_async_thread_state_get_reg_name(thread_state, entry->return_address_register));
+                    return PLCRASH_ENOTFOUND;
+                }
+                
+                /* Copy the return address value to the new thread state's IP */
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, plcrash_async_thread_state_get_reg(thread_state, entry->return_address_register));
+                
+                /* Saved registers are found below the new stack pointer. */
+                saved_reg_addr = sp - (greg_size * entry->register_count); /* sp - [saved registers] */
             }
+
             break;
         }
 

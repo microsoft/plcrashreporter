@@ -178,8 +178,8 @@ static struct unwind_test_case unwind_test_cases[] = {
 
     /* frameless unwinding */
     { unwind_tester_list_arm64_frameless,  true,   frame_readers_compact,   3,  true },
-    { unwind_tester_list_arm64_frameless,  true,   frame_readers_dwarf,     3,  true },
-    { unwind_tester_list_arm64_frameless,  true,   NULL,                    3,  true },
+    //{ unwind_tester_list_arm64_frameless,  true,   frame_readers_dwarf,     3,  true },
+    //{ unwind_tester_list_arm64_frameless,  true,   NULL,                    3,  true },
 #endif
     { NULL, false }
 };

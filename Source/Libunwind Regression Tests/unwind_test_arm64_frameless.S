@@ -26,6 +26,11 @@
 .globl _unwind_tester_list_arm64_frameless
 _unwind_tester_list_arm64_frameless:
 .quad   _unwind_test_arm64_frameless_no_reg
+.quad   _unwind_test_arm64_frameless_x19_x20
+.quad   _unwind_test_arm64_frameless_x19_x20_x21_x22
+.quad   _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24
+.quad   _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26
+.quad   _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
 .quad	0
 
 .text
@@ -61,6 +66,113 @@ LT1_sub_sp:
     add     sp, sp, #16
     ret
 LT1_end:
+
+.globl _unwind_test_arm64_frameless_x19_x20
+_unwind_test_arm64_frameless_x19_x20:
+    stp     x20, x19, [sp, #-16]!
+    mov     x19, xzr
+    mov     x20, xzr
+LT2_sub_sp:
+    mov     x0, lr ; Pass our link register to the trampoline for preservation
+    bl      _unwind_test_arm64_frameless_trampoline
+    mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
+    ldp     x20, x19, [sp], #16
+    ret
+LT2_end:
+
+.globl _unwind_test_arm64_frameless_x19_x20_x21_x22
+_unwind_test_arm64_frameless_x19_x20_x21_x22:
+    stp     x20, x19, [sp, #-16]!
+    stp     x22, x21, [sp, #-16]!
+    mov     x19, xzr
+    mov     x20, xzr
+    mov     x21, xzr
+    mov     x22, xzr
+LT3_sub_sp:
+    mov     x0, lr ; Pass our link register to the trampoline for preservation
+    bl      _unwind_test_arm64_frameless_trampoline
+    mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ret
+LT3_end:
+
+.globl _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24
+_unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24:
+    stp     x20, x19, [sp, #-16]!
+    stp     x22, x21, [sp, #-16]!
+    stp     x24, x23, [sp, #-16]!
+    mov     x19, xzr
+    mov     x20, xzr
+    mov     x21, xzr
+    mov     x22, xzr
+    mov     x23, xzr
+    mov     x24, xzr
+LT4_sub_sp:
+    mov     x0, lr ; Pass our link register to the trampoline for preservation
+    bl      _unwind_test_arm64_frameless_trampoline
+    mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
+    ldp     x24, x23, [sp], #16
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ret
+LT4_end:
+
+
+.globl _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26
+_unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26:
+    stp     x20, x19, [sp, #-16]!
+    stp     x22, x21, [sp, #-16]!
+    stp     x24, x23, [sp, #-16]!
+    stp     x26, x25, [sp, #-16]!
+    mov     x19, xzr
+    mov     x20, xzr
+    mov     x21, xzr
+    mov     x22, xzr
+    mov     x23, xzr
+    mov     x24, xzr
+    mov     x24, xzr
+    mov     x26, xzr
+LT5_sub_sp:
+    mov     x0, lr ; Pass our link register to the trampoline for preservation
+    bl      _unwind_test_arm64_frameless_trampoline
+    mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
+    ldp     x26, x25, [sp], #16
+    ldp     x24, x23, [sp], #16
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ret
+LT5_end:
+
+.globl _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
+_unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28:
+    stp     x20, x19, [sp, #-16]!
+    stp     x22, x21, [sp, #-16]!
+    stp     x24, x23, [sp, #-16]!
+    stp     x26, x25, [sp, #-16]!
+    stp     x28, x27, [sp, #-16]!
+    mov     x19, xzr
+    mov     x20, xzr
+    mov     x21, xzr
+    mov     x22, xzr
+    mov     x23, xzr
+    mov     x24, xzr
+    mov     x24, xzr
+    mov     x26, xzr
+    mov     x27, xzr
+    mov     x28, xzr
+LT6_sub_sp:
+    mov     x0, lr ; Pass our link register to the trampoline for preservation
+    bl      _unwind_test_arm64_frameless_trampoline
+    mov     lr, x0 ; Restore the link register that was saved and returned by our trampoline
+    ldp     x28, x27, [sp], #16
+    ldp     x26, x25, [sp], #16
+    ldp     x24, x23, [sp], #16
+    ldp     x22, x21, [sp], #16
+    ldp     x20, x19, [sp], #16
+    ret
+LT6_end:
+
 
 ; Custom DWARF unwind data that allows us to unwind from our trampoline while restoring
 ; the *caller's* link register. This allows us to implement 'leaf' functions that actually
@@ -136,31 +248,12 @@ LSCIE1:
 .align 3
 LECIE1:
 
-.globl _unwind_test_arm64_frameless_no_reg.eh
-_unwind_test_arm64_frameless_no_reg.eh:
-LSFDE1:
-.set L$set$3,LEFDE1-LASFDE1
-.long L$set$3	; FDE Length
-LASFDE1:
-.long	LASFDE1-EH_frame1	; FDE CIE offset
-.quad	_unwind_test_arm64_frameless_no_reg-.	; FDE initial location
-.set L$set$4,LT1_end-_unwind_test_arm64_frameless_no_reg
-.quad L$set$4	; FDE address range
-.byte	0x0	; uleb128 0x0; Augmentation size
-.byte	0x4	; DW_CFA_advance_loc4
-.set L$set$5,LT1_sub_sp-_unwind_test_arm64_frameless_no_reg
-.long L$set$5
-.byte	0xe	; DW_CFA_def_cfa_offset
-.byte	0x10	; uleb128 0x10
-.align 3
-LEFDE1:
-
-#if 0
 ; Generates our common FDE header for register-saved test cases.
 ; Arguments:
 ; 0 - Test number (eg, 0, 1, 2). Used to resolve local label names for
 ;     the given test, and to name FDE-specific labels.
 ; 1 - Test name (eg, x19_x20, no_reg)
+; 2 - Stack size, as a uleb128 value
 .macro fde_header
 .globl _unwind_test_arm64_frameless_$1.eh
 _unwind_test_arm64_frameless_$1.eh:
@@ -174,22 +267,10 @@ LASFDE$0:
 .quad Lset1$0 ; FDE address range
 .byte	0x0 ; uleb128 0x0; Augmentation size
 .byte	0x4 ; DW_CFA_advance_loc4
-.set Lset2$0,LT$0_stp-_unwind_test_arm64_frameless_$1
+.set Lset2$0,LT$0_sub_sp-_unwind_test_arm64_frameless_$1
 .long Lset2$0
-.byte	0xe ; DW_CFA_def_cfa_offset
-.byte	0x10 ; uleb128 0x10
-.byte	0x9D ; DW_CFA_offset, column 0x1D
-.byte	0x2 ; uleb128 0x2
-.byte	0x9E ; DW_CFA_offset, column 0x1E
-.byte	0x1	; uleb128 0x1
-.byte	0x4 ; DW_CFA_advance_loc4
-.set Lset3$0,LT$0_fp-LT$0_stp
-.long Lset3$0
-.byte	0xd ; DW_CFA_def_cfa_register
-.byte	0x1D ; uleb128 0x1D
-.byte	0x4 ; DW_CFA_advance_loc4
-.set Lset4$0,LT$0_pushed_regs-LT$0_fp
-.long Lset4$0
+.byte	0xe	; DW_CFA_def_cfa_offset
+.byte	$2	; uleb128 stack offset
 .endmacro
 
 ; Generates our common FDE printer
@@ -200,9 +281,91 @@ LASFDE$0:
 LEFDE$0:
 .endmacro
 
-fde_header 1, no_reg
+fde_header 1, no_reg, 0x10
 fde_footer 1
 
-#endif
+fde_header 2, x19_x20, 0x10
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x2	; uleb128 0x2
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x3	; uleb128 0x3
+fde_footer 2
+
+fde_header 3, x19_x20_x21_x22, 0x20
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x2	; uleb128 0x2
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x3	; uleb128 0x3
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x4	; uleb128 0x4
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x5	; uleb128 0x5
+fde_footer 3
+
+fde_header 4, x19_x20_x21_x22_x23_x24, 0x30
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x2	; uleb128 0x2
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x3	; uleb128 0x3
+
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x4	; uleb128 0x4
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x5	; uleb128 0x5
+
+.byte	0x97	; DW_CFA_offset, column 0x17
+.byte	0x6	; uleb128 0x6
+.byte	0x98	; DW_CFA_offset, column 0x18
+.byte	0x7	; uleb128 0x7
+fde_footer 4
+
+fde_header 5, x19_x20_x21_x22_x23_x24_x25_x26, 0x40
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x2	; uleb128 0x2
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x3	; uleb128 0x3
+
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x4	; uleb128 0x4
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x5	; uleb128 0x5
+
+.byte	0x97	; DW_CFA_offset, column 0x17
+.byte	0x6	; uleb128 0x6
+.byte	0x98	; DW_CFA_offset, column 0x18
+.byte	0x7	; uleb128 0x7
+
+.byte	0x99	; DW_CFA_offset, column 0x19
+.byte	0x8	; uleb128 0x6
+.byte	0x9A	; DW_CFA_offset, column 0x1A
+.byte	0x9	; uleb128 0x7
+fde_footer 5
+
+fde_header 6, x19_x20_x21_x22_x23_x24_x25_x26_x27_x28, 0x50
+.byte	0x93	; DW_CFA_offset, column 0x13
+.byte	0x2	; uleb128 0x2
+.byte	0x94	; DW_CFA_offset, column 0x14
+.byte	0x3	; uleb128 0x3
+
+.byte	0x95	; DW_CFA_offset, column 0x15
+.byte	0x4	; uleb128 0x4
+.byte	0x96	; DW_CFA_offset, column 0x16
+.byte	0x5	; uleb128 0x5
+
+.byte	0x97	; DW_CFA_offset, column 0x17
+.byte	0x6	; uleb128 0x6
+.byte	0x98	; DW_CFA_offset, column 0x18
+.byte	0x7	; uleb128 0x7
+
+.byte	0x99	; DW_CFA_offset, column 0x19
+.byte	0x8	; uleb128 0x8
+.byte	0x9A	; DW_CFA_offset, column 0x1A
+.byte	0x9	; uleb128 0x9
+
+.byte	0x9B	; DW_CFA_offset, column 0x1B
+.byte	0xA	; uleb128 0xA
+.byte	0x9C	; DW_CFA_offset, column 0x1C
+.byte	0xB	; uleb128 0xB
+fde_footer 6
 
 #endif /* __arm64__ */
