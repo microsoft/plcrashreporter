@@ -1122,7 +1122,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 
             if (entry->return_address_register == PLCRASH_REG_INVALID) {
                 /* Return address is on the stack */
-                pl_vm_address_t retaddr = sp + stack_size - greg_size;
+                pl_vm_address_t retaddr = sp - greg_size;
                 saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
 
                 /* Original SP is found just before the return address. */
