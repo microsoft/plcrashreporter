@@ -874,7 +874,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->register_count = 0;
                 #define CHECK_REG(name, val1, val2) do { \
                     if ((encoding & name) == name) { \
-                        PLCF_ASSERT(entry->register_count < PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX); \
+                        PLCF_ASSERT(entry->register_count+2 <= PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX); \
                         entry->register_list[reg_pos++] = val2; \
                         entry->register_list[reg_pos++] = val1; \
                         entry->register_count += 2; \
