@@ -703,9 +703,6 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                     entry->stack_adjust = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_ADJUST) * sizeof(uint32_t);
                 }
 
-                /* x86-64 frameless functions always use a stack-pushed return address */
-                entry->return_address_register = PLCRASH_REG_INVALID;
-
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
@@ -796,9 +793,6 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                     entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_SIZE);
                     entry->stack_adjust = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_ADJUST) * sizeof(uint64_t);
                 }
-
-                /* x86-64 frameless functions always use a stack-pushed return address */
-                entry->return_address_register = PLCRASH_REG_INVALID;
                 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
@@ -973,6 +967,7 @@ uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *en
  * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT
  */
 plcrash_regnum_t plcrash_async_cfe_entry_return_address_register (plcrash_async_cfe_entry_t *entry) {
+    PLCF_ASSERT(entry->return_address_register == PLCRASH_REG_INVALID || (entry->type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD || PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT));
     return entry->return_address_register;
 }
 
@@ -1040,6 +1035,9 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
     /* Initialize the new thread state */
     *new_thread_state = *thread_state;
     plcrash_async_thread_state_clear_volatile_regs(new_thread_state);
+    
+    /* Assume stack-pushed return address by default */
+    entry->return_address_register = PLCRASH_REG_INVALID;
 
     pl_vm_address_t saved_reg_addr = 0x0;
     plcrash_async_cfe_entry_type_t entry_type = plcrash_async_cfe_entry_type(entry);

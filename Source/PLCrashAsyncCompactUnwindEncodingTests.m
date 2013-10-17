@@ -148,6 +148,7 @@
     plcrash_async_cfe_entry_t entry;
     STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, 0x0), PLCRASH_ESUCCESS, @"Should return NOTFOUND for NULL encoding");
     STAssertEquals(plcrash_async_cfe_entry_type(&entry), PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE, @"Incorrect CFE type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 }
 
 /**
@@ -212,6 +213,9 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, -encoded_reg_ebp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Extract the registers. Up to 5 may be encoded */
     plcrash_regnum_t expected_reg[] = {
@@ -348,8 +352,9 @@
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
-    
-    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);    
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+
+    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
     plcrash_async_cfe_entry_free(&entry);
@@ -360,8 +365,9 @@
  */
 - (void) testX86_64DecodeNULLEncoding {
     plcrash_async_cfe_entry_t entry;
-    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, 0x0), PLCRASH_ESUCCESS, @"Should return NOTFOUND for NULL encoding");
+    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, 0x0), PLCRASH_ESUCCESS, @"Should return success for NULL encoding");
     STAssertEquals(plcrash_async_cfe_entry_type(&entry), PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE, @"Incorrect CFE type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 }
 
 /**
@@ -424,6 +430,9 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, -encoded_reg_rbp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
     
     /* Extract the registers. Up to 5 may be encoded */
     plcrash_regnum_t expected_reg[] = {
@@ -511,6 +520,9 @@
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+    
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
     
@@ -538,6 +550,7 @@
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
     
     uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);    
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
@@ -564,6 +577,9 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_count, (uint32_t)4, @"Incorrect register count extracted");
     STAssertEquals(reg_offset, (int32_t)-32, @"Incorrect register offset extracted (wanted -32, got %"PRId32")", reg_offset);
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Extract the registers. */
     plcrash_regnum_t expected_reg[] = {
@@ -641,7 +657,8 @@
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
-    
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+
     uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
