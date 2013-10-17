@@ -623,7 +623,7 @@
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
     /* Verify the return address register value */
-    STAssertEquals(PLCRASH_ARM64_LR, plcrash_async_cfe_entry_return_address_register(&entry), @"Incorrect return address register set");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_ARM64_LR, plcrash_async_cfe_entry_return_address_register(&entry), @"Incorrect return address register set");
 
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];

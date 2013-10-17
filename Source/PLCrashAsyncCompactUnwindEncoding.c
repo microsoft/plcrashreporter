@@ -655,6 +655,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
     /* Target-neutral initialization */
     entry->cpu_type = cpu_type;
     entry->stack_adjust = 0;
+    entry->return_address_register = PLCRASH_REG_INVALID;
 
     /* Perform target-specific decoding */
     if (cpu_type == CPU_TYPE_X86) {
@@ -1035,9 +1036,6 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
     /* Initialize the new thread state */
     *new_thread_state = *thread_state;
     plcrash_async_thread_state_clear_volatile_regs(new_thread_state);
-    
-    /* Assume stack-pushed return address by default */
-    entry->return_address_register = PLCRASH_REG_INVALID;
 
     pl_vm_address_t saved_reg_addr = 0x0;
     plcrash_async_cfe_entry_type_t entry_type = plcrash_async_cfe_entry_type(entry);
