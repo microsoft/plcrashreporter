@@ -333,7 +333,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             writer->process_info.parent_process_id = pinfo.parentProcessID;
 
             /* Retrieve name */
-            PLCrashProcessInfo *parentInfo = [[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID];
+            PLCrashProcessInfo *parentInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID] autorelease];
             if (parentInfo != nil) {
                 writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
             } else {
