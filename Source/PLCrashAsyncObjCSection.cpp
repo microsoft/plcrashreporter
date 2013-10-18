@@ -167,7 +167,9 @@ struct pl_objc2_class_data_ro_64 {
     uint64_t baseProperties;
 };
 
-/** Category list entry (32-bit representation). */
+/** @internal
+ * Category list entry (32-bit representation).
+ */
 struct pl_objc2_category_32 {
     uint32_t name;
     uint32_t cls;
@@ -177,7 +179,9 @@ struct pl_objc2_category_32 {
     uint32_t instanceProperties;
 };
 
-/** Category list entry (64-bit representation). */
+/** @internal
+ * Category list entry (64-bit representation).
+ */
 struct pl_objc2_category_64 {
     uint64_t name;
     uint64_t cls;
