@@ -100,7 +100,12 @@
     REQ_REG(PLCRASH_ARM64_X26);
     REQ_REG(PLCRASH_ARM64_X27);
     REQ_REG(PLCRASH_ARM64_X28);
-    STAssertEquals((size_t)10, nv_count, @"Incorrect number of registers preserved");
+#ifdef __APPLE__
+    REQ_REG(PLCRASH_ARM64_FP);
+#else
+#error Define OS frame pointer behavior as per AAPCS64 Section 5.2.3
+#endif
+    STAssertEquals((size_t)11, nv_count, @"Incorrect number of registers preserved");
 #elif defined(__arm__)
     REQ_REG(PLCRASH_ARM_R4);
     REQ_REG(PLCRASH_ARM_R5);
