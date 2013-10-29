@@ -96,15 +96,17 @@ error:
         return nil;
 
     /* Extract the Darwin version */
-    {
+    char *val = plcrash_sysctl_string("kern.osrelease");
+    if (val == NULL) {
         /* This should never fail; if it does, either malloc failed, or 'kern.osrelease' disappeared. */
-        char *val = plcrash_sysctl_string("kern.osrelease");
-        NSAssert(val != NULL, @"Failed to fetch kern.osrelease value %d: %s", errno, strerror(errno));
-
-        NSString *osrelease = [[NSString alloc] initWithBytesNoCopy: val length: strlen(val) encoding: NSUTF8StringEncoding freeWhenDone: YES];
-        parse_osrelease(osrelease, &_darwinVersion);
+        NSLog(@"Failed to fetch kern.osrelease value %d: %s", errno, strerror(errno));
+        [self release];
+        return nil;
     }
+    NSString *osrelease = [[[NSString alloc] initWithBytesNoCopy: val length: strlen(val) encoding: NSUTF8StringEncoding freeWhenDone: YES] autorelease];
 
+    /* Since this is best-effort, we ignore parse failures; unparseable elements will be defaulted to '0' */
+    parse_osrelease(osrelease, &_darwinVersion);
     return self;
 }
 
