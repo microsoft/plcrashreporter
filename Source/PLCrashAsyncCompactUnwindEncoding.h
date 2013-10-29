@@ -112,6 +112,8 @@ typedef enum {
     PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE = 5
 } plcrash_async_cfe_entry_type_t;
 
+/** Maximum number of registers supported by the permutation register encoding. @sa plcrash_async_cfe_register_decode and plcrash_async_cfe_register_encode. */
+#define PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX 6
 
 /** Maximum number of saved non-volatile registers that may be represented in an i386 or x86-64 CFE entry */
 #define PLCRASH_ASYNC_CFE_SAVED_REGISTER_X86_MAX 6
@@ -212,7 +214,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count);
-void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]);
+plcrash_error_t plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]);
 
 /**
  * @} plcrash_async_cfe

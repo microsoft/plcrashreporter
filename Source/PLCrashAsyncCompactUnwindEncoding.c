@@ -378,11 +378,16 @@ void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
  *
  * @param registers The ordered list of registers to encode. These values must correspond to the CFE register values,
  * <em>not</em> the register values as defined in the PLCrashReporter thread state APIs.
- 
+ * @param count The number of registers in @a registers. This must not exceed the maximum number of registers supported by the
+ * permutation encoding (PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX).
+ *
  * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count) {
+    /* Supplied count must be within supported range */
+    PLCF_ASSERT(count <= PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX);
+
     /*
      * Use a positional encoding to encode each integer in the list as an integer value
      * that is less than the previous greatest integer in the list. We know that each
@@ -398,7 +403,7 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
      *   1 2 3 4 5 6 ->
      *   0 0 0 0 0 0
      */
-    uint32_t renumbered[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    uint32_t renumbered[PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX];
     for (int i = 0; i < count; ++i) {
         unsigned countless = 0;
         for (int j = 0; j < i; ++j)
@@ -437,7 +442,9 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
      * in the list requires fewer elements; eg, position 0 may include 0-5, position 1 0-4, and position 2 0-3. This
      * allows us to allocate smaller overall ranges to represent all possible elements.
      */
-    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 6);
+    
+    /* Assert that the maximum register count matches our switch() statement. */
+    PLCF_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
     switch (count) {
         case 1:
             permutation |= renumbered[0];
@@ -482,22 +489,32 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
  * @param registers On return, the ordered list of decoded register values. These values must correspond to the CFE
  * register values, <em>not</em> the register values as defined in the PLCrashReporter thread state APIs.
  *
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate error on failure. This function may fail if @a count
+ * exceeds the total number of register values supported by the permutation encoding; this should only occur in the
+ * case that the register count supplied from the binary is invalid.
+ *
  * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
-void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]) {
+plcrash_error_t plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]) {
+    /* Validate that count falls within the supported range */
+    if (count > PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX) {
+        PLCF_DEBUG("Register permutation decoding attempted with an unsupported count of %" PRIu32, count);
+        return PLCRASH_EINVAL;
+    }
+
     /*
      * Each register is encoded by mapping the values to a 10-bit range, and then further sub-ranges within that range,
      * with a subrange allocated to each position. See the encoding function for full documentation.
      */
-	int permunreg[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    int permunreg[PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX];
 #define PERMUTE(pos, factor) do { \
 permunreg[pos] = permutation/factor; \
 permutation -= (permunreg[pos]*factor); \
 } while (0)
 
-    PLCF_ASSERT(count <= 6);
-    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 6);
+    /* Assert that the maximum register count matches our switch() statement. */
+    PLCF_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
 	switch (count) {
 		case 6:
             PERMUTE(0, 120);
@@ -557,6 +574,8 @@ permutation -= (permunreg[pos]*factor); \
 			}
 		}
 	}
+    
+    return PLCRASH_ESUCCESS;
 }
 
 /**
@@ -708,7 +727,11 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
                 uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
                 
-                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
+                ret = plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
+                if (ret != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to decode register list: %d", ret);
+                    return ret;
+                }
                 
                 /* Map to the correct PLCrashReporter register names */
                 for (uint32_t i = 0; i < entry->register_count; i++) {
@@ -799,8 +822,12 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
                 uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
 
-                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
-                
+                ret = plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
+                if (ret != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to decode register list: %d", ret);
+                    return ret;
+                }
+
                 /* Map to the correct PLCrashReporter register names */
                 for (uint32_t i = 0; i < entry->register_count; i++) {
                     ret = plcrash_async_map_register_name(decoded_regs[i], &entry->register_list[i], cpu_type);

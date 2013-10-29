@@ -242,7 +242,7 @@
 
     /* Extract and verify the registers */
     uint32_t regs[count];
-    plcrash_async_cfe_register_decode(permutedRegisters, count, regs);
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_register_decode(permutedRegisters, count, regs), @"Register decode returned an error");
     for (uint32_t i = 0; i < count; i++) {
         STAssertEquals(regs[i], expectedRegisters[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
@@ -676,9 +676,18 @@
     uint32_t decoded[sizeof(expected)/sizeof(expected[0])];
 
     uint32_t encoded = plcrash_async_cfe_register_encode(expected, 1);
-    plcrash_async_cfe_register_decode(encoded, 1, decoded);
-    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_register_decode(encoded, 1, decoded), @"Decode returned an error");
+
     STAssertEquals(expected[0], decoded[0], @"Failed to decode register");
+}
+
+/**
+ * Test passing an invalid count to plcrash_async_cfe_register_decode()
+ */
+- (void) testPermuttedRegisterDecodeInvalidCount {
+    uint32_t registers[PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX+1];
+
+    STAssertNotEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_register_decode(0, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX+1, registers), @"Decoding of a too-large count did not return an error");
 }
 
 /**
