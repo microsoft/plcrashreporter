@@ -29,7 +29,7 @@
 #ifndef PLCRASH_COMPAT_CONSTANTS_H
 #define PLCRASH_COMPAT_CONSTANTS_H 1
 
-#include <Availability.h>
+#include <AvailabilityMacros.h>
 
 #include <mach/machine.h>
 
