@@ -486,8 +486,6 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
 void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]) {
-    PLCF_ASSERT(count <= PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX);
-    
     /*
      * Each register is encoded by mapping the values to a 10-bit range, and then further sub-ranges within that range,
      * with a subrange allocated to each position. See the encoding function for full documentation.
@@ -497,7 +495,8 @@ void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, ui
 permunreg[pos] = permutation/factor; \
 permutation -= (permunreg[pos]*factor); \
 } while (0)
-    
+
+    PLCF_ASSERT(count <= 6);
     PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX >= 6);
 	switch (count) {
 		case 6:
