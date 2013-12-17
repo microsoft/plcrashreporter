@@ -441,10 +441,16 @@ static plcrash_error_t write_current_thread_callback (plcrash_async_thread_state
     }
     
     /* Architecture-specific validations */
-#if __arm__
+#if __arm__ || __arm64__
+#  if __arm__
+    plcrash_regnum_t lrnum = PLCRASH_ARM_LR;
+#  else
+    plcrash_regnum_t lrnum = PLCRASH_ARM64_LR;
+#  endif
+    
     /* Validate LR */
     void *retaddr = __builtin_return_address(0);
-    uintptr_t lr = plcrash_async_thread_state_get_reg(&thr_state, PLCRASH_ARM_LR);
+    uintptr_t lr = plcrash_async_thread_state_get_reg(&thr_state, lrnum);
     STAssertEquals(retaddr, (void *)lr, @"Incorrect lr: %p", (void *) lr);
 #endif
 }
