@@ -424,9 +424,9 @@ static plcrash_error_t write_current_thread_callback (plcrash_async_thread_state
     
     STAssertEquals(PLCRASH_ESUCCESS, ret, @"Crash log failed");
     
-    /* Validate PC. This check is inexact, as otherwise we would need to carefully instrument the
+    /* Validate PC. This check is inexact and fragile, as otherwise we would need to carefully instrument the
      * call to plcrash_log_writer_write_curthread() in order to determine the exact PC value. */
-    STAssertTrue(expectedPC - plcrash_async_thread_state_get_reg(&thr_state, PLCRASH_REG_IP) <= 20, @"PC value not within reasonable range");
+    STAssertTrue(expectedPC - plcrash_async_thread_state_get_reg(&thr_state, PLCRASH_REG_IP) <= 40, @"PC value not within reasonable range");
     
     /* Fetch stack info for validation */
     uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
