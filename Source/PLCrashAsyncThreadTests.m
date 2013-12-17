@@ -403,7 +403,7 @@
     thread_resume(thr);
 }
 
-static uintptr_t getPC () {
+__attribute__ ((noinline)) static uintptr_t getPC () {
     return (uintptr_t) __builtin_return_address(0);
 }
 
