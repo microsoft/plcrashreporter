@@ -2816,7 +2816,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nDOC_DEST=\"${DESTROOT}/Documentation\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-iphone\" -cf - \"CrashReporter.framework\" | tar -C \"${IPHONE_DEST}\" -xf - \n\nmkdir -p \"${MAC_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-MacOSX\" -cf - \"CrashReporter.framework\" | tar -C \"${MAC_DEST}\" -xf -\n\nmkdir -p \"${TOOL_DEST}\"\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n\tpushd \"${SRCROOT}\" >/dev/null\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
+			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nDOC_DEST=\"${DESTROOT}/Documentation\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\" || exit 1\nrsync -av \"${IPHONE_SRC}/CrashReporter.framework\" \"${IPHONE_DEST}\" || exit 1\n\nmkdir -p \"${MAC_DEST}\" || exit 1\nrsync -av \"${MAC_SRC}/CrashReporter.framework\" \"${MAC_SRC}/CrashReporter.framework.dSYM\" \"${MAC_DEST}\" || exit 1\n\nmkdir -p \"${TOOL_DEST}\" || exit 1\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\" || exit 1\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n\tpushd \"${SRCROOT}\" >/dev/null\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\" || exit 1";
 		};
 		05CD32670EE93DC3000FDE88 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4302,6 +4302,7 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Resources/Info.plist;
@@ -4329,6 +4330,7 @@
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				FRAMEWORK_VERSION = A;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
