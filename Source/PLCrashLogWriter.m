@@ -130,7 +130,7 @@ enum {
     /** CrashReport.thread.register.name */
     PLCRASH_PROTO_THREAD_REGISTER_NAME_ID = 1,
 
-    /** CrashReport.thread.register.name */
+    /** CrashReport.thread.register.value */
     PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID = 2,
 
 
@@ -427,15 +427,15 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         /* Fetch the major, minor, and bugfix versions.
          * Fetching the OS version should not fail. */
         if (Gestalt(gestaltSystemVersionMajor, &major) != noErr) {
-            PLCF_DEBUG("Could not retreive system major version with Gestalt");
+            PLCF_DEBUG("Could not retrieve system major version with Gestalt");
             return PLCRASH_EINTERNAL;
         }
         if (Gestalt(gestaltSystemVersionMinor, &minor) != noErr) {
-            PLCF_DEBUG("Could not retreive system minor version with Gestalt");
+            PLCF_DEBUG("Could not retrieve system minor version with Gestalt");
             return PLCRASH_EINTERNAL;
         }
         if (Gestalt(gestaltSystemVersionBugFix, &bugfix) != noErr) {
-            PLCF_DEBUG("Could not retreive system bugfix version with Gestalt");
+            PLCF_DEBUG("Could not retrieve system bugfix version with Gestalt");
             return PLCRASH_EINTERNAL;
         }
 
