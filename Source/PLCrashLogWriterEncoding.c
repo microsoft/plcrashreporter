@@ -39,52 +39,7 @@ typedef enum {
         PLPROTOBUF_C_WIRE_TYPE_32BIT
 } PLProtobufCWireType;
 
-/* === get_packed_size() === */
-static inline size_t
-get_tag_size (unsigned number)
-{
-    if (number < (1<<4))
-        return 1;
-    else if (number < (1<<11))
-        return 2;
-    else if (number < (1<<18))
-        return 3;
-    else if (number < (1<<25))
-        return 4;
-    else
-        return 5;
-}
-static inline size_t
-uint32_size (uint32_t v)
-{
-    if (v < (1<<7))
-        return 1;
-    else if (v < (1<<14))
-        return 2;
-    else if (v < (1<<21))
-        return 3;
-    else if (v < (1<<28))
-        return 4;
-    else
-        return 5;
-}
-static inline size_t
-int32_size (int32_t v)
-{
-    if (v < 0)
-        return 10;
-    else
-        if (v < (1<<7))
-            return 1;
-        else if (v < (1<<14))
-            return 2;
-        else if (v < (1<<21))
-            return 3;
-        else if (v < (1<<28))
-            return 4;
-        else
-            return 5;
-}
+/* === pack() === */
 static inline uint32_t
 zigzag32 (int32_t v)
 {
@@ -92,30 +47,6 @@ zigzag32 (int32_t v)
         return ((uint32_t)(-v)) * 2 - 1;
     else
         return v * 2;
-}
-static inline size_t
-sint32_size (int32_t v)
-{
-    return uint32_size(zigzag32(v));
-}
-static inline size_t
-uint64_size (uint64_t v)
-{
-    uint32_t upper_v = (v>>32);
-    if (upper_v == 0)
-        return uint32_size ((uint32_t)v);
-    else if (upper_v < (1<<3))
-        return 5;
-    else if (upper_v < (1<<10))
-        return 6;
-    else if (upper_v < (1<<17))
-        return 7;
-    else if (upper_v < (1<<24))
-        return 8;
-    else if (upper_v < (1U<<31))
-        return 9;
-    else
-        return 10;
 }
 static inline uint64_t
 zigzag64 (int64_t v)
@@ -125,14 +56,6 @@ zigzag64 (int64_t v)
     else
         return v * 2;
 }
-static inline size_t
-sint64_size (int64_t v)
-{
-    return uint64_size(zigzag64(v));
-}
-
-
-/* === pack() === */
 static inline size_t
 uint32_pack (uint32_t value, uint8_t *out)
 {
@@ -243,13 +166,6 @@ static inline size_t boolean_pack (bool value, uint8_t *out)
 {
     *out = value ? 1 : 0;
     return 1;
-}
-static inline size_t string_pack (const char * str, uint8_t *out)
-{
-    size_t len = strlen (str);
-    size_t rv = uint32_pack (len, out);
-    plcrash_async_memcpy (out + rv, str, len);
-    return rv + len;
 }
 
 /* wire-type will be added in required_field_pack() */
