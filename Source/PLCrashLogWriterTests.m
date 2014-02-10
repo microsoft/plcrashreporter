@@ -325,6 +325,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
 
     /* Set an exception with a valid return address call stack. */
+    plcrash_log_objc_exception_info_t objc_exc_info;
     NSException *e;
     @try {
         [NSException raise: @"TestException" format: @"TestReason"];
@@ -332,15 +333,16 @@
     @catch (NSException *exception) {
         e = exception;
     }
-    plcrash_log_writer_set_exception(&writer, e);
+    plcrash_log_objc_exception_info_init(&objc_exc_info, e);
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &thread_state), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &objc_exc_info, &thread_state), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
     plcrash_nasync_image_list_free(&image_list);
+    plcrash_log_objc_exception_info_free(&objc_exc_info);
 
     /* Flush the output */
     plcrash_async_file_flush(&file);

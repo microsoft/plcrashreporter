@@ -70,10 +70,11 @@ struct plcr_live_report_context {
     plcrash_async_file_t *file;
     plcrash_async_image_list_t *images;
     plcrash_log_signal_info_t *info;
+    plcrash_log_objc_exception_info_t *objc_exc_info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
-    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, state);
+    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, plcr_ctx->objc_exc_info, state);
 }
 
 - (void) testWriteReport {
@@ -110,6 +111,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
     
     /* Set an exception with a valid return address call stack. */
+    plcrash_log_objc_exception_info_t objc_exc_info;
     NSException *exception;
     @try {
         [NSException raise: @"TestException" format: @"TestReason"];
@@ -117,7 +119,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     @catch (NSException *e) {
         exception = e;
     }
-    plcrash_log_writer_set_exception(&writer, exception);
+    plcrash_log_objc_exception_info_init(&objc_exc_info, exception);
 
     /* Provide binary image info */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
@@ -131,7 +133,8 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         .writer = &writer,
         .file = &file,
         .images = &image_list,
-        .info = &info
+        .info = &info,
+        .objc_exc_info = &objc_exc_info
     };
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_current(plcr_live_report_callback, &ctx), @"Writing crash log failed");
 
@@ -139,6 +142,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
     plcrash_nasync_image_list_free(&image_list);
+    plcrash_log_objc_exception_info_free(&objc_exc_info);
 
     plcrash_async_file_flush(&file);
     plcrash_async_file_close(&file);

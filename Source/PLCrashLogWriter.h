@@ -133,24 +133,6 @@ typedef struct plcrash_log_writer {
         /** If false, the reporting process is being run under process emulation (such as Rosetta). */
         bool native;
     } process_info;
-
-    /** Uncaught exception (if any) */
-    struct {
-        /** Flag specifying wether an uncaught exception is available. */
-        bool has_exception;
-
-        /** Exception name (may be null) */
-        char *name;
-
-        /** Exception reason (may be null) */
-        char *reason;
-
-        /** The original exception call stack (may be null) */
-        void **callstack;
-        
-        /** Call stack frame count, or 0 if the call stack is unavailable */
-        size_t callstack_count;
-    } uncaught_exception;
 } plcrash_log_writer_t;
 
 /**
@@ -208,19 +190,40 @@ typedef struct plcrash_log_signal_info {
     plcrash_log_mach_signal_info_t *mach_info;
 } plcrash_log_signal_info_t;
 
+/**
+ * @internal
+ *
+ * The Objective-C exception that trigged the crash report.
+ */
+typedef struct plcrash_log_objc_exception_info {
+    /** Exception name (may be NULL). */
+    char *name;
+    
+    /** Exception reason (may be NULL). */
+    char *reason;
+    
+    /** The original exception call stack (Will be NULL if callstack_count is 0). */
+    void **callstack;
+    
+    /** Call stack frame count, or 0 if the call stack is unavailable. */
+    size_t callstack_count;
+} plcrash_log_objc_exception_info_t;
+    
+void plcrash_log_objc_exception_info_init (plcrash_log_objc_exception_info_t *info, NSException *exception);
+void plcrash_log_objc_exception_info_free (plcrash_log_objc_exception_info_t *info);
 
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          NSString *app_identifier,
                                          NSString *app_version,
                                          plcrash_async_symbol_strategy_t symbol_strategy,
                                          BOOL user_requested);
-void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file,
                                           plcrash_log_signal_info_t *siginfo,
+                                          plcrash_log_objc_exception_info_t *objc_exc_info,
                                           plcrash_async_thread_state_t *current_state);
 
 plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer);

@@ -453,39 +453,6 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 }
 
 /**
- * Set the uncaught exception for this writer. Once set, this exception will be used to
- * provide exception data for the crash log output.
- *
- * @warning This function is not async safe, and must be called outside of a signal handler.
- */
-void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception) {
-    assert(writer->uncaught_exception.has_exception == false);
-
-    /* Save the exception data */
-    writer->uncaught_exception.has_exception = true;
-    writer->uncaught_exception.name = strdup([[exception name] UTF8String]);
-    writer->uncaught_exception.reason = strdup([[exception reason] UTF8String]);
-
-    /* Save the call stack, if available */
-    NSArray *callStackArray = [exception callStackReturnAddresses];
-    if (callStackArray != nil && [callStackArray count] > 0) {
-        size_t count = [callStackArray count];
-        writer->uncaught_exception.callstack_count = count;
-        writer->uncaught_exception.callstack = malloc(sizeof(void *) * count);
-
-        size_t i = 0;
-        for (NSNumber *num in callStackArray) {
-            assert(i < count);
-            writer->uncaught_exception.callstack[i] = (void *)(uintptr_t)[num unsignedLongLongValue];
-            i++;
-        }
-    }
-
-    /* Ensure that any signal handler has a consistent view of the above initialization. */
-    OSMemoryBarrier();
-}
-
-/**
  * Close the plcrash_writer_t output.
  *
  * @param writer Writer instance to be closed.
@@ -524,18 +491,59 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     /* Free the machine info */
     if (writer->machine_info.model != NULL)
         free(writer->machine_info.model);
+}
 
-    /* Free the exception data */
-    if (writer->uncaught_exception.has_exception) {
-        if (writer->uncaught_exception.name != NULL)
-            free(writer->uncaught_exception.name);
 
-        if (writer->uncaught_exception.reason != NULL)
-            free(writer->uncaught_exception.reason);
+/**
+ * Initialize a new Objective-C exception info instance, fetching the required data from the
+ * given @a exception instance.
+ *
+ * @param info The instance to initialize.
+ * @param exception The Objective-C exception from which the exception data will be fetched.
+ *
+ * @warning This function is not async-safe, and must be called outside of a signal handler.
+ */
+void plcrash_log_objc_exception_info_init (plcrash_log_objc_exception_info_t *info, NSException *exception) {
+    /* Save the exception data */
+    info->name = strdup([[exception name] UTF8String]);
+    info->reason = strdup([[exception reason] UTF8String]);
+    
+    /* Save the call stack, if available */
+    NSArray *callStackArray = [exception callStackReturnAddresses];
+    if (callStackArray == nil || [callStackArray count] == 0) {
+        info->callstack = NULL;
+        info->callstack_count = 0;
+    } else {
+        size_t count = [callStackArray count];
+        info->callstack_count = count;
+        info->callstack = malloc(sizeof(void *) * count);
         
-        if (writer->uncaught_exception.callstack != NULL)
-            free(writer->uncaught_exception.callstack);
+        size_t i = 0;
+        for (NSNumber *num in callStackArray) {
+            assert(i < count);
+            info->callstack[i] = (void *)(uintptr_t)[num unsignedLongLongValue];
+            i++;
+        }
     }
+    
+    /* Ensure that any signal handler has a consistent view of the above initialization. */
+    OSMemoryBarrier();
+}
+
+/**
+ * Free any exception data.
+ *
+ * @warning This method is not async-safe.
+ */
+void plcrash_log_objc_exception_info_free (plcrash_log_objc_exception_info_t *info) {
+    if (info->name != NULL)
+        free(info->name);
+    
+    if (info->reason != NULL)
+        free(info->reason);
+    
+    if (info->callstack != NULL)
+        free(info->callstack);
 }
 
 /**
@@ -1036,18 +1044,18 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plc
  * @param file Output file
  * @param writer Writer containing exception data
  */
-static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
+static size_t plcrash_writer_write_exception (plcrash_async_file_t *file, plcrash_log_writer_t *writer, plcrash_log_objc_exception_info_t *exc_info, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
     size_t rv = 0;
 
     /* Write the name and reason */
-    assert(writer->uncaught_exception.has_exception);
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_NAME_ID, PLPROTOBUF_C_TYPE_STRING, writer->uncaught_exception.name);
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_REASON_ID, PLPROTOBUF_C_TYPE_STRING, writer->uncaught_exception.reason);
+    PLCF_ASSERT(exc_info != NULL);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_NAME_ID, PLPROTOBUF_C_TYPE_STRING, exc_info->name);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_REASON_ID, PLPROTOBUF_C_TYPE_STRING, exc_info->reason);
     
     /* Write the stack frames, if any */
     uint32_t frame_count = 0;
-    for (size_t i = 0; i < writer->uncaught_exception.callstack_count && frame_count < MAX_THREAD_FRAMES; i++) {
-        uint64_t pc = (uint64_t)(uintptr_t) writer->uncaught_exception.callstack[i];
+    for (size_t i = 0; i < exc_info->callstack_count && frame_count < MAX_THREAD_FRAMES; i++) {
+        uint64_t pc = (uint64_t)(uintptr_t) exc_info->callstack[i];
         
         /* Determine the size */
         uint32_t frame_size = plcrash_writer_write_thread_frame(NULL, writer, pc, image_list, findContext);
@@ -1172,6 +1180,7 @@ static size_t plcrash_writer_write_report_info (plcrash_async_file_t *file, plcr
  * @param image_list The current list of loaded binary images.
  * @param file The output file.
  * @param siginfo Signal information.
+ * @param objc_exc_info The Objective-C exception that caused the crash, if any.
  * @param current_state If non-NULL, the given thread state will be used when walking the current thread. The state must remain
  * valid until this function returns. Generally, this state will be generated by a signal handler, or via a
  * context-generating trampoline such as plcrash_log_writer_write_curthread(). If NULL, a thread dump for the current
@@ -1183,6 +1192,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file,
                                           plcrash_log_signal_info_t *siginfo,
+                                          plcrash_log_objc_exception_info_t *objc_exc_info,
                                           plcrash_async_thread_state_t *current_state)
 {
     thread_act_array_t threads;
@@ -1342,13 +1352,13 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     plcrash_async_image_list_set_reading(image_list, false);
 
     /* Exception */
-    if (writer->uncaught_exception.has_exception) {
+    if (objc_exc_info != NULL) {
         uint32_t size;
 
         /* Calculate the message size */
-        size = plcrash_writer_write_exception(NULL, writer, image_list, &findContext);
+        size = plcrash_writer_write_exception(NULL, writer, objc_exc_info, image_list, &findContext);
         plcrash_writer_pack(file, PLCRASH_PROTO_EXCEPTION_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_exception(file, writer, image_list, &findContext);
+        plcrash_writer_write_exception(file, writer, objc_exc_info, image_list, &findContext);
     }
     
     /* Signal */

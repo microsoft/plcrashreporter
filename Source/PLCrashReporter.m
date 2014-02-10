@@ -100,6 +100,12 @@ typedef struct signal_handler_ctx {
 
     /** Path to the output file */
     const char *path;
+    
+    /**
+     * The last uncaught exception, or NULL if none. This value will be atomically updated by uncaught_exception_handler(),
+     * and <em>must not</em> be modified elsewhere.
+     */
+    plcrash_log_objc_exception_info_t * volatile last_objc_exception;
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
     /* Previously registered Mach exception ports, if any. Will be left uninitialized if PLCrashReporterSignalHandlerTypeMach
@@ -136,7 +142,7 @@ static PLCrashReporterCallbacks crashCallbacks = {
 };
 
 /**
- * Write a fatal crash report.
+ * Write a fatal crash report from a Mach Exception or Signal Handler callback.
  *
  * @param sigctx Fatal handler context.
  * @param crashed_thread The crashed thread.
@@ -158,9 +164,13 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
     
     /* Initialize the output context */
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
-    
+
+    /* Fetch the last Objective-C exception, if any. This may be NULL. As per the plcrashreporter_handler_ctx_t documentation, this 
+     * value is updated atomically by the uncaught exception handler, and may be safely fetched without locking. */
+    plcrash_log_objc_exception_info_t *last_objc_exception = sigctx->last_objc_exception;
+
     /* Write the crash log using the already-initialized writer */
-    err = plcrash_log_writer_write(&sigctx->writer, crashed_thread, &shared_image_list, &file, siginfo, thread_state);
+    err = plcrash_log_writer_write(&sigctx->writer, crashed_thread, &shared_image_list, &file, siginfo, last_objc_exception, thread_state);
 
     /* Close the writer; this may also fail (but shouldn't) */
     if (plcrash_log_writer_close(&sigctx->writer) != PLCRASH_ESUCCESS) {
@@ -356,11 +366,58 @@ static void image_remove_callback (const struct mach_header *mh, intptr_t vmaddr
  * exception field, and triggering the signal handler.
  */
 static void uncaught_exception_handler (NSException *exception) {
-    /* Set the uncaught exception */
-    plcrash_log_writer_set_exception(&signal_handler_context.writer, exception);
+    plcrash_log_objc_exception_info_t info;
+    
+    /* Initialize the exception info record */
+    plcrash_log_objc_exception_info_init(&info, exception);
+    
+    /* Atomically set the 'last' exception record */
+    while (YES) {
+        /* Fetch the current value; may be NULL */
+        plcrash_log_objc_exception_info_t *prev_info = signal_handler_context.last_objc_exception;
 
+        /* Attempt to set the new value. If this fails, we just try again. */
+        if (!OSAtomicCompareAndSwapPtrBarrier(prev_info, &info, (void * volatile *) &signal_handler_context.last_objc_exception))
+            continue;
+        
+        // PLCR-483-TODO:
+        // In the future, it may be necessary to free() the prev_info value here. Refer to
+        // the PLCR-484 ``MEMORY WARNING'' below for more details.
+        
+        /* last_objc_exception was successfully updated; we're done */
+        break;
+    }
+    
     /* Synchronously trigger the crash handler */
+    // PLCR-493-TODO: This should instead call the previously registered uncaught exception handler, which
+    // may be Apple's default handler.
     abort();
+
+    /* Clean up. This should be unreachable. */
+    /*
+     * PLCR-483-TODO:
+     * !! MEMORY WARNING !!
+     *
+     * We cannot safely deallocate our exception_info_t, as it may be referenced by a concurrently executing
+     * signal handler. Likewise, we cannot rely on said concurrently executing handler to deallocate the record
+     * after use, as doing so is not async-safe.
+     *
+     * As such, we've commented out the call to plcrash_log_objc_exception_info_free() below. This is safe
+     * in our current execution model, as we've already triggered process termination, and this code path
+     * should be entirely unreachable.
+     *
+     * If that changes (for example, if we instead call through to the previously registered uncaught exception
+     * handler, and it does not actually trigger a synchronous fatal signal), then this code path *will*
+     * leak, and we will need to solve the async-safe deallocation problem.
+     *
+     * To support this and other allocation-related use-cases, issue PLCR-483 tracks the implementation of an
+     * async-safe allocator. Once that's in place, we can migrate uncaught exception handling to use that allocator,
+     * and then re-enable the free() code path, by either:
+     *
+     *  - Implementing direct deallocation in the async-safe crash report writing path after atomically claiming ownership of the instance, OR
+     *  - Implement reference counting such that ownership semantics are more generally defined.
+     */
+    // plcrash_log_objc_exception_info_free(&info);
 }
 
 
@@ -573,6 +630,8 @@ static PLCrashReporter *sharedReporter = nil;
 
     /* Set up the signal handler context */
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
+    signal_handler_context.last_objc_exception = NULL;
+
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);
@@ -663,7 +722,7 @@ struct plcr_live_report_context {
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
-    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), &shared_image_list, plcr_ctx->file, plcr_ctx->info, state);
+    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), &shared_image_list, plcr_ctx->file, plcr_ctx->info, NULL, state);
 }
 
 
@@ -722,7 +781,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         };
         err = plcrash_async_thread_state_current(plcr_live_report_callback, &ctx);
     } else {
-        err = plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &signal_info, NULL);
+        err = plcrash_log_writer_write(&writer, thread, &shared_image_list, &file, &signal_info, NULL, NULL);
     }
     plcrash_log_writer_close(&writer);
 
