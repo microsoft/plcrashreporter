@@ -61,6 +61,14 @@ static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
 static NSString *PLCRASH_LIVE_CRASHREPORT = @"live_report.plcrash";
 
 /** @internal
+ * Crash report temporary output file name. */
+static NSString *PLCRASH_TEMP_OUTPUT = @".live_report.plcrash.temp";
+
+/** @internal
+ * Crash report failed output file name. */
+static NSString *PLCRASH_FAILED_OUTPUT = @"failed_report.plcrash";
+
+/** @internal
  * Directory containing crash reports queued for sending. */
 static NSString *PLCRASH_QUEUED_DIR = @"queued_reports";
 
@@ -98,9 +106,14 @@ typedef struct signal_handler_ctx {
     /** PLCrashLogWriter instance */
     plcrash_log_writer_t writer;
 
-    /** Path to the output file */
+    /** Path to the final output file. This must be populated via an atomic rename(2) from the 
+     * temp_path (@sa PLCrashReporter::crashReportTemporaryPath). */
     const char *path;
     
+    /** Path to the temporary output file. Creation of this file must be synchronized via O_CREAT|O_EXCL
+     * (@sa PLCrashReporter::crashReportTemporaryPath). */
+    const char *temp_path;
+
     /**
      * The last uncaught exception, or NULL if none. This value will be atomically updated by uncaught_exception_handler(),
      * and <em>must not</em> be modified elsewhere.
@@ -156,8 +169,14 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
     plcrash_error_t err;
 
     /* Open the output file */
-    int fd = open(sigctx->path, O_RDWR|O_CREAT|O_TRUNC, 0644);
-    if (fd < 0) {
+    int fd = open(sigctx->temp_path, O_RDWR|O_CREAT|O_EXCL, 0600);
+    if (fd < 0 && errno == EEXIST) {
+        PLCF_DEBUG("The crashlog output file exists; another writer must be active. Parking this thread and awaiting process termination.");
+        while (1) {
+            /* As per POSIX XSH6 Section 2.4.3, sleep() is async-safe. */
+            sleep(30);
+        }
+    } else if (fd < 0) {
         PLCF_DEBUG("Could not open the crashlog output file: %s", strerror(errno));
         return PLCRASH_EINTERNAL;
     }
@@ -437,6 +456,8 @@ static void uncaught_exception_handler (NSException *exception) {
 - (NSString *) crashReportDirectory;
 - (NSString *) queuedCrashReportDirectory;
 - (NSString *) crashReportPath;
+- (NSString *) crashReportTemporaryPath;
+- (NSString *) crashReportFailedOutputPath;
 
 @end
 
@@ -602,6 +623,8 @@ static PLCrashReporter *sharedReporter = nil;
  * This restriction may be removed in a future release.
  */
 - (BOOL) enableCrashReporterAndReturnError: (NSError **) outError {
+    NSFileManager *fm = [NSFileManager defaultManager];
+
     /* Prevent enabling more than one crash reporter, process wide. We can not support multiple chained reporters
      * due to the use of NSUncaughtExceptionHandler (it doesn't support chaining or assocation of context with the callbacks), as
      * well as our legacy approach of deregistering any signal handlers upon the first signal. Once PLCrashUncaughtExceptionHandler is
@@ -627,9 +650,34 @@ static PLCrashReporter *sharedReporter = nil;
     /* Create the directory tree */
     if (![self populateCrashReportDirectoryAndReturnError: outError])
         return NO;
+    
+    /* Remove the temporary output file, if it exists */
+    if ([fm fileExistsAtPath: [self crashReportTemporaryPath]]) {
+        NSString *temporaryPath = [self crashReportTemporaryPath];
+        NSString *failedPath = [self crashReportFailedOutputPath];
+
+        NSDEBUG(@"A partially written report was found. This may occur if the application terminated prior to successfully writing "
+                "a crash report, and may be (but is not necessarily) the result of a crash in the reporting process.");
+
+        /* Rename the file; it must not exist after the crash report is enabled, but we don't want to delete it, as it
+         * could be invaluable should we need to investiate an error in the crash reporter itself. */
+        if (rename([temporaryPath fileSystemRepresentation], [failedPath fileSystemRepresentation]) != 0) {
+            /* Barring a permissions error, this shouldn't fail */
+
+            /* populate our error output and inform the caller */
+            NSString *description = [NSString stringWithFormat: @"Could not rename '%@' to '%@'", temporaryPath, failedPath];
+            plcrash_populate_posix_error(outError, errno, description);
+            return NO;
+        }
+
+        /* Log the new location of the file, and request that the developer submit an issue report */
+        NSDEBUG(@"The report has been moved to %@ for later examination. Please file an issue against the PLCrashReporter project to allow for "
+                 "further investigation, including this report and any other details that may be relevent.", [self crashReportFailedOutputPath]);
+    }
 
     /* Set up the signal handler context */
-    signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
+    signal_handler_context.path = strdup([[self crashReportPath] fileSystemRepresentation]); // NOTE: would leak if this were not a singleton struct
+    signal_handler_context.temp_path = strdup([[self crashReportTemporaryPath] fileSystemRepresentation]); // NOTE: would leak if this were not a singleton struct
     signal_handler_context.last_objc_exception = NULL;
 
     assert(_applicationIdentifier != nil);
@@ -1110,6 +1158,31 @@ cleanup:
     return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_LIVE_CRASHREPORT];
 }
 
+/**
+ * Return the path to be used when non-atomically writing the live crash report. This file
+ * will be automatically removed when the crash reporter is enabled, if it exists.
+ *
+ * @par Writer Concurrency
+ *
+ * To safely handle the case where multiple writers may attempt to write to this temporary file,
+ * the following requirements should be met:
+ *
+ * - Any use of the file should be locked via O_CREAT|O_EXCL. If creation fails, another writer
+ *   is already active, and the failed thread should block.
+ *
+ * - The path should be atomically renamed to the final PLCrashReporter::crashReportPath destination upon successful
+ *   completion of the writer.
+ */
+- (NSString *) crashReportTemporaryPath {
+    return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_TEMP_OUTPUT];
+}
 
+/**
+ * Return the path to be used when saving a partially written report for later examination. Refer to
+ * PLCrashReporter::crashReportTemporaryPath for more details.
+ */
+- (NSString *) crashReportFailedOutputPath {
+    return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_FAILED_OUTPUT];
+}
 
 @end
