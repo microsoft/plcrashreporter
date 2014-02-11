@@ -345,6 +345,19 @@ plcrash_error_t plcrash_async_task_read_uint64 (task_t task, const plcrash_async
 }
 
 /**
+ * An intentionally naive async-safe implementation of strlen(). strlen() itself is not declared to be async-safe,
+ * though in reality, it is.
+ *
+ * @param s A NULL terminated C string.
+ * @return The number of characters preceding the terminating NUL character.
+ */
+size_t plcrash_async_strlen(const char *s) {
+    const char *s1 = s;
+    for (s1 = s; *s1 != '\0'; s1++);
+    return(s1 - s);
+}
+
+/**
  * An intentionally naive async-safe implementation of strcmp(). strcmp() itself is not declared to be async-safe,
  * though in reality, it is.
  *

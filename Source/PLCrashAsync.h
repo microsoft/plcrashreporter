@@ -263,6 +263,7 @@ plcrash_error_t plcrash_async_task_read_uint32 (task_t task, const plcrash_async
 plcrash_error_t plcrash_async_task_read_uint64 (task_t task, const plcrash_async_byteorder_t *byteorder,
                                                 pl_vm_address_t address, pl_vm_off_t offset, uint64_t *result);
 
+size_t plcrash_async_strlen (const char *s);
 int plcrash_async_strcmp(const char *s1, const char *s2);
 int plcrash_async_strncmp(const char *s1, const char *s2, size_t n);
 void *plcrash_async_memcpy(void *dest, const void *source, size_t n);

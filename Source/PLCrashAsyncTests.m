@@ -146,6 +146,11 @@
     STAssertEquals(dest.u8, src.u8, @"Incorrect value read");
 }
 
+- (void) testStrlen {
+    STAssertEquals(strlen(""), plcrash_async_strlen(""), @"Empty string should have a zero length");
+    STAssertEquals(strlen("Hello"), plcrash_async_strlen("Hello"), @"Incorrect string length");
+}
+
 - (void) testStrcmp {
     STAssertEquals(0, plcrash_async_strcmp("s1", "s1"), @"Strings should be equal");
     STAssertTrue(plcrash_async_strcmp("s1", "s2") < 0, @"Strings compared incorrectly");
