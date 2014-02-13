@@ -2094,8 +2094,11 @@
 				05CD32750EE93E5A000FDE88 /* Tools */,
 				059670E30EEFADA6008A0601 /* Dependencies */,
 			);
+			indentWidth = 4;
 			name = CrashReporter;
 			sourceTree = "<group>";
+			tabWidth = 4;
+			usesTabs = 0;
 		};
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
