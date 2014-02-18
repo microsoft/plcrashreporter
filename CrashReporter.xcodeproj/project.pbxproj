@@ -2094,8 +2094,11 @@
 				05CD32750EE93E5A000FDE88 /* Tools */,
 				059670E30EEFADA6008A0601 /* Dependencies */,
 			);
+			indentWidth = 4;
 			name = CrashReporter;
 			sourceTree = "<group>";
+			tabWidth = 4;
+			usesTabs = 0;
 		};
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
@@ -4349,7 +4352,7 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.2-rc3";
+				CURRENT_PROJECT_VERSION = "1.2-rc4";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -4378,7 +4381,7 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.2-rc3";
+				CURRENT_PROJECT_VERSION = "1.2-rc4";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
