@@ -41,6 +41,7 @@ extern "C" {
  * @{
  */
 
+#include "PLCrashMacros.h"
 #include "PLCrashAsyncMachOImage.h"
 #include "PLCrashAsyncObjCSection.h"
     
@@ -55,7 +56,7 @@ extern "C" {
  * for a given build; in that case, it can provide function and method names (though not line numbers) for a
  * crash report that may otherwise be unusable.
  */
-typedef enum {
+typedef PLCF_ENUM_FLAGS(plcrash_async_symbol_strategy_t, uint32_t) {
     /** No symbolication. */
     PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE = 0,
     
@@ -76,7 +77,7 @@ typedef enum {
      * Enable all available symbolication strategies.
      */
     PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL = (PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE|PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC)
-} plcrash_async_symbol_strategy_t;
+};
 
 /**
  * @internal

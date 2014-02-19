@@ -17,11 +17,12 @@
 #ifndef PLCRASH_LOG_WRITER_ENCODING_H
 #define PLCRASH_LOG_WRITER_ENCODING_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "PLCrashMacros.h"
 
-#import "PLCrashAsync.h"
+PLCR_C_BEGIN_DECLS
+
+#include "PLCrashAsync.h"
+#include "PLCrashAsyncFile.hpp"
 
 typedef enum {
         PLPROTOBUF_C_TYPE_INT32,
@@ -49,10 +50,8 @@ typedef struct PLProtobufCBinaryData {
     void *data;
 } PLProtobufCBinaryData;
 
-size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value);
-    
-#ifdef __cplusplus
-}
-#endif
+size_t plcrash_writer_pack (plcrash::async::async_file *file, uint32_t field_id, PLProtobufCType field_type, const void *value);
+
+PLCR_C_END_DECLS
 
 #endif /* PLCRASH_LOG_WRITER_ENCODING_H */

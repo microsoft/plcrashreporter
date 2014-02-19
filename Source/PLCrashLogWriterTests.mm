@@ -28,7 +28,7 @@
 
 #import "GTMSenTestCase.h"
 
-#import "PLCrashLogWriter.h"
+#import "PLCrashLogWriter.hpp"
 #import "PLCrashFrameWalker.h"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashReport.h"
@@ -45,6 +45,8 @@
 #import "PLCrashTestThread.h"
 
 #import "PLCrashSysctl.h"
+
+using namespace plcrash::async;
 
 @interface PLCrashLogWriterTests : SenTestCase {
 @private
@@ -160,7 +162,7 @@
     
     _NSGetExecutablePath(NULL, &process_path_len);
     if (process_path_len > 0) {
-        process_path = malloc(process_path_len);
+        process_path = (char *) malloc(process_path_len);
         _NSGetExecutablePath(process_path, &process_path_len);
         STAssertEqualCStrings(procInfo->process_path, process_path, @"Incorrect process name");
         free(process_path);
@@ -235,7 +237,7 @@
          */ 
         Dl_info info;
         STAssertTrue(dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
-        struct mach_header *hdr = info.dli_fbase;
+        struct mach_header *hdr = (struct mach_header *) info.dli_fbase;
         STAssertEquals(image->code_type->type, hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(image->code_type->subtype, hdr->cpusubtype, @"Incorrect CPU subtype");
     }
@@ -262,7 +264,7 @@
 
     
     /* Check the file magic. The file must be large enough for the value + version + data */
-    const struct PLCrashReportFileHeader *header = [data bytes];
+    const struct PLCrashReportFileHeader *header = (const struct PLCrashReportFileHeader *) [data bytes];
     STAssertTrue([data length] > sizeof(struct PLCrashReportFileHeader), @"File is too small for magic + version + data");
     // verifies correct byte ordering of the file magic
     STAssertTrue(memcmp(header->magic, PLCRASH_REPORT_FILE_MAGIC, strlen(PLCRASH_REPORT_FILE_MAGIC)) == 0, @"File header is not 'plcrash', is: '%s'", (const char *) &header->magic);
@@ -282,7 +284,6 @@
 - (void) testWriteReport {
     plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
-    plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
     plcrash_async_thread_state_t thread_state;
     thread_t thread;
@@ -290,7 +291,7 @@
     /* Initialize the image list */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
     for (uint32_t i = 0; i < _dyld_image_count(); i++)
-        plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
+        plcrash_nasync_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
 
     /* Initialze faux crash data */
     plcrash_log_signal_info_t info;
@@ -319,7 +320,7 @@
 
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
-    plcrash_async_file_init(&file, fd, 0);
+    async_file file = async_file(fd, 0);
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
@@ -345,8 +346,8 @@
     plcrash_log_objc_exception_info_free(&objc_exc_info);
 
     /* Flush the output */
-    plcrash_async_file_flush(&file);
-    plcrash_async_file_close(&file);
+    file.flush();
+    file.close();
 
     /* Load and validate the written report */
     Plcrash__CrashReport *crashReport = [self loadReport];

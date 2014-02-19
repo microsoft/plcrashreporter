@@ -270,36 +270,6 @@ void *plcrash_async_memcpy(void *dest, const void *source, size_t n);
 void *plcrash_async_memset(void *dest, uint8_t value, size_t n);
 
 ssize_t plcrash_async_writen (int fd, const void *data, size_t len);
-
-/**
- * @internal
- * @ingroup plcrash_async_bufio
- *
- * Async-safe buffered file output. This implementation is only intended for use
- * within signal handler execution of crash log output.
- */
-typedef struct plcrash_async_file {
-    /** Output file descriptor */
-    int fd;
-
-    /** Output limit */
-    off_t limit_bytes;
-
-    /** Total bytes written */
-    off_t total_bytes;
-
-    /** Current length of data in buffer */
-    size_t buflen;
-
-    /** Buffered output */
-    char buffer[256];
-} plcrash_async_file_t;
-
-
-void plcrash_async_file_init (plcrash_async_file_t *file, int fd, off_t output_limit);
-bool plcrash_async_file_write (plcrash_async_file_t *file, const void *data, size_t len);
-bool plcrash_async_file_flush (plcrash_async_file_t *file);
-bool plcrash_async_file_close (plcrash_async_file_t *file);
     
 #ifdef __cplusplus
 }

@@ -28,14 +28,16 @@
 
 #import "GTMSenTestCase.h"
 #import "PLCrashAsync.h"
-#import "PLCrashLogWriterEncoding.h"
+#import "PLCrashLogWriterEncoding.hpp"
 
 #import "protobuf-c.h"
 #import "PLCrashLogWriterEncodingTests.pb-c.h"
 
+using namespace plcrash::async;
+
 @interface PLCrashLogWriterEncodingTests : GTMTestCase {
 @private
-    plcrash_async_file_t _file;
+    async_file *_file;
     NSString *_filePath;
 }
 @end
@@ -48,11 +50,12 @@
     int fd = open([_filePath fileSystemRepresentation], O_RDWR|O_CREAT|O_TRUNC, 0644);
     STAssertTrue(fd >= 0, @"Could not open output file: %s", strerror(errno));
 
-    plcrash_async_file_init(&_file, fd, OFF_MAX);
+    _file = new async_file(fd, OFF_MAX);
 }
 
 - (void) tearDown {
-    STAssertTrue(plcrash_async_file_close(&_file), @"Failed to close file");
+    STAssertTrue(_file->close(), @"Failed to close file");
+    delete _file;
 
     [_filePath release];
     _filePath = nil;
@@ -61,15 +64,15 @@
 #define TEST_PACK(ctype, fieldname, type, test_value, tag, type_constant) \
 - (void) test_ ## type ## _ ## test_value { \
     ctype v = test_value; \
-    plcrash_writer_pack(&_file, tag, type_constant, &v); \
-    STAssertTrue(plcrash_async_file_flush(&_file), @"Failed to flush file"); \
+    plcrash_writer_pack(_file, tag, type_constant, &v); \
+    STAssertTrue(_file->flush(), @"Failed to flush file"); \
 \
     NSData *data = [NSData dataWithContentsOfFile: _filePath]; \
     STAssertNotNil(data, @"Failed to load encoded data"); \
     if (data == nil) \
         return; \
 \
-    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], [data bytes]); \
+    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], (const uint8_t *) [data bytes]); \
     STAssertNotNULL(et, @"Failed to decode test data"); \
     if (et == NULL) \
         return; \
@@ -116,15 +119,15 @@ TEST_PACK(EncoderTest__Enum, enum_, enum, ENCODER_TEST__ENUM__Value2, 14, PLPROT
         .len = sizeof(bytes),
         .data = bytes
     } ;
-    plcrash_writer_pack(&_file, 15, PLPROTOBUF_C_TYPE_BYTES, &binary);
-    STAssertTrue(plcrash_async_file_flush(&_file), @"Failed to flush file");
+    plcrash_writer_pack(_file, 15, PLPROTOBUF_C_TYPE_BYTES, &binary);
+    STAssertTrue(_file->flush(), @"Failed to flush file");
 
     NSData *data = [NSData dataWithContentsOfFile: _filePath];
     STAssertNotNil(data, @"Failed to load encoded data");
     if (data == nil)
         return;
 
-    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], [data bytes]);
+    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], (const uint8_t *) [data bytes]);
     STAssertNotNULL(et, @"Failed to decode test data");
     if (et == NULL)
         return;
@@ -136,15 +139,15 @@ TEST_PACK(EncoderTest__Enum, enum_, enum, ENCODER_TEST__ENUM__Value2, 14, PLPROT
 
 - (void) testPackString {
     const char *str = "cafe";
-    plcrash_writer_pack(&_file, 16, PLPROTOBUF_C_TYPE_STRING, str);
-    STAssertTrue(plcrash_async_file_flush(&_file), @"Failed to flush file");
+    plcrash_writer_pack(_file, 16, PLPROTOBUF_C_TYPE_STRING, str);
+    STAssertTrue(_file->flush(), @"Failed to flush file");
 
     NSData *data = [NSData dataWithContentsOfFile: _filePath];
     STAssertNotNil(data, @"Failed to load encoded data");
     if (data == nil)
         return;
     
-    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], [data bytes]);
+    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], (const uint8_t *) [data bytes]);
     STAssertNotNULL(et, @"Failed to decode test data");
     if (et == NULL)
         return;

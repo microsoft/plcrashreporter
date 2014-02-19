@@ -37,7 +37,7 @@
 #import "PLCrashFeatureConfig.h"
 
 #import "PLCrashAsync.h"
-#import "PLCrashLogWriter.h"
+#import "PLCrashLogWriter.hpp"
 #import "PLCrashFrameWalker.h"
 
 #import "PLCrashAsyncMachExceptionInfo.h"
@@ -47,6 +47,8 @@
 #import <fcntl.h>
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
+
+using namespace plcrash::async;
 
 #define NSDEBUG(msg, args...) {\
     NSLog(@"[PLCrashReporter] " msg, ## args); \
@@ -154,7 +156,6 @@ static PLCrashReporterCallbacks crashCallbacks = {
  * @return Returns PLCRASH_ESUCCESS on success, or an appropriate error value if the report could not be written.
  */
 static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigctx, thread_t crashed_thread, plcrash_async_thread_state_t *thread_state, plcrash_log_signal_info_t *siginfo) {
-    plcrash_async_file_t file;
     plcrash_error_t err;
 
     /* Open the output file */
@@ -165,7 +166,7 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
     }
     
     /* Initialize the output context */
-    plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
+    async_file file = async_file(fd, MAX_REPORT_BYTES);
 
     /* Fetch the last Objective-C exception, if any. This may be NULL. As per the plcrashreporter_handler_ctx_t documentation, this 
      * value is updated atomically by the uncaught exception handler, and may be safely fetched without locking. */
@@ -177,18 +178,18 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
     /* Close the writer; this may also fail (but shouldn't) */
     if (plcrash_log_writer_close(&sigctx->writer) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to close the log writer");
-        plcrash_async_file_close(&file);
+        file.close();
         return PLCRASH_EINTERNAL;
     }
     
     /* Finished */
-    if (!plcrash_async_file_flush(&file)) {
+    if (!file.flush()) {
         PLCF_DEBUG("Failed to flush output file");
-        plcrash_async_file_close(&file);
+        file.close();
         return PLCRASH_EINTERNAL;
     }
     
-    if (!plcrash_async_file_close(&file)) {
+    if (!file.close()) {
         PLCF_DEBUG("Failed to close output file");
         return PLCRASH_EINTERNAL;
     }
@@ -202,7 +203,7 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
  * Signal handler callback.
  */
 static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
-    plcrashreporter_handler_ctx_t *sigctx = context;
+    plcrashreporter_handler_ctx_t *sigctx = (plcrashreporter_handler_ctx_t *) context;
     plcrash_async_thread_state_t thread_state;
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
@@ -261,12 +262,12 @@ struct mach_exception_callback_live_cb_ctx {
 };
 
 static plcrash_error_t mach_exception_callback_live_cb (plcrash_async_thread_state_t *state, void *ctx) {
-    struct mach_exception_callback_live_cb_ctx *plcr_ctx = ctx;
+    struct mach_exception_callback_live_cb_ctx *plcr_ctx = (struct mach_exception_callback_live_cb_ctx *) ctx;
     return plcrash_write_report(plcr_ctx->sigctx, plcr_ctx->crashed_thread, state, plcr_ctx->siginfo);
 }
 
 static kern_return_t mach_exception_callback (task_t task, thread_t thread, exception_type_t exception_type, mach_exception_data_t code, mach_msg_type_number_t code_count, void *context) {
-    plcrashreporter_handler_ctx_t *sigctx = context;
+    plcrashreporter_handler_ctx_t *sigctx = (plcrashreporter_handler_ctx_t *) context;
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
     plcrash_log_mach_signal_info_t mach_signal_info;
@@ -719,11 +720,11 @@ static PLCrashReporter *sharedReporter = nil;
 /* State and callback used by -generateLiveReportWithThread */
 struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
-    plcrash_async_file_t *file;
+    async_file *file;
     plcrash_log_signal_info_t *info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
-    struct plcr_live_report_context *plcr_ctx = ctx;
+    struct plcr_live_report_context *plcr_ctx = (struct plcr_live_report_context *) ctx;
     return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), &shared_image_list, plcr_ctx->file, plcr_ctx->info, NULL, state);
 }
 
@@ -745,8 +746,8 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
  */
 - (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
     plcrash_log_writer_t writer;
-    plcrash_async_file_t file;
     plcrash_error_t err;
+    NSData *data = nil;
 
     /* Open the output file */
     NSString *templateStr = [NSTemporaryDirectory() stringByAppendingPathComponent: @"live_crash_report.XXXXXX"];
@@ -762,7 +763,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 
     /* Initialize the output context */
     plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
-    plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
+    async_file file = async_file(fd, MAX_REPORT_BYTES);
     
     /* Mock up a SIGTRAP-based signal info */
     plcrash_log_bsd_signal_info_t bsd_signal_info;
@@ -788,15 +789,24 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_writer_close(&writer);
 
     /* Flush the data */
-    plcrash_async_file_flush(&file);
-    plcrash_async_file_close(&file);
+    if (!file.flush()) {
+        /* This should never fail */
+        plcrash_populate_error(outError, PLCrashReporterErrorInternal, @"The output file could not be flushed", nil);
+        file.close();
+        goto cleanup;
+    }
+
+    /* Close the output */
+    if (!file.close()) {
+        /* This should never fail */
+        plcrash_populate_error(outError, PLCrashReporterErrorInternal, @"The output file could not be closed", nil);
+        goto cleanup;
+    }
 
     /* Check for write failure */
-    NSData *data;
     if (err != PLCRASH_ESUCCESS) {
         NSLog(@"Write failed with error %s", plcrash_async_strerror(err));
         plcrash_populate_error(outError, PLCrashReporterErrorUnknown, @"Failed to write the crash report to disk", nil);
-        data = nil;
         goto cleanup;
     }
 

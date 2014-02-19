@@ -29,14 +29,15 @@
 #ifndef PLCRASH_LOG_WRITER_H
 #define PLCRASH_LOG_WRITER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "PLCrashMacros.h"
+
+PLCR_C_BEGIN_DECLS
 
 #import <TargetConditionals.h>
 #import <Foundation/Foundation.h>
 
 #import "PLCrashAsync.h"
+#import "PLCrashAsyncFile.hpp"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashFrameWalker.h"
     
@@ -221,7 +222,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,
-                                          plcrash_async_file_t *file,
+                                          plcrash::async::async_file *file,
                                           plcrash_log_signal_info_t *siginfo,
                                           plcrash_log_objc_exception_info_t *objc_exc_info,
                                           plcrash_async_thread_state_t *current_state);
@@ -232,9 +233,7 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer);
 /**
  * @} plcrash_log_writer
  */
-    
-#ifdef __cplusplus
-}
-#endif
+
+PLCR_C_END_DECLS
 
 #endif /* PLCRASH_LOG_WRITER_H */

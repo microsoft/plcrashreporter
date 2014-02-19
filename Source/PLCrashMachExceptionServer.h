@@ -26,6 +26,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "PLCrashMacros.h"
+
+PLCR_C_BEGIN_DECLS
+
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
@@ -107,5 +111,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
 @property(nonatomic, readonly) thread_t serverThread;
 
 @end
+
+PLCR_C_END_DECLS
 
 #endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */

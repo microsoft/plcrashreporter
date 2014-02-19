@@ -95,7 +95,10 @@ typedef enum {
     PLCrashReporterErrorCrashReportInvalid = 2,
 
     /** An attempt to use a resource which was in use at the time in a manner which would have conflicted with the request. */
-    PLCrashReporterErrorResourceBusy = 3
+    PLCrashReporterErrorResourceBusy = 3,
+
+    /** An unexpected internal error occured. */
+    PLCrashReporterErrorInternal = 4
 } PLCrashReporterError;
 
 

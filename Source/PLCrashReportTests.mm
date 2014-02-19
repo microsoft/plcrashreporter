@@ -30,7 +30,7 @@
 #import "PLCrashReport.h"
 #import "PLCrashReporter.h"
 #import "PLCrashFrameWalker.h"
-#import "PLCrashLogWriter.h"
+#import "PLCrashLogWriter.hpp"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashTestThread.h"
 
@@ -41,6 +41,8 @@
 
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
+
+using namespace plcrash::async;
 
 @interface PLCrashReportTests : SenTestCase {
 @private
@@ -67,19 +69,18 @@
 
 struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
-    plcrash_async_file_t *file;
+    async_file *file;
     plcrash_async_image_list_t *images;
     plcrash_log_signal_info_t *info;
     plcrash_log_objc_exception_info_t *objc_exc_info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
-    struct plcr_live_report_context *plcr_ctx = ctx;
+    struct plcr_live_report_context *plcr_ctx = (struct plcr_live_report_context *) ctx;
     return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, plcr_ctx->objc_exc_info, state);
 }
 
 - (void) testWriteReport {
     plcrash_log_writer_t writer;
-    plcrash_async_file_t file;
     plcrash_async_image_list_t image_list;
     NSError *error = nil;
     
@@ -89,7 +90,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_mach_signal_info_t mach_info;
     mach_exception_data_type_t mach_codes[2];
     {
-        bsd_info.address = method_getImplementation(class_getInstanceMethod([self class], _cmd));
+        bsd_info.address = (void *) method_getImplementation(class_getInstanceMethod([self class], _cmd));
         bsd_info.code = SEGV_MAPERR;
         bsd_info.signo = SIGSEGV;
         
@@ -105,7 +106,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
-    plcrash_async_file_init(&file, fd, 0);
+    async_file file = async_file(fd, 0);
     
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
@@ -144,8 +145,8 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_nasync_image_list_free(&image_list);
     plcrash_log_objc_exception_info_free(&objc_exc_info);
 
-    plcrash_async_file_flush(&file);
-    plcrash_async_file_close(&file);
+    file.flush();
+    file.close();
 
     /* Try to parse it */
     PLCrashReport *crashLog = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
@@ -273,7 +274,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          */
         Dl_info info;
         STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
-        struct mach_header *hdr = info.dli_fbase;
+        struct mach_header *hdr = (struct mach_header *) info.dli_fbase;
         STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
     }

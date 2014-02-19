@@ -45,4 +45,17 @@
 #  define PLCR_PRAGMA_CLANG(_p)
 #endif
 
+#if (__cplusplus && __cplusplus >= 201103L) || (!__cplusplus && defined(__has_feature) && __has_feature(objc_fixed_enum))
+/**
+ * Declare a C++11 / Objective-C / C enum with a fixed storage type, which may be used to represent
+ * a set of bitfield flags.
+ *
+ * @param enum The enum name.
+ * @param type The enum type.
+ */
+#define PLCF_ENUM_FLAGS(_name, _type) enum _name : _type _name; enum _name : _type
+#else
+#define PLCF_ENUM_FLAGS(_name, _type) _type _name; enum
+#endif
+
 #endif /* PLCRASH_CONSTANTS_H */
