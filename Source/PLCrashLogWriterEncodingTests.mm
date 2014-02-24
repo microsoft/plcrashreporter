@@ -37,7 +37,7 @@ using namespace plcrash::async;
 
 @interface PLCrashLogWriterEncodingTests : GTMTestCase {
 @private
-    async_file *_file;
+    AsyncFile *_file;
     NSString *_filePath;
 }
 @end
@@ -50,7 +50,7 @@ using namespace plcrash::async;
     int fd = open([_filePath fileSystemRepresentation], O_RDWR|O_CREAT|O_TRUNC, 0644);
     STAssertTrue(fd >= 0, @"Could not open output file: %s", strerror(errno));
 
-    _file = new async_file(fd, OFF_MAX);
+    _file = new AsyncFile(fd, OFF_MAX);
 }
 
 - (void) tearDown {

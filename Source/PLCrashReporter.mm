@@ -166,7 +166,7 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
     }
     
     /* Initialize the output context */
-    async_file file = async_file(fd, MAX_REPORT_BYTES);
+    AsyncFile file = AsyncFile(fd, MAX_REPORT_BYTES);
 
     /* Fetch the last Objective-C exception, if any. This may be NULL. As per the plcrashreporter_handler_ctx_t documentation, this 
      * value is updated atomically by the uncaught exception handler, and may be safely fetched without locking. */
@@ -720,7 +720,7 @@ static PLCrashReporter *sharedReporter = nil;
 /* State and callback used by -generateLiveReportWithThread */
 struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
-    async_file *file;
+    AsyncFile *file;
     plcrash_log_signal_info_t *info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
@@ -763,7 +763,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 
     /* Initialize the output context */
     plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
-    async_file file = async_file(fd, MAX_REPORT_BYTES);
+    AsyncFile file = AsyncFile(fd, MAX_REPORT_BYTES);
     
     /* Mock up a SIGTRAP-based signal info */
     plcrash_log_bsd_signal_info_t bsd_signal_info;

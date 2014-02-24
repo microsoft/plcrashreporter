@@ -558,7 +558,7 @@ void plcrash_log_objc_exception_info_free (plcrash_log_objc_exception_info_t *in
  * @param file Output file
  * @param timestamp Timestamp to use (seconds since epoch). Must be same across calls, as varint encoding.
  */
-static size_t plcrash_writer_write_system_info (async_file *file, plcrash_log_writer_t *writer, int64_t timestamp) {
+static size_t plcrash_writer_write_system_info (AsyncFile *file, plcrash_log_writer_t *writer, int64_t timestamp) {
     size_t rv = 0;
     uint32_t enumval;
 
@@ -591,7 +591,7 @@ static size_t plcrash_writer_write_system_info (async_file *file, plcrash_log_wr
  * @param cpu_type The Mach CPU type.
  * @param cpu_subtype_t The Mach CPU subtype
  */
-static size_t plcrash_writer_write_processor_info (async_file *file, uint64_t cpu_type, uint64_t cpu_subtype) {
+static size_t plcrash_writer_write_processor_info (AsyncFile *file, uint64_t cpu_type, uint64_t cpu_subtype) {
     size_t rv = 0;
     uint32_t enumval;
     
@@ -615,7 +615,7 @@ static size_t plcrash_writer_write_processor_info (async_file *file, uint64_t cp
  *
  * @param file Output file
  */
-static size_t plcrash_writer_write_machine_info (async_file *file, plcrash_log_writer_t *writer) {
+static size_t plcrash_writer_write_machine_info (AsyncFile *file, plcrash_log_writer_t *writer) {
     size_t rv = 0;
     
     /* Model */
@@ -652,7 +652,7 @@ static size_t plcrash_writer_write_machine_info (async_file *file, plcrash_log_w
  * @param app_identifier Application identifier
  * @param app_version Application version
  */
-static size_t plcrash_writer_write_app_info (async_file *file, const char *app_identifier, const char *app_version) {
+static size_t plcrash_writer_write_app_info (AsyncFile *file, const char *app_identifier, const char *app_version) {
     size_t rv = 0;
 
     /* App identifier */
@@ -678,7 +678,7 @@ static size_t plcrash_writer_write_app_info (async_file *file, const char *app_i
  * @param native If false, process is running under emulation.
  * @param start_time The start time of the process.
  */
-static size_t plcrash_writer_write_process_info (async_file *file, const char *process_name,
+static size_t plcrash_writer_write_process_info (AsyncFile *file, const char *process_name,
                                                  const pid_t process_id, const char *process_path, 
                                                  const char *parent_process_name, const pid_t parent_process_id,
                                                  bool native, time_t start_time)
@@ -736,7 +736,7 @@ static size_t plcrash_writer_write_process_info (async_file *file, const char *p
  * @param file Output file
  * @param cursor The cursor from which to acquire frame data.
  */
-static size_t plcrash_writer_write_thread_register (async_file *file, const char *regname, plcrash_greg_t regval) {
+static size_t plcrash_writer_write_thread_register (AsyncFile *file, const char *regname, plcrash_greg_t regval) {
     uint64_t uint64val;
     size_t rv = 0;
 
@@ -759,7 +759,7 @@ static size_t plcrash_writer_write_thread_register (async_file *file, const char
  * @param task The task from which @a uap was derived. All memory accesses will be mapped from this task.
  * @param cursor The cursor from which to acquire frame registers.
  */
-static size_t plcrash_writer_write_thread_registers (async_file *file, task_t task, plframe_cursor_t *cursor) {
+static size_t plcrash_writer_write_thread_registers (AsyncFile *file, task_t task, plframe_cursor_t *cursor) {
     plframe_error_t frame_err;
     uint32_t regCount = plframe_cursor_get_regcount(cursor);
     size_t rv = 0;
@@ -800,7 +800,7 @@ static size_t plcrash_writer_write_thread_registers (async_file *file, task_t ta
  * @param name The symbol name
  * @param start_address The symbol start address
  */
-static size_t plcrash_writer_write_symbol (async_file *file, const char *name, uint64_t start_address) {
+static size_t plcrash_writer_write_symbol (AsyncFile *file, const char *name, uint64_t start_address) {
     size_t rv = 0;
     
     /* name */
@@ -818,7 +818,7 @@ static size_t plcrash_writer_write_symbol (async_file *file, const char *name, u
  */
 struct pl_symbol_cb_ctx {
     /** File to use for writing out a symbol entry. May be NULL. */
-    async_file *file;
+    AsyncFile *file;
 
     /** Size of the symbol entry, to be written by the callback function upon writing an entry. */
     uint32_t msgsize;
@@ -843,7 +843,7 @@ static void plcrash_writer_write_thread_frame_symbol_cb (pl_vm_address_t address
  * @param file Output file
  * @param pcval The frame PC value.
  */
-static size_t plcrash_writer_write_thread_frame (async_file *file, plcrash_log_writer_t *writer, uint64_t pcval, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
+static size_t plcrash_writer_write_thread_frame (AsyncFile *file, plcrash_log_writer_t *writer, uint64_t pcval, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
     size_t rv = 0;
 
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &pcval);
@@ -896,7 +896,7 @@ static size_t plcrash_writer_write_thread_frame (async_file *file, plcrash_log_w
  * @param findContext Symbol lookup cache.
  * @param crashed If true, mark this as a crashed thread.
  */
-static size_t plcrash_writer_write_thread (async_file *file,
+static size_t plcrash_writer_write_thread (AsyncFile *file,
                                            plcrash_log_writer_t *writer,
                                            task_t task,
                                            thread_t thread,
@@ -992,7 +992,7 @@ static size_t plcrash_writer_write_thread (async_file *file,
  * @param name binary image path (or name).
  * @param image_base Mach-O image base.
  */
-static size_t plcrash_writer_write_binary_image (async_file *file, plcrash_async_macho_t *image) {
+static size_t plcrash_writer_write_binary_image (AsyncFile *file, plcrash_async_macho_t *image) {
     size_t rv = 0;
 
     /* Fetch the CPU types. Note that the wire format represents these as 64-bit unsigned integers.
@@ -1048,7 +1048,7 @@ static size_t plcrash_writer_write_binary_image (async_file *file, plcrash_async
  * @param file Output file
  * @param writer Writer containing exception data
  */
-static size_t plcrash_writer_write_exception (async_file *file, plcrash_log_writer_t *writer, plcrash_log_objc_exception_info_t *exc_info, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
+static size_t plcrash_writer_write_exception (AsyncFile *file, plcrash_log_writer_t *writer, plcrash_log_objc_exception_info_t *exc_info, plcrash_async_image_list_t *image_list, plcrash_async_symbol_cache_t *findContext) {
     size_t rv = 0;
 
     /* Write the name and reason */
@@ -1080,7 +1080,7 @@ static size_t plcrash_writer_write_exception (async_file *file, plcrash_log_writ
  * @param file Output file
  * @param siginfo The signal information
  */
-static size_t plcrash_writer_write_mach_signal (async_file *file, plcrash_log_mach_signal_info_t *siginfo) {
+static size_t plcrash_writer_write_mach_signal (AsyncFile *file, plcrash_log_mach_signal_info_t *siginfo) {
     size_t rv = 0;
 
     /* Type */
@@ -1104,7 +1104,7 @@ static size_t plcrash_writer_write_mach_signal (async_file *file, plcrash_log_ma
  * @param file Output file
  * @param siginfo The signal information
  */
-static size_t plcrash_writer_write_signal (async_file *file, plcrash_log_signal_info_t *siginfo) {
+static size_t plcrash_writer_write_signal (AsyncFile *file, plcrash_log_signal_info_t *siginfo) {
     size_t rv = 0;
     
     /* BSD signal info is always required in the current report format; this restriction will be lifted
@@ -1160,7 +1160,7 @@ static size_t plcrash_writer_write_signal (async_file *file, plcrash_log_signal_
  * @param file Output file
  * @param writer Writer containing report data
  */
-static size_t plcrash_writer_write_report_info (async_file *file, plcrash_log_writer_t *writer) {
+static size_t plcrash_writer_write_report_info (AsyncFile *file, plcrash_log_writer_t *writer) {
     size_t rv = 0;
 
     /* Note crashed status */
@@ -1194,7 +1194,7 @@ static size_t plcrash_writer_write_report_info (async_file *file, plcrash_log_wr
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,
-                                          async_file *file,
+                                          AsyncFile *file,
                                           plcrash_log_signal_info_t *siginfo,
                                           plcrash_log_objc_exception_info_t *objc_exc_info,
                                           plcrash_async_thread_state_t *current_state)

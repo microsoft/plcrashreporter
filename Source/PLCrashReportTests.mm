@@ -69,7 +69,7 @@ using namespace plcrash::async;
 
 struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
-    async_file *file;
+    AsyncFile *file;
     plcrash_async_image_list_t *images;
     plcrash_log_signal_info_t *info;
     plcrash_log_objc_exception_info_t *objc_exc_info;
@@ -106,7 +106,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
-    async_file file = async_file(fd, 0);
+    AsyncFile file = AsyncFile(fd, 0);
     
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");

@@ -48,7 +48,7 @@ using namespace plcrash::async;
  * @param data The buffer to be written to @a fd.
  * @param len The total size of @a data, in bytes.
  */
-ssize_t async_file::writen (int fd, const void *data, size_t len) {
+ssize_t AsyncFile::writen (int fd, const void *data, size_t len) {
     const uint8_t *p;
     size_t left;
     ssize_t written = 0;
@@ -74,14 +74,14 @@ ssize_t async_file::writen (int fd, const void *data, size_t len) {
 }
 
 /**
- * Construct a new async_file instance.
+ * Construct a new AsyncFile instance.
  *
  * @param fd Open, writable file descriptor.
  * @param output_limit Maximum number of bytes that will be written to disk. Intended as a
  * safety measure prevent a run-away crash log writer from filling the disk. Specify
  * 0 to disable any limits. Once the limit is reached, all data will be dropped.
  */
-async_file::async_file (int fd, off_t output_limit) {
+AsyncFile::AsyncFile (int fd, off_t output_limit) {
     this->fd = fd;
     this->buflen = 0;
     this->total_bytes = 0;
@@ -92,14 +92,14 @@ async_file::async_file (int fd, off_t output_limit) {
  * @internal
  *
  * Return the size of the internal buffer. This is the maximum number of bytes
- * that will be buffered before async_file::write flushes the buffer contents
+ * that will be buffered before AsyncFile::write flushes the buffer contents
  * to disk.
  *
  * @warning This method is intended to be used by unit tests when determining
  * the minimum amount of data that must be written to trigger a buffer flush,
  * and should not be used externally.
  */
-size_t async_file::buffer_size (void) {
+size_t AsyncFile::buffer_size (void) {
     return sizeof(this->buffer);
 }
 
@@ -110,7 +110,7 @@ size_t async_file::buffer_size (void) {
  * @param data The buffer to be written to @a fd.
  * @param len The total size of @a data, in bytes.
  */
-bool async_file::write (const void *data, size_t len) {
+bool AsyncFile::write (const void *data, size_t len) {
     /* Check and update output limit */
     if (this->limit_bytes != 0 && len + this->total_bytes > this->limit_bytes) {
         return false;
@@ -121,7 +121,7 @@ bool async_file::write (const void *data, size_t len) {
     /* Check if the buffer will fill */
     if (this->buflen + len > sizeof(this->buffer)) {
         /* Flush the buffer */
-        if (async_file::writen(this->fd, this->buffer, this->buflen) < 0) {
+        if (AsyncFile::writen(this->fd, this->buffer, this->buflen) < 0) {
             PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
             return false;
         }
@@ -138,7 +138,7 @@ bool async_file::write (const void *data, size_t len) {
         
     } else {
         /* Won't fit in the buffer, just write it */
-        if (async_file::writen(this->fd, data, len) < 0) {
+        if (AsyncFile::writen(this->fd, data, len) < 0) {
             PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
             return false;
         }
@@ -151,13 +151,13 @@ bool async_file::write (const void *data, size_t len) {
 /**
  * Flush all buffered bytes from the file buffer to disk.
  */
-bool async_file::flush (void) {
+bool AsyncFile::flush (void) {
     /* Anything to do? */
     if (this->buflen == 0)
         return true;
     
     /* Write remaining */
-    if (async_file::writen(this->fd, this->buffer, this->buflen) < 0) {
+    if (AsyncFile::writen(this->fd, this->buffer, this->buflen) < 0) {
         PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
         return false;
     }
@@ -171,7 +171,7 @@ bool async_file::flush (void) {
 /**
  * Close the backing file descriptor.
  */
-bool async_file::close (void) {
+bool AsyncFile::close (void) {
     /* Flush any pending data */
     if (!this->flush())
         return false;

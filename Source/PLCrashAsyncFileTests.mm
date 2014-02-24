@@ -45,7 +45,7 @@ using namespace plcrash::async;
 @end
 
 /**
- * Tests the async_file implementation.
+ * Tests the AsyncFile implementation.
  */
 @implementation PLCrashAsyncFile
 
@@ -75,7 +75,7 @@ using namespace plcrash::async;
     uint32_t data = 1;
     
     /* Initialize the file instance with an 8 byte limit */
-    async_file file = async_file(_testFd, 8);
+    AsyncFile file = AsyncFile(_testFd, 8);
     
     /* Write to the limit */
     STAssertTrue(file.write(&data, sizeof(data)), @"Write failed");
@@ -99,7 +99,7 @@ using namespace plcrash::async;
     uint32_t data = 1;
     
     /* Initialize the file instance with an no byte limit */
-    async_file file = async_file(_testFd, 0);
+    AsyncFile file = AsyncFile(_testFd, 0);
     
     /* Write 4 bytes */
     STAssertTrue(file.write(&data, sizeof(data)), @"Write failed");
@@ -142,7 +142,7 @@ using namespace plcrash::async;
     size_t nread = 0;
 
     /* Initialize the file instance */
-    async_file file = async_file(_testFd, 0);
+    AsyncFile file = AsyncFile(_testFd, 0);
     
     /* Assert that the tests will trigger internal buffering */
     STAssertTrue(sizeof(data) * write_iterations > file.buffer_size(), @"Test is invalid if our test data is larger than the output buffer");

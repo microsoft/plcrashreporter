@@ -320,7 +320,7 @@ using namespace plcrash::async;
 
     /* Open the output file */
     int fd = open([_logPath UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
-    async_file file = async_file(fd, 0);
+    AsyncFile file = AsyncFile(fd, 0);
 
     /* Initialize a writer */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");

@@ -45,11 +45,11 @@ namespace plcrash { namespace async {
  * Async-safe buffered file output. This implementation is only intended for use
  * within signal handler execution of crash log output.
  */
-class async_file {
+class AsyncFile {
 public:    
     static ssize_t writen (int fd, const void *data, size_t len);
 
-    async_file (int fd, off_t output_limit);
+    AsyncFile (int fd, off_t output_limit);
 
     bool write (const void *data, size_t len);
     bool flush (void);

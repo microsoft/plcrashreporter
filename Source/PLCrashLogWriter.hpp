@@ -222,7 +222,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
                                           plcrash_async_image_list_t *image_list,
-                                          plcrash::async::async_file *file,
+                                          plcrash::async::AsyncFile *file,
                                           plcrash_log_signal_info_t *siginfo,
                                           plcrash_log_objc_exception_info_t *objc_exc_info,
                                           plcrash_async_thread_state_t *current_state);

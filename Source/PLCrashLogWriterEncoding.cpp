@@ -181,7 +181,7 @@ static size_t tag_pack (uint32_t id, uint8_t *out)
 
 /* === pack_to_buffer() === */
 // file argument may be NULL
-size_t plcrash_writer_pack (async_file *file, uint32_t field_id, PLProtobufCType field_type, const void *value) {
+size_t plcrash_writer_pack (AsyncFile *file, uint32_t field_id, PLProtobufCType field_type, const void *value) {
     size_t rv;
     uint8_t scratch[MAX_UINT64_ENCODED_SIZE * 2];
     rv = tag_pack (field_id, scratch);

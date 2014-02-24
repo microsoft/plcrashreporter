@@ -446,11 +446,11 @@ void *plcrash_async_memset(void *dest, uint8_t value, size_t n) {
  * Write len bytes to fd, looping until all bytes are written or an error occurs. For the local file system, only
  * one call to write() should be necessary.
  *
- * @todo This is a C compatibility shim around async_file::writen to support PLCF_DEBUG(). Once the
+ * @todo This is a C compatibility shim around AsyncFile::writen to support PLCF_DEBUG(). Once the
  * code-base has been migrated to C++, it should be removed.
  */
 ssize_t plcrash_async_writen (int fd, const void *data, size_t len) {
-    return async_file::writen(fd, data, len);
+    return AsyncFile::writen(fd, data, len);
 }
 
 /**
