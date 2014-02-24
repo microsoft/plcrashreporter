@@ -74,6 +74,64 @@ ssize_t AsyncFile::writen (int fd, const void *data, size_t len) {
 }
 
 /**
+ * Replace any trailing 'X' characters in @a pathTemplate, create the file at that path, and return a file
+ * descriptor open for reading and writing.
+ *
+ * @param pathTemplate A writable template.
+ * @param mode The file mode for the target file. The file will be created with this mode, modified by the process' umask value.
+ *
+ * @return A file descriptor open for reading and writing, or an error if the target path can not be opened. This
+ * method may fail for any reason specified by open(2).
+ *
+ * @warning While this method is a loose analogue of libc mkstemp(3), the semantics differ, and API clients should not
+ * rely on any particular similarities with the standard library function.
+ */
+int AsyncFile::mktemp (char *ptemplate, mode_t mode) {
+    /* Characters to use for padding */
+    static const char padchar[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    /* Find the start and length of the suffix ('X') */
+    size_t suffix_i = 0;
+    size_t suffix_len = 0;
+
+    /* Find the suffix length and position */
+    for (size_t i = 0; ptemplate[i] != '\0'; i++) {
+        /* Walk candidate suffix string, verifying that it occurs at the end of the string. */
+        if (ptemplate[i] == 'X') {
+            /* Record the suffix position */
+            suffix_i = i;
+
+            /* Search for the end of the suffix string */
+            while (ptemplate[i] == 'X') {
+                suffix_len++;
+                i++;
+            }
+            
+            /* If the candidate suffix didn't end at the end of the string, this wasn't actually the suffix */
+            if (ptemplate[i] != '\0') {
+                suffix_len = 0;
+                suffix_i = 0;
+            }
+        }
+    }
+
+    int fd;
+    do {
+        /* Insert random suffix into the template. */
+        for (size_t i = 0; i < suffix_len; i++) {
+            // XXXTODO: The use of arc4random_uniform() is not async-safe.
+            // This is a stand-in until we can implement async-safe random deriviation.
+            ptemplate[suffix_i + i] = padchar[arc4random_uniform(sizeof(padchar) - 1)];
+        }
+        
+        /* Try to open the file. */
+        fd = open(ptemplate, O_CREAT|O_EXCL|O_RDWR, mode);
+    } while (fd < 0);
+
+    return fd;
+}
+
+/**
  * Construct a new AsyncFile instance.
  *
  * @param fd Open, writable file descriptor.

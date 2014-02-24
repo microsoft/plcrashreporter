@@ -40,6 +40,12 @@ using namespace plcrash::async;
     
     /* Open output file descriptor */
     int _testFd;
+    
+    /** File descriptor for temporary output file, or -1 if none */
+    int _tempFD;
+
+    /* Path to temporary output file, or nil if none. */
+    NSString *_tempOutputFile;
 }
 
 @end
@@ -55,6 +61,10 @@ using namespace plcrash::async;
     
     _testFd = open([_outputFile UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
     STAssertTrue(_testFd >= 0, @"Could not open test output file");
+    
+    /* Initialize the temporary file state */
+    _tempFD = -1;
+    _tempOutputFile = nil;
 }
 
 - (void) tearDown {
@@ -66,6 +76,67 @@ using namespace plcrash::async;
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _outputFile error: &error], @"Could not remove log file");
     [_outputFile release];
+    
+    /* Clean up the temporary file state */
+    if (_tempFD != -1)
+        close(_tempFD);
+
+    if (_tempOutputFile != nil) {
+        STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _tempOutputFile error: &error], @"Could not remove %@: %@", _tempOutputFile, error);
+        [_tempOutputFile release];
+    }
+}
+
+/**
+ * Test temporary file creation.
+ */
+- (void) testMkTemp {
+    /* Generate a template string */
+    char *ptemplate;
+    
+    /* Size of the template string buffer, including NUL */
+    size_t ptemplate_size;
+    
+    /* Size of the overflow-check buffer containing the template string */
+    size_t ptemplate_overflow_check_size;
+
+    {
+        /* Generate the base template string */
+        char *ptemplate_base = strdup([[NSTemporaryDirectory() stringByAppendingPathComponent: @"mktemp_test_XXX_foo.XXXXXX"] fileSystemRepresentation]);
+        ptemplate_size = strlen(ptemplate_base) + 1;
+        
+        /* Set up a larger buffer string that we'll use to detect any off-by-one overflow errors
+         * in the template implementation */
+        size_t ptemplate_overflow_check_size = ptemplate_size + 10; /* + overflow check buffer */
+        ptemplate = (char *) malloc(ptemplate_overflow_check_size);
+        memset(ptemplate, 'B', ptemplate_overflow_check_size);
+        strcpy(ptemplate, ptemplate_base);
+
+        /* Clean up the initial template buffer */
+        free(ptemplate_base);
+    }
+
+    /* Try creating the temporary file */
+    _tempFD = AsyncFile::mktemp(ptemplate, 0600);
+    STAssertTrue(_tempFD >= 0, @"Failed to create output file");
+    _tempOutputFile = [[[NSString alloc] initWithUTF8String: ptemplate] retain];
+    STAssertNotNil(_tempOutputFile, @"String initialization failed for '%s'", ptemplate);
+
+    /* Verify file open+creation */
+    STAssertTrue([[NSFileManager defaultManager] fileExistsAtPath: _tempOutputFile], @"File was not created at the expected path: %@", _tempOutputFile);
+    
+    /* Verify that the template was updated */
+    STAssertTrue([[_tempOutputFile lastPathComponent] hasPrefix: @"mktemp_test_XXX_foo."], @"The temporary file's prefix was modified: %@", [_tempOutputFile lastPathComponent]);
+    STAssertFalse([[_tempOutputFile lastPathComponent] hasSuffix: @"XXXXXX"], @"The temporary file's suffix was not modified: %@", [_tempOutputFile lastPathComponent]);
+    
+    /* Verify that no overflow occured */
+    STAssertTrue(ptemplate[ptemplate_size-1] == '\0', @"Missing trailing NUL");
+    for (size_t i = ptemplate_size; i < ptemplate_overflow_check_size; i++) {
+        STAssertTrue(ptemplate[i-1] == 'B', @"Safety padding was overwritten");
+    }
+
+    /* Clean up our template allocations */
+    free(ptemplate);
 }
 
 /**
