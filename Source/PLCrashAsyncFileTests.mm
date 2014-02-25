@@ -29,7 +29,10 @@
 #import "GTMSenTestCase.h"
 
 #import "PLCrashAsyncFile.hpp"
+
+#include <pthread.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 
 using namespace plcrash::async;
 
@@ -137,6 +140,67 @@ using namespace plcrash::async;
 
     /* Clean up our template allocations */
     free(ptemplate);
+}
+
+/* Writer thread used for testReadWriteN */
+struct background_writer_ctx {
+    int wfd;
+    const void *data;
+    size_t data_len;
+    ssize_t written;
+};
+
+static void *background_writer_thread (void *arg) {
+    struct background_writer_ctx *ctx = (struct background_writer_ctx *) arg;
+    ctx->written = AsyncFile::writen(ctx->wfd, ctx->data, ctx->data_len);
+    return NULL;
+}
+
+/**
+ * Verify that writen() and readn() work as advertised. Unfortunately, there's no obvious way to unit tests
+ * partial read/write handling; SO_SNDBUF/SO_RCVBUF are no-ops on Mac OS X AF_UNIX sockets, and since our
+ * reads and writes are blocking, we can't watch for EAGAIN and use it to signal the reader/writer
+ * on the other end of the pipe to start/stop reading.
+ *
+ * Fortunately, writen() and readn() are short and easily reviewed, and it's -very- obvious if they fail to
+ * operate as expected.
+ */
+- (void) testReadWriteN {
+    const uint8_t test_data[] = { 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12 };
+
+    /* Set up a socket pair for testing. */
+    int rfd, wfd;
+    {
+        int fds[2];
+        STAssertEquals(0, socketpair(PF_UNIX, SOCK_STREAM, 0, fds), @"Failed to create socket pair");
+        rfd = fds[0];
+        wfd = fds[1];
+    }
+    
+    /* Set up a background writer; we need to execute writing asynchronously, given that both reading and writing
+     * will block. */
+    pthread_t writer_thr;
+    struct background_writer_ctx ctx = {
+        .wfd = wfd,
+        .data = test_data,
+        .data_len = sizeof(test_data),
+        .written = 0
+    };
+    STAssertEquals(0, pthread_create(&writer_thr, NULL, background_writer_thread, &ctx), @"Failed to start writer thread");
+    
+    /* Perform the read */
+    uint8_t recv_data[sizeof(test_data)];
+    STAssertEquals((ssize_t)sizeof(recv_data), AsyncFile::readn(rfd, recv_data, sizeof(recv_data)), @"Read failed");
+    
+    pthread_join(writer_thr, NULL);
+    STAssertEquals((ssize_t)sizeof(test_data), ctx.written, @"Write failed!");
+    
+    /* Verify the result */
+    STAssertEquals(memcmp(test_data, recv_data, sizeof(test_data)), 0, @"Received data does not match test data");
+
+    /* Clean up */
+    close(rfd);
+    close(wfd);
 }
 
 /**

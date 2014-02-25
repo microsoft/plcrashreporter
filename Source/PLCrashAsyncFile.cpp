@@ -34,12 +34,11 @@ using namespace plcrash::async;
 /**
  * @internal
  * @ingroup plcrash_async
- * @defgroup plcrash_async_bufio Async-safe Buffered IO
  * @{
  */
 
 /**
- * Write len bytes to fd, looping until all bytes are written
+ * Write @a len bytes to fd, looping until all bytes are written
  * or an error occurs.
  *
  * For the local file system, only one call to write() should be necessary.
@@ -47,6 +46,8 @@ using namespace plcrash::async;
  * @param fd Open, writable file descriptor.
  * @param data The buffer to be written to @a fd.
  * @param len The total size of @a data, in bytes.
+ *
+ * @return Returns @len on success, or -1 on failure.
  */
 ssize_t AsyncFile::writen (int fd, const void *data, size_t len) {
     const uint8_t *p;
@@ -68,9 +69,44 @@ ssize_t AsyncFile::writen (int fd, const void *data, size_t len) {
         
         left -= written;
         p += written;
+        printf("WROTE %d\n", (int) written);
     }
     
-    return written;
+    return len - left;
+}
+
+/**
+ * Read @a len bytes from fd, looping until all bytes are read or an error occurs.
+ *
+ * @param fd Open, readable file descriptor.
+ * @param data The buffer containing the bytes read from @a fd.
+ * @param len The total number of bytes to read.
+ *
+ * @return Returns @len on success, or -1 on failure.
+ */
+ssize_t AsyncFile::readn (int fd, void *data, size_t len) {
+    uint8_t *p;
+    size_t left;
+    ssize_t bytes_read = 0;
+    
+    /* Loop until all bytes are read */
+    p = (uint8_t *) data;
+    left = len;
+    while (left > 0) {
+        if ((bytes_read = ::read(fd, p, left)) <= 0) {
+            if (errno == EINTR) {
+                // Try again
+                bytes_read = 0;
+            } else {
+                return -1;
+            }
+        }
+        
+        left -= bytes_read;
+        p += bytes_read;
+    }
+    
+    return len - left;
 }
 
 /**
@@ -244,5 +280,5 @@ bool AsyncFile::close (void) {
 }
 
 /**
- * @} plcrash_async_bufio
+ * @} plcrash_async
  */
