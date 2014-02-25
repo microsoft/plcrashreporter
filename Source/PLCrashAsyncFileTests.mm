@@ -107,7 +107,7 @@ using namespace plcrash::async;
         
         /* Set up a larger buffer string that we'll use to detect any off-by-one overflow errors
          * in the template implementation */
-        size_t ptemplate_overflow_check_size = ptemplate_size + 10; /* + overflow check buffer */
+        ptemplate_overflow_check_size = ptemplate_size + 10; /* + overflow check buffer */
         ptemplate = (char *) malloc(ptemplate_overflow_check_size);
         memset(ptemplate, 'B', ptemplate_overflow_check_size);
         strcpy(ptemplate, ptemplate_base);
@@ -132,7 +132,7 @@ using namespace plcrash::async;
     /* Verify that no overflow occured */
     STAssertTrue(ptemplate[ptemplate_size-1] == '\0', @"Missing trailing NUL");
     for (size_t i = ptemplate_size; i < ptemplate_overflow_check_size; i++) {
-        STAssertTrue(ptemplate[i-1] == 'B', @"Safety padding was overwritten");
+        STAssertTrue(ptemplate[i] == 'B', @"Safety padding was overwritten");
     }
 
     /* Clean up our template allocations */
