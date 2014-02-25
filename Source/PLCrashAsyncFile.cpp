@@ -69,7 +69,6 @@ ssize_t AsyncFile::writen (int fd, const void *data, size_t len) {
         
         left -= written;
         p += written;
-        printf("WROTE %d\n", (int) written);
     }
     
     return len - left;
