@@ -649,6 +649,10 @@ static PLCrashReporter *sharedReporter = nil;
     return [self generateLiveReportWithThread: thread error: NULL];
 }
 
+- (NSData *) generateLiveReportWithThread:(thread_t)thread error:(NSError **)outError {
+    return [self generateLiveReportWithThread: thread exception: nil error: outError];
+}
+
 
 /* State and callback used by -generateLiveReportWithThread */
 struct plcr_live_report_context {
@@ -678,7 +682,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
  *
  * @todo Implement in-memory, rather than requiring writing of the report to disk.
  */
-- (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
+- (NSData *) generateLiveReportWithThread: (thread_t) thread exception: (NSException *) exception error: (NSError **) outError {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_error_t err;
@@ -699,6 +703,10 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     /* Initialize the output context */
     plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, _applicationMarketingVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
+    
+    if (exception) {
+        plcrash_log_writer_set_exception(&writer, exception);
+    }
     
     /* Mock up a SIGTRAP-based signal info */
     plcrash_log_bsd_signal_info_t bsd_signal_info;
@@ -800,9 +808,13 @@ cleanup:
  * @return Returns nil if the crash report data could not be loaded.
  */
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
-    return [self generateLiveReportWithThread: pl_mach_thread_self() error: outError];
+    return [self generateLiveReportWithException: nil error: outError];
 }
 
+
+- (NSData *) generateLiveReportWithException: (NSException *)exception error: (NSError **) outError {
+    return [self generateLiveReportWithThread: pl_mach_thread_self() exception: exception error: outError];
+}
 
 /**
  * Set the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.
