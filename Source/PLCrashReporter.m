@@ -659,6 +659,10 @@ static PLCrashReporter *sharedReporter = nil;
     return [self generateLiveReportWithThread: thread error: NULL];
 }
 
+- (NSData *) generateLiveReportWithThread:(thread_t)thread error:(NSError **)outError {
+    return [self generateLiveReportWithThread: thread exception: nil error: outError];
+}
+
 
 /* State and callback used by -generateLiveReportWithThread */
 struct plcr_live_report_context {
@@ -687,7 +691,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
  *
  * @todo Implement in-memory, rather than requiring writing of the report to disk.
  */
-- (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
+- (NSData *) generateLiveReportWithThread: (thread_t) thread exception: (NSException *) exception error: (NSError **) outError {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_error_t err;
@@ -711,6 +715,10 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     /* Set custom data, if already set before enabling */
     if (self.customData != nil) {
         plcrash_log_writer_set_custom_data(&writer, self.customData);
+    }
+    
+    if (exception) {
+        plcrash_log_writer_set_exception(&writer, exception);
     }
     
     /* Mock up a SIGTRAP-based signal info */
@@ -797,9 +805,13 @@ cleanup:
  * @return Returns nil if the crash report data could not be loaded.
  */
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
-    return [self generateLiveReportWithThread: pl_mach_thread_self() error: outError];
+    return [self generateLiveReportWithException: nil error: outError];
 }
 
+
+- (NSData *) generateLiveReportWithException: (NSException *)exception error: (NSError **) outError {
+    return [self generateLiveReportWithThread: pl_mach_thread_self() exception: exception error: outError];
+}
 
 /**
  * Set the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.
