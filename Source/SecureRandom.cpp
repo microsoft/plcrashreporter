@@ -69,8 +69,8 @@ SecureRandom::~SecureRandom () {
  * @param bytes The output buffer to which the data will be written.
  * @param count The number of random bytes to return in @a bytes.
  *
- * @return Returns true on success, or false on error. If false is returned, the underlying failure cause
- * may be fetched from errno.
+ * @return Returns PLCRASH_ESUCCESS on success, or an error if reading from
+ * the random number source fails.
  */
 plcrash_error_t SecureRandom::readBytes (void *bytes, size_t count) {
     /* Ensure that the random device is accessible */
