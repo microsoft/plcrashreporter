@@ -88,5 +88,45 @@ plcrash_error_t SecureRandom::readBytes (void *bytes, size_t count) {
 }
 
 /**
+ * Generate a uniformally distributed random number less than @a upperBound,
+ * avoiding "modulo bias" when the upper bound is not a power of two.
+ *
+ * @param upperBound The exclusive upper bound of the value to be returned in @a result.
+ * @param result On return, will contain a uniformally distributed random number between 0 and @a upperBound.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, or an error if reading from
+ * the random number source fails.
+ */
+plcrash_error_t SecureRandom::uniform (uint32_t upperBound, uint32_t *result) {
+    /* Handle upper bounds of 0 or 1; only one possible value can be returned. */
+    if (upperBound <= 1) {
+        *result = 0;
+        return PLCRASH_ESUCCESS;
+    }
+    
+    /* Calculate the minimum value that we need from the random device; this gives us a uniform range that
+     * we can map back to 0..upperBound */
+    uint32_t minValue = (0x100000000UL % upperBound);
+    
+    /* Loop until we fetch a valid result */
+    uint32_t unmappedResult;
+    while (true) {
+        /* Try fetching a value */
+        plcrash_error_t err;
+        if ((err = this->readBytes(&unmappedResult, sizeof(unmappedResult))) != PLCRASH_ESUCCESS) {
+            return err;
+        }
+        
+        /* Terminate if we're within range */
+        if (unmappedResult >= minValue)
+            break;
+    }
+
+    /* Map back into the 0..upperBound range and return */
+    *result = unmappedResult % upperBound;
+    return PLCRASH_ESUCCESS;
+}
+
+/**
  * @}
  */

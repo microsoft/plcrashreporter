@@ -50,6 +50,7 @@ public:
     ~SecureRandom ();
 
     plcrash_error_t readBytes (void *bytes, size_t count);
+    plcrash_error_t uniform (uint32_t upperBound, uint32_t *result);
 
 private:
     /** Constructor-opened reference to /dev/random, or -1 if open() failed. */

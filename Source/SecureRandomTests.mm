@@ -93,4 +93,15 @@ using namespace plcrash::async;
     STAssertGreaterThan(sum, 0.3, @"Expected more entropy than %.2g from the RNG", sum);
 }
 
+- (void) testUniform {
+    SecureRandom rnd = SecureRandom();
+    
+    /* Initialize to value outside the range, so that we can verify that the result is actually set. */
+    uint32_t result = 42;
+
+    /* Generate a uniformally random number. */
+    STAssertEquals(PLCRASH_ESUCCESS, rnd.uniform(20, &result), @"Failed to fetch uniform value");
+    STAssertTrue(result < 20, @"Returned result outside of the expected range");
+}
+
 @end
