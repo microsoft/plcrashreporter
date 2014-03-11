@@ -241,14 +241,37 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     
     [text appendString: @"\n"];
     
-    /* Uncaught Exception */
-    if (report.hasExceptionInfo) {
-        [text appendFormat: @"Application Specific Information:\n"];
-        [text appendFormat: @"*** Terminating app due to uncaught exception '%@', reason: '%@'\n",
-                report.exceptionInfo.exceptionName, report.exceptionInfo.exceptionReason];
-        
+    BOOL wroteAppSpecificHeader = NO;
+    for (PLCrashReportBinaryImageInfo *image in report.images) {
+        if (!image.annotation) continue;
+
+        /* The annotation can be non-textual data. If that's the case, we won't
+         * write anything at all and the user will need to use the PLCrashReport
+         * class directly. */
+        NSString *annotationString = [[[NSString alloc] initWithData: image.annotation
+                                                            encoding: NSUTF8StringEncoding] autorelease];
+        if (!annotationString) continue;
+
+        if (!wroteAppSpecificHeader) {
+            [text appendFormat: @"Application Specific Information:\n"];
+            wroteAppSpecificHeader = YES;
+        }
+        [text appendString: annotationString];
         [text appendString: @"\n"];
     }
+
+    /* Uncaught Exception */
+    if (report.hasExceptionInfo) {
+        if (!wroteAppSpecificHeader) {
+            [text appendFormat: @"Application Specific Information:\n"];
+            wroteAppSpecificHeader = YES;
+        }
+        [text appendFormat: @"*** Terminating app due to uncaught exception '%@', reason: '%@'\n",
+                report.exceptionInfo.exceptionName, report.exceptionInfo.exceptionReason];
+    }
+
+    if (wroteAppSpecificHeader)
+        [text appendString: @"\n"];
 
     /* If an exception stack trace is available, output an Apple-compatible backtrace. */
     if (report.exceptionInfo != nil && report.exceptionInfo.stackFrames != nil && [report.exceptionInfo.stackFrames count] > 0) {

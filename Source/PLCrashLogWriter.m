@@ -152,6 +152,9 @@ enum {
     /** CrashReport.BinaryImage.code_type */
     PLCRASH_PROTO_BINARY_IMAGE_CODE_TYPE_ID = 5,
 
+    /** CrashReport.BinaryImage.annotation */
+    PLCRASH_PROTO_BINARY_IMAGE_ANNOTATION_ID = 6,
+
     
     /** CrashReport.exception */
     PLCRASH_PROTO_EXCEPTION_ID = 5,
@@ -1017,6 +1020,19 @@ static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plc
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_UUID_ID, PLPROTOBUF_C_TYPE_BYTES, &binary);
     }
     
+    /* Look any image-specific annotation information */
+    plcrash_async_mobject_t info_string;
+    plcrash_error_t info_err = plcrash_async_macho_find_annotation(image, &info_string);
+    if (info_err == PLCRASH_ESUCCESS) {
+        PLProtobufCBinaryData binary;
+        binary.len = info_string.length;
+        binary.data = plcrash_async_mobject_remap_address(&info_string, info_string.task_address, 0, info_string.length);
+        if (binary.data != NULL) {
+            rv += plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGE_ANNOTATION_ID, PLPROTOBUF_C_TYPE_BYTES, &binary);
+        }
+        plcrash_async_mobject_free(&info_string);
+    }
+
     /* Get the processor message size */
     uint32_t msgsize = plcrash_writer_write_processor_info(NULL, cpu_type, cpu_subtype);
 

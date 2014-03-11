@@ -617,12 +617,17 @@ error:
                 return nil;
         }
 
+        NSData *annotation = nil;
+        if (image->annotation.len) {
+            annotation = [NSData dataWithBytes: image->annotation.data length: image->annotation.len];
+        }
 
         imageInfo = [[[PLCrashReportBinaryImageInfo alloc] initWithCodeType: codeType
                                                                 baseAddress: image->base_address
                                                                        size: image->size
                                                                        name: [NSString stringWithUTF8String: image->name]
-                                                                       uuid: uuid] autorelease];
+                                                                       uuid: uuid
+                                                                 annotation: annotation] autorelease];
         [images addObject: imageInfo];
     }
 

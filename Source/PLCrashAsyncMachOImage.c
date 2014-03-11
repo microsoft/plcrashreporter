@@ -268,6 +268,70 @@ cpu_subtype_t plcrash_async_macho_cpu_subtype (plcrash_async_macho_t *image) {
     return image->byteorder->swap32(image->header.cpusubtype);
 }
 
+/**
+ * @internal
+ *
+ * Write the binary-specific crash annotation from the __DATA,__pl_crash_info section
+ *
+ * @param image The image to search in
+ * @param section The __DATA,__pl_crash_info section of the image
+ * @param result On success, the crash annotation data
+ */
+static plcrash_error_t plcrash_async_macho_find_plcrashinfo(plcrash_async_macho_t *image,
+                                                            plcrash_async_mobject_t *section,
+                                                            plcrash_async_mobject_t *result) {
+    /* We're reading the plcrashreporter_image_annotation_t structure, but can't
+     * memcpy it from the task because the layout differs between 32/64-bit
+     * processes. The struct always begins with the version/length uint16s. */
+    uint16_t version;
+    plcrash_error_t ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 0, &version);
+    if (ret != PLCRASH_ESUCCESS) return ret;
+    if (version != 0) return PLCRASH_EINVALID_DATA;
+
+    uint16_t length;
+    ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 2, &length);
+    if (ret != PLCRASH_ESUCCESS) return ret;
+    if (length == 0) return PLCRASH_ENOTFOUND;
+
+    /* The size and location of the data pointer varies due to alignment. */
+    pl_vm_address_t dataAddress;
+    if (image->m64) {
+        uint64_t ptr64;
+        ret = plcrash_async_mobject_read_uint64(section, image->byteorder, section->task_address, 8, &ptr64);
+        if (ret != PLCRASH_ESUCCESS) return ret;
+        dataAddress = ptr64;
+    } else {
+        uint32_t ptr32;
+        ret = plcrash_async_mobject_read_uint32(section, image->byteorder, section->task_address, 4, &ptr32);
+        if (ret != PLCRASH_ESUCCESS) return ret;
+        dataAddress = ptr32;
+    }
+
+    /* It's invalid to have a length specified but a NULL pointer for the data
+     * member. */
+    if (dataAddress == 0) return PLCRASH_EINVALID_DATA;
+    return plcrash_async_mobject_init(result, image->task, dataAddress, length, true);
+}
+
+/**
+ * Fetches the binary-specific crash reporter information.
+ *
+ * @param image The image to search in
+ * @param outInfo On success, the crash reporter info string
+ */
+plcrash_error_t plcrash_async_macho_find_annotation(plcrash_async_macho_t *image, plcrash_async_mobject_t *result) {
+    if (!image) return PLCRASH_EINVAL;
+    if (!result) return PLCRASH_EINVAL;
+
+    plcrash_async_mobject_t crashinfo_section;
+    plcrash_error_t ret = plcrash_async_macho_map_section(image, "__DATA", "__pl_crash_info", &crashinfo_section);
+    if (ret == PLCRASH_ESUCCESS) {
+        ret = plcrash_async_macho_find_plcrashinfo(image, &crashinfo_section, result);
+        plcrash_async_mobject_free(&crashinfo_section);
+    }
+
+    return ret;
+}
 
 /**
  * Iterate over the available Mach-O LC_CMD entries.

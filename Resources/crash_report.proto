@@ -222,6 +222,9 @@ message CrashReport {
          * binaries in the case of architectures with forwards-compatible code types, such as ARM, where armv6 and
          * armv7 images may be mixed. */
         optional Processor code_type = 5;
+
+        /* Any additional crash information the binary provided */
+        optional bytes annotation = 6;
     }
 
     /* All loaded binary images */

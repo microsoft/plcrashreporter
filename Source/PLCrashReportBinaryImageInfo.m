@@ -39,6 +39,7 @@
 @synthesize imageName = _imageName;
 @synthesize hasImageUUID = _hasImageUUID;
 @synthesize imageUUID = _imageUUID;
+@synthesize annotation = _annotation;
 
 /**
  * Initialize with the given binary image properties.
@@ -49,12 +50,14 @@
  * @param name The image's name (absolute path).
  * @param uuid The image's UUID, or nil if unavailable. In the case of Mach-O, this will be the 128-bit
  * object UUID, which is also used to match against the corresponding Mach-O DWARF dSYM file.
+ * @param annotation Extra information which the binary provided about the crash, or nil if unavailable.
  */
 - (id) initWithCodeType: (PLCrashReportProcessorInfo *) processorInfo
             baseAddress: (uint64_t) baseAddress 
                    size: (uint64_t) size
                    name: (NSString *) name
                    uuid: (NSData *) uuid
+             annotation: (NSData *) crashInfo
 {
     if ((self = [super init]) == nil)
         return nil;
@@ -86,6 +89,8 @@
                                              freeWhenDone: YES];
     }
 
+    _annotation = [crashInfo retain];
+
     return self;
 }
 
@@ -93,6 +98,7 @@
     [_processorInfo release];
     [_imageName release];
     [_imageUUID release];
+    [_annotation release];
 
     [super dealloc];
 }

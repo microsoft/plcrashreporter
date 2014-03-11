@@ -28,6 +28,7 @@
 
 #import "GTMSenTestCase.h"
 
+#import "PLCrashAnnotation.h"
 #import "PLCrashAsyncMachOImage.h"
 
 #import <dlfcn.h>
@@ -423,6 +424,64 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     /* Compare the results */
     STAssertEquals((pl_vm_address_t) localIMP, pc, @"Returned incorrect symbol address");
+}
+
+plcrashreporter_image_annotation_t gImageAnnotation PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE;
+
+/**
+ * Test crash info lookup for images which provide annotation information via
+ * the __DATA,__pl_crash_info section.
+ */
+- (void) testFindAnnotation {
+    plcrash_async_mobject_t annotation;
+    plcrash_error_t ret = plcrash_async_macho_find_annotation(&_image, &annotation);
+    STAssertEquals(ret, PLCRASH_ENOTFOUND, @"Somehow found image annotation");
+
+    gImageAnnotation.version = 0;
+    gImageAnnotation.data = "1";
+    gImageAnnotation.dataLength = strlen("1");
+    ret = plcrash_async_macho_find_annotation(&_image, &annotation);
+    STAssertEquals(ret, PLCRASH_ESUCCESS, @"Failed to get image annotation");
+    STAssertEquals(annotation.length, (pl_vm_size_t)gImageAnnotation.dataLength,
+                   @"Annotation length is wrong");
+
+    void *data = plcrash_async_mobject_remap_address(&annotation, annotation.task_address, 0, annotation.length);
+    STAssertNotNULL(data, @"Failed to remap annotation string");
+    if (data) {
+        /* If the last test failed, don't come here and crash. */
+        STAssertEquals(strncmp(gImageAnnotation.data, data, annotation.length), 0,
+                       @"Annotation data is wrong");
+    }
+
+    plcrash_async_mobject_free(&annotation);
+    gImageAnnotation = (plcrashreporter_image_annotation_t){};
+}
+
+/**
+ * Test crash info lookup to make sure it handles invalid arguments correctly.
+ */
+- (void) testFindAnnotationInvalidArgs {
+    plcrash_async_mobject_t annotation;
+    plcrash_error_t ret = plcrash_async_macho_find_annotation(NULL, &annotation);
+    STAssertEquals(ret, PLCRASH_EINVAL, @"Didn't return invalid status");
+    ret = plcrash_async_macho_find_annotation(&_image, NULL);
+    STAssertEquals(ret, PLCRASH_EINVAL, @"Didn't return invalid status");
+    ret = plcrash_async_macho_find_annotation(NULL, NULL);
+    STAssertEquals(ret, PLCRASH_EINVAL, @"Didn't return invalid status");
+
+    gImageAnnotation.version = 0;
+    gImageAnnotation.data = NULL;
+    gImageAnnotation.dataLength = 42;
+    ret = plcrash_async_macho_find_annotation(&_image, &annotation);
+    STAssertEquals(ret, PLCRASH_EINVALID_DATA, @"Didn't return invalid status");
+
+    gImageAnnotation.version = 1;
+    gImageAnnotation.data = "123";
+    gImageAnnotation.dataLength = 3;
+    ret = plcrash_async_macho_find_annotation(&_image, &annotation);
+    STAssertEquals(ret, PLCRASH_EINVALID_DATA, @"Didn't check version");
+
+    gImageAnnotation = (plcrashreporter_image_annotation_t){};
 }
 
 @end
