@@ -26,6 +26,8 @@
 
 #include "PLCrashAsyncFile.hpp"
 
+#include "SecureRandom.hpp"
+
 #include <unistd.h>
 #include <errno.h>
 
@@ -112,19 +114,19 @@ ssize_t AsyncFile::readn (int fd, void *data, size_t len) {
  * Replace any trailing 'X' characters in @a pathTemplate, create the file at that path, and return a file
  * descriptor open for reading and writing.
  *
- * @param pathTemplate A writable template.
+ * @param pathTemplate A writable template path. This template will be modified to contain the actual file path.
  * @param mode The file mode for the target file. The file will be created with this mode, modified by the process' umask value.
+ * @param outfd On success, a file descriptor opened for both reading and writing.
  *
- * @return A file descriptor open for reading and writing, or an error if the target path can not be opened. This
- * method may fail for any reason specified by open(2).
+ * @return PLCRASH_ESUCCESS if the temporary file was successfully opened, or an error if the target path can not be opened.
  *
  * @warning While this method is a loose analogue of libc mkstemp(3), the semantics differ, and API clients should not
- * rely on any particular similarities with the standard library function.
+ * rely on any similarities with the standard library function that are not explicitly documented.
  */
-int AsyncFile::mktemp (char *ptemplate, mode_t mode) {
-    /* Characters to use for padding */
-    static const char padchar[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
+plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
+    /* Characters to use for padding. We don't use a-z characters, as HFS+ is case insensitive by default. */
+    static const char padchar[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    
     /* Find the start and length of the suffix ('X') */
     size_t suffix_i = 0;
     size_t suffix_len = 0;
@@ -149,21 +151,112 @@ int AsyncFile::mktemp (char *ptemplate, mode_t mode) {
             }
         }
     }
-
-    int fd;
-    do {
-        /* Insert random suffix into the template. */
-        for (size_t i = 0; i < suffix_len; i++) {
-            // XXXTODO: The use of arc4random_uniform() is not async-safe.
-            // This is a stand-in until we can implement async-safe random deriviation.
-            ptemplate[suffix_i + i] = padchar[arc4random_uniform(sizeof(padchar) - 1)];
+    
+    /* Insert random suffix into the template. */
+    SecureRandom rnd = SecureRandom();
+    for (size_t i = 0; i < suffix_len; i++) {
+        plcrash_error_t err;
+        uint32_t charIndex;
+        
+        /* Try to read a random suffix character */
+        if ((err = rnd.uniform(sizeof(padchar) - 1, &charIndex)) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("Failed to fetch bytes from SecureRandom.uniform(): %s", plcrash_async_strerror(err));
+            return err;
         }
         
-        /* Try to open the file. */
-        fd = open(ptemplate, O_CREAT|O_EXCL|O_RDWR, mode);
-    } while (fd < 0);
+        /* Update the suffix. */
+        PLCF_ASSERT(charIndex < sizeof(padchar));
+        ptemplate[suffix_i + i] = padchar[charIndex];
+    }
 
-    return fd;
+    /* Save a copy of the suffix. We use this to determine when roll-over occurs while trying all possible combinations. */
+    char original_suffix[suffix_len];
+    plcrash_async_memcpy(original_suffix, &ptemplate[suffix_i], suffix_len);
+    
+    /* Recursion state; we use this to track completion at each recursion depth; a state of '\0' signifies incomplete, whereas
+     * any other character signifies completion. */
+    char recursion_state[suffix_len];
+    plcrash_async_memset(recursion_state, '\0', sizeof(recursion_state));
+    
+    /*
+     * Loop until open(2) either succeeds, returns an error other than EEXIST, or we've tried every available permutation.
+     */
+    size_t depth = 0;
+    while (true) {
+        /* Try to open the file. */
+        *outfd = open(ptemplate, O_CREAT|O_EXCL|O_RDWR, mode);
+        
+        /* Terminate on success */
+        if (*outfd >= 0)
+            return PLCRASH_ESUCCESS;
+        
+        /* Terminate if we get an error other than EEXIST */
+        if (errno != EEXIST) {
+            PLCF_DEBUG("Failed to open output file '%s' in mktemp(): %d", ptemplate, errno);
+            return PLCRASH_OUTPUT_ERR;
+        }
+        
+        /* Determine the next padding character to be added */
+        char pchar;
+        while (true) {
+            PLCF_ASSERT(depth < suffix_len);
+
+            /* Locate the pad_idx for this depth. */
+            size_t pad_idx;
+            for (pad_idx = 0; padchar[pad_idx] != ptemplate[suffix_i + depth] && padchar[pad_idx] != '\0'; pad_idx++);
+            
+            /* Fetch the next padding character, wrapping around if we hit the end. */
+            PLCF_ASSERT(pad_idx < sizeof(padchar));
+            pad_idx++;
+            if (padchar[pad_idx] == '\0')
+                pad_idx = 0;
+            
+            pchar = padchar[pad_idx];
+            
+            /* If we've tried all values at this template position, we need to backtrack. */
+            if (pchar == original_suffix[depth]) {
+                /* Record the completion state */
+                recursion_state[depth] = pchar;
+
+                /* Backtrack until we hit an incomplete value, or the first entry */
+                while (depth > 0 && recursion_state[depth] != '\0') {
+                    recursion_state[depth] = '\0';
+                    
+                    /* Reset the starting state. */
+                    if (depth > 0)
+                        ptemplate[suffix_i + depth] = pchar;
+
+                    depth--;
+                    PLCF_ASSERT(depth < suffix_len);
+                }
+
+                
+                /* Check for completion */
+                if (depth == 0 && recursion_state[depth] != '\0') {
+                    PLCF_DEBUG("Tried all possible temporary file names for '%s'; could not find an available temporary name.", ptemplate);
+                    return PLCRASH_OUTPUT_ERR;
+                }
+                
+                continue;
+            }
+
+            /* Update the suffix */
+            ptemplate[suffix_i + depth] = pchar;
+
+            /* Recurse if we can, retry open() if we can't */
+            if (depth + 1 == suffix_len) {
+                /* Retry! */
+                break;
+            } else {
+                /* Recurse! */
+                depth++;
+            }
+            break;
+        }
+    }
+
+    /* Unreachable! */
+    abort();
 }
 
 /**

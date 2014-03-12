@@ -120,8 +120,8 @@ using namespace plcrash::async;
     }
 
     /* Try creating the temporary file */
-    _tempFD = AsyncFile::mktemp(ptemplate, 0600);
-    STAssertTrue(_tempFD >= 0, @"Failed to create output file");
+    STAssertEquals(PLCRASH_ESUCCESS, AsyncFile::mktemp(ptemplate, 0600, &_tempFD), @"mktemp() returned an error");
+    STAssertTrue(_tempFD >= 0, @"Failed to create output file descriptor");
     _tempOutputFile = [[[NSString alloc] initWithUTF8String: ptemplate] retain];
     STAssertNotNil(_tempOutputFile, @"String initialization failed for '%s'", ptemplate);
 
@@ -139,6 +139,64 @@ using namespace plcrash::async;
     }
 
     /* Clean up our template allocations */
+    free(ptemplate);
+}
+
+/**
+ * Verify that mktemp() succeeds with an empty suffix value.
+ */
+- (void) testMkTempNoSuffix {
+    /* Generate a template string with no trailing X's. */
+    NSString *fileName = [[[NSProcessInfo processInfo] globallyUniqueString] stringByAppendingString: @".no_trailing"];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent: fileName];
+    char *ptemplate = strdup([filePath fileSystemRepresentation]);
+    
+    /* Verify that mktemp() succeds when no suffix is specified. ... */
+    STAssertEquals(PLCRASH_ESUCCESS, AsyncFile::mktemp(ptemplate, 0600, &_tempFD), @"mktemp() returned an error");
+    close(_tempFD);
+    
+    /* Verify that the path was not modified */
+    STAssertEqualStrings(filePath, [NSString stringWithUTF8String: ptemplate], @"Template was modified despite not containing X-suffix");
+    
+    /* Clean up our template allocation */
+    free(ptemplate);
+}
+
+/**
+ * Test temporary file handling; verify that:
+ * - We attempt all possible combinations.
+ * - An error is returned if all possible combinations exist on disk.
+ */
+- (void) testMkTempCombinations {
+    /* Generate a template string. */
+    NSString *uuid = [[[[NSUUID alloc] init] autorelease] UUIDString];
+    NSString *fileName = [uuid stringByAppendingString: @"-mktemp_combo_test.XX"];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent: fileName];
+    
+    /* Create all possible combinations of the temporary file name. This relies on internal knowledge of the number of padding characters
+     * used in mktemp(); the test will fail if the padding character count changes. */
+    int possibleValues = 1;
+    for (int i = 0; i < 2; i++) {
+        possibleValues = possibleValues * 36;
+    }
+    
+    for (int i = 0; i < possibleValues; i++) {
+        char *ptemplate = strdup([filePath fileSystemRepresentation]);
+        
+        plcrash_error_t err = AsyncFile::mktemp(ptemplate, 0600, &_tempFD);
+        free(ptemplate);
+
+        STAssertEquals(PLCRASH_ESUCCESS, err, @"mktemp() returned an error at position %d", i);
+        if (err == PLCRASH_ESUCCESS) {
+            close(_tempFD);
+        } else {
+            break;
+        }
+    }
+
+    /* Now that all possible paths exist, the next request should fail. */
+    char *ptemplate = strdup([filePath fileSystemRepresentation]);
+    STAssertEquals(PLCRASH_OUTPUT_ERR, AsyncFile::mktemp(ptemplate, 0600, &_tempFD), @"mktemp() returned an error");
     free(ptemplate);
 }
 

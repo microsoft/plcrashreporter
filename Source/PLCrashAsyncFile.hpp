@@ -51,7 +51,7 @@ public:
     static ssize_t writen (int fd, const void *data, size_t len);
     static ssize_t readn (int fd, void *data, size_t len);
 
-    static int mktemp (char *ptemplate, mode_t mode);
+    static plcrash_error_t mktemp (char *ptemplate, mode_t mode, int *outfd);
 
     AsyncFile (int fd, off_t output_limit);
 
