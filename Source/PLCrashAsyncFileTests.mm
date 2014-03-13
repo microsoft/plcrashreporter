@@ -33,22 +33,20 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#import <objc/runtime.h>
 
 using namespace plcrash::async;
 
 @interface PLCrashAsyncFile : SenTestCase {
 @private
+    /* Path to test output directory; this will be deleted on test completion */
+    NSString *_outputDir;
+
     /* Path to test output file */
     NSString *_outputFile;
     
     /* Open output file descriptor */
     int _testFd;
-    
-    /** File descriptor for temporary output file, or -1 if none */
-    int _tempFD;
-
-    /* Path to temporary output file, or nil if none. */
-    NSString *_tempOutputFile;
 }
 
 @end
@@ -59,15 +57,17 @@ using namespace plcrash::async;
 @implementation PLCrashAsyncFile
 
 - (void) setUp {
-    /* Create a temporary output file */
-    _outputFile = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
+    NSError *error;
     
+    /* Create a temporary directory to hold all test files */
+    NSString *uniqueString = [[[NSProcessInfo processInfo] globallyUniqueString] stringByAppendingFormat: @"%s", class_getName([self class])];
+    _outputDir = [[NSTemporaryDirectory() stringByAppendingPathComponent: uniqueString] retain];
+    STAssertTrue([[NSFileManager defaultManager] createDirectoryAtPath: _outputDir withIntermediateDirectories: YES attributes: @{ NSFilePosixPermissions: @(0755) } error: &error], @"Could not create output directory: %@", _outputDir);
+
+    /* Create a temporary output file */
+    _outputFile = [[_outputDir stringByAppendingPathComponent: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
     _testFd = open([_outputFile UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
     STAssertTrue(_testFd >= 0, @"Could not open test output file");
-    
-    /* Initialize the temporary file state */
-    _tempFD = -1;
-    _tempOutputFile = nil;
 }
 
 - (void) tearDown {
@@ -76,18 +76,11 @@ using namespace plcrash::async;
     /* Close the file (it may already be closed) */
     close(_testFd);
     
-    /* Delete the file */
-    STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _outputFile error: &error], @"Could not remove log file");
-    [_outputFile release];
-    
-    /* Clean up the temporary file state */
-    if (_tempFD != -1)
-        close(_tempFD);
+    /* Delete all test data */
+    STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _outputDir error: &error], @"Could not remove output directory: %@", error);
 
-    if (_tempOutputFile != nil) {
-        STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _tempOutputFile error: &error], @"Could not remove %@: %@", _tempOutputFile, error);
-        [_tempOutputFile release];
-    }
+    [_outputDir release];
+    [_outputFile release];
 }
 
 /**
@@ -105,7 +98,7 @@ using namespace plcrash::async;
 
     {
         /* Generate the base template string */
-        char *ptemplate_base = strdup([[NSTemporaryDirectory() stringByAppendingPathComponent: @"mktemp_test_XXX_foo.XXXXXX"] fileSystemRepresentation]);
+        char *ptemplate_base = strdup([[_outputDir stringByAppendingPathComponent: @"mktemp_test_XXX_foo.XXXXXX"] fileSystemRepresentation]);
         ptemplate_size = strlen(ptemplate_base) + 1;
         
         /* Set up a larger buffer string that we'll use to detect any off-by-one overflow errors
@@ -120,17 +113,20 @@ using namespace plcrash::async;
     }
 
     /* Try creating the temporary file */
-    STAssertEquals(PLCRASH_ESUCCESS, AsyncFile::mktemp(ptemplate, 0600, &_tempFD), @"mktemp() returned an error");
-    STAssertTrue(_tempFD >= 0, @"Failed to create output file descriptor");
-    _tempOutputFile = [[[NSString alloc] initWithUTF8String: ptemplate] retain];
-    STAssertNotNil(_tempOutputFile, @"String initialization failed for '%s'", ptemplate);
+    int tempFD;
+    STAssertEquals(PLCRASH_ESUCCESS, AsyncFile::mktemp(ptemplate, 0600, &tempFD), @"mktemp() returned an error");
+    STAssertTrue(tempFD >= 0, @"Failed to create output file descriptor");
+    close(tempFD);
+
+    NSString *tempOutputFile = [[[NSString alloc] initWithUTF8String: ptemplate] retain];
+    STAssertNotNil(tempOutputFile, @"String initialization failed for '%s'", ptemplate);
 
     /* Verify file open+creation */
-    STAssertTrue([[NSFileManager defaultManager] fileExistsAtPath: _tempOutputFile], @"File was not created at the expected path: %@", _tempOutputFile);
+    STAssertTrue([[NSFileManager defaultManager] fileExistsAtPath: tempOutputFile], @"File was not created at the expected path: %@", tempOutputFile);
     
     /* Verify that the template was updated */
-    STAssertTrue([[_tempOutputFile lastPathComponent] hasPrefix: @"mktemp_test_XXX_foo."], @"The temporary file's prefix was modified: %@", [_tempOutputFile lastPathComponent]);
-    STAssertFalse([[_tempOutputFile lastPathComponent] hasSuffix: @"XXXXXX"], @"The temporary file's suffix was not modified: %@", [_tempOutputFile lastPathComponent]);
+    STAssertTrue([[tempOutputFile lastPathComponent] hasPrefix: @"mktemp_test_XXX_foo."], @"The temporary file's prefix was modified: %@", [tempOutputFile lastPathComponent]);
+    STAssertFalse([[tempOutputFile lastPathComponent] hasSuffix: @"XXXXXX"], @"The temporary file's suffix was not modified: %@", [tempOutputFile lastPathComponent]);
     
     /* Verify that no overflow occured */
     STAssertTrue(ptemplate[ptemplate_size-1] == '\0', @"Missing trailing NUL");
@@ -148,12 +144,13 @@ using namespace plcrash::async;
 - (void) testMkTempNoSuffix {
     /* Generate a template string with no trailing X's. */
     NSString *fileName = [[[NSProcessInfo processInfo] globallyUniqueString] stringByAppendingString: @".no_trailing"];
-    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent: fileName];
+    NSString *filePath = [_outputDir stringByAppendingPathComponent: fileName];
     char *ptemplate = strdup([filePath fileSystemRepresentation]);
     
     /* Verify that mktemp() succeds when no suffix is specified. ... */
-    STAssertEquals(PLCRASH_ESUCCESS, AsyncFile::mktemp(ptemplate, 0600, &_tempFD), @"mktemp() returned an error");
-    close(_tempFD);
+    int tempFD;
+    STAssertEquals(PLCRASH_ESUCCESS, AsyncFile::mktemp(ptemplate, 0600, &tempFD), @"mktemp() returned an error");
+    close(tempFD);
     
     /* Verify that the path was not modified */
     STAssertEqualStrings(filePath, [NSString stringWithUTF8String: ptemplate], @"Template was modified despite not containing X-suffix");
@@ -171,7 +168,7 @@ using namespace plcrash::async;
     /* Generate a template string. */
     NSString *uuid = [[[[NSUUID alloc] init] autorelease] UUIDString];
     NSString *fileName = [uuid stringByAppendingString: @"-mktemp_combo_test.XX"];
-    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent: fileName];
+    NSString *filePath = [_outputDir stringByAppendingPathComponent: fileName];
     
     /* Create all possible combinations of the temporary file name. This relies on internal knowledge of the number of padding characters
      * used in mktemp(); the test will fail if the padding character count changes. */
@@ -183,12 +180,13 @@ using namespace plcrash::async;
     for (int i = 0; i < possibleValues; i++) {
         char *ptemplate = strdup([filePath fileSystemRepresentation]);
         
-        plcrash_error_t err = AsyncFile::mktemp(ptemplate, 0600, &_tempFD);
+        int tempFD;
+        plcrash_error_t err = AsyncFile::mktemp(ptemplate, 0600, &tempFD);
         free(ptemplate);
 
         STAssertEquals(PLCRASH_ESUCCESS, err, @"mktemp() returned an error at position %d", i);
         if (err == PLCRASH_ESUCCESS) {
-            close(_tempFD);
+            close(tempFD);
         } else {
             break;
         }
@@ -196,7 +194,8 @@ using namespace plcrash::async;
 
     /* Now that all possible paths exist, the next request should fail. */
     char *ptemplate = strdup([filePath fileSystemRepresentation]);
-    STAssertEquals(PLCRASH_OUTPUT_ERR, AsyncFile::mktemp(ptemplate, 0600, &_tempFD), @"mktemp() returned an error");
+    int tempFD;
+    STAssertEquals(PLCRASH_OUTPUT_ERR, AsyncFile::mktemp(ptemplate, 0600, &tempFD), @"mktemp() did not return an error");
     free(ptemplate);
 }
 
