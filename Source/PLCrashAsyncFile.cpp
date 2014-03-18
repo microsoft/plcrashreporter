@@ -110,6 +110,60 @@ ssize_t AsyncFile::readn (int fd, void *data, size_t len) {
     return len - left;
 }
 
+/** Characters to use for the suffix in mktemp(). We don't use a-z characters, as HFS+ is case-insensitive by default. */
+static const char mktemp_padchar[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+/**
+ * Given a mktemp() padding character, return the index position of that character. Will raise an assertion
+ * if an invalid padding character is passed.
+ */
+static size_t mktemp_padchar_index (char current_char) {
+    /* Locate the pad_idx for this target. */
+    size_t idx;
+    for (idx = 0; mktemp_padchar[idx] != current_char; idx++) {
+        /* Can only fire if an invalid character is passed to this function. */
+        PLCF_ASSERT(mktemp_padchar[idx] != '\0');
+    }
+    
+    return idx;
+}
+
+/**
+ * Given a mktemp() padding character, return the next character in the alphabet. Will raise an assertion
+ * if an invalid padding character is passed.
+ */
+static char mktemp_padchar_next (char current_char) {
+    size_t idx = mktemp_padchar_index(current_char);
+    
+    /* Fetch the next padding character, wrapping around if we hit the end. */
+    PLCF_ASSERT(idx < sizeof(mktemp_padchar));
+    idx++;
+    if (mktemp_padchar[idx] == '\0')
+        idx = 0;
+
+    /* Return the result */
+    return mktemp_padchar[idx];
+}
+
+/**
+ * Given a mktemp() padding character, return the previous character in the alphabet. Will raise an assertion
+ * if an invalid padding character is passed.
+ */
+static char mktemp_padchar_prev (char current_char) {
+    size_t idx = mktemp_padchar_index(current_char);
+    
+    /* Fetch the previous padding character, wrapping around if we hit the beginning. */
+    PLCF_ASSERT(idx < sizeof(mktemp_padchar));
+    if (idx == 0) {
+        idx = sizeof(mktemp_padchar) - 2; /* Skip trailing NUL */
+    } else {
+        idx--;
+    }
+    
+    /* Return the result */
+    return mktemp_padchar[idx];
+}
+
 /**
  * Replace any trailing 'X' characters in @a pathTemplate, create the file at that path, and return a file
  * descriptor open for reading and writing.
@@ -124,15 +178,15 @@ ssize_t AsyncFile::readn (int fd, void *data, size_t len) {
  * rely on any similarities with the standard library function that are not explicitly documented.
  */
 plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
-    /* Characters to use for padding. We don't use a-z characters, as HFS+ is case insensitive by default. */
-    static const char padchar[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    /* Fetch the template string length, not including trailing NULL */
+    size_t ptemplate_len = strlen(ptemplate);
     
     /* Find the start and length of the suffix ('X') */
     size_t suffix_i = 0;
     size_t suffix_len = 0;
 
     /* Find the suffix length and position */
-    for (size_t i = 0; ptemplate[i] != '\0'; i++) {
+    for (size_t i = 0; i < ptemplate_len; i++) {
         /* Walk candidate suffix string, verifying that it occurs at the end of the string. */
         if (ptemplate[i] == 'X') {
             /* Record the suffix position */
@@ -142,15 +196,20 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
             while (ptemplate[i] == 'X') {
                 suffix_len++;
                 i++;
+                PLCF_ASSERT(i < ptemplate_len+1);
             }
             
-            /* If the candidate suffix didn't end at the end of the string, this wasn't actually the suffix */
+            /* If the candidate suffix didn't end at the end of the string, this wasn't actually the suffix; allow
+             * the loop to continue. */
             if (ptemplate[i] != '\0') {
                 suffix_len = 0;
                 suffix_i = 0;
             }
         }
     }
+    
+    /* Assert that the computed suffix length matches the actual NUL-terminated string length */
+    PLCF_ASSERT(strlen(&ptemplate[suffix_i]) == suffix_len);
     
     /* Insert random suffix into the template. */
     SecureRandom rnd = SecureRandom();
@@ -159,29 +218,31 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
         uint32_t charIndex;
         
         /* Try to read a random suffix character */
-        if ((err = rnd.uniform(sizeof(padchar) - 1, &charIndex)) != PLCRASH_ESUCCESS) {
+        if ((err = rnd.uniform(sizeof(mktemp_padchar) - 1, &charIndex)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to fetch bytes from SecureRandom.uniform(): %s", plcrash_async_strerror(err));
             return err;
         }
         
         /* Update the suffix. */
-        PLCF_ASSERT(charIndex < sizeof(padchar));
-        ptemplate[suffix_i + i] = padchar[charIndex];
+        PLCF_ASSERT(charIndex < sizeof(mktemp_padchar));
+        PLCF_ASSERT(suffix_i + i < ptemplate_len);
+        ptemplate[suffix_i + i] = mktemp_padchar[charIndex];
     }
 
     /* Save a copy of the suffix. We use this to determine when roll-over occurs while trying all possible combinations. */
     char original_suffix[suffix_len];
     plcrash_async_memcpy(original_suffix, &ptemplate[suffix_i], suffix_len);
     
-    /* Recursion state; we use this to track completion at each recursion depth; a state of '\0' signifies incomplete, whereas
-     * any other character signifies completion. */
-    char recursion_state[suffix_len];
-    plcrash_async_memset(recursion_state, '\0', sizeof(recursion_state));
+    /* Recursion state; this tracks the 'last' position in the alphabet for all suffix positions. This varies based on the
+     * starting position. */
+    char last_alphabet_suffix[suffix_len];
+    for (size_t depth = 0; depth < suffix_len; depth++) {
+        last_alphabet_suffix[depth] = mktemp_padchar_prev(original_suffix[depth]);
+    }
     
     /*
      * Loop until open(2) either succeeds, returns an error other than EEXIST, or we've tried every available permutation.
      */
-    size_t depth = 0;
     while (true) {
         /* Try to open the file. */
         *outfd = open(ptemplate, O_CREAT|O_EXCL|O_RDWR, mode);
@@ -195,63 +256,35 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
             PLCF_DEBUG("Failed to open output file '%s' in mktemp(): %d", ptemplate, errno);
             return PLCRASH_OUTPUT_ERR;
         }
-        
-        /* Determine the next padding character to be added */
-        char pchar;
-        while (true) {
-            PLCF_ASSERT(depth < suffix_len);
 
-            /* Locate the pad_idx for this depth. */
-            size_t pad_idx;
-            for (pad_idx = 0; padchar[pad_idx] != ptemplate[suffix_i + depth] && padchar[pad_idx] != '\0'; pad_idx++);
-            
-            /* Fetch the next padding character, wrapping around if we hit the end. */
-            PLCF_ASSERT(pad_idx < sizeof(padchar));
-            pad_idx++;
-            if (padchar[pad_idx] == '\0')
-                pad_idx = 0;
-            
-            pchar = padchar[pad_idx];
-            
-            /* If we've tried all values at this template position, we need to backtrack. */
-            if (pchar == original_suffix[depth]) {
-                /* Record the completion state */
-                recursion_state[depth] = pchar;
-
-                /* Backtrack until we hit an incomplete value, or the first entry */
-                while (depth > 0 && recursion_state[depth] != '\0') {
-                    recursion_state[depth] = '\0';
-                    
-                    /* Reset the starting state. */
-                    if (depth > 0)
-                        ptemplate[suffix_i + depth] = pchar;
-
-                    depth--;
-                    PLCF_ASSERT(depth < suffix_len);
-                }
-
-                
-                /* Check for completion */
-                if (depth == 0 && recursion_state[depth] != '\0') {
-                    PLCF_DEBUG("Tried all possible temporary file names for '%s'; could not find an available temporary name.", ptemplate);
-                    return PLCRASH_OUTPUT_ERR;
-                }
-                
-                continue;
+        /* 1. Find the last character in the suffix that has not been iterated to completion */
+        size_t target_pos = 0;
+        bool target_pos_found = false;
+        for (size_t depth = 0; depth < suffix_len; depth++) {
+            /* If found, save the position, and then keep looking */
+            PLCF_ASSERT(suffix_i + depth < ptemplate_len);
+            if (ptemplate[suffix_i + depth] != last_alphabet_suffix[depth]) {
+                target_pos = depth;
+                target_pos_found = true;
             }
+        }
 
-            /* Update the suffix */
-            ptemplate[suffix_i + depth] = pchar;
+        /* 2. Increment the target found in step #1; this is the right-most target that has not yet been fully iterated. If nothing was found, we're done. */
+        if (target_pos_found) {
+            PLCF_ASSERT(suffix_i + target_pos < ptemplate_len);
+            
+            char pchar = mktemp_padchar_next(ptemplate[suffix_i + target_pos]);
+            ptemplate[suffix_i + target_pos] = pchar;
+        } else {
+            PLCF_DEBUG("Tried all possible combinations of '%s'", ptemplate);
+            return PLCRASH_OUTPUT_ERR;
+        }
 
-            /* Recurse if we can, retry open() if we can't */
-            if (depth + 1 == suffix_len) {
-                /* Retry! */
-                break;
-            } else {
-                /* Recurse! */
-                depth++;
-            }
-            break;
+        /* 3. Reset all characters to the right of the target back to their initial alphabet state so that we
+         * can restart iteration. */
+        for (size_t depth = target_pos+1; depth < suffix_len; depth++) {
+            PLCF_ASSERT(suffix_i + depth < ptemplate_len);
+            ptemplate[suffix_i + depth] = original_suffix[depth];
         }
     }
 
