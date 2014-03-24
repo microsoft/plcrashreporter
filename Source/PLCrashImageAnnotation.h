@@ -26,8 +26,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef CrashReporter_PLCrashAnnotation_h
-#define CrashReporter_PLCrashAnnotation_h
+#ifndef PLCRASH_IMAGE_ANNOTATION_H
+#define PLCRASH_IMAGE_ANNOTATION_H
 
 #include <stdint.h>
 
@@ -36,29 +36,28 @@
  *
  * This structure allows additional information to be associated with crashes
  * on a per-image. To make use of it, the image needs to have an annotation
- * variable placed in its __DATA,__pl_crash_info section. Any data in that
+ * variable placed in its __DATA,__plcrash_info section. Any data in that
  * object at the time of the variable will be stored in the report.
  *
- * Having multiple annotation variables in a single image results in undefined
- * behavior.
+ * Having multiple annotation variables in a single image results in undefined behavior.
  */
-typedef struct plcrashreporter_image_annotation_t {
+typedef struct PLCrashImageAnnotation {
     /** The version number of this structure. The current version of this structure is 0. */
     uint16_t version;
     /** The length of the data to associate with the crash. */
-    uint16_t dataLength;
+    uint16_t data_size;
 #if defined(__LP64__)
     /* Explicitly insert padding to appease Clang's -Wpadded warning. */
     char _padding[4];
 #endif
     /** The data to associate with the crash. */
     const void *data;
-} plcrashreporter_image_annotation_t;
+} PLCrashImageAnnotation;
 
 #ifdef __clang__
-    #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section("__DATA,__pl_crash_info")))
+    #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section("__DATA,__plcrash_info")))
 #else
     #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE
 #endif
 
-#endif
+#endif /* PLCRASH_IMAGE_ANNOTATION_H */

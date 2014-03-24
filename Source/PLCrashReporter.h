@@ -30,7 +30,7 @@
 #import <mach/mach.h>
 
 #import "PLCrashReporterConfig.h"
-#import "PLCrashAnnotation.h"
+#import "PLCrashImageAnnotation.h"
 
 @class PLCrashMachExceptionServer;
 @class PLCrashMachExceptionPortSet;

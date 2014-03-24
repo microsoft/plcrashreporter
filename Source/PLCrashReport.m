@@ -617,8 +617,12 @@ error:
                 return nil;
         }
 
+        /* Extract image annotation (if available). */
         NSData *annotation = nil;
-        if (image->annotation.len) {
+        if (image->annotation.len == 0) {
+            /* No annotation */
+            annotation = nil;
+        } else {
             annotation = [NSData dataWithBytes: image->annotation.data length: image->annotation.len];
         }
 

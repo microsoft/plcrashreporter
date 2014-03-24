@@ -271,64 +271,115 @@ cpu_subtype_t plcrash_async_macho_cpu_subtype (plcrash_async_macho_t *image) {
 /**
  * @internal
  *
- * Write the binary-specific crash annotation from the __DATA,__pl_crash_info section
+ * Read the binary-specific crash annotation from the __DATA,__plcrash_info section, if available.
  *
  * @param image The image to search in
- * @param section The __DATA,__pl_crash_info section of the image
- * @param result On success, the crash annotation data
+ * @param section The __DATA,__plcrash_info section of the image
+ * @param result[out] On success, will be initialized with a mapped memory object containing the annotation's data.
+ * It is the caller's responsibility to free the returned value via plcrash_async_mobject_free(). If the function returns an error,
+ * no class_name value will be provided and the caller is not responsible for freeing any associated resources.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if not found, PLCRASH_EINVALID_DATA if
+ * the annotation data is unparseable, or a standard plcrash_error_t error code if an error occurs reading or
+ * mapping the annotation.
  */
-static plcrash_error_t plcrash_async_macho_find_plcrashinfo(plcrash_async_macho_t *image,
-                                                            plcrash_async_mobject_t *section,
-                                                            plcrash_async_mobject_t *result) {
-    /* We're reading the plcrashreporter_image_annotation_t structure, but can't
-     * memcpy it from the task because the layout differs between 32/64-bit
+static plcrash_error_t plcrash_async_macho_read_plcrashinfo (plcrash_async_macho_t *image, plcrash_async_mobject_t *section, plcrash_async_mobject_t *mobj)
+{
+    /* We're reading the PLCrashImageAnnotation structure, but can't memcpy it from the task because the layout differs between 32/64-bit
      * processes. The struct always begins with the version/length uint16s. */
     uint16_t version;
     plcrash_error_t ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 0, &version);
-    if (ret != PLCRASH_ESUCCESS) return ret;
-    if (version != 0) return PLCRASH_EINVALID_DATA;
+    if (ret != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to read version field from image annotation %d in %s", ret, image->name);
+        return ret;
+    }
 
-    uint16_t length;
-    ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 2, &length);
-    if (ret != PLCRASH_ESUCCESS) return ret;
-    if (length == 0) return PLCRASH_ENOTFOUND;
+    if (version != 0) {
+        PLCF_DEBUG("Image annotation found with unsupported version number %" PRIu16 " in %s", version, image->name);
+        return PLCRASH_EINVALID_DATA;
+    }
+
+    /* Read the data length */
+    uint16_t data_size;
+    ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 2, &data_size);
+    if (ret != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to read data_size from image annotation: %d in %s", ret, image->name);
+        return ret;
+    }
+
+    /* If the user data is zero-length, we can skip the record. */
+    if (data_size == 0)
+        return PLCRASH_ENOTFOUND;
+
 
     /* The size and location of the data pointer varies due to alignment. */
     pl_vm_address_t dataAddress;
     if (image->m64) {
         uint64_t ptr64;
+
         ret = plcrash_async_mobject_read_uint64(section, image->byteorder, section->task_address, 8, &ptr64);
-        if (ret != PLCRASH_ESUCCESS) return ret;
+        if (ret != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("Failed to read data pointer from the image annotation: %d in %s", ret, image->name);
+            return ret;
+        }
+
         dataAddress = ptr64;
     } else {
         uint32_t ptr32;
+
         ret = plcrash_async_mobject_read_uint32(section, image->byteorder, section->task_address, 4, &ptr32);
-        if (ret != PLCRASH_ESUCCESS) return ret;
+        if (ret != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("Failed to read data pointer from the image annotation: %d in %s", ret, image->name);
+            return ret;
+        }
+
         dataAddress = ptr32;
     }
 
-    /* It's invalid to have a length specified but a NULL pointer for the data
-     * member. */
-    if (dataAddress == 0) return PLCRASH_EINVALID_DATA;
-    return plcrash_async_mobject_init(result, image->task, dataAddress, length, true);
+    /* It's invalid to have a length specified but a NULL pointer for the data member. */
+    if (dataAddress == 0) {
+        PLCF_DEBUG("Image annotation is initialized with a NULL data pointer in %s", image->name);
+        return PLCRASH_EINVALID_DATA;
+    }
+
+    /* Try to initialize a mobject containing the referenced data */
+    ret = plcrash_async_mobject_init(mobj, image->task, dataAddress, data_size, true);
+    if (ret != PLCRASH_ESUCCESS)
+        PLCF_DEBUG("Failed to map annotation data; plcrash_async_mobject_init() returned %d in %s", ret, image->name);
+
+    return ret;
 }
 
 /**
  * Fetches the binary-specific crash reporter information.
  *
  * @param image The image to search in
- * @param outInfo On success, the crash reporter info string
+ * @param result[out] On success, will be initialized with a mapped memory object containing the annotation's data.
+ * It is the caller's responsibility to free the returned value via plcrash_async_mobject_free(). If the function returns an error,
+ * no class_name value will be provided and the caller is not responsible for freeing any associated resources.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if not found, PLCRASH_EINVALID_DATA if
+ * the annotation data is unparseable, or a standard plcrash_error_t error code if an error occurs reading or
+ * mapping the annotation.
  */
-plcrash_error_t plcrash_async_macho_find_annotation(plcrash_async_macho_t *image, plcrash_async_mobject_t *result) {
-    if (!image) return PLCRASH_EINVAL;
-    if (!result) return PLCRASH_EINVAL;
+plcrash_error_t plcrash_async_macho_find_annotation (plcrash_async_macho_t *image, plcrash_async_mobject_t *result) {
+    /* Validate the arguments */
+    if (image == NULL)
+        return PLCRASH_EINVAL;
 
+    if (result == NULL)
+        return PLCRASH_EINVAL;
+
+    /* Try to fetch the __plcrash_info section for the given image */
     plcrash_async_mobject_t crashinfo_section;
-    plcrash_error_t ret = plcrash_async_macho_map_section(image, "__DATA", "__pl_crash_info", &crashinfo_section);
-    if (ret == PLCRASH_ESUCCESS) {
-        ret = plcrash_async_macho_find_plcrashinfo(image, &crashinfo_section, result);
-        plcrash_async_mobject_free(&crashinfo_section);
+    plcrash_error_t ret = plcrash_async_macho_map_section(image, "__DATA", "__plcrash_info", &crashinfo_section);
+    if (ret != PLCRASH_ESUCCESS) {
+        return ret;
     }
+
+    /* Section found, try to read the plcrashinfo record */
+    ret = plcrash_async_macho_read_plcrashinfo(image, &crashinfo_section, result);
+    plcrash_async_mobject_free(&crashinfo_section);
 
     return ret;
 }

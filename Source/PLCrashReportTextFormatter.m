@@ -240,37 +240,43 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
     }
     
     [text appendString: @"\n"];
-    
-    BOOL wroteAppSpecificHeader = NO;
+
+    /* Application Specific Information */
+    BOOL wroteApplicationSpecificSectionHeader = NO;
+
     for (PLCrashReportBinaryImageInfo *image in report.images) {
-        if (!image.annotation) continue;
+        /* Skip missing annotations */
+        if (image.annotation == nil)
+            continue;
 
-        /* The annotation can be non-textual data. If that's the case, we won't
-         * write anything at all and the user will need to use the PLCrashReport
+        /* The annotation can be non-textual data. If that's the case, we won't write anything at all and the user will need to use the PLCrashReport
          * class directly. */
-        NSString *annotationString = [[[NSString alloc] initWithData: image.annotation
-                                                            encoding: NSUTF8StringEncoding] autorelease];
-        if (!annotationString) continue;
+        NSString *annotationString = [[[NSString alloc] initWithData: image.annotation encoding: NSUTF8StringEncoding] autorelease];
+        if (annotationString == nil)
+            continue;
 
-        if (!wroteAppSpecificHeader) {
+        /* Write the section header, but only once */
+        if (!wroteApplicationSpecificSectionHeader) {
             [text appendFormat: @"Application Specific Information:\n"];
-            wroteAppSpecificHeader = YES;
+            wroteApplicationSpecificSectionHeader = YES;
         }
+
         [text appendString: annotationString];
         [text appendString: @"\n"];
     }
 
     /* Uncaught Exception */
     if (report.hasExceptionInfo) {
-        if (!wroteAppSpecificHeader) {
+        if (!wroteApplicationSpecificSectionHeader) {
             [text appendFormat: @"Application Specific Information:\n"];
-            wroteAppSpecificHeader = YES;
+            wroteApplicationSpecificSectionHeader = YES;
         }
+
         [text appendFormat: @"*** Terminating app due to uncaught exception '%@', reason: '%@'\n",
                 report.exceptionInfo.exceptionName, report.exceptionInfo.exceptionReason];
     }
 
-    if (wroteAppSpecificHeader)
+    if (wroteApplicationSpecificSectionHeader)
         [text appendString: @"\n"];
 
     /* If an exception stack trace is available, output an Apple-compatible backtrace. */
