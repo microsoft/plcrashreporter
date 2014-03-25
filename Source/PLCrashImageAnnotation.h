@@ -31,39 +31,70 @@
 
 #include <stdint.h>
 
-/** The Mach-O segment in which the PLCrashImageAnnotation should be placed. */
+/** @ingroup constants
+ * The Mach-O segment in which the PLCrashImageAnnotation should be placed. */
 #define PLCRASH_MACHO_ANNOTATION_SEG SEG_DATA
 
-/** The Mach-O section in which the PLCrashImageAnnotation should be placed. */
+/** @ingroup constants
+ * The Mach-O section in which the PLCrashImageAnnotation should be placed. */
 #define PLCRASH_MACHO_ANNOTATION_SECT "__plcrash_info"
 
 /**
  * @ingroup types
  *
- * This structure allows additional information to be associated with crashes
- * on a per-image. To make use of it, the image needs to have an annotation
- * variable placed in its __DATA,__plcrash_info section. Any data in that
- * object at the time of the variable will be stored in the report.
+ * This structure allows additional information to be associated with crashes on a per-image basis.
  *
- * Having multiple annotation variables in a single image results in undefined behavior.
+ * At crash time, the crash reporter will walk all loaded Mach-O images, and including any associated
+ * per-image annotations in the final crash report.
+ *
+ * @par Using Image Annotations
+ *
+ * To declare an annotation that will be visible to the crash reporter, the annotation data must:
+ *
+ * - Be placed in the appropriate binary section and segment (@sa PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE).
+ * - Be initialized with a valid version number and data pointer, and data_size.
+ *
+ * @todo Define atomicity requirements, or vend an API that handles atomic initialization of the annotation.
+ *
+ * @par Multiple Image Annotations
+ * 
+ * If multiple annotation variables are defined in a single image, only one of the annotations will be visible
+ * to the crash reporter; which annotation is undefined. This restriction may be relaxed in a later release.
  */
 typedef struct PLCrashImageAnnotation {
-    /** The version number of this structure. The current version of this structure is 0. */
+    /** The version number of this annotation structure. Currently the only valid value is 0. */
     uint16_t version;
-    /** The length of the data to associate with the crash. */
-    uint16_t data_size;
+
 #if defined(__LP64__)
     /* Explicitly insert padding to appease Clang's -Wpadded warning. */
     char _padding[4];
 #endif
-    /** The data to associate with the crash. */
+
+    /**
+     * A pointer to a additional per-image data that will be included in the final crash report. No restrictions
+     * are placed on the format of the data; the contents are considered opaque by the crash reporter.
+     */
     const void *data;
+
+    /**
+     * The size in bytes of the data referenced by PLCrashImageAnnotation#data. If zero,
+     * PLCrashReporter will assume no data is provided.
+     */
+    uint16_t data_size;
 } PLCrashImageAnnotation;
 
-#ifdef __clang__
-    #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section(PLCRASH_MACHO_ANNOTATION_SEG "," PLCRASH_MACHO_ANNOTATION_SECT)))
-#else
-    #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE
-#endif
+/**
+ * @ingroup constants
+ *
+ * A compiler attribute that will place a global PLCrashImageAnnotation variable in the appropriate Mach-O segment and
+ * section (__DATA, __plcrash).
+ *
+ * Example Usage:
+ *
+ @code
+ PLCrashImageAnnotation crashImageAnnotation PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE;
+ @endcode
+ */
+#define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section(PLCRASH_MACHO_ANNOTATION_SEG "," PLCRASH_MACHO_ANNOTATION_SECT)))
 
 #endif /* PLCRASH_IMAGE_ANNOTATION_H */
