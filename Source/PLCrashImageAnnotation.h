@@ -31,6 +31,12 @@
 
 #include <stdint.h>
 
+/** The Mach-O segment in which the PLCrashImageAnnotation should be placed. */
+#define PLCRASH_MACHO_ANNOTATION_SEG SEG_DATA
+
+/** The Mach-O section in which the PLCrashImageAnnotation should be placed. */
+#define PLCRASH_MACHO_ANNOTATION_SECT "__plcrash_info"
+
 /**
  * @ingroup types
  *
@@ -55,7 +61,7 @@ typedef struct PLCrashImageAnnotation {
 } PLCrashImageAnnotation;
 
 #ifdef __clang__
-    #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section("__DATA,__plcrash_info")))
+    #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section(PLCRASH_MACHO_ANNOTATION_SEG "," PLCRASH_MACHO_ANNOTATION_SECT)))
 #else
     #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE
 #endif

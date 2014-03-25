@@ -35,6 +35,8 @@
 
 #include <mach-o/fat.h>
 
+#include "PLCrashImageAnnotation.h"
+
 /**
  * @internal
  * @ingroup plcrash_async
@@ -372,7 +374,7 @@ plcrash_error_t plcrash_async_macho_find_annotation (plcrash_async_macho_t *imag
 
     /* Try to fetch the __plcrash_info section for the given image */
     plcrash_async_mobject_t crashinfo_section;
-    plcrash_error_t ret = plcrash_async_macho_map_section(image, "__DATA", "__plcrash_info", &crashinfo_section);
+    plcrash_error_t ret = plcrash_async_macho_map_section(image, PLCRASH_MACHO_ANNOTATION_SEG, PLCRASH_MACHO_ANNOTATION_SECT, &crashinfo_section);
     if (ret != PLCRASH_ESUCCESS) {
         return ret;
     }
