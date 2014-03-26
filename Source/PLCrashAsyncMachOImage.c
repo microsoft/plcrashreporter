@@ -289,21 +289,21 @@ static plcrash_error_t plcrash_async_macho_read_plcrashinfo (plcrash_async_macho
 {
     /* We're reading the PLCrashImageAnnotation structure, but can't memcpy it from the task because the layout differs between 32/64-bit
      * processes. The struct always begins with the version/length uint16s. */
-    uint16_t version;
-    plcrash_error_t ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 0, &version);
+    uint32_t version;
+    plcrash_error_t ret = plcrash_async_mobject_read_uint32(section, image->byteorder, section->task_address, 0, &version);
     if (ret != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to read version field from image annotation %d in %s", ret, image->name);
         return ret;
     }
 
     if (version != 0) {
-        PLCF_DEBUG("Image annotation found with unsupported version number %" PRIu16 " in %s", version, image->name);
+        PLCF_DEBUG("Image annotation found with unsupported version number %" PRIu32 " in %s", version, image->name);
         return PLCRASH_EINVALID_DATA;
     }
 
     /* Read the data length */
-    uint16_t data_size;
-    ret = plcrash_async_mobject_read_uint16(section, image->byteorder, section->task_address, 2, &data_size);
+    uint32_t data_size;
+    ret = plcrash_async_mobject_read_uint32(section, image->byteorder, section->task_address, 4, &data_size);
     if (ret != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to read data_size from image annotation: %d in %s", ret, image->name);
         return ret;
@@ -329,7 +329,7 @@ static plcrash_error_t plcrash_async_macho_read_plcrashinfo (plcrash_async_macho
     } else {
         uint32_t ptr32;
 
-        ret = plcrash_async_mobject_read_uint32(section, image->byteorder, section->task_address, 4, &ptr32);
+        ret = plcrash_async_mobject_read_uint32(section, image->byteorder, section->task_address, 8, &ptr32);
         if (ret != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to read data pointer from the image annotation: %d in %s", ret, image->name);
             return ret;

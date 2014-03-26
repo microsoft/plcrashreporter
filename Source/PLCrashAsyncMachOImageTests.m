@@ -465,7 +465,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
 
     if (data) {
         /* If the last test failed, don't come here and crash. */
-        STAssertEquals(strncmp(ImageGlobalAnnotation.data, data, annotation.length), 0, @"Annotation data is wrong");
+        STAssertEquals(strncmp((const void *) ImageGlobalAnnotation.data, data, annotation.length), 0, @"Annotation data is wrong");
     }
 
 
