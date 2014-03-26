@@ -65,6 +65,12 @@ typedef struct PLCrashImageAnnotation {
     /** The version number of this annotation structure. Currently the only valid value is 0. */
     uint16_t version;
 
+    /**
+     * The size in bytes of the data referenced by PLCrashImageAnnotation#data. If zero,
+     * PLCrashReporter will assume no data is provided.
+     */
+    uint16_t data_size;
+    
 #if defined(__LP64__)
     /* Explicitly insert padding to appease Clang's -Wpadded warning. */
     char _padding[4];
@@ -75,12 +81,6 @@ typedef struct PLCrashImageAnnotation {
      * are placed on the format of the data; the contents are considered opaque by the crash reporter.
      */
     const void *data;
-
-    /**
-     * The size in bytes of the data referenced by PLCrashImageAnnotation#data. If zero,
-     * PLCrashReporter will assume no data is provided.
-     */
-    uint16_t data_size;
 } PLCrashImageAnnotation;
 
 /**
