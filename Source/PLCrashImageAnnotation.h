@@ -34,6 +34,10 @@
 #ifndef PLCRASH_IMAGE_ANNOTATION_H
 #define PLCRASH_IMAGE_ANNOTATION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <mach-o/loader.h> // for SEG_DATA
 
@@ -130,4 +134,10 @@ typedef struct PLCrashImageAnnotation {
  */
 #define PLCRASH_IMAGE_ANNOTATION_ATTRIBUTE __attribute__((section(PLCRASH_MACHO_ANNOTATION_SEG "," PLCRASH_MACHO_ANNOTATION_SECT)))
 
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* PLCRASH_IMAGE_ANNOTATION_H */
+
