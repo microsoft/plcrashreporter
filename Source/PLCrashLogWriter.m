@@ -46,6 +46,8 @@
 #import "PLCrashAsyncSignalInfo.h"
 #import "PLCrashAsyncSymbolication.h"
 
+#import "ImageAnnotationReader.hpp"
+
 #import "PLCrashSysctl.h"
 #import "PLCrashProcessInfo.h"
 

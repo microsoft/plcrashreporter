@@ -197,8 +197,6 @@ bool plcrash_async_macho_contains_address (plcrash_async_macho_t *image, pl_vm_a
 cpu_type_t plcrash_async_macho_cpu_type (plcrash_async_macho_t *image);
 cpu_subtype_t plcrash_async_macho_cpu_subtype (plcrash_async_macho_t *image);
 
-plcrash_error_t plcrash_async_macho_find_annotation(plcrash_async_macho_t *image, plcrash_async_mobject_t *result);
-
 void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *previous);
 void *plcrash_async_macho_next_command_type (plcrash_async_macho_t *image, void *previous, uint32_t expectedCommand);
 void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t cmd);
