@@ -26,6 +26,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/*
+ * NOTE: This header is designed to be used independently of PLCrashReporter by third parties, and
+ * will not contain any dependencies on the enclosing PLCrashReporter project.
+ */
+
 #ifndef PLCRASH_IMAGE_ANNOTATION_H
 #define PLCRASH_IMAGE_ANNOTATION_H
 
