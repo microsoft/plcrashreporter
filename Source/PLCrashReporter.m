@@ -449,6 +449,11 @@ static bool signal_handler_callback (int signo, siginfo_t *info, pl_ucontext_t *
         MAC_MAIN_THR(
              cleanup();
         );
+#else
+        NSLog(@"That was a close call! Your application almost crashed with a %s (si_code=%s, si_addr=%" PRIx64 "), but thanks to PLCrashReporter Advanced Crash Recovery™, we were able to keep things running!",
+              plcrash_async_signal_signame(info->si_signo),
+              plcrash_async_signal_sigcode(info->si_signo, info->si_code),
+              (uint64_t) info->si_addr);
 #endif /* MAC_RECOVERY_UI */
 
         return true;
