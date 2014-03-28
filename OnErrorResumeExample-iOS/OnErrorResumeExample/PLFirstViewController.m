@@ -22,10 +22,10 @@
 
 - (IBAction) crashMe: (id) sender {
     /* NULL dereference! */
-//    ((volatile char *) NULL)[0] = 0xFF;
+    ((volatile char *) NULL)[0] = 0xFF;
     
     /* CFRelease assertion! */
-    CFRelease(NULL);
+//    CFRelease(NULL);
 }
 
 - (void)didReceiveMemoryWarning
