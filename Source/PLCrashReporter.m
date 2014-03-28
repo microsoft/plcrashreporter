@@ -102,6 +102,8 @@ typedef struct signal_handler_ctx {
 
     /** Path to the output file */
     const char *path;
+    
+    BOOL onErrorResume;
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
     /* Previously registered Mach exception ports, if any. Will be left uninitialized if PLCrashReporterSignalHandlerTypeMach
@@ -196,6 +198,28 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
     plcrash_async_thread_state_t thread_state;
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
+    
+    if (sigctx->onErrorResume) {
+        NSLog(@"Crash detected! Deploying recovery procedure:");
+        
+        /* Just to be clear: this feature is a JOKE. Do NOT actually use this, or 
+         * everyone will laugh at you, and nobody will invite you to their birthday
+         * party ever again. */
+        NSLog(@"Reticulating Splines ...");
+        
+#if defined(__arm__)
+        uap->uc_mcontext->__ss.__pc += 2;
+#elif defined(__arm64__)
+        uap->uc_mcontext->__ss.__pc += 4;
+#elif defined(__i386__)
+        uap->uc_mcontext->__ss.__eip += 1;
+#elif defined(__x86_64__)
+        uap->uc_mcontext->__ss.__rip += 1;
+#endif
+
+        NSLog(@"Recovery drone deployed. Prepare for re-entry.");
+        return true;
+    }
     
     /* Remove all signal handlers -- if the crash reporting code fails, the default terminate
      * action will occur.
@@ -358,6 +382,9 @@ static void image_remove_callback (const struct mach_header *mh, intptr_t vmaddr
  * exception field, and triggering the signal handler.
  */
 static void uncaught_exception_handler (NSException *exception) {
+    if (signal_handler_context.onErrorResume)
+        return;
+    
     /* Set the uncaught exception */
     plcrash_log_writer_set_exception(&signal_handler_context.writer, exception);
 
@@ -575,6 +602,7 @@ static PLCrashReporter *sharedReporter = nil;
 
     /* Set up the signal handler context */
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
+    signal_handler_context.onErrorResume = _config.onErrorResume;
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);

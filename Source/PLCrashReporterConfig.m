@@ -37,6 +37,7 @@
 
 @synthesize signalHandlerType = _signalHandlerType;
 @synthesize symbolicationStrategy = _symbolicationStrategy;
+@synthesize onErrorResume = _onErrorResume;
 
 /**
  * Return the default local configuration.
@@ -50,7 +51,7 @@
  * is appropriate for use in release builds.
  */
 - (instancetype) init {
-    return [self initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone];
+    return [self initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone onErrorResume: YES];
 }
 
 /**
@@ -61,12 +62,14 @@
  */
 - (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
                      symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+                             onErrorResume: (BOOL) onErrorResume
 {
     if ((self = [super init]) == nil)
         return nil;
 
     _signalHandlerType = signalHandlerType;
     _symbolicationStrategy = symbolicationStrategy;
+    _onErrorResume = onErrorResume;
 
     return self;
 }

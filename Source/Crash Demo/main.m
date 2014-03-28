@@ -128,8 +128,9 @@ int main (int argc, char *argv[]) {
     }
     
     /* Configure our reporter */
-    PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
-                                                                        symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll] autorelease];
+    PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD
+                                                                        symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll
+                                                                                onErrorResume: YES] autorelease];
     PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: config] autorelease];
 
     /* Save any existing crash report. */

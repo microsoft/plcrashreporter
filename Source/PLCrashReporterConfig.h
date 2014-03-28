@@ -146,19 +146,24 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
     
     /** The configured symbolication strategy. */
     PLCrashReporterSymbolicationStrategy _symbolicationStrategy;
+
+    BOOL _onErrorResume;
 }
 
 + (instancetype) defaultConfiguration;
 
 - (instancetype) init;
 - (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
-                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy;
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+                             onErrorResume: (BOOL) onErrorResume;
 
 /** The configured signal handler type. */
 @property(nonatomic, readonly) PLCrashReporterSignalHandlerType signalHandlerType;
 
 /** The configured symbolication strategy. */
 @property(nonatomic, readonly) PLCrashReporterSymbolicationStrategy symbolicationStrategy;
+
+@property(nonatomic, readonly) BOOL onErrorResume;
 
 
 @end
