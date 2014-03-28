@@ -248,9 +248,11 @@ static bool signal_handler_callback (int signo, siginfo_t *info, pl_ucontext_t *
     #define REPORT_STATUS(msg, ...) NSLog(msg, ##__VA_ARGS__);
 #endif
         
+#if MAC_RECOVERY_UI
         dispatch_async(dispatch_get_main_queue(), ^{
            session = [NSApp beginModalSessionForWindow: recoveryWindowController.window];
         });
+#endif
 
         REPORT_STATUS(@"Crash detected! Deploying recovery systems.");
         
@@ -421,12 +423,10 @@ static bool signal_handler_callback (int signo, siginfo_t *info, pl_ucontext_t *
         uap->uc_mcontext->__ss.__rax = 0x0;
 #endif
 
+#if MAC_RECOVERY_UI
         /* Show these two a bit longer */
         REPORT_STATUS(@"Reticulating Splines ...");
-        currentDelay += 1.0f;
-        
-        REPORT_STATUS(@"Recovery complete! Resuming application ...");
-        currentDelay += 1.0f;
+        currentDelay += 3.0f;
 
         void (^cleanup)() = ^{
             [[NSApplication sharedApplication] abortModal];
@@ -438,7 +438,7 @@ static bool signal_handler_callback (int signo, siginfo_t *info, pl_ucontext_t *
             NSAlert *alert = [[NSAlert alloc] init];
             alert.messageText = @"Disaster averted!";
             alert.informativeText = [NSString stringWithFormat:
-                                     @"That was a close call! %@ almost crashed with a %s (si_code=%s, si_addr=%" PRIx64 "), but thanks to PLCrashReporter's Advanced Crash Recovery, we were able to keep things running!",
+                                     @"That was a close call! %@ almost crashed with a %s (si_code=%s, si_addr=%" PRIx64 "), but thanks to PLCrashReporter Advanced Crash Recovery™, we were able to keep things running!",
                                      appName,
                                      plcrash_async_signal_signame(info->si_signo),
                                      plcrash_async_signal_sigcode(info->si_signo, info->si_code),
@@ -449,6 +449,7 @@ static bool signal_handler_callback (int signo, siginfo_t *info, pl_ucontext_t *
         MAC_MAIN_THR(
              cleanup();
         );
+#endif /* MAC_RECOVERY_UI */
 
         return true;
     }
