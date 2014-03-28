@@ -7,12 +7,20 @@
 //
 
 #import "PLAppDelegate.h"
+#import <CrashReporter/CrashReporter.h>
 
-@implementation PLAppDelegate
+@implementation PLAppDelegate {
+    PLCrashReporter *_reporter;
+}
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    // Override point for customization after application launch.
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    PLCrashReporterConfig *config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD
+                                                                       symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone
+                                                                            onErrorResume: YES];
+    
+    _reporter = [[PLCrashReporter alloc] initWithConfiguration: config];
+    [_reporter enableCrashReporter];
+
     return YES;
 }
 							

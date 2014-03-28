@@ -20,6 +20,11 @@
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
+- (IBAction) crashMe: (id) sender {
+    /* NULL dereference! */
+    ((volatile char *) NULL)[0] = 0xFF;
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
