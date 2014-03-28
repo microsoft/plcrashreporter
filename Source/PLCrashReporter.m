@@ -198,23 +198,188 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
     plcrash_async_thread_state_t thread_state;
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
+    static NSUInteger crash_count = 0;
+    
+    /* Extract the thread state */
+    // XXX_ARM64 rdar://14970271 -- In the Xcode 5 GM SDK, _STRUCT_MCONTEXT is not correctly
+    // defined as _STRUCT_MCONTEXT64 when building for arm64; this requires the pl_mcontext_t
+    // cast.
+    plcrash_async_thread_state_mcontext_init(&thread_state, (pl_mcontext_t *) uap->uc_mcontext);
     
     if (sigctx->onErrorResume) {
         NSLog(@"Crash detected! Deploying recovery procedure:");
         
+        crash_count++;
+        if (crash_count > 5) {
+            NSLog(@"We seem to be stuck in a crash loop! Terminating");
+            exit(1);
+        }
+
         /* Just to be clear: this feature is a JOKE. Do NOT actually use this, or 
          * everyone will laugh at you, and nobody will invite you to their birthday
          * party ever again. */
         NSLog(@"Reticulating Splines ...");
         
+
+        /* Return to caller */
+        {
+            plframe_cursor_t cursor;
+            
+            plcrash_async_image_list_set_reading(&shared_image_list, true);
+            if (plframe_cursor_init(&cursor, mach_task_self(), &thread_state, &shared_image_list) != PLFRAME_ESUCCESS) {
+                NSLog(@"Failed to initialize cursor");
+                return false;
+            }
+            if (plframe_cursor_next(&cursor) != PLFRAME_ESUCCESS) {
+                NSLog(@"Failed to fetch initial frame");
+                return false;
+            }
+            
+            if (plframe_cursor_next(&cursor) != PLFRAME_ESUCCESS) {
+                NSLog(@"Failed to fetch next frame");
+                return false;
+            }
+            
+            /* Restore registers */
+            for (plcrash_regnum_t i = 0; i < plframe_cursor_get_regcount(&cursor); i++) {
+                plcrash_greg_t regval;
+                if (plframe_cursor_get_reg(&cursor, i, &regval) != PLCRASH_ESUCCESS)
+                    continue;
+
+                const char *name = plframe_cursor_get_regname(&cursor, i);
+                NSLog(@"Restoring %s", name);
+                
+                switch (i) {
 #if defined(__arm__)
-        uap->uc_mcontext->__ss.__pc += 2;
+                    case PLCRASH_ARM_R4:
+                        uap->uc_mcontext->__ss.__r[4] = regval;
+                        break;
+                    case PLCRASH_ARM_R5:
+                        uap->uc_mcontext->__ss.__r[5] = regval;
+                        break;
+                    case PLCRASH_ARM_R6:
+                        uap->uc_mcontext->__ss.__r[6] = regval;
+                        break;
+                    case PLCRASH_ARM_R7: /* PLCRASH_REG_FP */
+                        uap->uc_mcontext->__ss.__r[7] = regval;
+                        break;
+                    case PLCRASH_ARM_R8:
+                        uap->uc_mcontext->__ss.__r[8] = regval;
+                        break;
+                    case PLCRASH_ARM_R10:
+                        uap->uc_mcontext->__ss.__r[10] = regval;
+                        break;
+                    case PLCRASH_ARM_R11:
+                        uap->uc_mcontext->__ss.__r[11] = regval;
+                        break;
+                    case PLCRASH_REG_IP:
+                        uap->uc_mcontext->__ss.__pc = regval;
+                        break;
+                    case PLCRASH_REG_SP:
+                        uap->uc_mcontext->__ss.__sp = regval;
+                        break;
 #elif defined(__arm64__)
-        uap->uc_mcontext->__ss.__pc += 4;
+                    case PLCRASH_ARM64_X19:
+                        uap->uc_mcontext->__ss.__x[19] = regval;
+                        break;
+                    case PLCRASH_ARM64_X20:
+                        uap->uc_mcontext->__ss.__x[20] = regval;
+                        break;
+                    case PLCRASH_ARM64_X21:
+                        uap->uc_mcontext->__ss.__x[21] = regval;
+                        break;
+                    case PLCRASH_ARM64_X22:
+                        uap->uc_mcontext->__ss.__x[22] = regval;
+                        break;
+                    case PLCRASH_ARM64_X23:
+                        uap->uc_mcontext->__ss.__x[23] = regval;
+                        break;
+                    case PLCRASH_ARM64_X24:
+                        uap->uc_mcontext->__ss.__x[24] = regval;
+                        break;
+                    case PLCRASH_ARM64_X25:
+                        uap->uc_mcontext->__ss.__x[25] = regval;
+                        break;
+                    case PLCRASH_ARM64_X26:
+                        uap->uc_mcontext->__ss.__x[26] = regval;
+                        break;
+                    case PLCRASH_ARM64_X27:
+                        uap->uc_mcontext->__ss.__x[27] = regval;
+                        break;
+                    case PLCRASH_ARM64_X28:
+                        uap->uc_mcontext->__ss.__x[28] = regval;
+                        break;
+                    case PLCRASH_REG_FP:
+                        uap->uc_mcontext->__ss.__fp = regval;
+                        break;
+                    case PLCRASH_REG_IP:
+                        uap->uc_mcontext->__ss.__pc = regval;
+                        break;
+                    case PLCRASH_REG_SP:
+                        uap->uc_mcontext->__ss.__sp = regval;
+                        break;
 #elif defined(__i386__)
-        uap->uc_mcontext->__ss.__eip += 1;
+                    case PLCRASH_X86_EBX:
+                        uap->uc_mcontext->__ss.__ebx = regval;
+                        break;
+                    case PLCRASH_X86_EBP: /* PLCRASH_REG_FP */
+                        uap->uc_mcontext->__ss.__ebp = regval;
+                        break;
+                    case PLCRASH_X86_ESI:
+                        uap->uc_mcontext->__ss.__esi = regval;
+                        break;
+                    case PLCRASH_X86_EDI:
+                        uap->uc_mcontext->__ss.__edi = regval;
+                        break;
+                    case PLCRASH_X86_ESP: /* PLCRASH_REG_SP */
+                        uap->uc_mcontext->__ss.__esp = regval;
+                        break;
+                    case PLCRASH_REG_IP:
+                        uap->uc_mcontext->__ss.__eip = regval;
+                        break;
 #elif defined(__x86_64__)
-        uap->uc_mcontext->__ss.__rip += 1;
+                    case PLCRASH_X86_64_RBX: /* PLCRASH_REG_FP */
+                        uap->uc_mcontext->__ss.__rbx = regval;
+                        break;
+                    case PLCRASH_X86_64_RSP: /* PLCRASH_REG_SP */
+                        uap->uc_mcontext->__ss.__rsp = regval;
+                        break;
+                    case PLCRASH_X86_64_RBP:
+                        uap->uc_mcontext->__ss.__rbp = regval;
+                        break;
+                    case PLCRASH_X86_64_R12:
+                        uap->uc_mcontext->__ss.__r12 = regval;
+                        break;
+                    case PLCRASH_X86_64_R13:
+                        uap->uc_mcontext->__ss.__r13 = regval;
+                        break;
+                    case PLCRASH_X86_64_R14:
+                        uap->uc_mcontext->__ss.__r14 = regval;
+                        break;
+                    case PLCRASH_X86_64_R15:
+                        uap->uc_mcontext->__ss.__r15 = regval;
+                        break;
+                    case PLCRASH_REG_IP:
+                        uap->uc_mcontext->__ss.__rip = regval;
+                        break;
+#endif
+                }
+            }
+            
+            plframe_cursor_free(&cursor);
+            plcrash_async_image_list_set_reading(&shared_image_list, false);
+        }
+        
+        /* Try to set a nil/NULL return value */
+        NSLog(@"Performing return value insertion...");
+#if defined(__arm__)
+        uap->uc_mcontext->__ss.__r[0] = 0x0;
+#elif defined(__arm64__)
+        uap->uc_mcontext->__ss.__x[0] = 0x0;
+#elif defined(__i386__)
+        uap->uc_mcontext->__ss.__eax = 0x0;
+#elif defined(__x86_64__)
+        uap->uc_mcontext->__ss.__rax = 0x0;
 #endif
 
         NSLog(@"Recovery drone deployed. Prepare for re-entry.");
@@ -240,12 +405,6 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
         
         sigaction(monitored_signals[i], &sa, NULL);
     }
-
-    /* Extract the thread state */
-    // XXX_ARM64 rdar://14970271 -- In the Xcode 5 GM SDK, _STRUCT_MCONTEXT is not correctly
-    // defined as _STRUCT_MCONTEXT64 when building for arm64; this requires the pl_mcontext_t
-    // cast.
-    plcrash_async_thread_state_mcontext_init(&thread_state, (pl_mcontext_t *) uap->uc_mcontext);
     
     /* Set up the BSD signal info */
     bsd_signal_info.signo = info->si_signo;

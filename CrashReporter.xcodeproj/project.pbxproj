@@ -122,6 +122,7 @@
 		052A46FA13637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052A46F713637DE000987004 /* PLCrashAsyncImageListTests.m */; };
 		052A473E1363844600987004 /* PLCrashAsyncImageList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 052A46BD1363650100987004 /* PLCrashAsyncImageList.cpp */; };
 		052A474C136384B300987004 /* PLCrashAsyncImageList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 052A46BD1363650100987004 /* PLCrashAsyncImageList.cpp */; };
+		0531A4D718E5D32F00AABED9 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0531A4D618E5D32F00AABED9 /* libc++.dylib */; };
 		053347A617E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347A717E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347A817E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
@@ -1140,6 +1141,7 @@
 		052A46BD1363650100987004 /* PLCrashAsyncImageList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PLCrashAsyncImageList.cpp; sourceTree = "<group>"; };
 		052A46F713637DE000987004 /* PLCrashAsyncImageListTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncImageListTests.m; sourceTree = "<group>"; };
 		052DC863175553DC004335FE /* dwarf_encoding_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dwarf_encoding_test.h; path = ../Resources/Tests/PLCrashAsyncDwarfEncodingTests/dwarf_encoding_test.h; sourceTree = "<group>"; };
+		0531A4D618E5D32F00AABED9 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator7.1.sdk/usr/lib/libc++.dylib"; sourceTree = DEVELOPER_DIR; };
 		053347A517E161CB00C52E50 /* unwind_test_arm64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_arm64.S; sourceTree = "<group>"; };
 		054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportTextFormatter.h; sourceTree = "<group>"; };
 		054627A811D998BB007891C7 /* PLCrashReportTextFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportTextFormatter.m; sourceTree = "<group>"; };
@@ -1369,6 +1371,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0531A4D718E5D32F00AABED9 /* libc++.dylib in Frameworks */,
 				052A46561363561B00987004 /* libCrashReporter-iphonesimulator.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2086,6 +2089,7 @@
 		0867D691FE84028FC02AAC07 /* CrashReporter */ = {
 			isa = PBXGroup;
 			children = (
+				0531A4D618E5D32F00AABED9 /* libc++.dylib */,
 				08FB77AEFE84172EC02AAC07 /* Source */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				089C1665FE841158C02AAC07 /* Resources */,

@@ -71,6 +71,14 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
     /* Fetch the current frame's frame pointer */
     plcrash_greg_t fp = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_FP);
     
+    /* The new frame's SP is probably the current frame's FP + 8/16 bytes */
+    plcrash_greg_t new_sp = fp;
+    if (x64) {
+        new_sp += 16;
+    } else {
+        new_sp += 8;
+    }
+    
     /* A NULL FP means a terminated frame */
     if (fp == 0x0)
         return PLFRAME_ENOFRAME;
@@ -115,6 +123,7 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
     plcrash_async_thread_state_clear_all_regs(&next_frame->thread_state);
     plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_FP, new_fp);
     plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_IP, new_pc);
+    plcrash_async_thread_state_set_reg(&next_frame->thread_state, PLCRASH_REG_SP, new_sp);
 
     return PLFRAME_ESUCCESS;
 }

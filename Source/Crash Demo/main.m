@@ -40,8 +40,10 @@ void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
 
 
 void stackFrame (void) {
+    NSLog(@"We're crashing now");
+
     /* Trigger a crash */
-    ((char *)NULL)[1] = 0;
+    CFRelease(NULL);
 }
 
 /* If a crash report exists, make it accessible via iTunes document sharing. This is a no-op on Mac OS X. */
@@ -148,9 +150,11 @@ int main (int argc, char *argv[]) {
     if (![reporter enableCrashReporterAndReturnError: &error]) {
         NSLog(@"Could not enable crash reporter: %@", error);
     }
-
+    
     /* Add another stack frame */
     stackFrame();
+    
+    NSLog(@"We're still here");
 
     [pool release];
 }
