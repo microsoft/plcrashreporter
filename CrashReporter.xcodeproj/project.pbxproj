@@ -131,6 +131,12 @@
 		053347AB17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AC17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AD17E16B0200C52E50 /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
+		05403EF018E5E2010093C403 /* PLCrashRecoveryWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = 05403EED18E5E2010093C403 /* PLCrashRecoveryWindowController.h */; };
+		05403EF118E5E2010093C403 /* PLCrashRecoveryWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = 05403EED18E5E2010093C403 /* PLCrashRecoveryWindowController.h */; };
+		05403EF218E5E2010093C403 /* PLCrashRecoveryWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 05403EEE18E5E2010093C403 /* PLCrashRecoveryWindowController.m */; };
+		05403EF318E5E2010093C403 /* PLCrashRecoveryWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 05403EEE18E5E2010093C403 /* PLCrashRecoveryWindowController.m */; };
+		05403EF418E5E2010093C403 /* PLCrashRecoveryWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 05403EEF18E5E2010093C403 /* PLCrashRecoveryWindowController.xib */; };
+		05403EF618E5E3C70093C403 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05403EF518E5E3C70093C403 /* Cocoa.framework */; };
 		054627A911D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */; };
 		054627AA11D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 054627A811D998BB007891C7 /* PLCrashReportTextFormatter.m */; };
 		054627AB11D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */; };
@@ -1143,6 +1149,10 @@
 		052DC863175553DC004335FE /* dwarf_encoding_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dwarf_encoding_test.h; path = ../Resources/Tests/PLCrashAsyncDwarfEncodingTests/dwarf_encoding_test.h; sourceTree = "<group>"; };
 		0531A4D618E5D32F00AABED9 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator7.1.sdk/usr/lib/libc++.dylib"; sourceTree = DEVELOPER_DIR; };
 		053347A517E161CB00C52E50 /* unwind_test_arm64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_arm64.S; sourceTree = "<group>"; };
+		05403EED18E5E2010093C403 /* PLCrashRecoveryWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashRecoveryWindowController.h; sourceTree = "<group>"; };
+		05403EEE18E5E2010093C403 /* PLCrashRecoveryWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashRecoveryWindowController.m; sourceTree = "<group>"; };
+		05403EEF18E5E2010093C403 /* PLCrashRecoveryWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PLCrashRecoveryWindowController.xib; sourceTree = "<group>"; };
+		05403EF518E5E3C70093C403 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportTextFormatter.h; sourceTree = "<group>"; };
 		054627A811D998BB007891C7 /* PLCrashReportTextFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportTextFormatter.m; sourceTree = "<group>"; };
 		054627B811D99D06007891C7 /* PLCrashReportFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportFormatter.h; sourceTree = "<group>"; };
@@ -1450,6 +1460,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05403EF618E5E3C70093C403 /* Cocoa.framework in Frameworks */,
 				05CD32110EE93AF9000FDE88 /* Foundation.framework in Frameworks */,
 				05654F770EFA5B54004283F5 /* CoreServices.framework in Frameworks */,
 			);
@@ -2143,6 +2154,9 @@
 				05A5E28017A82751008A75E5 /* PLCrashMacros.h */,
 				05A2077215AB30C9001E3EFC /* PLCrashNamespace.h */,
 				05A2B3FF1795BA4100934198 /* PLCrashFeatureConfig.h */,
+				05403EED18E5E2010093C403 /* PLCrashRecoveryWindowController.h */,
+				05403EEE18E5E2010093C403 /* PLCrashRecoveryWindowController.m */,
+				05403EEF18E5E2010093C403 /* PLCrashRecoveryWindowController.xib */,
 				05F414280EF9BB19008050CF /* Crash Report */,
 				059672EF0EF0853A008A0601 /* Private API */,
 				05659DF6174D2DF700D2EE21 /* Unit Testing */,
@@ -2163,6 +2177,7 @@
 		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				05403EF518E5E3C70093C403 /* Cocoa.framework */,
 				05654F760EFA5B54004283F5 /* CoreServices.framework */,
 				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
 			);
@@ -2348,6 +2363,7 @@
 				05D9E55016765A0200B39833 /* PLCrashReportRegisterInfo.h in Headers */,
 				05D9E55B16765D0200B39833 /* PLCrashReportSymbolInfo.h in Headers */,
 				0573B42C1681098E00395F2A /* PLCrashMachExceptionServer.h in Headers */,
+				05403EF018E5E2010093C403 /* PLCrashRecoveryWindowController.h in Headers */,
 				FCE45B4FD545A258E0292F25 /* PLCrashFrameStackUnwind.h in Headers */,
 				05A17DCD16D7F82700888448 /* PLCrashAsyncThread.h in Headers */,
 				05F3CD7416DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
@@ -2408,6 +2424,7 @@
 				05E7485A1760D62A009B8745 /* PLCrashAsyncDwarfFDE.hpp in Headers */,
 				05E7486F1760D8AE009B8745 /* PLCrashAsyncDwarfCIE.hpp in Headers */,
 				05E7488B176135CF009B8745 /* PLCrashAsyncDwarfExpression.hpp in Headers */,
+				05403EF118E5E2010093C403 /* PLCrashRecoveryWindowController.h in Headers */,
 				05E748AF17616D30009B8745 /* dwarf_stack.hpp in Headers */,
 				05C76DAE176B8C7000E9B10D /* dwarf_opstream.hpp in Headers */,
 				05C76DD0176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
@@ -2776,6 +2793,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05403EF418E5E2010093C403 /* PLCrashRecoveryWindowController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3367,6 +3385,7 @@
 				05EB2B1315B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05F76DD3162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE63F1636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
+				05403EF218E5E2010093C403 /* PLCrashRecoveryWindowController.m in Sources */,
 				C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.cpp in Sources */,
 				C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
 				C2198E0616441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
@@ -3445,6 +3464,7 @@
 				05EB2B1415B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05F76DD4162F213E00A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
 				05DEE6401636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
+				05403EF318E5E2010093C403 /* PLCrashRecoveryWindowController.m in Sources */,
 				C2198DDA1640188C006EB46A /* PLCrashAsyncObjCSection.cpp in Sources */,
 				C26022871642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
 				C2198E0716441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
@@ -4363,7 +4383,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashNamespace.h";
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -4395,7 +4415,7 @@
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-D$(PL_BUILD_CONFIG_FLAG)=1",

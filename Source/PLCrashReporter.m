@@ -41,12 +41,21 @@
 #import "PLCrashFrameWalker.h"
 
 #import "PLCrashAsyncMachExceptionInfo.h"
+#import "PLCrashAsyncSignalInfo.h"
 
 #import "PLCrashReporterNSError.h"
 
 #import <fcntl.h>
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
+
+#if !TARGET_OS_IPHONE && TARGET_OS_MAC
+#define MAC_RECOVERY_UI 1
+#endif
+
+#if MAC_RECOVERY_UI
+#import "PLCrashRecoveryWindowController.h"
+#endif
 
 #define NSDEBUG(msg, args...) {\
     NSLog(@"[PLCrashReporter] " msg, ## args); \
@@ -87,6 +96,10 @@ static int monitored_signals[] = {
     SIGSEGV,
     SIGTRAP
 };
+
+#if MAC_RECOVERY_UI
+static PLCrashRecoveryWindowController *recoveryWindowController;
+#endif
 
 /** @internal
  * number of signals in the fatal signals list */
@@ -193,7 +206,7 @@ static plcrash_error_t plcrash_write_report (plcrashreporter_handler_ctx_t *sigc
  *
  * Signal handler callback.
  */
-static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
+static bool signal_handler_callback (int signo, siginfo_t *info, pl_ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     plcrashreporter_handler_ctx_t *sigctx = context;
     plcrash_async_thread_state_t thread_state;
     plcrash_log_signal_info_t signal_info;
@@ -206,20 +219,46 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
     // cast.
     plcrash_async_thread_state_mcontext_init(&thread_state, (pl_mcontext_t *) uap->uc_mcontext);
     
+    /* Just to be clear: this 'recovery' feature is a JOKE. Do NOT actually use this, or
+     * everyone will laugh at you, and nobody will invite you to their birthday
+     * party ever again. */
     if (sigctx->onErrorResume) {
-        NSLog(@"Crash detected! Deploying recovery procedure:");
+#if MAC_RECOVERY_UI
+        float currentDelay = 0.0;
+        static NSModalSession session;
+        
+        /* Trying to run inside the main thread at async-safe time is super sketchy and breaks
+         * all over the place, so we fib the UI by executing after we've actually deployed the
+         * "fix" */
+#define MAC_MAIN_THR(body) do { \
+        dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, currentDelay * NSEC_PER_SEC); \
+        dispatch_after(time, dispatch_get_main_queue(), ^{ \
+            body; \
+        }); \
+        currentDelay += 0.20; \
+    } while(0)
+
+    #define REPORT_STATUS(msg, ...) do { \
+        NSLog(msg, ##__VA_ARGS__); \
+        NSString *fmtresult = [[NSString alloc] initWithFormat: msg, ##__VA_ARGS__]; \
+        MAC_MAIN_THR([recoveryWindowController.statusField setStringValue: fmtresult]; [NSApp runModalSession: session];); \
+    } while(0)
+#else
+    #define MAC_MAIN_THR(body)
+    #define REPORT_STATUS(msg, ...) NSLog(msg, ##__VA_ARGS__);
+#endif
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+           session = [NSApp beginModalSessionForWindow: recoveryWindowController.window];
+        });
+
+        REPORT_STATUS(@"Crash detected! Deploying recovery systems.");
         
         crash_count++;
         if (crash_count > 100) {
-            NSLog(@"We seem to be stuck in a crash loop! Terminating");
+            REPORT_STATUS(@"We seem to be stuck in a crash loop! Terminating");
             exit(1);
         }
-
-        /* Just to be clear: this feature is a JOKE. Do NOT actually use this, or 
-         * everyone will laugh at you, and nobody will invite you to their birthday
-         * party ever again. */
-        NSLog(@"Reticulating Splines ...");
-        
 
         /* Return to caller */
         {
@@ -227,16 +266,16 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
             
             plcrash_async_image_list_set_reading(&shared_image_list, true);
             if (plframe_cursor_init(&cursor, mach_task_self(), &thread_state, &shared_image_list) != PLFRAME_ESUCCESS) {
-                NSLog(@"Failed to initialize cursor");
+                REPORT_STATUS(@"Failed to initialize cursor");
                 return false;
             }
             if (plframe_cursor_next(&cursor) != PLFRAME_ESUCCESS) {
-                NSLog(@"Failed to fetch initial frame");
+                REPORT_STATUS(@"Failed to fetch initial frame");
                 return false;
             }
             
             if (plframe_cursor_next(&cursor) != PLFRAME_ESUCCESS) {
-                NSLog(@"Failed to fetch next frame");
+                REPORT_STATUS(@"Failed to fetch next frame");
                 return false;
             }
             
@@ -247,7 +286,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
                     continue;
 
                 const char *name = plframe_cursor_get_regname(&cursor, i);
-                NSLog(@"Restoring %s", name);
+                REPORT_STATUS(@"Restoring %s.", name);
                 
                 switch (i) {
 #if defined(__arm__)
@@ -371,7 +410,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
         }
         
         /* Try to set a nil/NULL return value */
-        NSLog(@"Performing return value insertion...");
+        REPORT_STATUS(@"Performing return value insertion ...");
 #if defined(__arm__)
         uap->uc_mcontext->__ss.__r[0] = 0x0;
 #elif defined(__arm64__)
@@ -382,7 +421,35 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
         uap->uc_mcontext->__ss.__rax = 0x0;
 #endif
 
-        NSLog(@"Recovery drone deployed. Prepare for re-entry.");
+        /* Show these two a bit longer */
+        REPORT_STATUS(@"Reticulating Splines ...");
+        currentDelay += 1.0f;
+        
+        REPORT_STATUS(@"Recovery complete! Resuming application ...");
+        currentDelay += 1.0f;
+
+        void (^cleanup)() = ^{
+            [[NSApplication sharedApplication] abortModal];
+            [NSApp runModalSession: session];
+            [NSApp endModalSession: session];
+            [recoveryWindowController.window orderOut: nil];
+
+            NSString *appName = [[NSRunningApplication currentApplication] localizedName];
+            NSAlert *alert = [[NSAlert alloc] init];
+            alert.messageText = @"Disaster averted!";
+            alert.informativeText = [NSString stringWithFormat:
+                                     @"That was a close call! %@ almost crashed with a %s (si_code=%s, si_addr=%" PRIx64 "), but thanks to PLCrashReporter's Advanced Crash Recovery, we were able to keep things running!",
+                                     appName,
+                                     plcrash_async_signal_signame(info->si_signo),
+                                     plcrash_async_signal_sigcode(info->si_signo, info->si_code),
+                                     (uint64_t) info->si_addr];
+            [alert addButtonWithTitle: @"Great!"];
+            [alert runModal];
+        };
+        MAC_MAIN_THR(
+             cleanup();
+        );
+
         return true;
     }
     
@@ -754,6 +821,12 @@ static PLCrashReporter *sharedReporter = nil;
     /* Check for programmer error */
     if (_enabled)
         [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+    
+#if MAC_RECOVERY_UI
+    recoveryWindowController = [[PLCrashRecoveryWindowController alloc] init];
+    [recoveryWindowController window];
+    NSLog(@"Loaded recovery window: %@", recoveryWindowController.window);
+#endif
 
     /* Create the directory tree */
     if (![self populateCrashReportDirectoryAndReturnError: outError])
