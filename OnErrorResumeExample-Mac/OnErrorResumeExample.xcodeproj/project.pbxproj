@@ -18,6 +18,8 @@
 		0531A50518E5DC8E00AABED9 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0531A4E418E5DC8E00AABED9 /* Cocoa.framework */; };
 		0531A50D18E5DC8E00AABED9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0531A50B18E5DC8E00AABED9 /* InfoPlist.strings */; };
 		0531A50F18E5DC8E00AABED9 /* OnErrorResumeExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0531A50E18E5DC8E00AABED9 /* OnErrorResumeExampleTests.m */; };
+		05403EE818E5DDF40093C403 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05403EE718E5DDF40093C403 /* CrashReporter.framework */; };
+		05403EEC18E5DE1A0093C403 /* CrashReporter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 05403EE718E5DDF40093C403 /* CrashReporter.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +31,19 @@
 			remoteInfo = OnErrorResumeExample;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		05403EEB18E5DE140093C403 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				05403EEC18E5DE1A0093C403 /* CrashReporter.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0531A4E118E5DC8E00AABED9 /* OnErrorResumeExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OnErrorResumeExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,6 +65,7 @@
 		0531A50A18E5DC8E00AABED9 /* OnErrorResumeExampleTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OnErrorResumeExampleTests-Info.plist"; sourceTree = "<group>"; };
 		0531A50C18E5DC8E00AABED9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0531A50E18E5DC8E00AABED9 /* OnErrorResumeExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OnErrorResumeExampleTests.m; sourceTree = "<group>"; };
+		05403EE718E5DDF40093C403 /* CrashReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CrashReporter.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +74,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0531A4E518E5DC8E00AABED9 /* Cocoa.framework in Frameworks */,
+				05403EE818E5DDF40093C403 /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,6 +112,7 @@
 		0531A4E318E5DC8E00AABED9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				05403EE718E5DDF40093C403 /* CrashReporter.framework */,
 				0531A4E418E5DC8E00AABED9 /* Cocoa.framework */,
 				0531A50318E5DC8E00AABED9 /* XCTest.framework */,
 				0531A4E618E5DC8E00AABED9 /* Other Frameworks */,
@@ -164,6 +182,7 @@
 				0531A4DD18E5DC8E00AABED9 /* Sources */,
 				0531A4DE18E5DC8E00AABED9 /* Frameworks */,
 				0531A4DF18E5DC8E00AABED9 /* Resources */,
+				05403EEB18E5DE140093C403 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -344,7 +363,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -377,7 +396,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -387,9 +406,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "OnErrorResumeExample/OnErrorResumeExample-Prefix.pch";
 				INFOPLIST_FILE = "OnErrorResumeExample/OnErrorResumeExample-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -400,9 +424,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "OnErrorResumeExample/OnErrorResumeExample-Prefix.pch";
 				INFOPLIST_FILE = "OnErrorResumeExample/OnErrorResumeExample-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -467,6 +496,7 @@
 				0531A51418E5DC8E00AABED9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		0531A51518E5DC8E00AABED9 /* Build configuration list for PBXNativeTarget "OnErrorResumeExampleTests" */ = {
 			isa = XCConfigurationList;
@@ -475,6 +505,7 @@
 				0531A51718E5DC8E00AABED9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
