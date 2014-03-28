@@ -210,7 +210,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
         NSLog(@"Crash detected! Deploying recovery procedure:");
         
         crash_count++;
-        if (crash_count > 5) {
+        if (crash_count > 100) {
             NSLog(@"We seem to be stuck in a crash loop! Terminating");
             exit(1);
         }
