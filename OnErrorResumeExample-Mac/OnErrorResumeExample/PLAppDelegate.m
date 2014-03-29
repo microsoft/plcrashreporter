@@ -9,6 +9,9 @@
 #import "PLAppDelegate.h"
 
 #import <CrashReporter/CrashReporter.h>
+#import "PLBouncingScene.h"
+
+@interface PLAppDelegate () <NSWindowDelegate> @end
 
 @implementation PLAppDelegate {
     PLCrashReporter *_reporter;
@@ -21,6 +24,12 @@
     
     _reporter = [[PLCrashReporter alloc] initWithConfiguration: config];
     [_reporter enableCrashReporter];
+    
+    PLBouncingScene *scene = [[PLBouncingScene alloc] initWithSize: self.sceneView.bounds.size];
+    scene.scaleMode = SKSceneScaleModeAspectFill;
+    [self.sceneView presentScene: scene];
+    self.sceneView.paused = NO;
+    self.sceneView.asynchronous = NO;
 }
 
 - (IBAction) cfreleaseMe: (id) sender {
@@ -34,28 +43,18 @@
 }
 
 - (IBAction) firstContact:(id)sender {
-    /* An object cache? Maybe. Or maybe we're from another universe */
-    void *cache[] = {
-        NULL, NULL, NULL
-    };
-    
-    void *displayStrings[6] = {
-        "This little piggy went to the market",
-        "This little piggy stayed at home",
-        cache,
-        "This little piggy had roast beef.",
-        "This little piggy had none.",
-        "And this little piggy went 'Wee! Wee! Wee!' all the way home",
-    };
-    
-    /* A corrupted/under-retained/re-used piece of memory */
-    struct {
-        void *isa;
-    } corruptObj;
-    corruptObj.isa = displayStrings;
-
     /* Send a message into the unknown */
     [((__bridge id) (void *) 0x5) description];
 }
+
+/* OK, there's no such thing as "Reticulating Splines", and while the rest of the steps
+ * shown in our "Crash Recovery" dialog *are* real, they only take a few microseconds at most.
+ * The UI is all theater ... but it's cool, right?
+ *
+ * This code makes it appear that the animation has stopped while we're fixing the crash, but the
+ * truth is, by the time these delegates are called, the crash was already fixed. */
+- (void)windowDidBecomeKey:(NSNotification *)notification { self.sceneView.paused = NO; }
+- (void)windowDidResignKey:(NSNotification *)notification { self.sceneView.paused = YES; }
+
 
 @end

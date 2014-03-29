@@ -20,6 +20,8 @@
 		0531A50F18E5DC8E00AABED9 /* OnErrorResumeExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0531A50E18E5DC8E00AABED9 /* OnErrorResumeExampleTests.m */; };
 		05403EE818E5DDF40093C403 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05403EE718E5DDF40093C403 /* CrashReporter.framework */; };
 		05403EEC18E5DE1A0093C403 /* CrashReporter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 05403EE718E5DDF40093C403 /* CrashReporter.framework */; };
+		05403EF818E62BA70093C403 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05403EF718E62BA70093C403 /* SpriteKit.framework */; };
+		05403EFB18E62C020093C403 /* PLBouncingScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 05403EFA18E62C020093C403 /* PLBouncingScene.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +68,9 @@
 		0531A50C18E5DC8E00AABED9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0531A50E18E5DC8E00AABED9 /* OnErrorResumeExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OnErrorResumeExampleTests.m; sourceTree = "<group>"; };
 		05403EE718E5DDF40093C403 /* CrashReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CrashReporter.framework; sourceTree = "<group>"; };
+		05403EF718E62BA70093C403 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
+		05403EF918E62C020093C403 /* PLBouncingScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLBouncingScene.h; sourceTree = "<group>"; };
+		05403EFA18E62C020093C403 /* PLBouncingScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLBouncingScene.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05403EF818E62BA70093C403 /* SpriteKit.framework in Frameworks */,
 				0531A4E518E5DC8E00AABED9 /* Cocoa.framework in Frameworks */,
 				05403EE818E5DDF40093C403 /* CrashReporter.framework in Frameworks */,
 			);
@@ -112,6 +118,7 @@
 		0531A4E318E5DC8E00AABED9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				05403EF718E62BA70093C403 /* SpriteKit.framework */,
 				05403EE718E5DDF40093C403 /* CrashReporter.framework */,
 				0531A4E418E5DC8E00AABED9 /* Cocoa.framework */,
 				0531A50318E5DC8E00AABED9 /* XCTest.framework */,
@@ -136,6 +143,8 @@
 				0531A4F618E5DC8E00AABED9 /* PLAppDelegate.h */,
 				0531A4F718E5DC8E00AABED9 /* PLAppDelegate.m */,
 				0531A4F918E5DC8E00AABED9 /* MainMenu.xib */,
+				05403EF918E62C020093C403 /* PLBouncingScene.h */,
+				05403EFA18E62C020093C403 /* PLBouncingScene.m */,
 				0531A4FC18E5DC8E00AABED9 /* Images.xcassets */,
 				0531A4EB18E5DC8E00AABED9 /* Supporting Files */,
 			);
@@ -272,6 +281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05403EFB18E62C020093C403 /* PLBouncingScene.m in Sources */,
 				0531A4F818E5DC8E00AABED9 /* PLAppDelegate.m in Sources */,
 				0531A4F118E5DC8E00AABED9 /* main.m in Sources */,
 			);
