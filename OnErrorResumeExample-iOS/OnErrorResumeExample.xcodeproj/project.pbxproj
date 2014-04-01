@@ -23,6 +23,7 @@
 		0531A4C918E5C22800AABED9 /* OnErrorResumeExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0531A4C818E5C22800AABED9 /* OnErrorResumeExampleTests.m */; };
 		0531A4D318E5C48F00AABED9 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0531A4D218E5C48F00AABED9 /* CrashReporter.framework */; };
 		0531A4D518E5C54C00AABED9 /* Main.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0531A4D418E5C54C00AABED9 /* Main.xib */; };
+		0554599B18EAF8300091E486 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0554599A18EAF8300091E486 /* libc++.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,7 @@
 		0531A4C818E5C22800AABED9 /* OnErrorResumeExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OnErrorResumeExampleTests.m; sourceTree = "<group>"; };
 		0531A4D218E5C48F00AABED9 /* CrashReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CrashReporter.framework; sourceTree = "<group>"; };
 		0531A4D418E5C54C00AABED9 /* Main.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Main.xib; sourceTree = "<group>"; };
+		0554599A18EAF8300091E486 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 				0531A49C18E5C22800AABED9 /* UIKit.framework in Frameworks */,
 				0531A49818E5C22800AABED9 /* Foundation.framework in Frameworks */,
 				0531A4D318E5C48F00AABED9 /* CrashReporter.framework in Frameworks */,
+				0554599B18EAF8300091E486 /* libc++.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,6 +110,7 @@
 		0531A49618E5C22800AABED9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0554599A18EAF8300091E486 /* libc++.dylib */,
 				0531A4D218E5C48F00AABED9 /* CrashReporter.framework */,
 				0531A49718E5C22800AABED9 /* Foundation.framework */,
 				0531A49918E5C22800AABED9 /* CoreGraphics.framework */,
