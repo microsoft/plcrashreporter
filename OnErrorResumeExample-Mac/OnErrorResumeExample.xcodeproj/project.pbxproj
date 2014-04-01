@@ -192,6 +192,7 @@
 				0531A4DE18E5DC8E00AABED9 /* Frameworks */,
 				0531A4DF18E5DC8E00AABED9 /* Resources */,
 				05403EEB18E5DE140093C403 /* CopyFiles */,
+				0554599918EA65590091E486 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -275,6 +276,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0554599918EA65590091E486 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "LOCATION=\"${BUILT_PRODUCTS_DIR}\"/\"${FRAMEWORKS_FOLDER_PATH}\"\nfind \"$LOCATION\" -name '*.framework' -exec codesign --verbose --force --sign \"$CODE_SIGN_IDENTITY\" {}/Versions/Current \\;";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0531A4DD18E5DC8E00AABED9 /* Sources */ = {
@@ -433,6 +450,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
