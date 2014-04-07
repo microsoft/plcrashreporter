@@ -49,6 +49,8 @@ extern "C" {
 char *plcrash_sysctl_string (const char *name);
 bool plcrash_sysctl_int (const char *name, int *result);
 
+size_t plcrash_sysctl_valid_utf8_strlen (const char *s, size_t maxlen);
+
 /**
  * @}
  */

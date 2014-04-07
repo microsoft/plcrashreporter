@@ -122,5 +122,20 @@ bool plcrash_sysctl_int (const char *name, int *result) {
 }
 
 /**
+ * Find the length of @a s, minus any invalid trailing multibyte sequences.
+ *
+ * This function is primarily useful for extracting a valid UTF-8 string from a fixed
+ * buffer length returned by the kernel; the kernel will copy the UTF-8 string directly
+ * into the target buffer, resulting in dangling multi-byte characters that prevent
+ * decoding by most UTF-8 aware string code.
+ *
+ * @param s The string buffer to scan.
+ * @param maxlen The maximum number of bytes that will be scanned in @a s.
+ */
+size_t plcrash_sysctl_valid_utf8_strlen (const char *s, size_t maxlen) {
+    return 0;
+}
+
+/**
  * @}
  */
