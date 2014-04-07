@@ -173,6 +173,20 @@
 		05507A541784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
 		05507A551784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
 		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
+		0554599E18EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		0554599F18EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		055459A018EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		055459A118EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		055459A218EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		055459A318EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		055459A418EF176E0091E486 /* Iterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0554599C18EF176E0091E486 /* Iterator.cpp */; };
+		055459A518EF176E0091E486 /* Iterator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0554599D18EF176E0091E486 /* Iterator.hpp */; };
+		055459A618EF176E0091E486 /* Iterator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0554599D18EF176E0091E486 /* Iterator.hpp */; };
+		055459A718EF176E0091E486 /* Iterator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0554599D18EF176E0091E486 /* Iterator.hpp */; };
+		055459A818EF176E0091E486 /* Iterator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0554599D18EF176E0091E486 /* Iterator.hpp */; };
+		055459AA18EF3A660091E486 /* IteratorTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 055459A918EF3A660091E486 /* IteratorTests.mm */; };
+		055459AB18EF3A660091E486 /* IteratorTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 055459A918EF3A660091E486 /* IteratorTests.mm */; };
+		055459AC18EF3A660091E486 /* IteratorTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 055459A918EF3A660091E486 /* IteratorTests.mm */; };
 		05654F770EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F780EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F790EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
@@ -1171,6 +1185,9 @@
 		05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_frame.S; sourceTree = "<group>"; };
 		05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_unusual.S; sourceTree = "<group>"; };
 		05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frame.S; sourceTree = "<group>"; };
+		0554599C18EF176E0091E486 /* Iterator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Iterator.cpp; sourceTree = "<group>"; };
+		0554599D18EF176E0091E486 /* Iterator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Iterator.hpp; sourceTree = "<group>"; };
+		055459A918EF3A660091E486 /* IteratorTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = IteratorTests.mm; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
@@ -1726,14 +1743,17 @@
 			name = Platforms;
 			sourceTree = "<group>";
 		};
-		05A5E28517C0411F008A75E5 /* Linked List */ = {
+		05A5E28517C0411F008A75E5 /* Collections */ = {
 			isa = PBXGroup;
 			children = (
 				05A5E28717C04188008A75E5 /* PLCrashAsyncLinkedList.hpp */,
 				05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */,
 				05A5E29317C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm */,
+				0554599D18EF176E0091E486 /* Iterator.hpp */,
+				0554599C18EF176E0091E486 /* Iterator.cpp */,
+				055459A918EF3A660091E486 /* IteratorTests.mm */,
 			);
-			name = "Linked List";
+			name = Collections;
 			sourceTree = "<group>";
 		};
 		05B929E517C9333800B051E3 /* ObjC Exception Handler */ = {
@@ -1889,7 +1909,7 @@
 				05A17DC316D7F7FB00888448 /* Thread State */,
 				05D8FE4916ACAA44000ED70C /* Allocator */,
 				05C6825118E4641E00D69783 /* Image Annotation */,
-				05A5E28517C0411F008A75E5 /* Linked List */,
+				05A5E28517C0411F008A75E5 /* Collections */,
 				05BB4CA0166D40B90075171B /* Memory Objects */,
 				05BB4C9F166D40AD0075171B /* Symbolication */,
 				05BB4C9D166D3BE10075171B /* Mach-O ABI */,
@@ -2287,6 +2307,7 @@
 				05BB84881364EDF200D53B84 /* PLCrashSysctl.h in Headers */,
 				05EB2B1115B6FDA80066EB4D /* PLCrashReporterNSError.h in Headers */,
 				05D9E5471676598200B39833 /* PLCrashReportStackFrameInfo.h in Headers */,
+				055459A718EF176E0091E486 /* Iterator.hpp in Headers */,
 				05D9E55216765A0200B39833 /* PLCrashReportRegisterInfo.h in Headers */,
 				05C6825A18E4644600D69783 /* ImageAnnotationReader.hpp in Headers */,
 				05D9E55D16765D0200B39833 /* PLCrashReportSymbolInfo.h in Headers */,
@@ -2337,6 +2358,7 @@
 				05BB848A1364EDF200D53B84 /* PLCrashSysctl.h in Headers */,
 				05EB2B1215B6FDA80066EB4D /* PLCrashReporterNSError.h in Headers */,
 				05D9E5481676598200B39833 /* PLCrashReportStackFrameInfo.h in Headers */,
+				055459A818EF176E0091E486 /* Iterator.hpp in Headers */,
 				05D9E55316765A0200B39833 /* PLCrashReportRegisterInfo.h in Headers */,
 				05C6825B18E4644600D69783 /* ImageAnnotationReader.hpp in Headers */,
 				05D9E55E16765D0200B39833 /* PLCrashReportSymbolInfo.h in Headers */,
@@ -2383,6 +2405,7 @@
 				FCE45B4FD545A258E0292F25 /* PLCrashFrameStackUnwind.h in Headers */,
 				05A17DCD16D7F82700888448 /* PLCrashAsyncThread.h in Headers */,
 				05F3CD7416DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
+				055459A518EF176E0091E486 /* Iterator.hpp in Headers */,
 				05E748AE17616D30009B8745 /* dwarf_stack.hpp in Headers */,
 				05C76DAD176B8C7000E9B10D /* dwarf_opstream.hpp in Headers */,
 				05C76DCF176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
@@ -2417,6 +2440,7 @@
 				05F4150F0EF9DD9B008050CF /* PLCrashReportBinaryImageInfo.h in Headers */,
 				05F415550EF9E078008050CF /* PLCrashReportExceptionInfo.h in Headers */,
 				05E734360EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.h in Headers */,
+				055459A618EF176E0091E486 /* Iterator.hpp in Headers */,
 				05E734FB0EFAE59C005EDFB7 /* PLCrashReportSignalInfo.h in Headers */,
 				05BEC43717BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				0527063317CCF31100E6A5D8 /* PLCrashFeatureConfig.h in Headers */,
@@ -2919,6 +2943,7 @@
 				059670280EEF6B1A008A0601 /* PLCrashLogWriter.m in Sources */,
 				05CD36470EF24758000FDE88 /* PLCrashAsync.c in Sources */,
 				05CD36D40EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
+				055459A018EF176E0091E486 /* Iterator.cpp in Sources */,
 				05F40ACC0EF7379F008050CF /* PLCrashReporter.m in Sources */,
 				05C6825618E4644600D69783 /* ImageAnnotationReader.cpp in Sources */,
 				05F411A90EF8DA31008050CF /* PLCrashReport.m in Sources */,
@@ -2989,6 +3014,7 @@
 				05CD36460EF24758000FDE88 /* PLCrashAsync.c in Sources */,
 				05CD36D20EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
 				05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */,
+				055459A118EF176E0091E486 /* Iterator.cpp in Sources */,
 				053347A917E161CB00C52E50 /* unwind_test_arm64.S in Sources */,
 				05C6825718E4644600D69783 /* ImageAnnotationReader.cpp in Sources */,
 				05F411A70EF8DA31008050CF /* PLCrashReport.m in Sources */,
@@ -3069,6 +3095,7 @@
 				05F411AD0EF8DE68008050CF /* PLCrashReportTests.m in Sources */,
 				05E734890EFAD85A005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
 				05E734840EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m in Sources */,
+				055459AA18EF3A660091E486 /* IteratorTests.mm in Sources */,
 				052A474C136384B300987004 /* PLCrashAsyncImageList.cpp in Sources */,
 				052A46FA13637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */,
 				05BB848F1364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */,
@@ -3139,6 +3166,7 @@
 				05C588121788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588161788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
 				05C5881A1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */,
+				055459A218EF176E0091E486 /* Iterator.cpp in Sources */,
 				05920D36178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1D17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2D17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
@@ -3169,6 +3197,7 @@
 				05EB2B0B15B4988B0066EB4D /* PLCrashAsyncThread_current.c in Sources */,
 				0596748B0EF0BB5C008A0601 /* PLCrashFrameWalker.c in Sources */,
 				059674780EF0BA03008A0601 /* crash_report.proto in Sources */,
+				055459A318EF176E0091E486 /* Iterator.cpp in Sources */,
 				05CD36450EF24758000FDE88 /* PLCrashAsync.c in Sources */,
 				05CD364B0EF247A9000FDE88 /* PLCrashAsyncTests.m in Sources */,
 				05CD36D00EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
@@ -3248,6 +3277,7 @@
 				05C588171788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
 				05C5881B1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */,
 				05920D37178B310A001E8975 /* unwind_test_arm.S in Sources */,
+				055459AB18EF3A660091E486 /* IteratorTests.mm in Sources */,
 				05102E1E17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2E17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
 				051F068317B98A0A006D0EFA /* PLCrashMachExceptionPortTests.m in Sources */,
@@ -3274,6 +3304,7 @@
 				059674970EF0BBB4008A0601 /* PLCrashLogWriter.m in Sources */,
 				05EB2B0515B45DE00066EB4D /* PLCrashAsyncThread_current.S in Sources */,
 				05EB2B0A15B498880066EB4D /* PLCrashAsyncThread_current.c in Sources */,
+				055459A418EF176E0091E486 /* Iterator.cpp in Sources */,
 				059674980EF0BBB4008A0601 /* PLCrashFrameWalker.c in Sources */,
 				0596749B0EF0BBB4008A0601 /* crash_report.proto in Sources */,
 				05CD36430EF24758000FDE88 /* PLCrashAsync.c in Sources */,
@@ -3283,6 +3314,7 @@
 				05F40F860EF850FC008050CF /* protobuf-c.c in Sources */,
 				05F411AF0EF8DE68008050CF /* PLCrashReportTests.m in Sources */,
 				05E734870EFAD84B005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
+				055459AC18EF3A660091E486 /* IteratorTests.mm in Sources */,
 				05E734860EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m in Sources */,
 				059C9D7913AE46CD0071956F /* PLCrashAsyncImageList.cpp in Sources */,
 				052A46F913637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */,
@@ -3403,6 +3435,7 @@
 				054627B211D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */,
 				052A46C31363650100987004 /* PLCrashAsyncImageList.cpp in Sources */,
 				05BB83D41364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */,
+				0554599E18EF176E0091E486 /* Iterator.cpp in Sources */,
 				05BB83F81364AD3E00D53B84 /* PLCrashReportMachineInfo.m in Sources */,
 				05BB848D1364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2AF715B454DD0066EB4D /* PLCrashAsyncThread_current.S in Sources */,
@@ -3482,6 +3515,7 @@
 				054627B011D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */,
 				052A473E1363844600987004 /* PLCrashAsyncImageList.cpp in Sources */,
 				05BB83D21364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */,
+				0554599F18EF176E0091E486 /* Iterator.cpp in Sources */,
 				05BB83F21364AD3E00D53B84 /* PLCrashReportMachineInfo.m in Sources */,
 				05BB84871364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2AF815B454DD0066EB4D /* PLCrashAsyncThread_current.S in Sources */,
