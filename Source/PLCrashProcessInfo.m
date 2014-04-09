@@ -114,7 +114,7 @@
         if (_processName == nil) {
             /* Given that HFS+ enforces UTF-8, and the p_comm value is derived from the file system execv path,
              * this should happen very rarely, if ever. */
-            PLCF_DEBUG("Failed to decode p_comm as UTF-8!");
+            PLCF_DEBUG("Failed to decode p_comm for pid=%" PRIdMAX " as UTF-8!", (intmax_t) pid);
         }
     }
 
