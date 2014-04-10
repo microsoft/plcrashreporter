@@ -76,8 +76,8 @@
                        @"Maxlen value triggered incorrect early termination of multibyte validation");
     }
 
-#define LEN_UTF8(_c, ...) \
-    plcrash_sysctl_valid_utf8_bytes((uint8_t[]) {_c, ##__VA_ARGS__})
+#define LEN_UTF8(...) \
+    plcrash_sysctl_valid_utf8_bytes((uint8_t[]) {__VA_ARGS__})
 
     /* Test BOM handling. BOM is not useful or recommended for UTF-8 encoding, but it's still necessary to support. */
     {
