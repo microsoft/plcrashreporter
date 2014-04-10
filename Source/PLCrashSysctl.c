@@ -214,7 +214,7 @@ size_t plcrash_sysctl_valid_utf8_bytes_max (const uint8_t *s, size_t maxlen) {
             /* Fully validated */
             len += seqlen;
         } else {
-            /* Couldn't validate the sequence */
+            /* Couldn't validate the sequence; return the length up to (but not including) the invalid sequence. */
             return len;
         }
     }
