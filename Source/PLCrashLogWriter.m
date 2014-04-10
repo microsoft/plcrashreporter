@@ -312,7 +312,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             writer->process_info.process_id = pinfo.processID;
 
             /* Retrieve name and start time. */
-            writer->process_info.process_name = strdup([pinfo.processName UTF8String]);
+            if (pinfo.processName != nil) {
+                writer->process_info.process_name = strdup([pinfo.processName UTF8String]);
+            }
             writer->process_info.start_time = pinfo.startTime.tv_sec;
 
             /* Retrieve path */
@@ -335,7 +337,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             /* Retrieve name */
             PLCrashProcessInfo *parentInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID] autorelease];
             if (parentInfo != nil) {
-                writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
+                if (parentInfo.processName != nil) {
+                    writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
+                }
             } else {
                 PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
             }
@@ -658,10 +662,10 @@ static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const c
  * Write the process info message.
  *
  * @param file Output file
- * @param process_name Process name
+ * @param process_name Process name, or NULL if unavailable.
  * @param process_id Process ID
- * @param process_path Process path
- * @param parent_process_name Parent process name
+ * @param process_path Process path, or NULL if unavailable.
+ * @param parent_process_name Parent process name, or NULL if unavailable.
  * @param parent_process_id Parent process ID
  * @param native If false, process is running under emulation.
  * @param start_time The start time of the process.
