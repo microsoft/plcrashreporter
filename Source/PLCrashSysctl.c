@@ -27,6 +27,8 @@
  */
 
 #include "PLCrashSysctl.h"
+
+#include <string.h>
 #include <errno.h>
 
 /**
@@ -233,14 +235,9 @@ size_t plcrash_sysctl_valid_utf8_bytes_max (const uint8_t *s, size_t maxlen) {
  * @warning This function returns the byte length, not the code point length, of the valid UTF-8 encoded string data.
  */
 size_t plcrash_sysctl_valid_utf8_bytes (const uint8_t *s) {
-    /* Compute the actual string length, to be used as the maximum length. We could do this more effeciently by having our own
-     * character iterating loop, but this works reliably and performance here is not the primary aim. */
-    size_t maxlen = 0;
-    while (s[maxlen] != '\0') {
-        maxlen++;
-    }
-    
-    return plcrash_sysctl_valid_utf8_bytes_max(s, maxlen);
+    /* We could avoid strlen() by having our own character iterating loop, but this works reliably
+     * and performance here is not the primary aim. */
+    return plcrash_sysctl_valid_utf8_bytes_max(s, strlen((const char *)s));
 }
 
 /**
