@@ -55,9 +55,6 @@ public:
     /** Advance the iterator by one position and return the new iterator value (prefix increment). */
     Iterator &operator++ ();
     
-    /** Advance the iterator by one position and return the original iterator value (postfix increment). */
-    Iterator operator++ (int);
-    
     /** Return a reference to the element at the iterator's current position. */
     Reference operator* () const;
     

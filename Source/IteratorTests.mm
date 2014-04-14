@@ -61,13 +61,6 @@ public:
             return *this;
         }
         
-        // from Iterator (postfix increment)
-        iterator operator++ (int) {
-            iterator tmp = *this;
-            _value++;
-            return tmp;
-        }
-        
         // from Iterator
         int operator* () const {
             return _value;
@@ -118,21 +111,15 @@ public:
  * specification is correct.
  */
 - (void) testIncrement {
-    IntRange range = IntRange(0, 3);
+    IntRange range = IntRange(0, 2);
     auto iter = range.begin();
 
     /* The iterator should start with a value of 0 */
     STAssertEquals(*iter, 0, @"Incorrect initial value");
-    
-    /* Postfix increment should return the initial value, *not* the new value */
-    STAssertEquals(*(iter++), 0, @"Incorrect postfix increment result value");
-    
-    /* The iterator should hold a new value after postfix increment */
-    STAssertEquals(*iter, 1, @"Incorrect postfix iteration state");
 
     /* Prefix increment should return the *new* value, *not* the initial value */
     auto prefixed = *(++iter);
-    STAssertEquals(prefixed, 2, @"Incorrect prefix increment result value");
+    STAssertEquals(prefixed, 1, @"Incorrect prefix increment result value");
     
     /* The iterator should the same value returned by prefix increment */
     STAssertEquals(*iter, prefixed, @"Incorrect postfix iteration state");
