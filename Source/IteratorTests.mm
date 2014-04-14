@@ -72,13 +72,8 @@ public:
         }
         
         // from Iterator
-        bool operator== (const iterator &other) const {
-            return other._value == _value;
-        };
-        
-        // from Iterator
         bool operator!= (const iterator &other) const {
-            return !(*this == other);
+            return other._value != _value;
         };
     };
     

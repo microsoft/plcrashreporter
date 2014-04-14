@@ -52,7 +52,12 @@ namespace plcrash { namespace async {
  */
 template <class T, class Pointer = const T*, class Reference = const T&> class Iterator {
 public:
-    /** Advance the iterator by one position and return the new iterator value (prefix increment). */
+    /**
+     * @warning This method is defined for automatic use in conjunction with C++11's ranged for loop syntax, and
+     * should not be called directly.
+     *
+     * Advance the iterator by one position and return the new iterator value (prefix increment).
+     */
     Iterator &operator++ ();
     
     /** Return a reference to the element at the iterator's current position. */
@@ -61,17 +66,14 @@ public:
     /** Return a pointer to the element at the iterator's current position. */
     Pointer operator-> () const;
     
-    /** 
-     * Return true if this instance is equal to @a other.
-     *
-     * @param other The iterator to compare against. This may be the terminal iterator.
-     */
-    bool operator== (const Iterator &other) const;
     
     /**
-     * Return true if this instance is equal to @a other.
+     * @warning This method is defined for automatic use in conjunction with C++11's ranged for loop syntax, and
+     * should not be called directly.
      *
-     * @param other The iterator to compare against. This may be the terminal iterator.
+     * Return true if this instance is not equal to @a other.
+     *
+     * @param other The iterator to compare against. This iterator must have been returned from the same iteration container.
      */
     bool operator!= (const Iterator &other) const;
 };

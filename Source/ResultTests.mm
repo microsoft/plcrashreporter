@@ -58,10 +58,5 @@ using namespace plcrash::async;
     }
 }
 
-/** Verify the postfix/prefix increment operators of the iteration class */
-- (void) testIterationIncrement {
-    
-}
-
 @end
 

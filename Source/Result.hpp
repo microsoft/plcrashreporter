@@ -29,6 +29,7 @@
 #ifndef PLCRASH_ASYNC_EITHER_H
 #define PLCRASH_ASYNC_EITHER_H
 
+#include "PLCrashAsync.h"
 #include "Iterator.hpp"
 #include <stdint.h>
 
@@ -92,20 +93,15 @@ public:
         _isSuccess = false;
         _value.error = error;
     }
-    
-    // Handle equality comparisons
-    bool operator== (const Result &other) const {
-        if (_isSuccess) {
-            return (other._value.success == _value.success);
-        } else {
-            return (other._value.error == _value.error);
-        }
-    };
 
-    /* Iteration support */
-    
+
+    /*
+     * Iteration support
+     */
+
+
     /**
-     * An iterator that will iterate once over a successful value.
+     * Iterates once over a successful Result<E, T> value.
      */
     class iterator : public Iterator<T> {
     friend class Result;
@@ -127,6 +123,9 @@ public:
     public:
         // from Iterator
         iterator operator++ () {
+            /* Advance to our next iteration position. There are only three; the starting state of
+             * a new iterator, the running state where we've iterated to the single available value,
+             * and the end state, where we've iterated "past" the end of the available value. */
             switch (_pos) {
                 case Result::ITER_START: _pos = Result::ITER_RUN;
                 case Result::ITER_RUN:   _pos = Result::ITER_END;
@@ -137,22 +136,21 @@ public:
         
         // from Iterator
         T operator* () const {
+            /* Fetching the value from a terminal iterator is a programming error */
+            PLCF_ASSERT(_pos == Result::ITER_RUN);
             return _result._value.success;
         }
         
         // from Iterator
         T operator-> () const {
+            /* Fetching the value from a terminal iterator is a programming error */
+            PLCF_ASSERT(_pos == Result::ITER_RUN);
             return _result._value.success;
         }
         
         // from Iterator
-        bool operator== (const iterator &other) const {
-            return (other._pos == _pos && other._result == _result);
-        };
-        
-        // from Iterator
         bool operator!= (const iterator &other) const {
-            return !(*this == other);
+            return (other._pos != _pos);
         };
     };
     
