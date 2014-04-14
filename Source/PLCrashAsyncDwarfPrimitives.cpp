@@ -530,8 +530,8 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_read_sleb128 (plcrash_async_
 }
 
 /* Provide explicit 32/64-bit instantiations */
-template class gnu_ehptr_reader<uint32_t>;
-template class gnu_ehptr_reader<uint64_t>;
+template class plcrash::async::gnu_ehptr_reader<uint32_t>;
+template class plcrash::async::gnu_ehptr_reader<uint64_t>;
 
 
 /**
