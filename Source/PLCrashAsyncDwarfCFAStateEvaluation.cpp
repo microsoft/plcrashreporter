@@ -705,7 +705,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
                 
                 regval = rvalue.v64;
             } else {
-                uint32_t initial_state[] = { cfa_val };
+                uint32_t initial_state[] = { static_cast<uint32_t>(cfa_val) };
                 if ((err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
                     plcrash_async_mobject_free(&mobj);
                     PLCF_DEBUG("CFA eval_32 failed");
