@@ -51,11 +51,11 @@ namespace plcrash { namespace async {
  * STL-style range-based for loop support.
  */
 template <class T, class Pointer = const T*, class Reference = const T&> class Iterator {
-public:    
-    /** Advance the iterator by one position and return the original iterator value. */
+public:
+    /** Advance the iterator by one position and return the new iterator value (prefix increment). */
     Iterator &operator++ ();
     
-    /** Advance the iterator by one position and return the new iterator value. */
+    /** Advance the iterator by one position and return the original iterator value (postfix increment). */
     Iterator operator++ (int);
     
     /** Return a reference to the element at the iterator's current position. */

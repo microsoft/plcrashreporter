@@ -55,17 +55,17 @@ public:
             _value = value;
         };
         
-        // from Iterator
+        // from Iterator (prefix increment)
         iterator operator++ () {
+            _value++;
+            return *this;
+        }
+        
+        // from Iterator (postfix increment)
+        iterator operator++ (int) {
             iterator tmp = *this;
             _value++;
             return tmp;
-        }
-        
-        // from Iterator
-        iterator operator++ (int) {
-            _value++;
-            return *this;
         }
         
         // from Iterator
@@ -112,8 +112,36 @@ public:
     
 };
 
+/**
+ * Test postfix/prefix increment operators. This mainly validates that our IntRange is correctly
+ * implemented, which in theory provides some minimal validation that our underlying Iterator
+ * specification is correct.
+ */
+- (void) testIncrement {
+    IntRange range = IntRange(0, 3);
+    auto iter = range.begin();
 
-- (void) testIteration {
+    /* The iterator should start with a value of 0 */
+    STAssertEquals(*iter, 0, @"Incorrect initial value");
+    
+    /* Postfix increment should return the initial value, *not* the new value */
+    STAssertEquals(*(iter++), 0, @"Incorrect postfix increment result value");
+    
+    /* The iterator should hold a new value after postfix increment */
+    STAssertEquals(*iter, 1, @"Incorrect postfix iteration state");
+
+    /* Prefix increment should return the *new* value, *not* the initial value */
+    auto prefixed = *(++iter);
+    STAssertEquals(prefixed, 2, @"Incorrect prefix increment result value");
+    
+    /* The iterator should the same value returned by prefix increment */
+    STAssertEquals(*iter, prefixed, @"Incorrect postfix iteration state");
+}
+
+/**
+ * Test handling of C++11 ranged for loops.
+ */
+- (void) testRangedFor {
     const int count = 10;
 
     IntRange range = IntRange(0, count);
