@@ -48,7 +48,7 @@ _unwind_test_x86_64_frameless_big_no_reg:
 LFB13:
 subq	$160008, %rsp
 LCFI0:
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addq	$160008, %rsp
 ret
 LFE13:
@@ -63,7 +63,7 @@ LCFI3:
 subq	$160000, %rsp
 LCFI4:
 movq	$0, %rbx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addq	$160000, %rsp
 popq	%rbx
 ret
@@ -81,7 +81,7 @@ subq	$160024, %rsp
 LCFI9:
 movq	$0, %rbx
 movq	$0, %r12
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160008(%rsp), %rbx
 movq	160016(%rsp), %r12
 addq	$160024, %rsp
@@ -100,7 +100,7 @@ subq	$160024, %rsp
 LCFI12:
 movq	$0, %rbp
 movq	$0, %rbx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160008(%rsp), %rbx
 movq	160016(%rsp), %rbp
 addq	$160024, %rsp
@@ -122,7 +122,7 @@ LCFI16:
 movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160000(%rsp), %rbx
 movq	160008(%rsp), %r12
 movq	160016(%rsp), %r13
@@ -142,7 +142,7 @@ LCFI9a:
 movq	$0, %rbx
 movq	$0, %rbp
 movq	$0, %r12
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160000(%rsp), %rbx
 movq	160008(%rsp), %rbp
 movq	160016(%rsp), %r12
@@ -170,7 +170,7 @@ movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160008(%rsp), %rbx
 movq	160016(%rsp), %r12
 movq	160024(%rsp), %r13
@@ -200,7 +200,7 @@ movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
 movq	$0, %r15
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160000(%rsp), %rbx
 movq	160008(%rsp), %r12
 movq	160016(%rsp), %r13
@@ -234,7 +234,7 @@ movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
 movq	$0, %r15
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160024(%rsp), %rbx
 movq	160032(%rsp), %rbp
 movq	160040(%rsp), %r12
@@ -261,7 +261,7 @@ movq	$0, %rbx
 movq	$0, %rbp
 movq	$0, %r12
 movq	$0, %r13
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160008(%rsp), %rbx
 movq	160016(%rsp), %rbp
 movq	160024(%rsp), %r12
@@ -286,7 +286,7 @@ movq	$0, %rbp
 movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	160000(%rsp), %rbx
 movq	160008(%rsp), %rbp
 movq	160016(%rsp), %r12

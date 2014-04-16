@@ -51,7 +51,7 @@ LCFI4:
 subl	$16, %esp
 LCFI5:
 movl	$0, %ebx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addl	$16, %esp
 popl	%ebx
 addl	$4, %esp
@@ -74,7 +74,7 @@ LCFI20:
 movl	%esi, %ebx
 LCFI21:
 movl	$0, %esi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	%ebx, %esi
 movl	-8(%ebp), %ebx
 leave
@@ -99,7 +99,7 @@ movl	%ebx, -4(%ebp)
 LCFI32a:
 movl	$0, %ebx
 movl	$0, %edi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	-44(%ebp), %edi
 movl	-4(%ebp), %ebx
 leave
@@ -122,7 +122,7 @@ movl	%ebx, -4(%ebp)
 LCFI32b:
 movl	$0, %ebx
 movl	$0, %edi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	-44(%ebp), %edi
 movl	-4(%ebp), %ebx
 leave
@@ -151,7 +151,7 @@ LCFI32:
 movl	$0, %ebx
 movl	$0, %edi
 movl	$0, %esi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	-12(%ebp), %ebx
 movl	-8(%ebp), %esi
 movl	-4(%ebp), %edi

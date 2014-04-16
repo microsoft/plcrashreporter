@@ -43,7 +43,7 @@ LT1_stp:
     mov	fp, sp
 LT1_fp:
 LT1_pushed_regs:
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     mov	sp, fp
     ldp	fp, lr, [sp], #16
     ret	lr
@@ -60,7 +60,7 @@ LT2_fp:
 LT2_pushed_regs:
     mov x19, xzr
     mov x20, xzr
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     mov	sp, fp
     ldp     x20, x19, [sp], #16
     ldp	fp, lr, [sp], #16
@@ -81,7 +81,7 @@ LT3_pushed_regs:
     mov x20, xzr
     mov x21, xzr
     mov x22, xzr
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     mov	sp, fp
     ldp     x22, x21, [sp], #16
     ldp     x20, x19, [sp], #16
@@ -106,7 +106,7 @@ LT4_pushed_regs:
     mov x22, xzr
     mov x23, xzr
     mov x24, xzr
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     mov	sp, fp
     ldp     x24, x23, [sp], #16
     ldp     x22, x21, [sp], #16
@@ -135,7 +135,7 @@ LT5_pushed_regs:
     mov x24, xzr
     mov x25, xzr
     mov x26, xzr
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     mov	sp, fp
     ldp     x26, x25, [sp], #16
     ldp     x24, x23, [sp], #16
@@ -168,7 +168,7 @@ LT6_pushed_regs:
     mov x26, xzr
     mov x27, xzr
     mov x28, xzr
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     mov	sp, fp
     ldp     x26, x25, [sp], #16
     ldp     x24, x23, [sp], #16

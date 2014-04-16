@@ -46,7 +46,7 @@ Ltr_stp:
 Ltr_fp:
     str	lr, [sp, #-16]! ; Save our actual LR
 Ltr_pushed_regs:
-    bl _uwind_to_main
+    bl _uwind_tester_invoke
     ldr lr, [sp], #16
     mov	sp, fp
     ldp	fp, x0, [sp], #16
@@ -180,7 +180,7 @@ LT6_end:
 
 ; Custom DWARF unwind data that allows us to unwind from our trampoline while restoring
 ; the *caller's* link register. This allows us to implement 'leaf' functions that actually
-; call out to uwind_to_main via the trampoline.
+; call out to uwind_tester_invoke via the trampoline.
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 LEH_frame0:
 .set L$set_c1,LECIE0-LSCIE0

@@ -42,6 +42,17 @@
 #define LIBUNWIND_VERIFICATION 1
 #endif
 
+/* Compiler warnings will trigger on unused static variables and functions
+ * on architectures where the tests are not currently supported.
+ *
+ * This define will explicitly mark those members as unused, quieting the compiler
+ * warnings */
+#if defined(__arm__)
+#define UNWIND_ARCH_UNSUPPORTED_UNUSED_ATTR __attribute__((unused))
+#else
+#define UNWIND_ARCH_UNSUPPORTED_UNUSED_ATTR
+#endif
+
 extern void *unwind_tester_list_x86_64_frame[];
 extern void *unwind_tester_list_x86_64_frameless[];
 extern void *unwind_tester_list_x86_64_frameless_big[];
@@ -58,21 +69,21 @@ extern void *unwind_tester_list_arm64_frameless[];
 extern int unwind_tester (void *test, void **sp);
 extern void *unwind_tester_target_ip;
 
-void uwind_to_main ();
+void uwind_tester_invoke ();
 
-plframe_cursor_frame_reader_t *frame_readers_frame[] = {
+static plframe_cursor_frame_reader_t *frame_readers_frame[] UNWIND_ARCH_UNSUPPORTED_UNUSED_ATTR = {
     plframe_cursor_read_frame_ptr,
     NULL
 };
 
-plframe_cursor_frame_reader_t *frame_readers_compact[] = {
+static plframe_cursor_frame_reader_t *frame_readers_compact[] UNWIND_ARCH_UNSUPPORTED_UNUSED_ATTR = {
 #if PLCRASH_FEATURE_UNWIND_COMPACT
     plframe_cursor_read_compact_unwind,
 #endif
     NULL
 };
 
-plframe_cursor_frame_reader_t *frame_readers_dwarf[] = {
+static plframe_cursor_frame_reader_t *frame_readers_dwarf[] UNWIND_ARCH_UNSUPPORTED_UNUSED_ATTR = {
 #if PLCRASH_FEATURE_UNWIND_DWARF
     plframe_cursor_read_dwarf_unwind,
 #endif
@@ -182,7 +193,7 @@ static struct unwind_test_case unwind_test_cases[] = {
  * without having to modify all of Apple's test cases. This means the tests
  * are not re-entrant, but somehow I suspect that's OK.
  */
-struct  {
+static struct  {
     /** The current test case */
     struct unwind_test_case *test_case;
 } global_harness_state;
@@ -207,19 +218,34 @@ bool unwind_test_harness (void) {
 	return true;
 }
 
-#define VERIFY_NV_REG(cursor, rnum, value) do { \
-    plcrash_greg_t reg; \
-    if (plframe_cursor_get_reg(cursor, rnum, &reg) != PLFRAME_ESUCCESS) { \
-        PLCF_DEBUG("Failed to fetch non-volatile register!"); \
-        __builtin_trap(); \
-    } \
-    if (reg != value) { \
-        PLCF_DEBUG("Incorrect register value (%" PRIx64 " != %" PRIx64 ")", (uint64_t)reg, (uint64_t)value); \
-        __builtin_trap(); \
-    } \
-} while (0)
+/**
+ * Assert the given @a regnum's value in @a cursor, triggering a trap if @a regnum is unavailable
+ * from @a cursor, or does not match @a expectedValue.
+ *
+ * @param cursor The cursor from which the register value will be fetched.
+ * @param regnum The register number to be verified.
+ * @param expectedValue The expected register value.
+ */
+static void assert_register_value (plframe_cursor_t *cursor, plcrash_regnum_t regnum, uint64_t expectedValue) {
+    plcrash_greg_t reg;
+    if (plframe_cursor_get_reg(cursor, regnum, &reg) != PLFRAME_ESUCCESS) {
+        PLCF_DEBUG("Failed to fetch non-volatile register!");
+        __builtin_trap();
+    }
 
-plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
+    if (reg != expectedValue) {
+        PLCF_DEBUG("Incorrect register value (%" PRIx64 " != %" PRIx64 ")", (uint64_t)reg, (uint64_t)expectedValue);
+        __builtin_trap();
+    }
+}
+
+/**
+ * Perform unwinding tests, using @a state as the initial thread state.
+ *
+ * @param state The initial thread state to be used for the unwinding tests.
+ * @param context Unused.
+ */
+static plcrash_error_t perform_unwind_test (plcrash_async_thread_state_t *state) {
     plframe_cursor_t cursor;
     plcrash_async_image_list_t image_list;
     plframe_cursor_frame_reader_t **readers = global_harness_state.test_case->frame_readers_dwarf;
@@ -229,7 +255,6 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
     /* Determine the number of frame readers */
     if (readers != NULL) {
         for (reader_count = 0; readers[reader_count] != NULL; reader_count++) {
-            
         }
     }
 
@@ -283,39 +308,62 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
     if (!global_harness_state.test_case->restores_callee_registers)
         return PLCRASH_ESUCCESS;
 
-    VERIFY_NV_REG(&cursor, PLCRASH_REG_SP, (plcrash_greg_t)global_harness_state.test_case->expected_sp);
+    assert_register_value(&cursor, PLCRASH_REG_SP, (plcrash_greg_t)global_harness_state.test_case->expected_sp);
 #ifdef __x86_64__
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
+    assert_register_value(&cursor, PLCRASH_X86_64_RBX, 0x1234567887654321);
+    assert_register_value(&cursor, PLCRASH_X86_64_R12, 0x02468ACEECA86420);
+    assert_register_value(&cursor, PLCRASH_X86_64_R13, 0x13579BDFFDB97531);
+    assert_register_value(&cursor, PLCRASH_X86_64_R14, 0x1122334455667788);
+    assert_register_value(&cursor, PLCRASH_X86_64_R15, 0x0022446688AACCEE);
 #elif (__i386__)
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_EBX, 0x12344321);
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_ESI, 0x56788765);
-    VERIFY_NV_REG(&cursor, PLCRASH_X86_EDI, 0xABCDDCBA);
+    assert_register_value(&cursor, PLCRASH_X86_EBX, 0x12344321);
+    assert_register_value(&cursor, PLCRASH_X86_ESI, 0x56788765);
+    assert_register_value(&cursor, PLCRASH_X86_EDI, 0xABCDDCBA);
 #elif (__arm64__)
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X19, 0x1234567887654321);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X20, 0x02468ACEECA86420);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X21, 0x13579BDFFDB97531);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X22, 0x1122334455667788);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X23, 0x0022446688AACCEE);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X24, 0x0033557799BBDDFF);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X25, 0x00446688AACCEE00);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X26, 0x006688AACCEEFF11);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X27, 0x0088AACCEEFF1133);
-    VERIFY_NV_REG(&cursor, PLCRASH_ARM64_X28, 0xCAFEDEADF00DBEEF);
+    assert_register_value(&cursor, PLCRASH_ARM64_X19, 0x1234567887654321);
+    assert_register_value(&cursor, PLCRASH_ARM64_X20, 0x02468ACEECA86420);
+    assert_register_value(&cursor, PLCRASH_ARM64_X21, 0x13579BDFFDB97531);
+    assert_register_value(&cursor, PLCRASH_ARM64_X22, 0x1122334455667788);
+    assert_register_value(&cursor, PLCRASH_ARM64_X23, 0x0022446688AACCEE);
+    assert_register_value(&cursor, PLCRASH_ARM64_X24, 0x0033557799BBDDFF);
+    assert_register_value(&cursor, PLCRASH_ARM64_X25, 0x00446688AACCEE00);
+    assert_register_value(&cursor, PLCRASH_ARM64_X26, 0x006688AACCEEFF11);
+    assert_register_value(&cursor, PLCRASH_ARM64_X27, 0x0088AACCEEFF1133);
+    assert_register_value(&cursor, PLCRASH_ARM64_X28, 0xCAFEDEADF00DBEEF);
 #endif
     return PLCRASH_ESUCCESS;
 }
 
-// called by test function
-// we unwind through the test function
-// and resume at caller (unwind_tester)
-void uwind_to_main () {
+/**
+ * Implementation of plcrash_async_thread_state_current_callback used by unwind_tester_invoke(); calls through
+ * to perform_unwind_test().
+ *
+ * @param state The thread state acquired by plcrash_async_thread_state_current().
+ * @param context Unused.
+ */
+static plcrash_error_t unwind_tester_invoke_getcontext (plcrash_async_thread_state_t *state, void *context) {
+    return perform_unwind_test(state);
+}
+
+/**
+ * Test function entry point.
+ *
+ * This is called by our test functions to trigger unwinding. We use plcrash_async_thread_state_current() to collect
+ * the current thread's state, handing it to perform_unwind_test(), which will actually use our plframe_cursor_t API
+ * to step through the test function and validate the result.
+ *
+ * After successful validation, and depending on the target platform and test configuration, this function will do
+ * one of two things:
+ *  - If supported by the platform and the test, Apple's libunwind will be used to unwind the current thread back to
+ *    unwind_tester(), prior to the calling of the test. This is intended as a sanity check of our hand-coded
+ *    unwind data.
+ *  - If libunwind is not supported (on the platform, or for the test in quesiton), then we simply return and let
+ *    the test function itself return to its caller.
+ */
+void uwind_tester_invoke () {
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */
-    if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
+    if (plcrash_async_thread_state_current(unwind_tester_invoke_getcontext, NULL) != PLCRASH_ESUCCESS) {
         __builtin_trap();
     }
 

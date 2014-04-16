@@ -47,7 +47,7 @@ _unwind_test_x86_64_frameless_no_reg:
 LFB13:
 subq	$8, %rsp
 LCFI0:
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addq	$8, %rsp
 ret
 LFE13:
@@ -59,7 +59,7 @@ LFB10:
 pushq	%rbx
 LCFI3:
 movq	$0, %rbx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 popq	%rbx
 ret
 LFE10:
@@ -76,7 +76,7 @@ subq	$24, %rsp
 LCFI7:
 movq	$0, %rbx
 movq	$0, %r12
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	8(%rsp), %rbx
 movq	16(%rsp), %r12
 addq	$24, %rsp
@@ -95,7 +95,7 @@ subq	$24, %rsp
 LCFI10:
 movq	$0, %rbp
 movq	$0, %rbx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	8(%rsp), %rbx
 movq	16(%rsp), %rbp
 addq	$24, %rsp
@@ -117,7 +117,7 @@ LCFI14:
 movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %r12
 movq	16(%rsp), %r13
@@ -144,7 +144,7 @@ movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	8(%rsp), %rbx
 movq	16(%rsp), %r12
 movq	24(%rsp), %r13
@@ -174,7 +174,7 @@ movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
 movq	$0, %r15
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %r12
 movq	16(%rsp), %r13
@@ -208,7 +208,7 @@ movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
 movq	$0, %r15
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	24(%rsp), %rbx
 movq	32(%rsp), %rbp
 movq	40(%rsp), %r12
@@ -232,7 +232,7 @@ LCFI11a:
 movq	$0, %rbx
 movq	$0, %rbp
 movq	$0, %r12
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %rbp
 movq	16(%rsp), %r12
@@ -255,7 +255,7 @@ movq	$0, %rbx
 movq	$0, %rbp
 movq	$0, %r12
 movq	$0, %r13
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	8(%rsp), %rbx
 movq	16(%rsp), %rbp
 movq	24(%rsp), %r12
@@ -280,7 +280,7 @@ movq	$0, %rbp
 movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %rbp
 movq	16(%rsp), %r12

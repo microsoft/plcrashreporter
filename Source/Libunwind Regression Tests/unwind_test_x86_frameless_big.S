@@ -50,7 +50,7 @@ LCFI0:
 subl	$80024, %esp
 LCFI1:
 movl	$0, %ebx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addl	$80024, %esp
 popl	%ebx
 ret
@@ -62,7 +62,7 @@ _unwind_test_x86_frameless_big_no_reg:
 LFB12:
 subl	$80028, %esp
 LCFI2:
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addl	$80028, %esp
 ret
 LFE12:
@@ -76,7 +76,7 @@ LCFI5:
 subl	$80024, %esp
 LCFI6:
 movl	$0, %esi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addl	$80024, %esp
 popl	%esi
 ret
@@ -91,7 +91,7 @@ LCFI3:
 subl	$80024, %esp
 LCFI4:
 movl	$0, %edi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addl	$80024, %esp
 popl	%edi
 ret
@@ -110,7 +110,7 @@ movl	%esi, 80024(%esp)
 LCFI9:
 movl	$0, %ebx
 movl	$0, %esi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	80020(%esp), %ebx
 movl	80024(%esp), %esi
 addl	$80028, %esp
@@ -129,7 +129,7 @@ movl	%edi, 80024(%esp)
 LCFI12:
 movl	$0, %esi
 movl	$0, %edi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	80020(%esp), %esi
 movl	80024(%esp), %edi
 addl	$80028, %esp
@@ -152,7 +152,7 @@ LCFI16:
 movl	$0, %ebx
 movl	$0, %esi
 movl	$0, %edi
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	80016(%esp), %ebx
 movl	80020(%esp), %esi
 movl	80024(%esp), %edi
@@ -175,7 +175,7 @@ LCFI16a:
 movl	$0, %ebx
 movl	$0, %esi
 movl	$0, %ebp
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	80016(%esp), %ebx
 movl	80020(%esp), %esi
 movl	80024(%esp), %ebp
@@ -199,7 +199,7 @@ LCFI20:
 movl	$0, %esi
 movl	$0, %edi
 movl	$0, %ebp
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	80016(%esp), %esi
 movl	80020(%esp), %edi
 movl	80024(%esp), %ebp
@@ -225,7 +225,7 @@ movl	$0, %ebx
 movl	$0, %esi
 movl	$0, %edi
 movl	$0, %ebp
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movl	80012(%esp), %ebx
 movl	80016(%esp), %esi
 movl	80020(%esp), %edi

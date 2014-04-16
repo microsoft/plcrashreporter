@@ -54,7 +54,7 @@ pushq	%rbp
 LCFI2:
 movq	%rsp, %rbp
 LCFI3:
-call	_uwind_to_main
+call	_uwind_tester_invoke
 leave
 ret
 LFE13:
@@ -72,7 +72,7 @@ LCFI10:
 subq	$8, %rsp
 LCFI11:
 movq	$0, %rbx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 addq	$8, %rsp
 popq	%rbx
 leave
@@ -95,7 +95,7 @@ subq	$16, %rsp
 LCFI20:
 movq	$0, %rbx
 movq	$0, %r12
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %r12
 leave
@@ -118,7 +118,7 @@ subq	$16, %rsp
 LCFI20a:
 movq	$0, %rbx
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %r14
 leave
@@ -144,7 +144,7 @@ LCFI31:
 movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	-24(%rbp), %rbx
 movq	-16(%rbp), %r12
 movq	-8(%rbp), %r13
@@ -173,7 +173,7 @@ movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	(%rsp), %rbx
 movq	8(%rsp), %r12
 movq	16(%rsp), %r13
@@ -203,7 +203,7 @@ movq	$0, %r14
 movq	$0, %r13
 movq	$0, %r12
 movq	$0, %rbx
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	-32(%rbp), %r14
 movq	-24(%rbp), %r13
 movq	-16(%rbp), %r12
@@ -236,7 +236,7 @@ movq	$0, %rbx
 movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	-40(%rbp), %rbx
 movq	-32(%rbp), %r12
 movq	-24(%rbp), %r13
@@ -271,7 +271,7 @@ movq	$0, %r12
 movq	$0, %r13
 movq	$0, %r14
 movq	$0, %r15
-call	_uwind_to_main
+call	_uwind_tester_invoke
 movq	-40(%rbp), %r13
 movq	-32(%rbp), %rbx
 movq	-24(%rbp), %r14
