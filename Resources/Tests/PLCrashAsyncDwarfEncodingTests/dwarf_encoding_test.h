@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-/* Constants and structures used to generate the CFI test binaries. See also: Resources/Tests/PLCrashAsyncDwarfEncodingTests */
+/* Constants and structures used to generate the DWARF test binaries */
 
 struct __attribute__((packed)) pl_cie_data {
     uint8_t version; /* Must be set to 1 or 3 -- 1=eh_frame, 3=DWARF3, 4=DWARF4 */

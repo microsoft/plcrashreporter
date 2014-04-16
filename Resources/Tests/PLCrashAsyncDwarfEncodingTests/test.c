@@ -2,7 +2,7 @@
 
 #include "dwarf_encoding_test.h"
 
-// TODO
+/* Test data used to validate basic __eh_frame section parsing. */
 pl_cfi_entry ef[] __attribute__((section("__PL_DWARF,__eh_frame"))) = {
 #ifdef __LP64__
     /* Common CIE entry */
@@ -86,6 +86,7 @@ pl_cfi_entry ef[] __attribute__((section("__PL_DWARF,__eh_frame"))) = {
 };
 
 
+/* Test data used to validate basic __debug_frame section parsing. */
 pl_cfi_entry df[] __attribute__((section("__PL_DWARF,__debug_frame"))) = {
 #ifdef __LP64__
     /* Common CIE entry */
