@@ -34,12 +34,12 @@
  *                                                    void *context);
  */
 
-#if __arm__
-.align 4
-.arm
+.text
+
+#if __arm__ || __arm64__
+.align 2
 #endif
 
-.text
 .globl _plcrash_async_thread_state_current
 _plcrash_async_thread_state_current:
 
@@ -228,7 +228,7 @@ ldp	fp, lr, [sp], #16
 ret	lr
 
 #elif defined(__arm__)
-
+.arm
 
 push    {r7, lr}
 mov     r7, sp
