@@ -31,7 +31,8 @@ _unwind_tester_list_x86_unusual:
 .long	_unwind_test_x86_unusual_esi_in_ebx
 .long	_unwind_test_x86_unusual_edi_pad_ebx
 .long	_unwind_test_x86_unusual_coal_ebx_esi_edi
-.long	Ltest_edi_pad_ebx
+.long   _unwind_test_x86_unusual_edi_pad_ebx
+.long	_unwind_test_x86_unusual_b_edi_pad_ebx
 .long	0
 
 
@@ -105,7 +106,8 @@ leave
 ret
 LFE7a:
 
-Ltest_edi_pad_ebx:
+.globl _unwind_test_x86_unusual_b_edi_pad_ebx
+_unwind_test_x86_unusual_b_edi_pad_ebx:
 LFB7b:
 pushl	%ebp
 LCFI27b:
@@ -347,6 +349,26 @@ LASFDE15:
 LEFDE15:
 
 
+.section __LD,__compact_unwind,regular,debug
+
+# Generates a compact unwind entry
+# Arguments:
+# 0 - Test number (eg, 0, 1, 2).
+# 1 - Test name (eg, x19_x20, no_reg)
+# 2 - End label (used to measure test length)
+# 3 - Unwind enoding (eg, ...
+.macro compact_entry
+.long	_unwind_test_x86_unusual_$1
+.set LC0$0,$2-_unwind_test_x86_unusual_$1
+.long LC0$0
+.long $3
+.long 0
+.long 0
+.endmacro
+
+# Only these two tests can be represented using the x86-64 CPE
+compact_entry 0, ebx_wrong_slot, LFE13, 0x01020001
+compact_entry 1, coal_ebx_esi_edi, LFE7, 0x01030129
 
 .subsections_via_symbols
 

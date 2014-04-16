@@ -27,19 +27,19 @@
 .data
 .globl _unwind_tester_list_x86_64_unusual
 _unwind_tester_list_x86_64_unusual:
-.quad	_unwind_test_x86_64_unusualno_reg
-.quad	Ltest_rbx
-.quad	_unwind_test_x86_64_unusualrbx_pad_r12
-.quad	_unwind_test_x86_64_unusualrbx_same_value
-.quad	_unwind_test_x86_64_unusualrbx_same_register
+.quad	_unwind_test_x86_64_unusual_no_reg
+.quad	_unwind_test_x86_64_unusual_rbx
+.quad	_unwind_test_x86_64_unusual_rbx_pad_r12
+.quad	_unwind_test_x86_64_unusual_rbx_same_value
+.quad	_unwind_test_x86_64_unusual_rbx_same_register
 .quad	0
 
 
 .text
 
 
-.globl _unwind_test_x86_64_unusualbig_frameless_stack_odd_dwarf
-_unwind_test_x86_64_unusualbig_frameless_stack_odd_dwarf:
+.globl _unwind_test_x86_64_unusual_big_frameless_stack_odd_dwarf
+_unwind_test_x86_64_unusual_big_frameless_stack_odd_dwarf:
 L100:
 subq	$160016, %rsp
 L102:
@@ -51,8 +51,8 @@ L103:
 
 
 LFE14:
-.globl _unwind_test_x86_64_unusualno_reg
-_unwind_test_x86_64_unusualno_reg:
+.globl _unwind_test_x86_64_unusual_no_reg
+_unwind_test_x86_64_unusual_no_reg:
 LFB13:
 pushq	%rbp
 LCFI2:
@@ -64,7 +64,8 @@ ret
 LFE13:
 
 
-Ltest_rbx:
+.globl _unwind_test_x86_64_unusual_rbx
+_unwind_test_x86_64_unusual_rbx:
 LFB10:
 pushq	%rbp
 LCFI8:
@@ -83,8 +84,8 @@ ret
 LFE10:
 
 
-.globl _unwind_test_x86_64_unusualrbx_pad_r12
-_unwind_test_x86_64_unusualrbx_pad_r12:
+.globl _unwind_test_x86_64_unusual_rbx_pad_r12
+_unwind_test_x86_64_unusual_rbx_pad_r12:
 LFB8:
 pushq	%rbp
 LCFI16:
@@ -106,8 +107,8 @@ ret
 LFE8:
 
 
-.globl _unwind_test_x86_64_unusualrbx_same_value
-_unwind_test_x86_64_unusualrbx_same_value:
+.globl _unwind_test_x86_64_unusual_rbx_same_value
+_unwind_test_x86_64_unusual_rbx_same_value:
 LFB10b:
 jmp		L33
 pushq	%rbx
@@ -124,8 +125,8 @@ ret
 LFE10b:
 
 
-.globl _unwind_test_x86_64_unusualrbx_same_register
-_unwind_test_x86_64_unusualrbx_same_register:
+.globl _unwind_test_x86_64_unusual_rbx_same_register
+_unwind_test_x86_64_unusual_rbx_same_register:
 LFB10c:
 jmp		L34
 pushq	%rbx
@@ -165,8 +166,8 @@ LSCIE1:
 .align 3
 LECIE1:
 
-.globl _unwind_test_x86_64_unusualno_reg.eh
-_unwind_test_x86_64_unusualno_reg.eh:
+.globl _unwind_test_x86_64_unusual_no_reg.eh
+_unwind_test_x86_64_unusual_no_reg.eh:
 LSFDE3:
 .set L$set$5,LEFDE3-LASFDE3
 .long L$set$5
@@ -221,8 +222,8 @@ LASFDE9:
 .align 3
 LEFDE9:
 
-.globl _unwind_test_x86_64_unusualrbx_pad_r12.eh
-_unwind_test_x86_64_unusualrbx_pad_r12.eh:
+.globl _unwind_test_x86_64_unusual_rbx_pad_r12.eh
+_unwind_test_x86_64_unusual_rbx_pad_r12.eh:
 LSFDE13:
 .set L$set$27,LEFDE13-LASFDE13
 .long L$set$27
@@ -256,8 +257,8 @@ LEFDE13:
 
 
 
-.globl _unwind_test_x86_64_unusualbig_frameless_stack_odd_dwarf.eh
-_unwind_test_x86_64_unusualbig_frameless_stack_odd_dwarf.eh:
+.globl _unwind_test_x86_64_unusual_big_frameless_stack_odd_dwarf.eh
+_unwind_test_x86_64_unusual_big_frameless_stack_odd_dwarf.eh:
 .set L$set$12a,LEFDE9a-LASFDE9a
 .long L$set$12a	# FDE Length
 LASFDE9a:
@@ -275,8 +276,8 @@ LASFDE9a:
 LEFDE9a:
 
 
-.globl _unwind_test_x86_64_unusualrbx_same_value.eh
-_unwind_test_x86_64_unusualrbx_same_value.eh:
+.globl _unwind_test_x86_64_unusual_rbx_same_value.eh
+_unwind_test_x86_64_unusual_rbx_same_value.eh:
 LSFDE9b:
 .set L$set$12,LEFDE9b-LASFDE9b
 .long L$set$12	# FDE Length
@@ -302,8 +303,8 @@ LASFDE9b:
 LEFDE9b:
 
 
-.globl _unwind_test_x86_64_unusualrbx_same_register.eh
-_unwind_test_x86_64_unusualrbx_same_register.eh:
+.globl _unwind_test_x86_64_unusual_rbx_same_register.eh
+_unwind_test_x86_64_unusual_rbx_same_register.eh:
 LSFDE9c:
 .set L$set$12c,LEFDE9c-LASFDE9c
 .long L$set$12c	# FDE Length
@@ -329,5 +330,26 @@ LASFDE9c:
 .align 3
 LEFDE9c:
 
+
+.section __LD,__compact_unwind,regular,debug
+
+# Generates a compact unwind entry
+# Arguments:
+# 0 - Test number (eg, 0, 1, 2).
+# 1 - Test name (eg, x19_x20, no_reg)
+# 2 - End label (used to measure test length)
+# 3 - Unwind enoding (eg, ...
+.macro compact_entry
+.quad	_unwind_test_x86_64_unusual_$1
+.set LC0$0,$2-_unwind_test_x86_64_unusual_$1
+.long LC0$0
+.long $3
+.quad 0
+.quad 0
+.endmacro
+
+# Only these two tests can be represented using the x86-64 CPE
+compact_entry 0, no_reg, LFE13, 0x01000000
+compact_entry 1, rbx, LFE10, 0x01010001
 
 #endif /* __x86_64__ */
