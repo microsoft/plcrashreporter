@@ -34,11 +34,10 @@ _unwind_tester_list_arm64_frameless:
 .quad	0
 
 .text
-.align 2
-
 ; A trampoline that uses DWARF encoded unwind info to save/restore the link
 ; register on behalf of its caller. This allows us to test compact unwind
 ; encoding for our callers (which doesn't support save/restore of LR).
+.align 2
 .globl _unwind_test_arm64_frameless_trampoline
 _unwind_test_arm64_frameless_trampoline:
     stp	fp, x0, [sp, #-16]! ; Set up our frame
@@ -54,6 +53,7 @@ Ltr_pushed_regs:
     ret	lr
 Ltr_end:
 
+.align 2
 .globl _unwind_test_arm64_frameless_no_reg
 _unwind_test_arm64_frameless_no_reg:
     sub     sp, sp, #16
@@ -67,6 +67,7 @@ LT1_sub_sp:
     ret
 LT1_end:
 
+.align 2
 .globl _unwind_test_arm64_frameless_x19_x20
 _unwind_test_arm64_frameless_x19_x20:
     stp     x20, x19, [sp, #-16]!
@@ -80,6 +81,7 @@ LT2_sub_sp:
     ret
 LT2_end:
 
+.align 2
 .globl _unwind_test_arm64_frameless_x19_x20_x21_x22
 _unwind_test_arm64_frameless_x19_x20_x21_x22:
     stp     x20, x19, [sp, #-16]!
@@ -97,6 +99,7 @@ LT3_sub_sp:
     ret
 LT3_end:
 
+.align 2
 .globl _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24
 _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24:
     stp     x20, x19, [sp, #-16]!
@@ -118,7 +121,7 @@ LT4_sub_sp:
     ret
 LT4_end:
 
-
+.align 2
 .globl _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26
 _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26:
     stp     x20, x19, [sp, #-16]!
@@ -144,6 +147,7 @@ LT5_sub_sp:
     ret
 LT5_end:
 
+.align 2
 .globl _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
 _unwind_test_arm64_frameless_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28:
     stp     x20, x19, [sp, #-16]!

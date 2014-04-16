@@ -49,6 +49,7 @@ LT1_pushed_regs:
     ret	lr
 LT1_end:
 
+.align 2
 .globl _unwind_test_arm64_frame_x19_x20
 _unwind_test_arm64_frame_x19_x20:
     stp	fp, lr, [sp, #-16]!
@@ -66,6 +67,7 @@ LT2_pushed_regs:
     ret	lr
 LT2_end:
 
+.align 2
 .globl _unwind_test_arm64_frame_x19_x20_x21_x22
 _unwind_test_arm64_frame_x19_x20_x21_x22:
     stp	fp, lr, [sp, #-16]!
@@ -87,6 +89,7 @@ LT3_pushed_regs:
     ret	lr
 LT3_end:
 
+.align 2
 .globl _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24
 _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24:
     stp	fp, lr, [sp, #-16]!
@@ -112,6 +115,7 @@ LT4_pushed_regs:
     ret	lr
 LT4_end:
 
+.align 2
 .globl _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26
 _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26:
     stp	fp, lr, [sp, #-16]!
@@ -141,6 +145,7 @@ LT5_pushed_regs:
     ret	lr
 LT5_end:
 
+.align 2
 .globl _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28
 _unwind_test_arm64_frame_x19_x20_x21_x22_x23_x24_x25_x26_x27_x28:
     stp	fp, lr, [sp, #-16]!

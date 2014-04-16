@@ -31,6 +31,7 @@ _unwind_tester_target_ip:
 ; This is a generic function to test that restoring registers during unwinding work correctly.
 ;
 .text
+.align 2
 .globl _unwind_tester
 _unwind_tester:
 LFB3:
