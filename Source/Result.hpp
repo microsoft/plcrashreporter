@@ -63,14 +63,11 @@ private:
     
     /** Iteration position */
     enum IterPos {
-        /** Iteration has started */
-        ITER_START = 0,
-        
         /** Iteration is active */
-        ITER_RUN = 1,
+        ITER_RUN = 0,
         
         /** Iteration has terminated */
-        ITER_END = 2
+        ITER_END = 1
     };
 
 public:
@@ -123,11 +120,10 @@ public:
     public:
         // from Iterator
         iterator operator++ () {
-            /* Advance to our next iteration position. There are only three; the starting state of
-             * a new iterator, the running state where we've iterated to the single available value,
-             * and the end state, where we've iterated "past" the end of the available value. */
+            /* Advance to our next iteration position. There are only two; the running state
+             * where we've iterated to the single available value, and the end state, where 
+             * we've iterated "past" the end of the available value. */
             switch (_pos) {
-                case Result::ITER_START: _pos = Result::ITER_RUN;
                 case Result::ITER_RUN:   _pos = Result::ITER_END;
                 case Result::ITER_END:   break;
             }
@@ -162,7 +158,7 @@ public:
         /* On success, we return a working iterator; on failure, we return an already 
          * completed iterator */
         if (_isSuccess) {
-            return iterator(*this, Result::ITER_START);
+            return iterator(*this, Result::ITER_RUN);
         } else {
             return end();
         }
