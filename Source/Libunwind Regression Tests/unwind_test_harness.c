@@ -42,7 +42,6 @@
 #define LIBUNWIND_VERIFICATION 1
 #endif
 
-extern void *unwind_tester_list_x86_64_disable_compact_frame[];
 extern void *unwind_tester_list_x86_64_frame[];
 extern void *unwind_tester_list_x86_64_frameless[];
 extern void *unwind_tester_list_x86_64_frameless_big[];
@@ -52,7 +51,6 @@ extern void *unwind_tester_list_x86_frame[];
 extern void *unwind_tester_list_x86_frameless[];
 extern void *unwind_tester_list_x86_frameless_big[];
 extern void *unwind_tester_list_x86_unusual[];
-extern void *unwind_tester_list_x86_disable_compact_frame[];
 
 extern void *unwind_tester_list_arm64_frame[];
 extern void *unwind_tester_list_arm64_frameless[];
@@ -121,9 +119,6 @@ struct unwind_test_case {
 
 static struct unwind_test_case unwind_test_cases[] = {
 #ifdef __x86_64__
-    /* DWARF unwinding (no compact frame data) */
-    { unwind_tester_list_x86_64_disable_compact_frame, true, frame_readers_dwarf, 2 },
-
     /* frame-based unwinding */
     { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame,    2 },
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact,  2 },
@@ -146,9 +141,6 @@ static struct unwind_test_case unwind_test_cases[] = {
     { unwind_tester_list_x86_64_unusual,      true,   NULL,                 2 },
 
 #elif defined(__i386__)
-    /* DWARF unwinding (no compact frame data) */
-    { unwind_tester_list_x86_disable_compact_frame, true, frame_readers_dwarf, 2 },
-
     /* frame-based unwinding */
     { unwind_tester_list_x86_frame,      false,  frame_readers_frame,   2 },
     { unwind_tester_list_x86_frame,      true,   frame_readers_compact, 2 },

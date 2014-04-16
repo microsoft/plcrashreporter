@@ -154,9 +154,6 @@
 		05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
 		05507A19177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
 		05507A1A177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
-		05507A1C177CC913009D5168 /* unwind_test_x86_64_disable_compact_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A1B177CC912009D5168 /* unwind_test_x86_64_disable_compact_frame.S */; };
-		05507A1D177CC913009D5168 /* unwind_test_x86_64_disable_compact_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A1B177CC912009D5168 /* unwind_test_x86_64_disable_compact_frame.S */; };
-		05507A1E177CC913009D5168 /* unwind_test_x86_64_disable_compact_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A1B177CC912009D5168 /* unwind_test_x86_64_disable_compact_frame.S */; };
 		05507A3F178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */; };
 		05507A40178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */; };
 		05507A41178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */; };
@@ -397,9 +394,6 @@
 		05C588161788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C588151788F3E700BA118D /* unwind_test_x86_unusual.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05C588171788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C588151788F3E700BA118D /* unwind_test_x86_unusual.S */; };
 		05C588181788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C588151788F3E700BA118D /* unwind_test_x86_unusual.S */; };
-		05C5881A1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C588191788F48400BA118D /* unwind_test_x86_disable_compact_frame.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
-		05C5881B1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C588191788F48400BA118D /* unwind_test_x86_disable_compact_frame.S */; };
-		05C5881C1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05C588191788F48400BA118D /* unwind_test_x86_disable_compact_frame.S */; };
 		05C5881D178B898C00BA118D /* PLCrashReportStackFrameInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E5431676598200B39833 /* PLCrashReportStackFrameInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05C5881E178B89A300BA118D /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05C5881F178B89A800BA118D /* PLCrashReportRegisterInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E54E16765A0200B39833 /* PLCrashReportRegisterInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1149,7 +1143,6 @@
 		05507A0F177CC456009D5168 /* unwind_test_harness.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unwind_test_harness.c; sourceTree = "<group>"; };
 		05507A13177CC4D5009D5168 /* unwind_test_x86.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86.S; sourceTree = "<group>"; };
 		05507A17177CC50B009D5168 /* unwind_test_x86_64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64.S; sourceTree = "<group>"; };
-		05507A1B177CC912009D5168 /* unwind_test_x86_64_disable_compact_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_disable_compact_frame.S; sourceTree = "<group>"; };
 		05507A1F177CCB1C009D5168 /* unwind_test_harness.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unwind_test_harness.h; sourceTree = "<group>"; };
 		05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_frame.S; sourceTree = "<group>"; };
 		05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_unusual.S; sourceTree = "<group>"; };
@@ -1223,7 +1216,6 @@
 		05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frameless.S; sourceTree = "<group>"; };
 		05C588111788F36800BA118D /* unwind_test_x86_frameless_big.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frameless_big.S; sourceTree = "<group>"; };
 		05C588151788F3E700BA118D /* unwind_test_x86_unusual.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_unusual.S; sourceTree = "<group>"; };
-		05C588191788F48400BA118D /* unwind_test_x86_disable_compact_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_disable_compact_frame.S; sourceTree = "<group>"; };
 		05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dwarf_opstream.cpp; sourceTree = "<group>"; };
 		05C76DA5176B8C7000E9B10D /* dwarf_opstream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = dwarf_opstream.hpp; sourceTree = "<group>"; };
 		05C76DB1176B946E00E9B10D /* dwarf_opstream_tests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dwarf_opstream_tests.mm; sourceTree = "<group>"; };
@@ -1515,12 +1507,10 @@
 				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
 				05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */,
 				058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */,
-				05507A1B177CC912009D5168 /* unwind_test_x86_64_disable_compact_frame.S */,
 				05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */,
 				05920D2D17848B85001E8975 /* unwind_test_x86_64_frameless.S */,
 				05920D311784C806001E8975 /* unwind_test_x86_64_frameless_big.S */,
 				05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */,
-				05C588191788F48400BA118D /* unwind_test_x86_disable_compact_frame.S */,
 				05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */,
 				05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */,
 				05C588111788F36800BA118D /* unwind_test_x86_frameless_big.S */,
@@ -3088,7 +3078,6 @@
 				05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */,
 				05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */,
 				05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
-				05507A1C177CC913009D5168 /* unwind_test_x86_64_disable_compact_frame.S in Sources */,
 				05507A3F178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
 				05920D2E17848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
 				05920D321784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
@@ -3097,7 +3086,6 @@
 				05C5880E1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 				05C588121788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588161788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
-				05C5881A1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */,
 				05920D36178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1D17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2D17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
@@ -3194,7 +3182,6 @@
 				05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */,
 				05507A15177CC4D5009D5168 /* unwind_test_x86.S in Sources */,
 				05507A19177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
-				05507A1D177CC913009D5168 /* unwind_test_x86_64_disable_compact_frame.S in Sources */,
 				05507A40178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
 				05920D2F17848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
 				05920D331784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
@@ -3203,7 +3190,6 @@
 				05C5880F1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 				05C588131788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588171788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
-				05C5881B1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */,
 				05920D37178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1E17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2E17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
@@ -3300,7 +3286,6 @@
 				05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */,
 				05507A16177CC4D5009D5168 /* unwind_test_x86.S in Sources */,
 				05507A1A177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
-				05507A1E177CC913009D5168 /* unwind_test_x86_64_disable_compact_frame.S in Sources */,
 				05507A41178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
 				05920D3017848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
 				05920D341784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
@@ -3309,7 +3294,6 @@
 				05C588101788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 				05C588141788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588181788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
-				05C5881C1788F48500BA118D /* unwind_test_x86_disable_compact_frame.S in Sources */,
 				05920D38178B310A001E8975 /* unwind_test_arm.S in Sources */,
 				05102E1F17B0152B00B5D925 /* PLCrashProcessInfoTests.m in Sources */,
 				05102E2F17B2B82000B5D925 /* PLCrashHostInfoTests.m in Sources */,
