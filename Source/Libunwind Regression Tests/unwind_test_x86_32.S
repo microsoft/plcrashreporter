@@ -19,12 +19,13 @@
 
 #ifdef __i386__
 
-#
-# This is a generic function to test that restoring registers during unwinding work correctly.
-#
+/*
+ * This top-level dispatch function handles setting up the test frame, including
+ * populating non-volatile registers with test data.
+ */
 
 .data
-.globl _unwind_tester_target_ip # IP that we'll unwind to
+.globl _unwind_tester_target_ip # The return address to which the tests are expected to unwind
 _unwind_tester_target_ip:
 .long	Ltester_target_ip
 

@@ -18,6 +18,7 @@
  limitations under the License.
 */
 
+#if 0
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -400,3 +401,7 @@ void uwind_tester_invoke () {
 #endif
 }
 
+#else
+/* This symbol is currently required by the tests */
+void uwind_tester_invoke () { }
+#endif

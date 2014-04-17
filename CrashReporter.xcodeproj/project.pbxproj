@@ -148,9 +148,9 @@
 		05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
 		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
-		05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
-		05507A15177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
-		05507A16177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
+		05507A14177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
+		05507A15177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */; };
+		05507A16177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */; };
 		05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
 		05507A19177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
 		05507A1A177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
@@ -1144,7 +1144,7 @@
 		054F51070EEC73C80034B184 /* PLCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReporter.h; sourceTree = "<group>"; };
 		05507A0E177CC2C9009D5168 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 		05507A0F177CC456009D5168 /* unwind_test_harness.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unwind_test_harness.c; sourceTree = "<group>"; };
-		05507A13177CC4D5009D5168 /* unwind_test_x86.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86.S; sourceTree = "<group>"; };
+		05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_32.S; sourceTree = "<group>"; };
 		05507A17177CC50B009D5168 /* unwind_test_x86_64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64.S; sourceTree = "<group>"; };
 		05507A1F177CCB1C009D5168 /* unwind_test_harness.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unwind_test_harness.h; sourceTree = "<group>"; };
 		05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_frame.S; sourceTree = "<group>"; };
@@ -1497,10 +1497,6 @@
 				05507A0E177CC2C9009D5168 /* README.txt */,
 				05507A1F177CCB1C009D5168 /* unwind_test_harness.h */,
 				05507A0F177CC456009D5168 /* unwind_test_harness.c */,
-				05507A13177CC4D5009D5168 /* unwind_test_x86.S */,
-				05507A17177CC50B009D5168 /* unwind_test_x86_64.S */,
-				05920D35178B310A001E8975 /* unwind_test_arm.S */,
-				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
 				05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */,
 				058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */,
 				05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */,
@@ -1531,6 +1527,10 @@
 				055FEE4419001EC400CDD2D2 /* unwind_test.h */,
 				055FEE3F19001E9200CDD2D2 /* unwind_test.c */,
 				05D1BA0B18FF1CF300DD961F /* unwind_test_config.h */,
+				05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */,
+				05507A17177CC50B009D5168 /* unwind_test_x86_64.S */,
+				05920D35178B310A001E8975 /* unwind_test_arm.S */,
+				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
 				053F435E19002957006E78DE /* Deprecated Implementation */,
 			);
 			path = "Libunwind Regression Tests";
@@ -3094,7 +3094,7 @@
 				05920D2A177B92E7001E8975 /* PLCrashFrameDWARFUnwindTests.m in Sources */,
 				053347AA17E161CB00C52E50 /* unwind_test_arm64.S in Sources */,
 				05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */,
-				05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */,
+				05507A14177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */,
 				05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
 				05507A3F178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
 				05920D2E17848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
@@ -3199,7 +3199,7 @@
 				05920D24177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05920D2B177B92E7001E8975 /* PLCrashFrameDWARFUnwindTests.m in Sources */,
 				05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */,
-				05507A15177CC4D5009D5168 /* unwind_test_x86.S in Sources */,
+				05507A15177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */,
 				05507A19177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
 				05507A40178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
 				05920D2F17848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
@@ -3304,7 +3304,7 @@
 				05920D25177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05920D2C177B92E7001E8975 /* PLCrashFrameDWARFUnwindTests.m in Sources */,
 				05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */,
-				05507A16177CC4D5009D5168 /* unwind_test_x86.S in Sources */,
+				05507A16177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */,
 				05507A1A177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
 				05507A41178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
 				05920D3017848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
