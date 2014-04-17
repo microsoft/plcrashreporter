@@ -1521,7 +1521,7 @@
 			name = Formatters;
 			sourceTree = "<group>";
 		};
-		055079D9177C9BAB009D5168 /* Libunwind Regression Tests */ = {
+		055079D9177C9BAB009D5168 /* Unwinding Integration Tests */ = {
 			isa = PBXGroup;
 			children = (
 				055FEE4419001EC400CDD2D2 /* unwind_test.h */,
@@ -1533,7 +1533,7 @@
 				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
 				053F435E19002957006E78DE /* Deprecated Implementation */,
 			);
-			path = "Libunwind Regression Tests";
+			path = "Unwinding Integration Tests";
 			sourceTree = "<group>";
 		};
 		05659DE91745593000D2EE21 /* DWARF Encoding */ = {
@@ -1602,7 +1602,7 @@
 				FCE4576E42A51370AD81A734 /* Stack Frame Unwind */,
 				05920D1D177B9226001E8975 /* DWARF Unwind */,
 				05F3CD5E16DD6A17007911FB /* Apple Compact Unwind */,
-				055079D9177C9BAB009D5168 /* Libunwind Regression Tests */,
+				055079D9177C9BAB009D5168 /* Unwinding Integration Tests */,
 			);
 			name = "Frame Walking";
 			sourceTree = "<group>";
