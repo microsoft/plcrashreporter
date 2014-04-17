@@ -1,5 +1,5 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
  * Copyright (c) 2013-2014 Plausible Labs Cooperative, Inc.
  * All rights reserved.
