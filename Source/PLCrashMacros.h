@@ -30,11 +30,11 @@
 #define PLCRASH_CONSTANTS_H
 
 #if defined(__cplusplus)
-#   define PLCR_EXPORT extern "C"
+#   define PLCR_C_EXPORT extern "C"
 #   define PLCR_C_BEGIN_DECLS extern "C" {
 #   define PLCR_C_END_DECLS }
 #else
-#   define PLCR_EXPORT extern
+#   define PLCR_C_EXPORT extern
 #   define PLCR_C_BEGIN_DECLS
 #   define PLCR_C_END_DECLS
 #endif
