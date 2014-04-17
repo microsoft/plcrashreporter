@@ -23,14 +23,9 @@
 # This is a generic function to test that restoring registers during unwinding work correctly.
 #
 
-.data
-.globl _unwind_tester_target_ip # IP that we'll unwind to
-_unwind_tester_target_ip:
-.quad	Ltester_target_ip
-
 .text
-.globl _unwind_tester
-_unwind_tester:
+.globl _unwind_test_invoke
+_unwind_test_invoke:
 LFB3:
 pushq	%rbp
 LCFI45:
@@ -58,7 +53,6 @@ movq	$0x0022446688AACCEE, %r15
 movq    %rsp, (%rsi)
 # call test function which will invoke unwinder which "returns" here
 call	*%rdi
-Ltester_target_ip: # IP that we'll unwind to
 # verify that non-volatile registers still contain magic values
 movq	$0x1234567887654321, %rax
 cmpq	%rax, %rbx

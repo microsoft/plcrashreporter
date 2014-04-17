@@ -30,41 +30,35 @@
 #define UNWIND_TEST_H 1
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-#define UNWIND_TEST_CONFIG_NON_ASSEMBLER_IMPORT 1
-#include "unwind_test_config.h"
-#undef UNWIND_TEST_CONFIG_NON_ASSEMBLER_IMPORT
+#include "UnwindTest.hpp"
+#include "PLCrashMacros.h"
+
+namespace plcrash {
 
 /**
- * A set of bit flags defining what unwind data is available for the given
- * test function. The following flags are supported; refer to the individual
- * flag's documentation for more details:
+ * An unwind test case.
  *
- * - UNWIND_TEST_NO_COMPACT_UNWIND
- * - UNWIND_TEST_NO_DWARF
- * - UNWIND_TEST_NO_FRAME
+ * @warning The structure layout and semantics must be kept in sync with the assembler macros
+ * declared in UnwindTestCase.S.
  */
-typedef uint32_t unwind_test_flags_t;
+typedef struct UnwindTestCase {
+private:
+    /** NUL terminated test case name. */
+    const char *_name;
 
-/**
- * An unwind test function declaration. Each unwind test case (frame, frameless, unusual, etc ...)
- * declares a set of unwind test functions. The test function declarations are used to determine
- * which unwinders to test for a given set of unwind functions.
- */
-typedef struct {
-    /** The test function to be called */
-    void (*test_function)(void *context);
+    /** Array of all tests defined for this test case. Must be terminated with a terminal test case (@sa UnwindTest::TERM). */
+    const UnwindTest *_tests;
+
+public:
+    UnwindTestCase (const char *name, const UnwindTest tests[]);
     
-    /** Test configuration flags */
-    unwind_test_flags_t flags;
-} unwind_test_entry_t;
-
-/**
- * An unwind test case declaration. This array must be terminated with an
- * entry conaining a NULL unwind_test_entry_t::test_function
- */
-typedef unwind_test_entry_t unwind_test_case_t[];
-
+    const char *name (void) const;
+    bool executeAll (void) const;
+} UnwindTestCase;
+    
 /********************************************************************************************************
  * TEST CASE DEFINITIONS                                                                                *
  *                                                                                                      *
@@ -76,12 +70,12 @@ typedef unwind_test_entry_t unwind_test_case_t[];
 /**
  * Tests that maintain a valid frame pointer.
  */
-extern unwind_test_case_t unwind_test_case_frame;
+PLCR_C_EXPORT const UnwindTestCase unwind_test_case_frame;
 
 /**
  * Tests that do not maintain a valid frame pointer.
  */
-extern unwind_test_case_t unwind_test_case_frameless;
+PLCR_C_EXPORT const UnwindTestCase unwind_test_case_frameless;
 
 /**
  * Tests that do not maintain a valid frame pointer, and make use of a large frame size.
@@ -90,13 +84,15 @@ extern unwind_test_case_t unwind_test_case_frameless;
  * which requires an indirect fetch of a constant stack size too large to be encoded via
  * UNWIND_X86_MODE_STACK_IMMD.
  */
-extern unwind_test_case_t unwind_test_case_frameless_big;
+PLCR_C_EXPORT const UnwindTestCase unwind_test_case_frameless_big;
 
 /**
  * Tests that verify "unusual" unwinding behavior.
  *
  * These tests include edge cases that cannot be represented via the compact unwind encoding.
  */
-extern unwind_test_case_t unwind_test_case_frameless_big;
+PLCR_C_EXPORT const UnwindTestCase unwind_test_case_frameless_big;
+    
+} /* namespace plcrash */
 
 #endif /* UNWIND_TEST_H */

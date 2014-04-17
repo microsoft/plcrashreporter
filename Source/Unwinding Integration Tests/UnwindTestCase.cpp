@@ -26,53 +26,41 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* NOTE: This file is shared between C and pre-processed assembly files */
+#include "UnwindTestCase.hpp"
+#include "PLCrashAsync.h"
 
-#ifndef UNWIND_TEST_CONFIG_H
-#define UNWIND_TEST_CONFIG_H 1
+using namespace plcrash;
 
-/** The test function does not provide a valid compact unwind entry. */
-#define UNWIND_TEST_NO_COMPACT_UNWIND  (1 << 1)
+UnwindTest tests[] = {
+    UnwindTest("Foo", NULL, UnwindTestTypeCompactUnwind),
+    UnwindTest::TERM()
+};
 
-/** The test function does not provide a valid DWARF entry. */
-#define UNWIND_TEST_NO_DWARF           (1 << 2)
-
-/** The test function does not maintain a valid frame pointer. */
-#define UNWIND_TEST_NO_FRAME           (1 << 3)
-
-/* Assembler directives that should be excluded when included from a non-assembler file */
-#if !UNWIND_TEST_CONFIG_NON_ASSEMBLER_IMPORT
+UnwindTestCase tc = {
+    UnwindTestCase("tc!", tests)
+};
 
 /**
- * Decare an unwind_test_entry_t.
+ * Construct a new test case instance.
  *
- * $0 - The test function entry point.
- * $1 - The unwind_test_flags_t value for this test.
+ * @param name Test case name. This string will not be copied; it must remain valid for the lifetime of the test instance.
+ * @param types Unwinding implementations supported by this test.
  */
-#if __i386__ || __arm__
-.macro unwind_declare_test
-.long $0
-.long $1
-.endmacro
-#elif __x86_64__ || __arm64__
-.macro unwind_declare_test
-.quad $0
-.long $1
-.space 4
-.endmacro
-#else
-#error Select (or add) an appropriate declaration macro for this platform
-#endif
+UnwindTestCase::UnwindTestCase (const char *name, const UnwindTest tests[]) : _name(name), _tests(tests) {}
 
 /**
- * Declare a NULL (terminating) unwind_test_entry_t.
+ * Execute all the tests in this test case.
+ *
+ * Returns true if all tests succeed. Terminates on the first failed test.
  */
-.macro unwind_declare_test_null
-unwind_declare_test 0, 0
-.endmacro
-
-
-#endif /* UNWIND_TEST_CONFIG_NON_ASSEMBLER_IMPORT */
-
-
-#endif /* UNWIND_TEST_CONFIG_H */
+bool UnwindTestCase::executeAll (void) const {
+    for (size_t i = 0; _tests[i].isTerminator() == false; i++) {
+        PLCF_DEBUG("Running %s", _tests[i].name());
+        
+        if (_tests[i].invoke()) {
+            return false;
+        }
+    }
+    
+    return true;
+}

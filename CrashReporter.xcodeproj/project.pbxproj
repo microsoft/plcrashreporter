@@ -130,6 +130,9 @@
 		053347AB17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AC17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AD17E16B0200C52E50 /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
+		053F436419003264006E78DE /* PLCrashUnwindIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 053F436319003264006E78DE /* PLCrashUnwindIntegrationTests.mm */; };
+		053F436519003264006E78DE /* PLCrashUnwindIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 053F436319003264006E78DE /* PLCrashUnwindIntegrationTests.mm */; };
+		053F436619003264006E78DE /* PLCrashUnwindIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 053F436319003264006E78DE /* PLCrashUnwindIntegrationTests.mm */; };
 		054627A911D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */; };
 		054627AA11D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 054627A811D998BB007891C7 /* PLCrashReportTextFormatter.m */; };
 		054627AB11D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */; };
@@ -154,19 +157,19 @@
 		05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
 		05507A19177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
 		05507A1A177CC50B009D5168 /* unwind_test_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A17177CC50B009D5168 /* unwind_test_x86_64.S */; };
-		05507A3F178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */; };
-		05507A40178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */; };
-		05507A41178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */; };
+		05507A3F178364E8009D5168 /* unwind_test_case_frame_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_case_frame_x86_64.S */; };
+		05507A40178364E8009D5168 /* unwind_test_case_frame_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_case_frame_x86_64.S */; };
+		05507A41178364E8009D5168 /* unwind_test_case_frame_x86_64.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A3E178364E8009D5168 /* unwind_test_case_frame_x86_64.S */; };
 		05507A4F1784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */; };
 		05507A501784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */; };
 		05507A511784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */; };
-		05507A531784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
-		05507A541784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
-		05507A551784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
+		05507A531784DEE4009D5168 /* unwind_test_case_frame_x86_32.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_case_frame_x86_32.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
+		05507A541784DEE4009D5168 /* unwind_test_case_frame_x86_32.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_case_frame_x86_32.S */; };
+		05507A551784DEE4009D5168 /* unwind_test_case_frame_x86_32.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_case_frame_x86_32.S */; };
 		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
-		055FEE4019001E9200CDD2D2 /* unwind_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 055FEE3F19001E9200CDD2D2 /* unwind_test.c */; };
-		055FEE4119001E9200CDD2D2 /* unwind_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 055FEE3F19001E9200CDD2D2 /* unwind_test.c */; };
-		055FEE4219001E9200CDD2D2 /* unwind_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 055FEE3F19001E9200CDD2D2 /* unwind_test.c */; };
+		055FEE4019001E9200CDD2D2 /* UnwindTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 055FEE3F19001E9200CDD2D2 /* UnwindTest.cpp */; };
+		055FEE4119001E9200CDD2D2 /* UnwindTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 055FEE3F19001E9200CDD2D2 /* UnwindTest.cpp */; };
+		055FEE4219001E9200CDD2D2 /* UnwindTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 055FEE3F19001E9200CDD2D2 /* UnwindTest.cpp */; };
 		05654F770EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F780EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F790EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
@@ -291,6 +294,12 @@
 		05A17DF716DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */; };
 		05A17DF816DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */; };
 		05A17DF916DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */; };
+		05A215681900530D0050A058 /* UnwindTestCase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A215661900530D0050A058 /* UnwindTestCase.cpp */; };
+		05A215691900530D0050A058 /* UnwindTestCase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A215661900530D0050A058 /* UnwindTestCase.cpp */; };
+		05A2156A1900530D0050A058 /* UnwindTestCase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A215661900530D0050A058 /* UnwindTestCase.cpp */; };
+		05A2157019007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05A2156F19007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm */; };
+		05A2157119007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05A2156F19007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm */; };
+		05A2157219007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05A2156F19007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm */; };
 		05A533DE16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
@@ -1138,6 +1147,7 @@
 		052A46F713637DE000987004 /* PLCrashAsyncImageListTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncImageListTests.m; sourceTree = "<group>"; };
 		052DC863175553DC004335FE /* dwarf_encoding_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dwarf_encoding_test.h; path = ../Resources/Tests/PLCrashAsyncDwarfEncodingTests/dwarf_encoding_test.h; sourceTree = "<group>"; };
 		053347A517E161CB00C52E50 /* unwind_test_arm64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_arm64.S; sourceTree = "<group>"; };
+		053F436319003264006E78DE /* PLCrashUnwindIntegrationTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashUnwindIntegrationTests.mm; sourceTree = "<group>"; };
 		054627A711D998BB007891C7 /* PLCrashReportTextFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportTextFormatter.h; sourceTree = "<group>"; };
 		054627A811D998BB007891C7 /* PLCrashReportTextFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportTextFormatter.m; sourceTree = "<group>"; };
 		054627B811D99D06007891C7 /* PLCrashReportFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportFormatter.h; sourceTree = "<group>"; };
@@ -1147,11 +1157,11 @@
 		05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_32.S; sourceTree = "<group>"; };
 		05507A17177CC50B009D5168 /* unwind_test_x86_64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64.S; sourceTree = "<group>"; };
 		05507A1F177CCB1C009D5168 /* unwind_test_harness.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unwind_test_harness.h; sourceTree = "<group>"; };
-		05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_frame.S; sourceTree = "<group>"; };
+		05507A3E178364E8009D5168 /* unwind_test_case_frame_x86_64.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_case_frame_x86_64.S; sourceTree = "<group>"; };
 		05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_unusual.S; sourceTree = "<group>"; };
-		05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frame.S; sourceTree = "<group>"; };
-		055FEE3F19001E9200CDD2D2 /* unwind_test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unwind_test.c; sourceTree = "<group>"; };
-		055FEE4419001EC400CDD2D2 /* unwind_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unwind_test.h; sourceTree = "<group>"; };
+		05507A521784DEE4009D5168 /* unwind_test_case_frame_x86_32.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_case_frame_x86_32.S; sourceTree = "<group>"; };
+		055FEE3F19001E9200CDD2D2 /* UnwindTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnwindTest.cpp; sourceTree = "<group>"; };
+		055FEE4419001EC400CDD2D2 /* UnwindTest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UnwindTest.hpp; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
@@ -1192,6 +1202,11 @@
 		05A17DF016DBD0AD00888448 /* PLCrashAsyncThread_x86.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncThread_x86.c; sourceTree = "<group>"; };
 		05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncThread_arm.c; sourceTree = "<group>"; };
 		05A2077215AB30C9001E3EFC /* PLCrashNamespace.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashNamespace.h; sourceTree = "<group>"; };
+		05A215661900530D0050A058 /* UnwindTestCase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnwindTestCase.cpp; sourceTree = "<group>"; };
+		05A215671900530D0050A058 /* UnwindTestCase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = UnwindTestCase.hpp; sourceTree = "<group>"; };
+		05A2156B190053870050A058 /* UnwindTestType.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UnwindTestType.hpp; sourceTree = "<group>"; };
+		05A2156E19005D3D0050A058 /* UnwindTestCase.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = UnwindTestCase.S; sourceTree = "<group>"; };
+		05A2156F19007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashFrameWalkerIntegrationTests.mm; sourceTree = "<group>"; };
 		05A2B3FF1795BA4100934198 /* PLCrashFeatureConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashFeatureConfig.h; sourceTree = "<group>"; };
 		05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashFrameStackUnwindTests.m; sourceTree = "<group>"; };
 		05A5E28017A82751008A75E5 /* PLCrashMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashMacros.h; sourceTree = "<group>"; };
@@ -1249,7 +1264,7 @@
 		05CD36480EF247A9000FDE88 /* PLCrashAsyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncTests.m; sourceTree = "<group>"; };
 		05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogWriterEncoding.h; sourceTree = "<group>"; };
 		05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashLogWriterEncoding.c; sourceTree = "<group>"; };
-		05D1BA0B18FF1CF300DD961F /* unwind_test_config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unwind_test_config.h; sourceTree = "<group>"; };
+		05D1BA0B18FF1CF300DD961F /* UnwindTest.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = UnwindTest.S; sourceTree = "<group>"; };
 		05D8FE4B16ACAA6E000ED70C /* PLCrashAsyncAllocator.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncAllocator.c; sourceTree = "<group>"; };
 		05D8FE5316ACAA81000ED70C /* PLCrashAsyncAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncAllocator.h; sourceTree = "<group>"; };
 		05D8FE5716ACC8CD000ED70C /* PLCrashAsyncAllocatorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncAllocatorTests.m; sourceTree = "<group>"; };
@@ -1499,16 +1514,48 @@
 				05507A0F177CC456009D5168 /* unwind_test_harness.c */,
 				05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */,
 				058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */,
-				05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */,
 				05920D2D17848B85001E8975 /* unwind_test_x86_64_frameless.S */,
 				05920D311784C806001E8975 /* unwind_test_x86_64_frameless_big.S */,
 				05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */,
-				05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */,
 				05C5880D1788CAA400BA118D /* unwind_test_x86_frameless.S */,
 				05C588111788F36800BA118D /* unwind_test_x86_frameless_big.S */,
 				05C588151788F3E700BA118D /* unwind_test_x86_unusual.S */,
 			);
 			name = "Deprecated Implementation";
+			sourceTree = "<group>";
+		};
+		053F435F19003215006E78DE /* x86-32 */ = {
+			isa = PBXGroup;
+			children = (
+				05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */,
+				05507A521784DEE4009D5168 /* unwind_test_case_frame_x86_32.S */,
+			);
+			name = "x86-32";
+			sourceTree = "<group>";
+		};
+		053F43601900321D006E78DE /* ARM */ = {
+			isa = PBXGroup;
+			children = (
+				05920D35178B310A001E8975 /* unwind_test_arm.S */,
+			);
+			name = ARM;
+			sourceTree = "<group>";
+		};
+		053F436119003221006E78DE /* ARM64 */ = {
+			isa = PBXGroup;
+			children = (
+				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
+			);
+			name = ARM64;
+			sourceTree = "<group>";
+		};
+		053F436219003234006E78DE /* x86-64 */ = {
+			isa = PBXGroup;
+			children = (
+				05507A17177CC50B009D5168 /* unwind_test_x86_64.S */,
+				05507A3E178364E8009D5168 /* unwind_test_case_frame_x86_64.S */,
+			);
+			name = "x86-64";
 			sourceTree = "<group>";
 		};
 		054627D711D99E9D007891C7 /* Formatters */ = {
@@ -1524,13 +1571,17 @@
 		055079D9177C9BAB009D5168 /* Unwinding Integration Tests */ = {
 			isa = PBXGroup;
 			children = (
-				055FEE4419001EC400CDD2D2 /* unwind_test.h */,
-				055FEE3F19001E9200CDD2D2 /* unwind_test.c */,
-				05D1BA0B18FF1CF300DD961F /* unwind_test_config.h */,
-				05507A13177CC4D5009D5168 /* unwind_test_x86_32.S */,
-				05507A17177CC50B009D5168 /* unwind_test_x86_64.S */,
-				05920D35178B310A001E8975 /* unwind_test_arm.S */,
-				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
+				053F436319003264006E78DE /* PLCrashUnwindIntegrationTests.mm */,
+				055FEE4419001EC400CDD2D2 /* UnwindTest.hpp */,
+				055FEE3F19001E9200CDD2D2 /* UnwindTest.cpp */,
+				05A215671900530D0050A058 /* UnwindTestCase.hpp */,
+				05A215661900530D0050A058 /* UnwindTestCase.cpp */,
+				05A2156B190053870050A058 /* UnwindTestType.hpp */,
+				05A2156D19005C9E0050A058 /* Assembler Macros */,
+				053F435F19003215006E78DE /* x86-32 */,
+				053F436219003234006E78DE /* x86-64 */,
+				053F43601900321D006E78DE /* ARM */,
+				053F436119003221006E78DE /* ARM64 */,
 				053F435E19002957006E78DE /* Deprecated Implementation */,
 			);
 			path = "Unwinding Integration Tests";
@@ -1599,6 +1650,7 @@
 				059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */,
 				059666DB0EEDDFB8008A0601 /* PLCrashFrameWalker.c */,
 				059666E20EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m */,
+				05A2156F19007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm */,
 				FCE4576E42A51370AD81A734 /* Stack Frame Unwind */,
 				05920D1D177B9226001E8975 /* DWARF Unwind */,
 				05F3CD5E16DD6A17007911FB /* Apple Compact Unwind */,
@@ -1711,6 +1763,15 @@
 				05A17DF516DBD0C200888448 /* PLCrashAsyncThread_arm.c */,
 			);
 			name = Platforms;
+			sourceTree = "<group>";
+		};
+		05A2156D19005C9E0050A058 /* Assembler Macros */ = {
+			isa = PBXGroup;
+			children = (
+				05D1BA0B18FF1CF300DD961F /* UnwindTest.S */,
+				05A2156E19005D3D0050A058 /* UnwindTestCase.S */,
+			);
+			name = "Assembler Macros";
 			sourceTree = "<group>";
 		};
 		05A5E28517C0411F008A75E5 /* Linked List */ = {
@@ -3036,8 +3097,10 @@
 				05F411AD0EF8DE68008050CF /* PLCrashReportTests.m in Sources */,
 				05E734890EFAD85A005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
 				05E734840EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m in Sources */,
+				05A2157019007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm in Sources */,
 				052A474C136384B300987004 /* PLCrashAsyncImageList.cpp in Sources */,
 				052A46FA13637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */,
+				053F436419003264006E78DE /* PLCrashUnwindIntegrationTests.mm in Sources */,
 				05BB848F1364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */,
 				05BB84A31364F1A000D53B84 /* PLCrashSysctl.c in Sources */,
 				05EB2B1715B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
@@ -3069,7 +3132,7 @@
 				05F3CD7C16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05F3CD8116DFC78D007911FB /* PLCrashAsyncCompactUnwindEncodingTests.m in Sources */,
 				05A7E78F173C130200ACA689 /* PLCrashFrameCompactUnwind.c in Sources */,
-				055FEE4019001E9200CDD2D2 /* unwind_test.c in Sources */,
+				055FEE4019001E9200CDD2D2 /* UnwindTest.cpp in Sources */,
 				05659DF217456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.mm in Sources */,
 				05659DF9174D2E1200D2EE21 /* PLCrashTestCase.m in Sources */,
 				0518E0AA174E8A1F00BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
@@ -3082,6 +3145,7 @@
 				05E7487F176118C2009B8745 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
 				05E74886176118F9009B8745 /* PLCrashAsyncDwarfCFAStateEvaluationTests.mm in Sources */,
 				05E74891176135CF009B8745 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
+				05A215681900530D0050A058 /* UnwindTestCase.cpp in Sources */,
 				05E7489517613AF1009B8745 /* PLCrashAsyncDwarfExpressionTests.mm in Sources */,
 				05E748AB17616D30009B8745 /* dwarf_stack.cpp in Sources */,
 				05BB3E1717FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */,
@@ -3096,11 +3160,11 @@
 				05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */,
 				05507A14177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */,
 				05507A18177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
-				05507A3F178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
+				05507A3F178364E8009D5168 /* unwind_test_case_frame_x86_64.S in Sources */,
 				05920D2E17848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
 				05920D321784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
 				05507A4F1784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */,
-				05507A531784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */,
+				05507A531784DEE4009D5168 /* unwind_test_case_frame_x86_32.S in Sources */,
 				05C5880E1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 				05C588121788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588161788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
@@ -3125,7 +3189,7 @@
 				05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
-				055FEE4119001E9200CDD2D2 /* unwind_test.c in Sources */,
+				055FEE4119001E9200CDD2D2 /* UnwindTest.cpp in Sources */,
 				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702F0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -3146,6 +3210,7 @@
 				052A46F813637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */,
 				05BB84901364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */,
 				059C9D7C13AE46E10071956F /* PLCrashSysctl.c in Sources */,
+				05A2157119007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm in Sources */,
 				05EB2B1815B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
 				05EB2B1D15B6FE2A0066EB4D /* PLCrashReporterNSErrorTests.m in Sources */,
 				05F76DDF16305A7000A668C7 /* PLCrashAsyncMachOImage.c in Sources */,
@@ -3199,13 +3264,14 @@
 				05920D24177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
 				05920D2B177B92E7001E8975 /* PLCrashFrameDWARFUnwindTests.m in Sources */,
 				05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */,
+				053F436519003264006E78DE /* PLCrashUnwindIntegrationTests.mm in Sources */,
 				05507A15177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */,
 				05507A19177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
-				05507A40178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
+				05507A40178364E8009D5168 /* unwind_test_case_frame_x86_64.S in Sources */,
 				05920D2F17848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
 				05920D331784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
 				05507A501784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */,
-				05507A541784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */,
+				05507A541784DEE4009D5168 /* unwind_test_case_frame_x86_32.S in Sources */,
 				05C5880F1788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 				05C588131788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588171788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
@@ -3219,6 +3285,7 @@
 				05A5E28D17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29517C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
 				05B929F217C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
+				05A215691900530D0050A058 /* UnwindTestCase.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3226,6 +3293,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05A2156A1900530D0050A058 /* UnwindTestCase.cpp in Sources */,
 				05CD332C0EE94464000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
 				05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
@@ -3282,7 +3350,7 @@
 				05F3CD8316DFC78D007911FB /* PLCrashAsyncCompactUnwindEncodingTests.m in Sources */,
 				05659DF417456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.mm in Sources */,
 				05659DFB174D2E1200D2EE21 /* PLCrashTestCase.m in Sources */,
-				055FEE4219001E9200CDD2D2 /* unwind_test.c in Sources */,
+				055FEE4219001E9200CDD2D2 /* UnwindTest.cpp in Sources */,
 				0518E0A9174E8A1300BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				05E74853175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
 				05E74858175E5370009B8745 /* PLCrashAsyncDwarfPrimitivesTests.mm in Sources */,
@@ -3306,11 +3374,12 @@
 				05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */,
 				05507A16177CC4D5009D5168 /* unwind_test_x86_32.S in Sources */,
 				05507A1A177CC50B009D5168 /* unwind_test_x86_64.S in Sources */,
-				05507A41178364E8009D5168 /* unwind_test_x86_64_frame.S in Sources */,
+				05507A41178364E8009D5168 /* unwind_test_case_frame_x86_64.S in Sources */,
 				05920D3017848B85001E8975 /* unwind_test_x86_64_frameless.S in Sources */,
 				05920D341784C808001E8975 /* unwind_test_x86_64_frameless_big.S in Sources */,
 				05507A511784DA8A009D5168 /* unwind_test_x86_64_unusual.S in Sources */,
-				05507A551784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */,
+				053F436619003264006E78DE /* PLCrashUnwindIntegrationTests.mm in Sources */,
+				05507A551784DEE4009D5168 /* unwind_test_case_frame_x86_32.S in Sources */,
 				05C588101788CAA400BA118D /* unwind_test_x86_frameless.S in Sources */,
 				05C588141788F36800BA118D /* unwind_test_x86_frameless_big.S in Sources */,
 				05C588181788F3E700BA118D /* unwind_test_x86_unusual.S in Sources */,
@@ -3322,6 +3391,7 @@
 				05BEC42C17BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43317BD4F540082CBFB /* PLCrashAsyncMachExceptionInfoTests.m in Sources */,
 				05A5E28E17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
+				05A2157219007E300050A058 /* PLCrashFrameWalkerIntegrationTests.mm in Sources */,
 				05A5E29617C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
 				05B929F317C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
 			);

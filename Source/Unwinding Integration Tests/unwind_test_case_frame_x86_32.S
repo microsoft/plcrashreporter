@@ -20,34 +20,26 @@
 
 #ifdef __i386__
 
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86.s -arch i386 -fexceptions -DUSE_COMPACT_UNWIND=1
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86.s -arch i386 -fexceptions -DUSE_EH_FRAME=1
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86.s -arch i386 -fexceptions -DUSE_COMPACT_UNWIND=1 -DUSE_EH_FRAME=1
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86.s -arch i386 -fexceptions -DUSE_EH_FRAME=1 -Wl,-no_compact_unwind
+#include "UnwindTestCase.S"
 
-#define USE_EH_FRAME 1
-#define USE_COMPACT_UNWIND 1
-
-.data
-.globl _unwind_tester_list_x86_frame
-_unwind_tester_list_x86_frame:
-.long	_unwind_test_x86__frame_no_reg
-.long	_unwind_test_x86__frame_ebx
-.long	_unwind_test_x86__frame_esi
-.long	_unwind_test_x86__frame_edi
-.long	_unwind_test_x86__frame_ebx_esi
-.long	_unwind_test_x86__frame_esi_edi
-.long	_unwind_test_x86__frame_ebx_edi
-.long	_unwind_test_x86__frame_ebx_esi_edi
-.long	_unwind_test_x86__frame_edi_esi_ebx
-.long	_unwind_test_x86__frame_pad_ebx_edi
-.long	0
-
+/* Declare the test case */
+UnwindTestCase unwind_test_case_frame
+unwind_test_decl    unwind_test_frame_no_reg
+unwind_test_decl    unwind_test_frame_ebx,          UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_esi,          UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_edi,          UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_ebx_esi,      UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_esi_edi,      UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_ebx_edi,      UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_ebx_esi_edi,  UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_edi_esi_ebx,  UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_pad_ebx_edi,  UNWIND_TEST_TYPE_DEFAULT
+UnwindTestCaseEnd
 
 .text
 
-.globl _unwind_test_x86__frame_ebx
-_unwind_test_x86__frame_ebx:
+/* Define the test implementations */
+UnwindTestFunction unwind_test_frame_ebx
 LFB13:
 pushl	%ebp
 LCFI2:
@@ -64,9 +56,9 @@ popl	%ebx
 leave
 ret
 LFE13:
+UnwindTestFunctionEnd unwind_test_frame_ebx
 
-.globl _unwind_test_x86__frame_no_reg
-_unwind_test_x86__frame_no_reg:
+UnwindTestFunction unwind_test_frame_no_reg
 LFB12:
 pushl	%ebp
 LCFI6:
@@ -78,9 +70,10 @@ call	_uwind_tester_invoke
 leave
 ret
 LFE12:
+UnwindTestFunctionEnd unwind_test_frame_no_reg
 
-.globl _unwind_test_x86__frame_esi
-_unwind_test_x86__frame_esi:
+
+UnwindTestFunction unwind_test_frame_esi
 LFB10:
 pushl	%ebp
 LCFI13:
@@ -97,9 +90,10 @@ popl	%esi
 leave
 ret
 LFE10:
+UnwindTestFunctionEnd unwind_test_frame_esi
 
-.globl _unwind_test_x86__frame_edi
-_unwind_test_x86__frame_edi:
+
+UnwindTestFunction unwind_test_frame_edi
 LFB11:
 pushl	%ebp
 LCFI9:
@@ -116,9 +110,10 @@ popl	%edi
 leave
 ret
 LFE11:
+UnwindTestFunctionEnd unwind_test_frame_edi
 
-.globl _unwind_test_x86__frame_ebx_esi
-_unwind_test_x86__frame_ebx_esi:
+
+UnwindTestFunction unwind_test_frame_ebx_esi
 LFB9:
 pushl	%ebp
 LCFI17:
@@ -138,10 +133,10 @@ movl	-4(%ebp), %esi
 leave
 ret
 LFE9:
+UnwindTestFunctionEnd unwind_test_frame_ebx_esi
 
 
-.globl _unwind_test_x86__frame_esi_edi
-_unwind_test_x86__frame_esi_edi:
+UnwindTestFunction unwind_test_frame_esi_edi
 LFB8:
 pushl	%ebp
 LCFI22:
@@ -161,9 +156,10 @@ movl	-4(%ebp), %edi
 leave
 ret
 LFE8:
+UnwindTestFunctionEnd unwind_test_frame_esi_edi
 
-.globl _unwind_test_x86__frame_ebx_edi
-_unwind_test_x86__frame_ebx_edi:
+
+UnwindTestFunction unwind_test_frame_ebx_edi
 LFB91:
 pushl	%ebp
 LCFI171:
@@ -183,9 +179,10 @@ movl	-4(%ebp), %edi
 leave
 ret
 LFE91:
+UnwindTestFunctionEnd unwind_test_frame_ebx_edi
 
-.globl _unwind_test_x86__frame_ebx_esi_edi
-_unwind_test_x86__frame_ebx_esi_edi:
+
+UnwindTestFunction unwind_test_frame_ebx_esi_edi
 LFB7:
 pushl	%ebp
 LCFI27:
@@ -209,10 +206,10 @@ movl	-4(%ebp), %edi
 leave
 ret
 LFE7:
+UnwindTestFunctionEnd unwind_test_frame_ebx_esi_edi
 
 
-.globl _unwind_test_x86__frame_edi_esi_ebx
-_unwind_test_x86__frame_edi_esi_ebx:
+UnwindTestFunction unwind_test_frame_edi_esi_ebx
 LFB7a:
 pushl	%ebp
 LCFI27a:
@@ -236,11 +233,10 @@ movl	-4(%ebp), %ebx
 leave
 ret
 LFE7a:
+UnwindTestFunctionEnd unwind_test_frame_edi_esi_ebx
 
 
-
-.globl _unwind_test_x86__frame_pad_ebx_edi
-_unwind_test_x86__frame_pad_ebx_edi:
+UnwindTestFunction unwind_test_frame_pad_ebx_edi
 LFB91a:
 pushl	%ebp
 LCFI171a:
@@ -260,9 +256,8 @@ movl	-68(%ebp), %edi
 leave
 ret
 LFE91a:
+UnwindTestFunctionEnd unwind_test_frame_pad_ebx_edi
 
-
-#if USE_EH_FRAME
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 EH_frame1:
 .set L$set$0,LECIE1-LSCIE1
@@ -285,8 +280,8 @@ LSCIE1:
 LECIE1:
 
 
-.globl _unwind_test_x86__frame_no_reg.eh
-_unwind_test_x86__frame_no_reg.eh:
+.globl _unwind_test_frame_no_reg.eh
+_unwind_test_frame_no_reg.eh:
 LSFDE5:
 .set L$set$6,LEFDE5-LASFDE5
 .long L$set$6	# FDE Length
@@ -312,8 +307,8 @@ LASFDE5:
 LEFDE5:
 
 
-.globl _unwind_test_x86__frame_ebx.eh
-_unwind_test_x86__frame_ebx.eh:
+.globl _unwind_test_frame_ebx.eh
+_unwind_test_frame_ebx.eh:
 LSFDE3:
 .set L$set$1,LEFDE3-LASFDE3
 .long L$set$1	# FDE Length
@@ -344,8 +339,8 @@ LASFDE3:
 LEFDE3:
 
 
-.globl _unwind_test_x86__frame_esi.eh
-_unwind_test_x86__frame_esi.eh:
+.globl _unwind_test_frame_esi.eh
+_unwind_test_frame_esi.eh:
 LSFDE9:
 .set L$set$15,LEFDE9-LASFDE9
 .long L$set$15	# FDE Length
@@ -376,8 +371,8 @@ LASFDE9:
 LEFDE9:
 
 
-.globl _unwind_test_x86__frame_edi.eh
-_unwind_test_x86__frame_edi.eh:
+.globl _unwind_test_frame_edi.eh
+_unwind_test_frame_edi.eh:
 LSFDE10:
 .set L$set$15a,LEFDE10-LASFDE10
 .long L$set$15a	# FDE Length
@@ -407,8 +402,8 @@ LASFDE10:
 .align 2
 LEFDE10:
 
-.globl _unwind_test_x86__frame_ebx_esi.eh
-_unwind_test_x86__frame_ebx_esi.eh:
+.globl _unwind_test_frame_ebx_esi.eh
+_unwind_test_frame_ebx_esi.eh:
 LSFDE11:
 .set L$set$20,LEFDE11-LASFDE11
 .long L$set$20	# FDE Length
@@ -440,8 +435,8 @@ LASFDE11:
 .align 2
 LEFDE11:
 
-.globl _unwind_test_x86__frame_esi_edi.eh
-_unwind_test_x86__frame_esi_edi.eh:
+.globl _unwind_test_frame_esi_edi.eh
+_unwind_test_frame_esi_edi.eh:
 LSFDE13:
 .set L$set$25,LEFDE13-LASFDE13
 .long L$set$25	# FDE Length
@@ -473,8 +468,8 @@ LASFDE13:
 .align 2
 LEFDE13:
 
-.globl _unwind_test_x86__frame_ebx_edi.eh
-_unwind_test_x86__frame_ebx_edi.eh:
+.globl _unwind_test_frame_ebx_edi.eh
+_unwind_test_frame_ebx_edi.eh:
 LSFDE111:
 .set L$set$20a,LEFDE11-LASFDE11
 .long L$set$20a	# FDE Length
@@ -506,8 +501,8 @@ LASFDE111:
 .align 2
 LEFDE111:
 
-.globl _unwind_test_x86__frame_ebx_esi_edi.eh
-_unwind_test_x86__frame_ebx_esi_edi.eh:
+.globl _unwind_test_frame_ebx_esi_edi.eh
+_unwind_test_frame_ebx_esi_edi.eh:
 LSFDE15:
 .set L$set$30,LEFDE15-LASFDE15
 .long L$set$30	# FDE Length
@@ -542,8 +537,8 @@ LASFDE15:
 LEFDE15:
 
 
-.globl _unwind_test_x86__frame_edi_esi_ebx.eh
-_unwind_test_x86__frame_edi_esi_ebx.eh:
+.globl _unwind_test_frame_edi_esi_ebx.eh
+_unwind_test_frame_edi_esi_ebx.eh:
 LSFDE15a:
 .set L$set$30a,LEFDE15a-LASFDE15a
 .long L$set$30a	# FDE Length
@@ -578,8 +573,8 @@ LASFDE15a:
 LEFDE15a:
 
 
-.globl _unwind_test_x86__frame_pad_ebx_edi.eh
-_unwind_test_x86__frame_pad_ebx_edi.eh:
+.globl _unwind_test_frame_pad_ebx_edi.eh
+_unwind_test_frame_pad_ebx_edi.eh:
 LSFDE111a:
 .set L$set$20b,LEFDE111a-LASFDE111a
 .long L$set$20b	# FDE Length
@@ -610,85 +605,79 @@ LASFDE111a:
 .byte	0x14	# uleb128 0x14
 .align 2
 LEFDE111a:
-#endif // USE_EH_FRAME
 
-
-
-#if USE_COMPACT_UNWIND
 
 .section __LD,__compact_unwind,regular,debug
 
-.long	_unwind_test_x86__frame_no_reg
-.set L101,LFE13-_unwind_test_x86__frame_no_reg
+.long	_unwind_test_frame_no_reg
+.set L101,LFE13-_unwind_test_frame_no_reg
 .long	L101
 .long	0x01000000
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_ebx
-.set L102,LFE13-_unwind_test_x86__frame_ebx
+.long	_unwind_test_frame_ebx
+.set L102,LFE13-_unwind_test_frame_ebx
 .long	L102
 .long	0x01010001
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_esi
-.set L103,LFE10-_unwind_test_x86__frame_esi
+.long	_unwind_test_frame_esi
+.set L103,LFE10-_unwind_test_frame_esi
 .long	L103
 .long	0x01010005
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_edi
-.set L104,LFE11-_unwind_test_x86__frame_edi
+.long	_unwind_test_frame_edi
+.set L104,LFE11-_unwind_test_frame_edi
 .long	L104
 .long	0x01010004
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_ebx_esi
-.set L105,LFE9-_unwind_test_x86__frame_ebx_esi
+.long	_unwind_test_frame_ebx_esi
+.set L105,LFE9-_unwind_test_frame_ebx_esi
 .long	L105
 .long	0x01020029
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_esi_edi
-.set L106,LFE8-_unwind_test_x86__frame_esi_edi
+.long	_unwind_test_frame_esi_edi
+.set L106,LFE8-_unwind_test_frame_esi_edi
 .long	L106
 .long	0x01020025
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_ebx_edi
-.set L107,LFE91-_unwind_test_x86__frame_ebx_edi
+.long	_unwind_test_frame_ebx_edi
+.set L107,LFE91-_unwind_test_frame_ebx_edi
 .long	L107
 .long	0x01020021
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_ebx_esi_edi
-.set L108,LFE7-_unwind_test_x86__frame_ebx_esi_edi
+.long	_unwind_test_frame_ebx_esi_edi
+.set L108,LFE7-_unwind_test_frame_ebx_esi_edi
 .long	L108
 .long	0x01030129
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_edi_esi_ebx
-.set L109,LFE7a-_unwind_test_x86__frame_edi_esi_ebx
+.long	_unwind_test_frame_edi_esi_ebx
+.set L109,LFE7a-_unwind_test_frame_edi_esi_ebx
 .long	L109
 .long	0x0103006C
 .long	0
 .long	0
 
-.long	_unwind_test_x86__frame_pad_ebx_edi
-.set L110,LFE91a-_unwind_test_x86__frame_pad_ebx_edi
+.long	_unwind_test_frame_pad_ebx_edi
+.set L110,LFE91a-_unwind_test_frame_pad_ebx_edi
 .long	L110
 .long	0x01120021
 .long	0
 .long	0
-
-#endif // USE_COMPACT_UNWIND
 
 
 .subsections_via_symbols

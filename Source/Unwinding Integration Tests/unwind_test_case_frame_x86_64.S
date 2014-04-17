@@ -20,35 +20,25 @@
 
 #ifdef __x86_64__
 
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64 -DUSE_COMPACT_UNWIND=1
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64 -DUSE_EH_FRAME=1
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64 -DUSE_COMPACT_UNWIND=1 -DUSE_EH_FRAME=1
-# TEST-OPTIONS:  unwind_test_main.c unwind_test_x86_64.s -arch x86_64 -DUSE_EH_FRAME=1 -Wl,-no_compact_unwind
+#include "UnwindTestCase.S"
 
-#define USE_EH_FRAME 1
-#define USE_COMPACT_UNWIND 1
-
-.data
-.globl _unwind_tester_list_x86_64_frame
-_unwind_tester_list_x86_64_frame:
-.quad	_unwind_test_x86_64_frame_no_reg
-.quad	_unwind_test_x86_64_frame_rbx
-.quad	_unwind_test_x86_64_frame_rbx_r12
-.quad	_unwind_test_x86_64_frame_rbx_r14
-.quad	_unwind_test_x86_64_frame_rbx_r12_r13
-.quad	_unwind_test_x86_64_frame_rbx_r12_r13_r14
-.quad	_unwind_test_x86_64_frame_r14_r13_r12_rbx
-.quad	_unwind_test_x86_64_frame_rbx_r12_r13_r14_r15
-.quad	_unwind_test_x86_64_frame_r13_rbx_r14_r15_r12
-.quad	0
-
+/* Declare the test case */
+UnwindTestCase unwind_test_case_frame
+unwind_test_decl    unwind_test_frame_no_reg,               UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_rbx,                  UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_rbx_r12,              UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_rbx_r14,              UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_rbx_r12_r13,          UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_rbx_r12_r13_r14,      UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_r14_r13_r12_rbx,      UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_rbx_r12_r13_r14_r15,  UNWIND_TEST_TYPE_DEFAULT
+unwind_test_decl    unwind_test_frame_r13_rbx_r14_r15_r12,  UNWIND_TEST_TYPE_DEFAULT
+UnwindTestCaseEnd
 
 .text
 
 LFE14:
-.globl _unwind_test_x86_64_frame_no_reg
-_unwind_test_x86_64_frame_no_reg:
+UnwindTestFunction unwind_test_frame_no_reg
 LFB13:
 pushq	%rbp
 LCFI2:
@@ -58,10 +48,10 @@ call	_uwind_tester_invoke
 leave
 ret
 LFE13:
+UnwindTestFunctionEnd unwind_test_frame_no_reg
 
 
-.globl _unwind_test_x86_64_frame_rbx
-_unwind_test_x86_64_frame_rbx:
+UnwindTestFunction unwind_test_frame_rbx
 LFB10:
 pushq	%rbp
 LCFI8:
@@ -78,10 +68,10 @@ popq	%rbx
 leave
 ret
 LFE10:
+UnwindTestFunctionEnd unwind_test_frame_rbx
 
 
-.globl _unwind_test_x86_64_frame_rbx_r12
-_unwind_test_x86_64_frame_rbx_r12:
+UnwindTestFunction unwind_test_frame_rbx_r12
 LFB8:
 pushq	%rbp
 LCFI16:
@@ -101,10 +91,10 @@ movq	8(%rsp), %r12
 leave
 ret
 LFE8:
+UnwindTestFunctionEnd unwind_test_frame_rbx_r12
 
 
-.globl _unwind_test_x86_64_frame_rbx_r14
-_unwind_test_x86_64_frame_rbx_r14:
+UnwindTestFunction unwind_test_frame_rbx_r14
 LFB8a:
 pushq	%rbp
 LCFI16a:
@@ -124,10 +114,10 @@ movq	8(%rsp), %r14
 leave
 ret
 LFE8a:
+UnwindTestFunctionEnd unwind_test_frame_rbx_r14
 
 
-.globl _unwind_test_x86_64_frame_rbx_r12_r13
-_unwind_test_x86_64_frame_rbx_r12_r13:
+UnwindTestFunction unwind_test_frame_rbx_r12_r13
 LFB6:
 pushq	%rbp
 LCFI26:
@@ -151,9 +141,10 @@ movq	-8(%rbp), %r13
 leave
 ret
 LFE6:
+UnwindTestFunctionEnd unwind_test_frame_rbx_r12_r13
 
-.globl _unwind_test_x86_64_frame_rbx_r12_r13_r14
-_unwind_test_x86_64_frame_rbx_r12_r13_r14:
+
+UnwindTestFunction unwind_test_frame_rbx_r12_r13_r14
 LFB4:
 pushq	%rbp
 LCFI38:
@@ -181,9 +172,10 @@ movq	24(%rsp), %r14
 leave
 ret
 LFE4:
+UnwindTestFunctionEnd unwind_test_frame_rbx_r12_r13_r14
 
-.globl _unwind_test_x86_64_frame_r14_r13_r12_rbx
-_unwind_test_x86_64_frame_r14_r13_r12_rbx:
+
+UnwindTestFunction unwind_test_frame_r14_r13_r12_rbx
 LFB4a:
 pushq	%rbp
 LCFI38a:
@@ -211,10 +203,10 @@ movq	-8(%rbp), %rbx
 leave
 ret
 LFE4a:
+UnwindTestFunctionEnd unwind_test_frame_r14_r13_r12_rbx
 
 
-.globl _unwind_test_x86_64_frame_rbx_r12_r13_r14_r15
-_unwind_test_x86_64_frame_rbx_r12_r13_r14_r15:
+UnwindTestFunction unwind_test_frame_rbx_r12_r13_r14_r15
 LFB3:
 pushq	%rbp
 LCFI45:
@@ -245,10 +237,10 @@ movq	-8(%rbp), %r15
 leave
 ret
 LFE3:
+UnwindTestFunctionEnd unwind_test_frame_rbx_r12_r13_r14_r15
 
 
-.globl _unwind_test_x86_64_frame_r13_rbx_r14_r15_r12
-_unwind_test_x86_64_frame_r13_rbx_r14_r15_r12:
+UnwindTestFunction unwind_test_frame_r13_rbx_r14_r15_r12
 LFB3a:
 pushq	%rbp
 LCFI45a:
@@ -280,10 +272,9 @@ movq	-8(%rbp), %r12
 leave
 ret
 LFE3a:
+UnwindTestFunctionEnd unwind_test_frame_r13_rbx_r14_r15_r12
 
 
-
-#if USE_EH_FRAME
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 EH_frame1:
 .set L$set$0,LECIE1-LSCIE1
@@ -305,8 +296,8 @@ LSCIE1:
 .align 3
 LECIE1:
 
-.globl _unwind_test_x86_64_frame_no_reg.eh
-_unwind_test_x86_64_frame_no_reg.eh:
+.globl _unwind_test_frame_no_reg.eh
+_unwind_test_frame_no_reg.eh:
 LSFDE3:
 .set L$set$5,LEFDE3-LASFDE3
 .long L$set$5
@@ -331,8 +322,8 @@ LASFDE3:
 .align 3
 LEFDE3:
 
-.globl _unwind_test_x86_64_frame_rbx.eh
-_unwind_test_x86_64_frame_rbx.eh:
+.globl _unwind_test_frame_rbx.eh
+_unwind_test_frame_rbx.eh:
 LSFDE9:
 .set L$set$17,LEFDE9-LASFDE9
 .long L$set$17
@@ -362,8 +353,8 @@ LASFDE9:
 .align 3
 LEFDE9:
 
-.globl _unwind_test_x86_64_frame_rbx_r12.eh
-_unwind_test_x86_64_frame_rbx_r12.eh:
+.globl _unwind_test_frame_rbx_r12.eh
+_unwind_test_frame_rbx_r12.eh:
 LSFDE13:
 .set L$set$27,LEFDE13-LASFDE13
 .long L$set$27
@@ -395,8 +386,8 @@ LASFDE13:
 .align 3
 LEFDE13:
 
-.globl _unwind_test_x86_64_frame_rbx_r14.eh
-_unwind_test_x86_64_frame_rbx_r14.eh:
+.globl _unwind_test_frame_rbx_r14.eh
+_unwind_test_frame_rbx_r14.eh:
 LSFDE13a:
 .set L$set$27a,LEFDE13a-LASFDE13a
 .long L$set$27a
@@ -429,8 +420,8 @@ LASFDE13a:
 LEFDE13a:
 
 
-.globl _unwind_test_x86_64_frame_rbx_r12_r13.eh
-_unwind_test_x86_64_frame_rbx_r12_r13.eh:
+.globl _unwind_test_frame_rbx_r12_r13.eh
+_unwind_test_frame_rbx_r12_r13.eh:
 LSFDE17:
 .set L$set$37,LEFDE17-LASFDE17
 .long L$set$37
@@ -465,8 +456,8 @@ LASFDE17:
 LEFDE17:
 
 
-.globl _unwind_test_x86_64_frame_rbx_r12_r13_r14.eh
-_unwind_test_x86_64_frame_rbx_r12_r13_r14.eh:
+.globl _unwind_test_frame_rbx_r12_r13_r14.eh
+_unwind_test_frame_rbx_r12_r13_r14.eh:
 LSFDE21:
 .set L$set$47,LEFDE21-LASFDE21
 .long L$set$47
@@ -502,8 +493,8 @@ LASFDE21:
 .align 3
 LEFDE21:
 
-.globl _unwind_test_x86_64_frame_r14_r13_r12_rbx.eh
-_unwind_test_x86_64_frame_r14_r13_r12_rbx.eh:
+.globl _unwind_test_frame_r14_r13_r12_rbx.eh
+_unwind_test_frame_r14_r13_r12_rbx.eh:
 LSFDE21a:
 .set L$set$47a,LEFDE21a-LASFDE21a
 .long L$set$47a
@@ -540,8 +531,8 @@ LASFDE21a:
 LEFDE21a:
 
 
-.globl _unwind_test_x86_64_frame_rbx_r12_r13_r14_r15.eh
-_unwind_test_x86_64_frame_rbx_r12_r13_r14_r15.eh:
+.globl _unwind_test_frame_rbx_r12_r13_r14_r15.eh
+_unwind_test_frame_rbx_r12_r13_r14_r15.eh:
 LSFDE23:
 .set L$set$52,LEFDE23-LASFDE23
 .long L$set$52
@@ -580,8 +571,8 @@ LASFDE23:
 LEFDE23:
 
 
-.globl _unwind_test_x86_64_frame_r13_rbx_r14_r15_r12.eh
-_unwind_test_x86_64_frame_r13_rbx_r14_r15_r12.eh:
+.globl _unwind_test_frame_r13_rbx_r14_r15_r12.eh
+_unwind_test_frame_r13_rbx_r14_r15_r12.eh:
 LSFDE23a:
 .set L$set$52a,LEFDE23a-LASFDE23a
 .long L$set$52a
@@ -618,81 +609,73 @@ LASFDE23a:
 .byte	0x7
 .align 3
 LEFDE23a:
-#endif // USE_EH_FRAME
 
 
-
-#if USE_COMPACT_UNWIND
 
 .section __LD,__compact_unwind,regular,debug
 
-.quad	_unwind_test_x86_64_frame_no_reg
-.set L101,LFE13-_unwind_test_x86_64_frame_no_reg
+.quad	_unwind_test_frame_no_reg
+.set L101,LFE13-_unwind_test_frame_no_reg
 .long	L101
 .long	0x01000000
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_rbx
-.set L102,LFE10-_unwind_test_x86_64_frame_rbx
+.quad	_unwind_test_frame_rbx
+.set L102,LFE10-_unwind_test_frame_rbx
 .long	L102
 .long	0x01010001
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_rbx_r12
-.set L103,LFE8-_unwind_test_x86_64_frame_rbx_r12
+.quad	_unwind_test_frame_rbx_r12
+.set L103,LFE8-_unwind_test_frame_rbx_r12
 .long	L103
 .long	0x01020011
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_rbx_r14
-.set L104,LFE8a-_unwind_test_x86_64_frame_rbx_r14
+.quad	_unwind_test_frame_rbx_r14
+.set L104,LFE8a-_unwind_test_frame_rbx_r14
 .long	L104
 .long	0x01020021
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_rbx_r12_r13
-.set L105,LFE6-_unwind_test_x86_64_frame_rbx_r12_r13
+.quad	_unwind_test_frame_rbx_r12_r13
+.set L105,LFE6-_unwind_test_frame_rbx_r12_r13
 .long	L105
 .long	0x010300D1
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_rbx_r12_r13_r14
-.set L106,LFE4-_unwind_test_x86_64_frame_rbx_r12_r13_r14
+.quad	_unwind_test_frame_rbx_r12_r13_r14
+.set L106,LFE4-_unwind_test_frame_rbx_r12_r13_r14
 .long	L106
 .long	0x010408D1
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_r14_r13_r12_rbx
-.set L107,LFE4a-_unwind_test_x86_64_frame_r14_r13_r12_rbx
+.quad	_unwind_test_frame_r14_r13_r12_rbx
+.set L107,LFE4a-_unwind_test_frame_r14_r13_r12_rbx
 .long	L107
 .long	0x0104029C
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_rbx_r12_r13_r14_r15
-.set L108,LFE3-_unwind_test_x86_64_frame_rbx_r12_r13_r14_r15
+.quad	_unwind_test_frame_rbx_r12_r13_r14_r15
+.set L108,LFE3-_unwind_test_frame_rbx_r12_r13_r14_r15
 .long	L108
 .long	0x010558D1
 .quad	0
 .quad	0
 
-.quad	_unwind_test_x86_64_frame_r13_rbx_r14_r15_r12
-.set L109,LFE3a-_unwind_test_x86_64_frame_r13_rbx_r14_r15_r12
+.quad	_unwind_test_frame_r13_rbx_r14_r15_r12
+.set L109,LFE3a-_unwind_test_frame_r13_rbx_r14_r15_r12
 .long	L109
 .long	0x01052B0B
 .quad	0
 .quad	0
-
-#endif // USE_COMPACT_UNWIND
-
-
-
 
 .subsections_via_symbols
 

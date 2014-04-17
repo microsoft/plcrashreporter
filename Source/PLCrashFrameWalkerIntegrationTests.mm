@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausible.coop>
+ * Author: Landon Fuller <landonf@plausiblelabs.com>
  *
- * Copyright (c) 2013-2014 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,4 +26,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "unwind_test.h"
+#import "GTMSenTestCase.h"
+#import "UnwindTestCase.hpp"
+
+using namespace plcrash;
+
+@interface PLCrashFrameWalkerIntegrationTests : SenTestCase @end
+
+@implementation PLCrashFrameWalkerIntegrationTests
+
+// TODO
+- (void) testFrame {
+    STAssertTrue(unwind_test_case_frame.executeAll(), @"Frame-based unwinding test failed");
+}
+
+@end

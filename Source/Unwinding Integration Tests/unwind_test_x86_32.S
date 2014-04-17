@@ -19,19 +19,11 @@
 
 #ifdef __i386__
 
-/*
- * This top-level dispatch function handles setting up the test frame, including
- * populating non-volatile registers with test data.
- */
-
-.data
-.globl _unwind_tester_target_ip # The return address to which the tests are expected to unwind
-_unwind_tester_target_ip:
-.long	Ltester_target_ip
+/* bool unwind_test_invoke (unwind_test_function_t *test, void **sp); */
 
 .text
-.globl _unwind_tester
-_unwind_tester:
+.globl _unwind_test_invoke
+_unwind_test_invoke:
 LFB2:
 pushl	%ebp
 LCFI0:
@@ -54,7 +46,6 @@ movl	$0x56788765, %esi
 movl	$0xABCDDCBA, %edi
 # call test function which will invoke unwinder which "returns" here
 call	*8(%ebp)
-Ltester_target_ip: # IP that we'll unwind to
 # verify that non-volatile registers still contain magic values
 cmpl	$0x12344321, %ebx
 jne	L2
