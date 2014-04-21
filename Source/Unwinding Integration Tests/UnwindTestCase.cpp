@@ -31,15 +31,6 @@
 
 using namespace plcrash;
 
-UnwindTest tests[] = {
-    UnwindTest("Foo", NULL, UnwindTestTypeCompactUnwind),
-    UnwindTest::TERM()
-};
-
-UnwindTestCase tc = {
-    UnwindTestCase("tc!", tests)
-};
-
 /**
  * Construct a new test case instance.
  *
