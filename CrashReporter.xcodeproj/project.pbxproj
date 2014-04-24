@@ -4355,6 +4355,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CURRENT_PROJECT_VERSION = "1.2-rc5";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -4377,6 +4378,8 @@
 					"-Wall",
 					"-Werror",
 					"-Wno-shorten-64-to-32",
+					"-Wno-error=documentation",
+					"-Wno-documentation-deprecated-sync",
 				);
 			};
 			name = Debug;
@@ -4385,6 +4388,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CURRENT_PROJECT_VERSION = "1.2-rc5";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -4409,6 +4413,8 @@
 					"-Wall",
 					"-Werror",
 					"-Wno-shorten-64-to-32",
+					"-Wno-error=documentation",
+					"-Wno-documentation-deprecated-sync",
 				);
 			};
 			name = Release;
