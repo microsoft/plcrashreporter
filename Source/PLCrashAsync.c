@@ -407,7 +407,7 @@ void *plcrash_async_memcpy (void *dest, const void *source, size_t n) {
  * though in reality, it is.
  *
  * @param dest Destination.
- * @param int Value to write to @a dest.
+ * @param value Value to write to @a dest.
  * @param n Number of bytes to copy.
  */
 void *plcrash_async_memset(void *dest, uint8_t value, size_t n) {

@@ -766,7 +766,6 @@ error:
  * and nothing is modified.
  * @param code The error code corresponding to this error.
  * @param description A localized error description.
- * @param cause The underlying cause, if any. May be nil.
  */
 static void populate_nserror (NSError **error, PLCrashReporterError code, NSString *description) {
     NSDictionary *userInfo;

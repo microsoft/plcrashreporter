@@ -900,7 +900,7 @@ cleanup:
 /**
  * Create, register, and return a Mach exception server.
  *
- * @param previousPortSet[out] The previously registered Mach exception ports.
+ * @param[out] previousPortSet The previously registered Mach exception ports.
  * @param context The context to be provided to the callback.
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error in the PLCrashReporterErrorDomain indicating why the Crash Reporter

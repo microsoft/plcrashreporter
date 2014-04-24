@@ -390,9 +390,6 @@ void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t e
  *
  * @param image The image to search for @a segname.
  * @param segname The name of the segment to search for.
- * @param outAddress On successful return, contains the address of the found segment.
- * @param outCmd_32 On successful return with a 32-bit image, contains the segment header.
- * @param outCmd_64 On successful return with a 64-bit image, contains the segment header.
  *
  * @return Returns a mapped pointer to the segment on success, or NULL on failure.
  */
