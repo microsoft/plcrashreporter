@@ -4378,7 +4378,6 @@
 					"-Wall",
 					"-Werror",
 					"-Wno-shorten-64-to-32",
-					"-Wno-error=documentation",
 					"-Wno-documentation-deprecated-sync",
 				);
 			};
@@ -4413,7 +4412,6 @@
 					"-Wall",
 					"-Werror",
 					"-Wno-shorten-64-to-32",
-					"-Wno-error=documentation",
 					"-Wno-documentation-deprecated-sync",
 				);
 			};

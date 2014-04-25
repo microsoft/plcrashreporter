@@ -799,7 +799,7 @@ cleanup:
  * @note This method must be called prior to PLCrashReporter::enableCrashReporter or
  * PLCrashReporter::enableCrashReporterAndReturnError:
  *
- * @sa @ref async_safety
+ * @sa The @ref async_safety documentation.
  */
 - (void) setCrashCallbacks: (PLCrashReporterCallbacks *) callbacks {
     /* Check for programmer error; this should not be called after the signal handler is enabled as to ensure that
