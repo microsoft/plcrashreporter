@@ -95,7 +95,7 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
     
 
 
-    kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, len);
+    kr = plcrash_async_task_memcpy(task, (pl_vm_address_t) fp, 0, dest, len);
     if (kr != KERN_SUCCESS) {
         PLCF_DEBUG("Failed to read frame: %d", kr);
         return PLFRAME_EBADFRAME;
