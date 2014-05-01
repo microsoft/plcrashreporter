@@ -45,4 +45,10 @@
 #  define PLCR_PRAGMA_CLANG(_p)
 #endif
 
+#ifdef __clang__
+#  define PLCR_DEPRECATED __attribute__((deprecated))
+#else
+#  define PLCR_DEPRECATED
+#endif
+
 #endif /* PLCRASH_CONSTANTS_H */

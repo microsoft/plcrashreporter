@@ -33,6 +33,8 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashTestThread.h"
 
+#pragma clang diagnostic ignored "-Wdeprecated"
+
 @interface PLCrashReporterTests : SenTestCase
 @end
 

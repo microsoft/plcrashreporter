@@ -95,7 +95,10 @@
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
+#pragma clang diagnostic pop
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }

@@ -30,6 +30,7 @@
 #import <mach/mach.h>
 
 #import "PLCrashReporterConfig.h"
+#import "PLCrashMacros.h"
 
 @class PLCrashMachExceptionServer;
 @class PLCrashMachExceptionPortSet;
@@ -107,7 +108,7 @@ typedef struct PLCrashReporterCallbacks {
     NSString *_crashReportDirectory;
 }
 
-+ (PLCrashReporter *) sharedReporter;
++ (PLCrashReporter *) sharedReporter PLCR_DEPRECATED;
 
 - (instancetype) initWithConfiguration: (PLCrashReporterConfig *) config;
 
