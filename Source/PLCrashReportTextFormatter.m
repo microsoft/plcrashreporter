@@ -164,6 +164,12 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
                     break;
             }
         }
+        
+        /* If we still haven't determined the code type, we're totally clueless. */
+        if (codeType == nil) {
+            codeType = @"Unknown";
+            lp64 = true;
+        }
     }
 
     {
