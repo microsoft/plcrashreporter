@@ -33,16 +33,17 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashTestThread.h"
 
-#pragma clang diagnostic ignored "-Wdeprecated"
-
 @interface PLCrashReporterTests : SenTestCase
 @end
 
 @implementation PLCrashReporterTests
 
 - (void) testSingleton {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertNotNil([PLCrashReporter sharedReporter], @"Returned nil singleton instance");
     STAssertTrue([PLCrashReporter sharedReporter] == [PLCrashReporter sharedReporter], @"Crash reporter did not return singleton instance");
+#pragma clang diagnostic pop
 }
 
 /**
@@ -55,8 +56,11 @@
 
     /* Spawn a thread and generate a report for it */
     plcrash_test_thread_spawn(&thr);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     reportData = [[PLCrashReporter sharedReporter] generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
                                                                               error: &error];
+#pragma clang diagnostic pop
     plcrash_test_thread_stop(&thr);
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
 
@@ -74,7 +78,10 @@
  */
 - (void) testGenerateLiveReport {
     NSError *error;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     NSData *reportData = [[PLCrashReporter sharedReporter] generateLiveReportAndReturnError: &error];
+#pragma clang diagnostic pop
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
     
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
