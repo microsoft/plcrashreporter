@@ -247,7 +247,7 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
 
 /**
  * Map a plcrash_regnum_t to its corresponding DWARF register value. Returns true if a mapping is available
- * for @regnum, or false if no DWARF register value is available for @a regnum.
+ * for @a regnum, or false if no DWARF register value is available for @a regnum.
  *
  * @warning This API may require changes in the future to support specifying the register mapping type; eg, DWARF debug_frame
  * vs eh_frame, or similar.
