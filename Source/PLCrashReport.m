@@ -307,6 +307,15 @@ error:
 
 /**
  * Extract system information from the crash log. Returns nil on error.
+ *
+ * @param systemInfo The system info from the protobuf file.
+ * @param processorInfo The system info from the machine info. This may be nil for v1 reports, in which case the
+ * information will be synthesized from the architecture in the @a systemInfo.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer will contain an error
+ * object indicating why the system info could not be extracted. If no error occurs, this parameter will be left
+ * unmodified. You may specify nil for this parameter, and no error information will be provided.
+ *
+ * @return Returns the system information, or nil on failure.
  */
 - (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo
                                   processorInfo: (PLCrashReportProcessorInfo *) processorInfo
