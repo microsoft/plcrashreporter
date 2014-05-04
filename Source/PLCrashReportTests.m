@@ -159,7 +159,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals(crashLog.systemInfo.architecture, PLCrashReportHostArchitecture, @"Architecture incorrect");
- #pragma clang diagnostic pop
+#pragma clang diagnostic pop
     
     /* Machine info */
     const NXArchInfo *archInfo = NXGetLocalArchInfo();
