@@ -74,11 +74,10 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     task_initialized = true;
 
     /* Read in the Mach-O header */
-    kern_return_t kt;
-    if ((kt = plcrash_async_task_memcpy(image->task, image->header_addr, 0, &image->header, sizeof(image->header))) != KERN_SUCCESS) {
+    if ((ret = plcrash_async_task_memcpy(image->task, image->header_addr, 0, &image->header, sizeof(image->header))) != PLCRASH_ESUCCESS) {
         /* NOTE: The image struct must be fully initialized before returning here, as otherwise our _free() function
          * will crash */
-        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, kern_error=%d", (uint64_t) image->header_addr, name, kt);
+        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, ret=%d", (uint64_t) image->header_addr, name, ret);
         ret = PLCRASH_EINTERNAL;
         goto error;
     }
