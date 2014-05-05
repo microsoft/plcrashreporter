@@ -96,7 +96,9 @@ typedef enum {
 
 
 extern PLCrashReportOperatingSystem PLCrashReportHostOperatingSystem;
-extern PLCrashReportArchitecture PLCrashReportHostArchitecture PLCR_DEPRECATED;
+PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
+extern PLCrashReportArchitecture PLCrashReportHostArchitecture PLCR_EXTERNAL_DEPRECATED;
+PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
 
 @interface PLCrashReportSystemInfo : NSObject {
 @private

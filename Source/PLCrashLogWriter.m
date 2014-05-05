@@ -565,20 +565,7 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.build);
 
     /* Machine type */
-#ifdef __x86_64__
-    enumval = PLCrashReportArchitectureX86_64;
-#elif defined(__i386__)
-    enumval = PLCrashReportArchitectureX86_32;
-#elif defined(__ARM_ARCH_6K__)
-    enumval = PLCrashReportArchitectureARMv6;
-#elif defined(__ARM_ARCH_7A__)
-    enumval = PLCrashReportArchitectureARMv7;
-#elif defined(__ppc__)
-    enumval = PLCrashReportArchitecturePPC;
-#else
-    enumval = PLCrashReportArchitectureUnknown;
-#endif
-
+    enumval = PLCrashReportHostArchitecture;
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_ARCHITECTURE_TYPE_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* Timestamp */
