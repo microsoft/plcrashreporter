@@ -31,7 +31,7 @@
 #
 
 .text
-.align 4
+.align 2
 .globl _unwind_tester
 _unwind_tester:
 # TODO: Unimplemented

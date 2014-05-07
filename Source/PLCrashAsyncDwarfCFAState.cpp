@@ -341,11 +341,11 @@ bool dwarf_cfa_state_iterator<machine_ptr, machine_ptr_s>::next (dwarf_cfa_state
 }
 
 /* Provide explicit 32/64-bit instantiations */
-template class dwarf_cfa_state<uint32_t, int32_t>;
-template class dwarf_cfa_state_iterator<uint32_t, int32_t>;
+template class plcrash::async::dwarf_cfa_state<uint32_t, int32_t>;
+template class plcrash::async::dwarf_cfa_state_iterator<uint32_t, int32_t>;
 
-template class dwarf_cfa_state<uint64_t, int64_t>;
-template class dwarf_cfa_state_iterator<uint64_t, int64_t>;
+template class plcrash::async::dwarf_cfa_state<uint64_t, int64_t>;
+template class plcrash::async::dwarf_cfa_state_iterator<uint64_t, int64_t>;
 
 /**
  * @}

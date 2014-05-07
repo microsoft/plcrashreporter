@@ -32,6 +32,7 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashReport.h"
+#import "PLCrashProcessInfo.h"
 
 #import <sys/stat.h>
 #import <sys/mman.h>
@@ -140,20 +141,16 @@
         STAssertTrue(procInfo->native, @"No proc_native sysctl specified; native should be assumed");
     }
 
-    /* Fetch and verify process data via sysctl */
-    struct kinfo_proc process_info;
-    size_t process_info_len = sizeof(process_info);
-    int process_info_mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, 0 };
-    int process_info_mib_len = 4;
-    
-    /* Current process name name */
-    process_info_mib[3] = getpid();
-    if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
-        STAssertEqualCStrings(procInfo->process_name, process_info.kp_proc.p_comm, @"Incorrect process name");
-    } else {
-        STFail(@"Could not retreive process name: %s", strerror(errno));
-    }
-    
+    /* Fetch and verify process data */
+    PLCrashProcessInfo *processInfo = [PLCrashProcessInfo currentProcessInfo];
+    STAssertNotNil(processInfo, @"Could not retrieve process info");
+    STAssertNotNil(processInfo.processName, @"Could not retrieve parent process name");
+
+    NSString *parsedProcessName = [[[NSString alloc] initWithCString: procInfo->process_name encoding: NSUTF8StringEncoding] autorelease];
+    STAssertNotNil(parsedProcessName, @"Process name contains invalid UTF-8");
+    STAssertEqualStrings(parsedProcessName, processInfo.processName, @"Incorrect process name");
+
+
     /* Current process path */
     char *process_path = NULL;
     uint32_t process_path_len = 0;
@@ -167,12 +164,13 @@
     }
     
     /* Parent process */
-    process_info_mib[3] = getppid();
-    if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
-        STAssertEqualCStrings(procInfo->parent_process_name, process_info.kp_proc.p_comm, @"Incorrect process name");
-    } else {
-        STFail(@"Could not retreive parent process name: %s", strerror(errno));
-    }
+    PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
+    STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");
+    STAssertNotNil(parentProcessInfo.processName, @"Could not retrieve parent process name");
+
+    NSString *parsedParentProcessName = [[[NSString alloc] initWithCString: procInfo->parent_process_name encoding: NSUTF8StringEncoding] autorelease];
+    STAssertNotNil(parsedParentProcessName, @"Process name contains invalid UTF-8");
+    STAssertEqualStrings(parsedParentProcessName, parentProcessInfo.processName, @"Incorrect process name");
 }
 
 - (void) checkThreads: (Plcrash__CrashReport *) crashReport {

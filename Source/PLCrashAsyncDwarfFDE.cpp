@@ -244,18 +244,18 @@ void plcrash::async::plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_
 
 /* Provide explicit 32/64-bit instantiations */
 template
-plcrash_error_t plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
-                                                             plcrash_async_mobject_t *mobj,
-                                                             const plcrash_async_byteorder_t *byteorder,
-                                                             pl_vm_address_t fde_address,
-                                                             bool debug_frame);
+plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
+                                                                             plcrash_async_mobject_t *mobj,
+                                                                             const plcrash_async_byteorder_t *byteorder,
+                                                                             pl_vm_address_t fde_address,
+                                                                             bool debug_frame);
 
 template
-plcrash_error_t plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
-                                                             plcrash_async_mobject_t *mobj,
-                                                             const plcrash_async_byteorder_t *byteorder,
-                                                             pl_vm_address_t fde_address,
-                                                             bool debug_frame);
+plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
+                                                                             plcrash_async_mobject_t *mobj,
+                                                                             const plcrash_async_byteorder_t *byteorder,
+                                                                             pl_vm_address_t fde_address,
+                                                                             bool debug_frame);
 
 /**
  * @}

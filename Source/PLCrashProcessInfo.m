@@ -31,6 +31,7 @@
 
 #import <unistd.h>
 
+#include "PLCrashSysctl.h"
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
@@ -90,12 +91,34 @@
         return nil;
     }
     
-    /* Extract the pertinent values */
+    /* Fetch the traced flag */
     if (process_info.kp_proc.p_flag & P_TRACED)
         _traced = true;
-    
+
+    /* Fetch the process name. This is a best effort attempt */
+    {
+        /* Clean up any UTF-8 multibyte characters truncated by the kernel -- xnu does not
+         * use a UTF-8-aware strcpy when copying names to the fixed p_comm buffer */
+        PLCF_ASSERT(sizeof(process_info.kp_proc.p_comm) == MAXCOMLEN+1);
+        size_t valid_bytes = plcrash_sysctl_valid_utf8_bytes_max((uint8_t *) process_info.kp_proc.p_comm, MAXCOMLEN);
+        
+        /* If any valid data is found, try to decode the string; this will return nil if the string still contains invalid UTF-8 */
+        if (valid_bytes > 0) {
+            _processName = [[NSString alloc] initWithBytes: process_info.kp_proc.p_comm length: valid_bytes encoding: NSUTF8StringEncoding];
+        } else {
+            _processName = nil;
+        }
+
+        /* If decoding failed, the process name is not valid UTF-8, even after our attempt at cleaning up
+         * any invalid multibyte sequences. */
+        if (_processName == nil) {
+            /* Given that HFS+ enforces UTF-8, and the p_comm value is derived from the file system execv path,
+             * this should happen very rarely, if ever. */
+            PLCF_DEBUG("Failed to decode p_comm for pid=%" PRIdMAX " as UTF-8!", (intmax_t) pid);
+        }
+    }
+
     _processID = pid;
-    _processName = [[NSString alloc] initWithBytes: process_info.kp_proc.p_comm length: strlen(process_info.kp_proc.p_comm) encoding: NSUTF8StringEncoding];
     _parentProcessID = process_info.kp_eproc.e_ppid;
     _startTime = process_info.kp_proc.p_starttime;
 
