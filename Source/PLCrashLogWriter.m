@@ -581,7 +581,7 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
  *
  * @param file Output file
  * @param cpu_type The Mach CPU type.
- * @param cpu_subtype_t The Mach CPU subtype
+ * @param cpu_subtype The Mach CPU subtype
  */
 static size_t plcrash_writer_write_processor_info (plcrash_async_file_t *file, uint64_t cpu_type, uint64_t cpu_subtype) {
     size_t rv = 0;
@@ -723,10 +723,11 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 /**
  * @internal
  *
- * Write a thread backtrace register
+ * Write a single register.
  *
  * @param file Output file
- * @param cursor The cursor from which to acquire frame data.
+ * @param regname The register to write's name.
+ * @param regval The register to write's value.
  */
 static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const char *regname, plcrash_greg_t regval) {
     uint64_t uint64val;
@@ -981,8 +982,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
  * Write a binary image frame
  *
  * @param file Output file
- * @param name binary image path (or name).
- * @param image_base Mach-O image base.
+ * @param image Mach-O image.
  */
 static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plcrash_async_macho_t *image) {
     size_t rv = 0;

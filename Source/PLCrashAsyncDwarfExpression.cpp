@@ -59,7 +59,7 @@ using namespace plcrash::async;
  * on their natural order; eg, the top of the stack will be the last value in this array. If the initial stack
  * state should be empty, this value may be NULL, and @a initial_count should be 0.
  * @param initial_count Number of values in the @a initial_state array.
- * @param result[out] On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
+ * @param[out] result On success, the evaluation result. As per DWARF 3 section 2.5.1, this will be
  * the top-most element on the evaluation stack. If the stack is empty, an error will be returned
  * and no value will be written to this parameter.
  *
