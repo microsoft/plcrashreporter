@@ -134,7 +134,7 @@ static void plframe_cursor_internal_init (plframe_cursor_t *cursor, task_t task,
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
  *
- * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
+ * @warning Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
  * fails.
  */
 plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcrash_async_thread_state_t *thread_state, plcrash_async_image_list_t *image_list) {
@@ -156,7 +156,7 @@ plframe_error_t plframe_cursor_init (plframe_cursor_t *cursor, task_t task, plcr
  *
  * @return Returns PLFRAME_ESUCCESS on success, or standard plframe_error_t code if an error occurs.
  *
- * @warn Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
+ * @warning Callers must call plframe_cursor_free() on @a cursor to free any associated resources, even if initialization
  * fails.
  */
 plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t task, thread_t thread, plcrash_async_image_list_t *image_list) {

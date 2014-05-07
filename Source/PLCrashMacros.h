@@ -45,4 +45,40 @@
 #  define PLCR_PRAGMA_CLANG(_p)
 #endif
 
+#ifdef __clang__
+#  define PLCR_DEPRECATED __attribute__((deprecated))
+#else
+#  define PLCR_DEPRECATED
+#endif
+
+#ifdef PLCR_PRIVATE
+/**
+ * Marks a definition as deprecated only for for external clients, allowing
+ * uses of it internal fo the framework.
+ */
+#define PLCR_EXTERNAL_DEPRECATED
+
+/**
+ * @internal
+ * A macro to put above a definition marked PLCR_EXTERNAL_DEPRECATED that will
+ * silence warnings about there being a deprecation documentation marker but the
+ * definition not being marked deprecated.
+ */
+#  define PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH() \
+      PLCR_PRAGMA_CLANG("clang diagnostic push"); \
+      PLCR_PRAGMA_CLANG("clang diagnostic ignored \"-Wdocumentation-deprecated-sync\"")
+
+/**
+ * @internal
+ * A macro to put below a definition marked PLCR_EXTERNAL_DEPRECATED that will
+ * silence warnings about there being a deprecation documentation marker but the
+ * definition not being marked deprecated.
+ */
+#  define PLCR_EXTERNAL_DEPRECATED_NOWARN_POP() PLCR_PRAGMA_CLANG("clang diagnostic pop")
+#else
+#  define PLCR_EXTERNAL_DEPRECATED PLCR_DEPRECATED
+#  define PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH()
+#  define PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH()
+#endif /* PLCR_PRIVATE */
+
 #endif /* PLCRASH_CONSTANTS_H */

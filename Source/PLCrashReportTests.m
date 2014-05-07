@@ -156,7 +156,11 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertNotNil(crashLog.systemInfo.operatingSystemBuild, @"OS build is nil");
     STAssertNotNil(crashLog.systemInfo.timestamp, @"Timestamp is nil");
     STAssertEquals(crashLog.systemInfo.operatingSystem, PLCrashReportHostOperatingSystem, @"Operating system incorrect");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals(crashLog.systemInfo.architecture, PLCrashReportHostArchitecture, @"Architecture incorrect");
+#pragma clang diagnostic pop
+    STAssertNotNil(crashLog.systemInfo.processorInfo, @"Processor info is nil");
     
     /* Machine info */
     const NXArchInfo *archInfo = NXGetLocalArchInfo();

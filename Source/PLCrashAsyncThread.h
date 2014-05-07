@@ -247,7 +247,7 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
 
 /**
  * Map a plcrash_regnum_t to its corresponding DWARF register value. Returns true if a mapping is available
- * for @regnum, or false if no DWARF register value is available for @a regnum.
+ * for @a regnum, or false if no DWARF register value is available for @a regnum.
  *
  * @warning This API may require changes in the future to support specifying the register mapping type; eg, DWARF debug_frame
  * vs eh_frame, or similar.
@@ -255,7 +255,7 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
  *
  * @param thread_state The thread state to be used for performing the mapping.
  * @param regnum The register number to be mapped.
- * @param dwarf_reg[out] The mapped DWARF register value.
+ * @param[out] dwarf_reg The mapped DWARF register value.
  */
 bool plcrash_async_thread_state_map_reg_to_dwarf (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, uint64_t *dwarf_reg);
 
@@ -268,7 +268,7 @@ bool plcrash_async_thread_state_map_reg_to_dwarf (plcrash_async_thread_state_t *
  *
  * @param thread_state The thread state to be used for performing the mapping.
  * @param dwarf_reg The DWARF register number to be mapped.
- * @param regnum[out] The mapped register number.
+ * @param[out] regnum The mapped register number.
  */
 bool plcrash_async_thread_state_map_dwarf_to_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg, plcrash_regnum_t *regnum);
 

@@ -77,19 +77,6 @@
     }
 }
 
-- (void) test_readAddr {
-    const char bytes[] = "Hello";
-    char dest[sizeof(bytes)];
-    
-    // Verify that a good read succeeds
-    plcrash_async_read_addr(mach_task_self(), (pl_vm_address_t) bytes, dest, sizeof(dest));
-    STAssertTrue(strcmp(bytes, dest) == 0, @"Read was not performed");
-    
-    // Verify that reading off the page at 0x0 fails
-    STAssertNotEquals(KERN_SUCCESS, plcrash_async_read_addr(mach_task_self(), 0, dest, sizeof(bytes)), @"Bad read was performed");
-}
-
-
 - (void) testApplyAddress {
     pl_vm_address_t result;
     
