@@ -204,12 +204,6 @@ static plcrash_error_t plcrash_async_mobject_remap_pages_workaround (mach_port_t
         kt = vm_map(mach_task_self(), &target_address, entry_length, 0x0, VM_FLAGS_FIXED|VM_FLAGS_OVERWRITE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
 #endif /* !PL_HAVE_MACH_VM */
         
-        /* Drop the memory handle */
-        kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
-        if (kt != KERN_SUCCESS) {
-            PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
-        }
-        
         if (kt != KERN_SUCCESS) {
             PLCF_DEBUG("vm_map() failure: %d", kt);
 
@@ -218,8 +212,20 @@ static plcrash_error_t plcrash_async_mobject_remap_pages_workaround (mach_port_t
             if (kt != KERN_SUCCESS) {
                 PLCF_DEBUG("vm_deallocate() failed: %d", kt);
             }
+
+            /* Drop the memory handle */
+            kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
+            if (kt != KERN_SUCCESS) {
+                PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
+            }
             
             return PLCRASH_ENOMEM;
+        }
+
+        /* Drop the memory handle */
+        kt = mach_port_mod_refs(mach_task_self(), mem_handle, MACH_PORT_RIGHT_SEND, -1);
+        if (kt != KERN_SUCCESS) {
+            PLCF_DEBUG("mach_port_mod_refs(-1) failed: %d", kt);
         }
         
         /* Adjust the total mapping size */

@@ -30,6 +30,7 @@
 #include "PLCrashAsyncCompactUnwindEncoding.h"
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashCompatConstants.h"
 
 #include <inttypes.h>
 
@@ -67,6 +68,7 @@ plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reade
     switch (cputype) {
         case CPU_TYPE_X86:
         case CPU_TYPE_X86_64:
+        case CPU_TYPE_ARM64:
             reader->byteorder = plcrash_async_byteorder_little_endian();
             break;
 
@@ -376,11 +378,16 @@ void plcrash_async_cfe_reader_free (plcrash_async_cfe_reader_t *reader) {
  *
  * @param registers The ordered list of registers to encode. These values must correspond to the CFE register values,
  * <em>not</em> the register values as defined in the PLCrashReporter thread state APIs.
- 
+ * @param count The number of registers in @a registers. This must not exceed the maximum number of registers supported by the
+ * permutation encoding (PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX).
+ *
  * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count) {
+    /* Supplied count must be within supported range */
+    PLCF_ASSERT(count <= PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX);
+
     /*
      * Use a positional encoding to encode each integer in the list as an integer value
      * that is less than the previous greatest integer in the list. We know that each
@@ -396,7 +403,7 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
      *   1 2 3 4 5 6 ->
      *   0 0 0 0 0 0
      */
-    uint32_t renumbered[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    uint32_t renumbered[PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX];
     for (int i = 0; i < count; ++i) {
         unsigned countless = 0;
         for (int j = 0; j < i; ++j)
@@ -435,7 +442,9 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
      * in the list requires fewer elements; eg, position 0 may include 0-5, position 1 0-4, and position 2 0-3. This
      * allows us to allocate smaller overall ranges to represent all possible elements.
      */
-    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX == 6);
+    
+    /* Assert that the maximum register count matches our switch() statement. */
+    PLCF_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
     switch (count) {
         case 1:
             permutation |= renumbered[0];
@@ -480,23 +489,32 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
  * @param registers On return, the ordered list of decoded register values. These values must correspond to the CFE
  * register values, <em>not</em> the register values as defined in the PLCrashReporter thread state APIs.
  *
+ * @return Returns PLCRASH_ESUCCESS on success, or an appropriate error on failure. This function may fail if @a count
+ * exceeds the total number of register values supported by the permutation encoding; this should only occur in the
+ * case that the register count supplied from the binary is invalid.
+ *
  * @warning This API is unlikely to be useful outside the CFE encoder implementation, and should not generally be used.
  * Callers must be careful to pass only literal register values defined in the CFE format (eg, values 1-6).
  */
-void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]) {
-    PLCF_ASSERT(count <= PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX);
-    
+plcrash_error_t plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]) {
+    /* Validate that count falls within the supported range */
+    if (count > PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX) {
+        PLCF_DEBUG("Register permutation decoding attempted with an unsupported count of %" PRIu32, count);
+        return PLCRASH_EINVAL;
+    }
+
     /*
      * Each register is encoded by mapping the values to a 10-bit range, and then further sub-ranges within that range,
      * with a subrange allocated to each position. See the encoding function for full documentation.
      */
-	int permunreg[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+    int permunreg[PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX];
 #define PERMUTE(pos, factor) do { \
 permunreg[pos] = permutation/factor; \
 permutation -= (permunreg[pos]*factor); \
 } while (0)
-    
-    PLCF_ASSERT(PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX == 6);
+
+    /* Assert that the maximum register count matches our switch() statement. */
+    PLCF_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
 	switch (count) {
 		case 6:
             PERMUTE(0, 120);
@@ -556,6 +574,8 @@ permutation -= (permunreg[pos]*factor); \
 			}
 		}
 	}
+    
+    return PLCRASH_ESUCCESS;
 }
 
 /**
@@ -653,6 +673,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
     /* Target-neutral initialization */
     entry->cpu_type = cpu_type;
     entry->stack_adjust = 0;
+    entry->return_address_register = PLCRASH_REG_INVALID;
 
     /* Perform target-specific decoding */
     if (cpu_type == CPU_TYPE_X86) {
@@ -706,7 +727,11 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
                 uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
                 
-                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
+                ret = plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
+                if (ret != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to decode register list: %d", ret);
+                    return ret;
+                }
                 
                 /* Map to the correct PLCrashReporter register names */
                 for (uint32_t i = 0; i < entry->register_count; i++) {
@@ -797,8 +822,12 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
                 uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
 
-                plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
-                
+                ret = plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
+                if (ret != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to decode register list: %d", ret);
+                    return ret;
+                }
+
                 /* Map to the correct PLCrashReporter register names */
                 for (uint32_t i = 0; i < entry->register_count; i++) {
                     ret = plcrash_async_map_register_name(decoded_regs[i], &entry->register_list[i], cpu_type);
@@ -828,6 +857,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 entry->register_count = 0;
                 return PLCRASH_ESUCCESS;
                 
+                
             default:
                 PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
                 return PLCRASH_ENOTSUP;
@@ -836,6 +866,79 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
         // Unreachable
         __builtin_trap();
         return PLCRASH_EINTERNAL;
+    } else if (cpu_type == CPU_TYPE_ARM64) {
+        uint32_t mode = encoding & UNWIND_ARM64_MODE_MASK;
+        switch (mode) {
+            case UNWIND_ARM64_MODE_FRAME:
+                // Fall through
+            case UNWIND_ARM64_MODE_FRAMELESS:
+                if (mode == UNWIND_ARM64_MODE_FRAME) {
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR;
+                    /* The stack offset will be calculated below */
+                } else {
+                    /*
+                     * The compact_unwind header documents this as UNWIND_ARM64_MODE_LEAF, but actually defines UNWIND_ARM64_MODE_FRAMELESS.
+                     * Reviewing the libunwind stepWithCompactEncodingFrameless() assembly demonstrates that this actually uses the
+                     * i386/x86-64 frameless immediate style of encoding an offset from the stack pointer. Unlike x86, however, the
+                     * offset is multipled by 16 bytes (since each register is stored in pairs), rather than the platform word size.
+                     *
+                     * The header discrepancy was reported as rdar://15057141
+                     */
+                    entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD;
+                    entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) * (sizeof(uint64_t) * 2);
+                    entry->return_address_register = PLCRASH_ARM64_LR;
+                }
+                
+                
+                /* Extract the register values */
+                size_t reg_pos = 0;
+                entry->register_count = 0;
+                #define CHECK_REG(name, val1, val2) do { \
+                    if ((encoding & name) == name) { \
+                        PLCF_ASSERT(entry->register_count+2 <= PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX); \
+                        entry->register_list[reg_pos++] = val2; \
+                        entry->register_list[reg_pos++] = val1; \
+                        entry->register_count += 2; \
+                    } \
+                } while(0)
+                CHECK_REG(UNWIND_ARM64_FRAME_X27_X28_PAIR, PLCRASH_ARM64_X27, PLCRASH_ARM64_X28);
+                CHECK_REG(UNWIND_ARM64_FRAME_X25_X26_PAIR, PLCRASH_ARM64_X25, PLCRASH_ARM64_X26);
+                CHECK_REG(UNWIND_ARM64_FRAME_X23_X24_PAIR, PLCRASH_ARM64_X23, PLCRASH_ARM64_X24);
+                CHECK_REG(UNWIND_ARM64_FRAME_X21_X22_PAIR, PLCRASH_ARM64_X21, PLCRASH_ARM64_X22);
+                CHECK_REG(UNWIND_ARM64_FRAME_X19_X20_PAIR, PLCRASH_ARM64_X19, PLCRASH_ARM64_X20);
+                #undef CHECK_REG
+
+                /* Offset depends on the number of saved registers */
+                if (mode == UNWIND_ARM64_MODE_FRAME)
+                    entry->stack_offset = -(entry->register_count * sizeof(uint64_t));
+            
+                return PLCRASH_ESUCCESS;
+                
+            case UNWIND_ARM64_MODE_FRAME_OLD:
+                PLCF_DEBUG("Unhandled UNWIND_ARM64_MODE_FRAME_OLD encoding");
+                return PLCRASH_ENOTSUP;
+                
+            case UNWIND_ARM64_MODE_DWARF:
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF;
+                
+                /* Extract the register frame offset */
+                entry->stack_offset = EXTRACT_BITS(encoding, UNWIND_ARM64_DWARF_SECTION_OFFSET);
+                entry->register_count = 0;
+                return PLCRASH_ESUCCESS;
+                
+            case 0:
+                /* Handle a NULL encoding. This interpretation is derived from Apple's actual implementation; the correct interpretation of
+                 * a 0x0 value is not defined in what documentation exists. */
+                entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE;
+                entry->stack_offset = 0;
+                entry->register_count = 0;
+                return PLCRASH_ESUCCESS;
+                
+            default:
+                PLCF_DEBUG("Unexpected entry mode of %" PRIx32, mode);
+                return PLCRASH_ENOTSUP;
+        }
+
     }
 
     PLCF_DEBUG("Unsupported CPU type: %" PRIu32, cpu_type);
@@ -881,6 +984,18 @@ intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry)
  */
 uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *entry) {
     return entry->stack_adjust;
+}
+
+/**
+ * The register to be used for the return address (eg, such as in a ARM leaf frame, where the return address may be found in lr),
+ * or PLCRASH_REG_INVALID if the return address is found on the stack. This value is only supported for the following CFE types:
+ *
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD and
+ * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT
+ */
+plcrash_regnum_t plcrash_async_cfe_entry_return_address_register (plcrash_async_cfe_entry_t *entry) {
+    PLCF_ASSERT(entry->return_address_register == PLCRASH_REG_INVALID || (entry->type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD || PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT));
+    return entry->return_address_register;
 }
 
 /**
@@ -1023,26 +1138,44 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                 stack_size = indirect + entry->stack_adjust;
             }
 
-            /* Compute the address of the saved registers */
-            plcrash_greg_t sp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
-            pl_vm_address_t retaddr = sp + stack_size - greg_size;
-            saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
+            /* Compute the stack pointer address */
+            plcrash_greg_t sp = stack_size + plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_SP);
+            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, sp);
 
-            /* Original SP is found just before the return address. */
-            plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr + greg_size);
+            if (entry->return_address_register == PLCRASH_REG_INVALID) {
+                /* Return address is on the stack */
+                pl_vm_address_t retaddr = sp - greg_size;
+                saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
 
-            /* Read the saved return address */
-            err = plcrash_async_task_memcpy(task, (pl_vm_address_t) retaddr, 0, dest, greg_size);
-            if (err != PLCRASH_ESUCCESS) {
-                PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) retaddr, err);
-                return err;
-            }
-            
-            if (x64) {
-                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg64[0]);
+                /* Original SP is found just before the return address. */
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_SP, retaddr + greg_size);
+
+                /* Read the saved return address */
+                err = plcrash_async_task_memcpy(task, (pl_vm_address_t) retaddr, 0, dest, greg_size);
+                if (err != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to read return address from 0x%" PRIx64 ": %d", (uint64_t) retaddr, err);
+                    return err;
+                }
+                
+                if (x64) {
+                    plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg64[0]);
+                } else {
+                    plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[0]);
+                }
             } else {
-                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, regs.greg32[0]);
+                /* Return address is in a register; verify that the register is available */
+                if (!plcrash_async_thread_state_has_reg(thread_state, entry->return_address_register)) {
+                    PLCF_DEBUG("The specified return_address_register '%s' is not available", plcrash_async_thread_state_get_reg_name(thread_state, entry->return_address_register));
+                    return PLCRASH_ENOTFOUND;
+                }
+                
+                /* Copy the return address value to the new thread state's IP */
+                plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, plcrash_async_thread_state_get_reg(thread_state, entry->return_address_register));
+                
+                /* Saved registers are found below the new stack pointer. */
+                saved_reg_addr = sp - (greg_size * entry->register_count); /* sp - [saved registers] */
             }
+
             break;
         }
 

@@ -100,7 +100,12 @@
     REQ_REG(PLCRASH_ARM64_X26);
     REQ_REG(PLCRASH_ARM64_X27);
     REQ_REG(PLCRASH_ARM64_X28);
-    STAssertEquals((size_t)10, nv_count, @"Incorrect number of registers preserved");
+#ifdef __APPLE__
+    REQ_REG(PLCRASH_ARM64_FP);
+#else
+#error Define OS frame pointer behavior as per AAPCS64 Section 5.2.3
+#endif
+    STAssertEquals((size_t)11, nv_count, @"Incorrect number of registers preserved");
 #elif defined(__arm__)
     REQ_REG(PLCRASH_ARM_R4);
     REQ_REG(PLCRASH_ARM_R5);
@@ -398,7 +403,7 @@
     thread_resume(thr);
 }
 
-static uintptr_t getPC () {
+__attribute__ ((noinline)) static uintptr_t getPC () {
     return (uintptr_t) __builtin_return_address(0);
 }
 
@@ -419,9 +424,9 @@ static plcrash_error_t write_current_thread_callback (plcrash_async_thread_state
     
     STAssertEquals(PLCRASH_ESUCCESS, ret, @"Crash log failed");
     
-    /* Validate PC. This check is inexact, as otherwise we would need to carefully instrument the
+    /* Validate PC. This check is inexact and fragile, as otherwise we would need to carefully instrument the
      * call to plcrash_log_writer_write_curthread() in order to determine the exact PC value. */
-    STAssertTrue(expectedPC - plcrash_async_thread_state_get_reg(&thr_state, PLCRASH_REG_IP) <= 20, @"PC value not within reasonable range");
+    STAssertTrue(expectedPC - plcrash_async_thread_state_get_reg(&thr_state, PLCRASH_REG_IP) <= 40, @"PC value not within reasonable range");
     
     /* Fetch stack info for validation */
     uint8_t *stackaddr = pthread_get_stackaddr_np(pthread_self());
@@ -436,10 +441,16 @@ static plcrash_error_t write_current_thread_callback (plcrash_async_thread_state
     }
     
     /* Architecture-specific validations */
-#if __arm__
+#if __arm__ || __arm64__
+#  if __arm__
+    plcrash_regnum_t lrnum = PLCRASH_ARM_LR;
+#  else
+    plcrash_regnum_t lrnum = PLCRASH_ARM64_LR;
+#  endif
+    
     /* Validate LR */
     void *retaddr = __builtin_return_address(0);
-    uintptr_t lr = plcrash_async_thread_state_get_reg(&thr_state, PLCRASH_ARM_LR);
+    uintptr_t lr = plcrash_async_thread_state_get_reg(&thr_state, lrnum);
     STAssertEquals(retaddr, (void *)lr, @"Incorrect lr: %p", (void *) lr);
 #endif
 }

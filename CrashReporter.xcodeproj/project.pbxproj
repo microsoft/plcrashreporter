@@ -147,7 +147,7 @@
 		054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05507A10177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A11177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
-		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; };
+		05507A12177CC456009D5168 /* unwind_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 05507A0F177CC456009D5168 /* unwind_test_harness.c */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A14177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A15177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
 		05507A16177CC4D5009D5168 /* unwind_test_x86.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A13177CC4D5009D5168 /* unwind_test_x86.S */; };
@@ -201,6 +201,7 @@
 		057DCA18179C613200BDC648 /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
 		0581B521168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		0581B522168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
+		058484AE1804841100A56049 /* unwind_test_arm64_frameless.S in Sources */ = {isa = PBXBuildFile; fileRef = 058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */; };
 		05920D20177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
 		05920D21177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
 		05920D22177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
@@ -324,6 +325,9 @@
 		05B929F117C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
 		05B929F217C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
 		05B929F317C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */; };
+		05BB3E1717FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; };
+		05BB3E1817FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; };
+		05BB3E1917FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05BB83CD1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
 		05BB83CE1364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */; };
 		05BB83CF1364A77800D53B84 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; };
@@ -828,7 +832,7 @@
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
 				"",
 			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
 		};
 		0522F8F717F2B48000AECBAB /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -839,7 +843,7 @@
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
 			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
 		};
 		059670E20EEFAD8C008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -934,7 +938,7 @@
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
 			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
 		};
 /* End PBXBuildRule section */
 
@@ -1160,6 +1164,7 @@
 		0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServer.m; sourceTree = "<group>"; };
 		057CD98516CD5D5C0067E670 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		0581B520168FDB280098C103 /* mach_exc.defs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mig; name = mach_exc.defs; path = usr/include/mach/mach_exc.defs; sourceTree = SDKROOT; };
+		058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_arm64_frameless.S; sourceTree = "<group>"; };
 		058812B91040582D009128FB /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		05920D1C1774E218001E8975 /* dwarf_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dwarf_private.h; sourceTree = "<group>"; };
 		05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PLCrashFrameDWARFUnwind.cpp; sourceTree = "<group>"; };
@@ -1198,6 +1203,8 @@
 		05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashUncaughtExceptionHandler.h; sourceTree = "<group>"; };
 		05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		05B929F017C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashUncaughtExceptionHandlerTests.m; sourceTree = "<group>"; };
+		05BB3E0A17F61A6E00F464E9 /* PLCrashCompatConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashCompatConstants.h; sourceTree = "<group>"; };
+		05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_arm64_frame.S; sourceTree = "<group>"; };
 		05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportProcessorInfo.h; sourceTree = "<group>"; };
 		05BB83CC1364A77800D53B84 /* PLCrashReportProcessorInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessorInfo.m; sourceTree = "<group>"; };
 		05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportMachineInfo.h; sourceTree = "<group>"; };
@@ -1506,6 +1513,8 @@
 				05507A17177CC50B009D5168 /* unwind_test_x86_64.S */,
 				05920D35178B310A001E8975 /* unwind_test_arm.S */,
 				053347A517E161CB00C52E50 /* unwind_test_arm64.S */,
+				05BB3E1617FA043C00F464E9 /* unwind_test_arm64_frame.S */,
+				058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */,
 				05507A1B177CC912009D5168 /* unwind_test_x86_64_disable_compact_frame.S */,
 				05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */,
 				05920D2D17848B85001E8975 /* unwind_test_x86_64_frameless.S */,
@@ -1650,6 +1659,7 @@
 		059672EF0EF0853A008A0601 /* Private API */ = {
 			isa = PBXGroup;
 			children = (
+				05BB3E0A17F61A6E00F464E9 /* PLCrashCompatConstants.h */,
 				0573B4281681097200395F2A /* Mach Exception Server */,
 				05BB84AE1364F5BC00D53B84 /* Signal Handler */,
 				05B929E517C9333800B051E3 /* ObjC Exception Handler */,
@@ -2084,8 +2094,11 @@
 				05CD32750EE93E5A000FDE88 /* Tools */,
 				059670E30EEFADA6008A0601 /* Dependencies */,
 			);
+			indentWidth = 4;
 			name = CrashReporter;
 			sourceTree = "<group>";
+			tabWidth = 4;
+			usesTabs = 0;
 		};
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
@@ -2549,7 +2562,6 @@
 				05CD32A50EE94062000FDE88 /* Resources */,
 				05CD32A60EE94062000FDE88 /* Sources */,
 				05CD32A70EE94062000FDE88 /* Frameworks */,
-				05CD32B50EE940C8000FDE88 /* Simulator Run Tests */,
 			);
 			buildRules = (
 				0596747A0EF0BA2F008A0601 /* PBXBuildRule */,
@@ -2807,7 +2819,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Set the destroot\nDESTROOT=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nDOC_DEST=\"${DESTROOT}/Documentation\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-iphone\" -cf - \"CrashReporter.framework\" | tar -C \"${IPHONE_DEST}\" -xf - \n\nmkdir -p \"${MAC_DEST}\"\ntar -C \"${BUILD_DIR}/${CONFIGURATION}-MacOSX\" -cf - \"CrashReporter.framework\" | tar -C \"${MAC_DEST}\" -xf -\n\nmkdir -p \"${TOOL_DEST}\"\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n\tpushd \"${SRCROOT}\" >/dev/null\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\"";
+			shellScript = "# Attempt to verify that the code we're building matches the source archive we're generating\n# We only check for local modifications; in theory, we could assert the existence of a (local, not yet pushed)\n# release tag.\nif [ \"${PL_ALLOW_LOCAL_MODS}\" != 1 ] && [ \"${CONFIGURATION}\" = \"Release\" ]; then\n    if [ \"$(git status --porcelain | grep -v '??' | wc -l | awk '{print $1}')\" != \"0\" ]; then\n        echo \"\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"Local modifications are not permitted when generating a Release build.\" >/dev/stderr\n        echo \"Modifications:\" >/dev/stderr\n        git status --porcelain | grep -v '??' >/dev/stderr\n\n        echo \"\" >/dev/stderr\n        echo \"Set the PL_ALLOW_LOCAL_MODS=1 to bypass this check, or use a non-release build configuration:\" >/dev/stderr\n        echo \"  env PL_ALLOW_LOCAL_MODS=1 xcodebuild ...\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"\" >/dev/stderr\n\n        exit 1\n    fi\nfi\n\n# Set up the destroot\nOUTPUT_DEST=\"${BUILT_PRODUCTS_DIR}\"\nPRODUCT_DIR=\"${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nDESTROOT=\"${OUTPUT_DEST}/${PRODUCT_DIR}\"\n\nmkdir -p \"${DESTROOT}\"\n\n# Per-target installation destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nSRC_DEST=\"${DESTROOT}/Source\"\nLICENSE_DEST=\"${DESTROOT}/LICENSE.txt\"\n\nDOC_SUBDIR=\"Documentation\"\nDOC_DEST=\"${DESTROOT}/${DOC_SUBDIR}\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\" || exit 1\nrsync -av \"${IPHONE_SRC}/CrashReporter.framework\" \"${IPHONE_DEST}\" || exit 1\n\nmkdir -p \"${MAC_DEST}\" || exit 1\nrsync -av \"${MAC_SRC}/CrashReporter.framework\" \"${MAC_SRC}/CrashReporter.framework.dSYM\" \"${MAC_DEST}\" || exit 1\n\nmkdir -p \"${TOOL_DEST}\" || exit 1\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\" || exit 1\n\nmkdir -p \"${SRC_DEST}\" || exit 1\ngit archive --format=tar --prefix=\"plcrashreporter-${CURRENT_PROJECT_VERSION}/\" HEAD | tar -C \"${SRC_DEST}\" -xf - || exit 1\n\nrsync -av \"${SRCROOT}/LICENSE\" \"${LICENSE_DEST}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n    # Generate the documentation\n\tpushd \"${SRCROOT}\" >/dev/null || exit 1\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n    # Populate the Documentation directory\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\n\n    # Add a top-level Documentation symlink\n    pushd \"${DESTROOT}\" >/dev/null\n    ln -sf \"${DOC_SUBDIR}/index.html\" \"API Documentation.html\"\n    popd >/dev/null\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\" || exit 1\n\n# Create the ZIP archive\nrm -f \"${DESTROOT}.zip\"\npushd \"${OUTPUT_DEST}\" >/dev/null\nzip --symlinks -r \"${PRODUCT_DIR}.zip\" \"${PRODUCT_DIR}\" || exit 1\npopd >/dev/null\n";
 		};
 		05CD32670EE93DC3000FDE88 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2822,21 +2834,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SRCROOT}/Tools/google-toolbox-for-mac-trunk-r582/UnitTesting/RunMacOSUnitTests.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		05CD32B50EE940C8000FDE88 /* Simulator Run Tests */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Simulator Run Tests";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Only run at build-time on the simulator\nif [ \"${PLATFORM_NAME}\" != iphoneos ]; then\n\t${SRCROOT}/Tools/google-toolbox-for-mac-trunk-r582/UnitTesting/RuniOSUnitTestsUnderSimulator.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -3079,6 +3076,7 @@
 				05E74891176135CF009B8745 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
 				05E7489517613AF1009B8745 /* PLCrashAsyncDwarfExpressionTests.mm in Sources */,
 				05E748AB17616D30009B8745 /* dwarf_stack.cpp in Sources */,
+				05BB3E1717FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */,
 				05E748B317616D6B009B8745 /* dwarf_stack_tests.mm in Sources */,
 				05C76DAA176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DB2176B946E00E9B10D /* dwarf_opstream_tests.mm in Sources */,
@@ -3161,6 +3159,7 @@
 				05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */,
 				05A17DB916D7E36A00888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A7E7AF174284EE00ACA689 /* PLCrashFrameCompactUnwind.c in Sources */,
+				05BB3E1817FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */,
 				05A17DD416D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */,
 				05A17DD916D80B2A00888448 /* PLCrashTestThread.m in Sources */,
 				05A17DDF16D80CEC00888448 /* PLCrashTestThreadTests.m in Sources */,
@@ -3260,11 +3259,13 @@
 				05FDFC86168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
 				052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */,
 				052951F11696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */,
+				058484AE1804841100A56049 /* unwind_test_arm64_frameless.S in Sources */,
 				05D8FE5216ACAA6E000ED70C /* PLCrashAsyncAllocator.c in Sources */,
 				05D8FE5A16ACC8CD000ED70C /* PLCrashAsyncAllocatorTests.m in Sources */,
 				05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */,
 				05A17DBA16D7E37100888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A7E7AE174284E700ACA689 /* PLCrashFrameCompactUnwind.c in Sources */,
+				05BB3E1917FA043C00F464E9 /* unwind_test_arm64_frame.S in Sources */,
 				05A17DCB16D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DD516D8080A00888448 /* PLCrashAsyncThreadTests.m in Sources */,
 				05A17DDA16D80B2A00888448 /* PLCrashTestThread.m in Sources */,
@@ -3791,6 +3792,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = CrashReporter;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3814,6 +3816,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = CrashReporter;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -3857,7 +3860,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3878,7 +3881,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphoneos;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				ZERO_LINK = NO;
 			};
@@ -3888,7 +3891,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -3900,7 +3903,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphonesimulator;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3908,7 +3911,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
@@ -3918,7 +3921,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
 				SDKROOT = iphonesimulator;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4014,6 +4017,7 @@
 		05CD32AC0EE94063000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -4043,6 +4047,7 @@
 		05CD32AD0EE94063000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -4199,6 +4204,7 @@
 				);
 				PRODUCT_NAME = "CrashReporter$(EFFECTIVE_PLATFORM_NAME)-Static";
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -4227,6 +4233,7 @@
 				);
 				PRODUCT_NAME = "CrashReporter$(EFFECTIVE_PLATFORM_NAME)-Static";
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4292,12 +4299,14 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Resources/Info.plist;
@@ -4308,6 +4317,7 @@
 				);
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -4324,6 +4334,7 @@
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				FRAMEWORK_VERSION = A;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
@@ -4333,6 +4344,7 @@
 				);
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
@@ -4340,7 +4352,7 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.2-beta1";
+				CURRENT_PROJECT_VERSION = "1.2-rc4";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -4368,7 +4380,7 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.2-beta1";
+				CURRENT_PROJECT_VERSION = "1.2-rc4";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;

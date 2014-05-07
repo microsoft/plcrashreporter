@@ -542,6 +542,76 @@ using namespace plcrash::async;
 }
 
 /**
+ * Test applying a register from the current frame as the return register (eg, 
+ * use the current value of 'lr' in an ARM leaf function as the return address).
+ */
+- (void) testApplySameValueReturnRegister {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
+    plcrash_error_t err;
+    
+    /* Populate initial state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
+    
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+    
+    /* Set up required CFA register rule */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);
+    cfa_state.set_cfa_register(dw_regnum, 10);
+    
+    /* Mark a register as the return address register, without adding a register rule. The register
+     * should instead be populated from the existing register state. */
+    dwarf_cfa_state_regnum_t dw_ret_regnum = [self findTestDwarfRegister: &prev_ts skip: 1];
+    plcrash_regnum_t pl_ret_regnum = [self findTestRegister: &prev_ts skip: 1];
+    
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_ret_regnum, 15);
+    _cie.return_address_register = dw_ret_regnum;
+    
+    /* Try to apply the state change */
+    err = cfa_state.apply_state(mach_task_self(), &_cie, &prev_ts, &plcrash_async_byteorder_direct, &new_ts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply CFA state");
+    
+    /* Verify the result */    
+    STAssertTrue(plcrash_async_thread_state_has_reg(&new_ts, PLCRASH_REG_IP), @"The IP was not set");
+    plcrash_greg_t result = plcrash_async_thread_state_get_reg(&new_ts, PLCRASH_REG_IP);
+    STAssertEquals((plcrash_greg_t)15, result, @"Incorrect IP value");
+}
+
+/**
+ * Verify that a missing return register value triggers an appropriate error.
+ */
+- (void) testApplyMissingReturnRegister {
+    plcrash_async_thread_state_t prev_ts;
+    plcrash_async_thread_state_t new_ts;
+    dwarf_cfa_state<uint64_t, int64_t> cfa_state;
+    plcrash_error_t err;
+    
+    /* Populate initial state */
+    plcrash_async_thread_state_mach_thread_init(&prev_ts, pl_mach_thread_self());
+    
+    dwarf_cfa_state_regnum_t dw_regnum = [self findTestDwarfRegister: &prev_ts skip: 0];
+    plcrash_regnum_t pl_regnum = [self findTestRegister: &prev_ts skip: 0];
+    
+    /* Set up required CFA register rule */
+    plcrash_async_thread_state_set_reg(&prev_ts, pl_regnum, 20);
+    cfa_state.set_cfa_register(dw_regnum, 10);
+    
+    /* Mark a register as the return address register, without adding a register rule. The register
+     * should instead be populated from the existing register state. */
+    dwarf_cfa_state_regnum_t dw_ret_regnum = [self findTestDwarfRegister: &prev_ts skip: 1];
+    plcrash_regnum_t pl_ret_regnum = [self findTestRegister: &prev_ts skip: 1];
+
+    plcrash_async_thread_state_clear_reg(&prev_ts, pl_ret_regnum);
+    _cie.return_address_register = dw_ret_regnum;
+    
+    /* Try to apply the state change */
+    err = cfa_state.apply_state(mach_task_self(), &_cie, &prev_ts, &plcrash_async_byteorder_direct, &new_ts);
+    STAssertEquals(err, PLCRASH_EINVAL, @"Attempt to apply an CFA state with a missing return_address_register did not return EINVAL");
+}
+
+/**
  * Test handling of an undefined CFA value.
  */
 - (void) testApplyCFAUndefined {

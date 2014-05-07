@@ -23,6 +23,11 @@
 # This is a generic function to test that restoring registers during unwinding work correctly.
 #
 
+.data
+.globl _unwind_tester_target_ip # IP that we'll unwind to
+_unwind_tester_target_ip:
+.long	Ltester_target_ip
+
 .text
 .globl _unwind_tester
 _unwind_tester:
@@ -48,8 +53,7 @@ movl	$0x56788765, %esi
 movl	$0xABCDDCBA, %edi
 # call test function which will invoke unwinder which "returns" here
 call	*8(%ebp)
-.globl _unwind_tester_target_ip # IP that we'll unwind to
-_unwind_tester_target_ip:
+Ltester_target_ip: # IP that we'll unwind to
 # verify that non-volatile registers still contain magic values
 cmpl	$0x12344321, %ebx
 jne	L2

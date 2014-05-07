@@ -83,6 +83,19 @@ static const plcrash_regnum_t arm64_nonvolatile_registers[] = {
     PLCRASH_ARM64_X26,
     PLCRASH_ARM64_X27,
     PLCRASH_ARM64_X28,
+
+#ifdef __APPLE__
+    // AAPCS 64 Section 5.2.3 allows an implementation to define the minimum
+    // level of conformance with respect to maintaining frame records.
+    //
+    // Apple's ARM64 Function Calling Conventions states:
+    // The frame pointer register (x29) must always address a valid frame record, although some functions—such
+    // as leaf functions or tail calls—may elect not to create an entry in this list. As a result, stack traces will
+    // always be meaningful, even without debug information.
+    PLCRASH_ARM64_FP,
+#else
+#error Define OS frame pointer behavior as per AAPCS64 Section 5.2.3
+#endif
 };
 
 /**

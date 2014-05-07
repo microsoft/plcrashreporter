@@ -30,7 +30,8 @@
 #import "PLCrashAsyncCompactUnwindEncoding.h"
 #import "PLCrashAsyncMachOImage.h"
 
-#include "PLCrashFeatureConfig.h"
+#import "PLCrashFeatureConfig.h"
+#import "PLCrashCompatConstants.h"
 
 #import <TargetConditionals.h>
 
@@ -118,9 +119,9 @@
     
     
     /* Initialize the CFE reader */
-#if !defined(__i386__) || !defined(__x86_64__)
-    /* CFE is currently only supported for x86/x86-64, but our target binaries are not architecture specific;
-     * we fudge the type reported to the reader to allow us to test the reader on ARM anyway. */
+#if !defined(__i386__) || !defined(__x86_64__) || !defined(__arm64__)
+    /* CFE is currently only supported for x86/x86-64/arm64, but our target binaries are not architecture specific;
+     * we fudge the type reported to the reader to allow us to test the reader on ARM32 anyway. */
     cpu_type_t cputype = CPU_TYPE_X86;
 #else
     cpu_type_t cputype = _image.byteorder->swap32(_image.header.cputype);
@@ -147,6 +148,7 @@
     plcrash_async_cfe_entry_t entry;
     STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, 0x0), PLCRASH_ESUCCESS, @"Should return NOTFOUND for NULL encoding");
     STAssertEquals(plcrash_async_cfe_entry_type(&entry), PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE, @"Incorrect CFE type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 }
 
 /**
@@ -211,6 +213,9 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, -((intptr_t) encoded_reg_ebp_offset), @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Extract the registers. Up to 5 may be encoded */
     plcrash_regnum_t expected_reg[] = {
@@ -237,7 +242,7 @@
 
     /* Extract and verify the registers */
     uint32_t regs[count];
-    plcrash_async_cfe_register_decode(permutedRegisters, count, regs);
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_register_decode(permutedRegisters, count, regs), @"Register decode returned an error");
     for (uint32_t i = 0; i < count; i++) {
         STAssertEquals(regs[i], expectedRegisters[i], @"Incorrect register value extracted for position %" PRId32, i);
     }
@@ -269,6 +274,9 @@
 
     STAssertEquals((uint32_t) stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
@@ -313,6 +321,9 @@
     STAssertEquals((uint32_t) stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     STAssertEquals(stack_adjust, encoded_stack_adjust, @"Incorrect stack adjustment decoded");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
@@ -341,7 +352,8 @@
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
-    
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+
     intptr_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals((uint32_t) dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
@@ -353,8 +365,9 @@
  */
 - (void) testX86_64DecodeNULLEncoding {
     plcrash_async_cfe_entry_t entry;
-    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, 0x0), PLCRASH_ESUCCESS, @"Should return NOTFOUND for NULL encoding");
+    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, 0x0), PLCRASH_ESUCCESS, @"Should return success for NULL encoding");
     STAssertEquals(plcrash_async_cfe_entry_type(&entry), PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE, @"Incorrect CFE type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 }
 
 /**
@@ -417,7 +430,10 @@
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, - ((intptr_t) encoded_reg_rbp_offset), @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
-
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+    
     /* Extract the registers. Up to 5 may be encoded */
     plcrash_regnum_t expected_reg[] = {
         PLCRASH_X86_64_R12,
@@ -461,6 +477,9 @@
     STAssertEquals((uint32_t) stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+    
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
     
@@ -501,6 +520,9 @@
     STAssertEquals((uint32_t) stack_size, encoded_stack_size, @"Incorrect stack size decoded");
     STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
     
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+    
     /* Verify the register decoding */
     plcrash_regnum_t reg[reg_count];
     
@@ -528,9 +550,117 @@
     plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
     
     intptr_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals((uint32_t)dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Decode an ARM64 FP frame encoding.
+ */
+- (void) testARM64DecodeFrame {
+    /* Create a frame encoding */
+    uint32_t encoding = UNWIND_ARM64_MODE_FRAME |
+                        UNWIND_ARM64_FRAME_X21_X22_PAIR |
+                        UNWIND_ARM64_FRAME_X25_X26_PAIR;
+    
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    int32_t reg_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    STAssertEquals(reg_count, (uint32_t)4, @"Incorrect register count extracted");
+    STAssertEquals(reg_offset, (int32_t)-32, @"Incorrect register offset extracted (wanted -32, got %"PRId32")", reg_offset);
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+
+    /* Extract the registers. */
+    plcrash_regnum_t expected_reg[] = {
+        PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X25,
+        PLCRASH_ARM64_X22,
+        PLCRASH_ARM64_X21,
+    };
+    plcrash_regnum_t reg[reg_count];
+    
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    for (uint32_t i = 0; i < (sizeof(expected_reg)/sizeof(expected_reg[0])); i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Decode an ARM64 'frameless' encoding.
+ */
+- (void) testARM64DecodeFrameless {
+    /* Create a frame encoding, with registers saved at sp+1008 bytes */
+    const uint32_t encoded_stack_size = 1008;
+    uint32_t encoding = UNWIND_ARM64_MODE_FRAMELESS |
+                        INSERT_BITS((encoded_stack_size/16), UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) |
+                        UNWIND_ARM64_FRAME_X25_X26_PAIR |
+                        UNWIND_ARM64_FRAME_X27_X28_PAIR;
+    uint32_t encoded_regs_count = 4;
+
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    
+    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
+    
+    STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
+    STAssertEquals(reg_count, encoded_regs_count, @"Incorrect register count decoded");
+    
+    /* Verify the return address register value */
+    STAssertEquals((plcrash_regnum_t)PLCRASH_ARM64_LR, plcrash_async_cfe_entry_return_address_register(&entry), @"Incorrect return address register set");
+
+    /* Verify the register decoding */
+    plcrash_regnum_t reg[reg_count];
+    
+    plcrash_async_cfe_entry_register_list(&entry, reg);
+    
+    plcrash_regnum_t expected_reg[] = {
+        PLCRASH_ARM64_X28,
+        PLCRASH_ARM64_X27,
+        PLCRASH_ARM64_X26,
+        PLCRASH_ARM64_X25,
+    };
+    for (uint32_t i = 0; i < (sizeof(expected_reg)/sizeof(expected_reg[0])); i++) {
+        STAssertEquals(reg[i], expected_reg[i], @"Incorrect register value extracted for position %" PRId32, i);
+    }
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Decode an ARM64 DWARF encoding.
+ */
+- (void) testARM64DecodeDWARF {
+    /* Create a frame encoding */
+    const uint32_t encoded_dwarf_offset = 1020;
+    uint32_t encoding = UNWIND_ARM64_MODE_DWARF |
+        INSERT_BITS(encoded_dwarf_offset, UNWIND_ARM64_DWARF_SECTION_OFFSET);
+    
+    /* Try decoding it */
+    plcrash_async_cfe_entry_t entry;
+    plcrash_error_t res = plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding);
+    STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
+    STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
+    STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
+
+    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
     plcrash_async_cfe_entry_free(&entry);
 }
@@ -546,9 +676,18 @@
     uint32_t decoded[sizeof(expected)/sizeof(expected[0])];
 
     uint32_t encoded = plcrash_async_cfe_register_encode(expected, 1);
-    plcrash_async_cfe_register_decode(encoded, 1, decoded);
-    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_register_decode(encoded, 1, decoded), @"Decode returned an error");
+
     STAssertEquals(expected[0], decoded[0], @"Failed to decode register");
+}
+
+/**
+ * Test passing an invalid count to plcrash_async_cfe_register_decode()
+ */
+- (void) testPermuttedRegisterDecodeInvalidCount {
+    uint32_t registers[PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX+1];
+
+    STAssertNotEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_register_decode(0, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX+1, registers), @"Decoding of a too-large count did not return an error");
 }
 
 /**
@@ -662,13 +801,130 @@
     STAssertEquals(encoding, (uint32_t)PC_REGULAR_ENCODING, @"Incorrect encoding returned");
 }
 
+/*
+ * The following tests can only be run with ARM64 thread state support.
+ */
+#if PLCRASH_ASYNC_THREAD_ARM_SUPPORT
+
+- (void) testARM64_ApplyFramePTRState {
+    plcrash_async_cfe_entry_t entry;
+    plcrash_async_thread_state_t ts;
+    
+    /* Set up a faux frame */
+    uint64_t stackframe[] = {
+        12, // x22
+        13, // x21
+        14, // x20
+        15, // x19
+        
+        1,  // fp
+        2,  // lr
+    };
+    
+    /* Create a frame encoding. */
+    uint32_t encoding = UNWIND_ARM64_MODE_FRAME |
+                        UNWIND_ARM64_FRAME_X19_X20_PAIR |
+                        UNWIND_ARM64_FRAME_X21_X22_PAIR;
+    
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding), @"Failed to initialize CFE entry");
+    
+    /* Initialize default thread state */
+    plcrash_greg_t stack_addr = &stackframe[4]; // fp
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_ARM64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_FP, stack_addr);
+    
+    /* Apply! */
+    plcrash_async_thread_state_t nts;
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), 0x0, &ts, &entry, &nts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
+    
+    /* Verify! */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_SP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_FP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_PC), @"Missing expected register");
+    
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X19), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X20), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X21), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X22), @"Missing expected register");
+
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_SP), (plcrash_greg_t)stack_addr+(16), @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_FP), (plcrash_greg_t)1, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_PC), (plcrash_greg_t)2, @"Incorrect register value");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X19), (plcrash_greg_t)15, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X20), (plcrash_greg_t)14, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X21), (plcrash_greg_t)13, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X22), (plcrash_greg_t)12, @"Incorrect register value");
+
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+/**
+ * Apply an ARM64 frameless encoding.
+ */
+- (void) testARM64_ApplyFramelessPTRState {
+    plcrash_async_cfe_entry_t entry;
+    plcrash_async_thread_state_t ts;
+    
+    /* Set up a faux frame */
+    uint64_t stackframe[] = {
+        0,  // padding to exercise stack size computation
+        0,  // padding
+        12, // x22
+        13, // x21
+        14, // x20
+        15, // x19
+    };
+    
+    /* Create a frame encoding. */
+
+    
+    /* Create a frame encoding, with registers saved at (restored sp)-32 bytes */
+    const uint32_t encoded_stack_size = sizeof(stackframe);
+    
+    uint32_t encoding = UNWIND_ARM64_MODE_FRAMELESS |
+                        INSERT_BITS(encoded_stack_size/16, UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK) |
+                        UNWIND_ARM64_FRAME_X19_X20_PAIR |
+                        UNWIND_ARM64_FRAME_X21_X22_PAIR;
+    
+    STAssertEquals(plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding), PLCRASH_ESUCCESS, @"Failed to decode entry");
+    
+    /* Initialize default thread state */
+    STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_ARM64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, &stackframe);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_ARM64_LR, 2);
+
+    /* Apply */
+    plcrash_async_thread_state_t nts;
+    plcrash_error_t err = plcrash_async_cfe_entry_apply(mach_task_self(), 0x0, &ts, &entry, &nts);
+    STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to apply state to thread");
+    
+    /* Verify */
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_SP), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_PC), @"Missing expected register");
+    
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X19), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X20), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X21), @"Missing expected register");
+    STAssertTrue(plcrash_async_thread_state_has_reg(&nts, PLCRASH_ARM64_X22), @"Missing expected register");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_SP), ((plcrash_greg_t)&stackframe) + encoded_stack_size, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_PC), (plcrash_greg_t)2, @"Incorrect register value");
+    
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X19), (plcrash_greg_t)15, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X20), (plcrash_greg_t)14, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X21), (plcrash_greg_t)13, @"Incorrect register value");
+    STAssertEquals(plcrash_async_thread_state_get_reg(&nts, PLCRASH_ARM64_X22), (plcrash_greg_t)12, @"Incorrect register value");
+    
+    plcrash_async_cfe_entry_free(&entry);
+}
+
+#endif
 
 /*
- * CFE is only supported on x86/x86-64, and the iOS SDK does not provide the thread state APIs necessary
- * to perform these tests on ARM
- *
- * TODO: Disable the entire CFE subsystem on ARM, eg, via a configuration system for enabling/disabling
- * functionality.
+ * The iOS SDK does not provide the thread state APIs necessary
+ * to perform the x86 tests on ARM
  */
 #if PLCRASH_ASYNC_THREAD_X86_SUPPORT
 - (void) testx86_64_ApplyFramePTRState {

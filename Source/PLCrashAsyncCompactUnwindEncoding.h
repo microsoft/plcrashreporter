@@ -112,9 +112,19 @@ typedef enum {
     PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE = 5
 } plcrash_async_cfe_entry_type_t;
 
+/** Maximum number of registers supported by the permutation register encoding. @sa plcrash_async_cfe_register_decode and plcrash_async_cfe_register_encode. */
+#define PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX 6
+
+/** Maximum number of saved non-volatile registers that may be represented in an i386 or x86-64 CFE entry */
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_X86_MAX 6
+
+/** Maximum number of saved non-volatile registers that may be represented in an ARM64 CFE entry */
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_ARM64_MAX 10
+
+#define _PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 /** Maximum number of saved non-volatile registers that may be represented in a CFE entry */
-#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX 6
+#define PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX _PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX(PLCRASH_ASYNC_CFE_SAVED_REGISTER_X86_MAX, PLCRASH_ASYNC_CFE_SAVED_REGISTER_ARM64_MAX)
 
 /**
  * @internal
@@ -131,7 +141,8 @@ typedef struct plcrash_async_cfe_entry {
 
     /**
      * Encoded stack offset. Interpretation of this value depends on the CFE type:
-     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Unused.
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR: Saved non-volatile registers may be found at ± offset from the frame
+     *   pointer (eg, ebp/rbp).
      * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD: The return address may be found at ± offset from the stack
      *   pointer (eg, esp/rsp), and is followed all non-volatile registers that need to be restored.
      * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT: The actual offset may be loaded from the target function's
@@ -155,6 +166,14 @@ typedef struct plcrash_async_cfe_entry {
      * This value is unused for all other CFE types.
      */
     uint32_t stack_adjust;
+    
+    /**
+     * The link register to be used for the return address (eg, such as in a ARM leaf frame), or PLCRASH_REG_INVALID if the return address
+     * is found on the stack. This value is only supported for the following CFE types:
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD and
+     * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT
+     */
+    plcrash_regnum_t return_address_register;
 
     /**
      * The number of non-volatile registers that need to be restored from the stack.
@@ -182,6 +201,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
 plcrash_async_cfe_entry_type_t plcrash_async_cfe_entry_type (plcrash_async_cfe_entry_t *entry);
 intptr_t plcrash_async_cfe_entry_stack_offset (plcrash_async_cfe_entry_t *entry);
 uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *entry);
+plcrash_regnum_t plcrash_async_cfe_entry_return_address_register (plcrash_async_cfe_entry_t *entry);
 uint32_t plcrash_async_cfe_entry_register_count (plcrash_async_cfe_entry_t *entry);
 void plcrash_async_cfe_entry_register_list (plcrash_async_cfe_entry_t *entry, plcrash_regnum_t register_list[]);
 
@@ -194,7 +214,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count);
-void plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]);
+plcrash_error_t plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]);
 
 /**
  * @} plcrash_async_cfe

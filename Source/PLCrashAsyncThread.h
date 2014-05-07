@@ -151,7 +151,7 @@ typedef struct plcrash_async_thread_state {
 } plcrash_async_thread_state_t;
 
 /** Register number type */
-typedef int plcrash_regnum_t;
+typedef uint32_t plcrash_regnum_t;
 
 /**
  * General pseudo-registers common across platforms.
