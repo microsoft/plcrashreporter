@@ -177,6 +177,17 @@ static size_t tag_pack (uint32_t id, uint8_t *out)
         return uint64_pack (((uint64_t)id) << 3, out);
 }
 
+static inline size_t size_pack(size_t value, uint8_t *out)
+{
+#ifdef __LP64__
+    assert(sizeof(size_t) == sizeof(uint64_t));
+    return uint64_pack(value, out);
+#else
+    assert(sizeof(size_t) == sizeof(uint32_t));
+    return uint32_pack(value, out);
+#endif
+}
+
 /* === pack_to_buffer() === */
 // file argument may be NULL
 size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLProtobufCType field_type, const void *value) {
