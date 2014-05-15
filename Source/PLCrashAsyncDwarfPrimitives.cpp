@@ -187,10 +187,10 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
             
             /* Compute the offset+alignment relative to the section base */
             PLCF_ASSERT(location >= _frame_section_base);
-            machine_ptr offset = location - _frame_section_base;
+            machine_ptr locationOffset = location - _frame_section_base;
             
             /* Apply to the VM load address for the section. */
-            machine_ptr vm_addr = _frame_section_vm_addr + offset;
+            machine_ptr vm_addr = _frame_section_vm_addr + locationOffset;
             machine_ptr vm_aligned = (vm_addr + (sizeof(machine_ptr)-1)) & ~(sizeof(machine_ptr)-1);
             
             /* Apply the new offset to the actual load address */
