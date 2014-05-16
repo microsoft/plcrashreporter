@@ -33,14 +33,14 @@
 extern "C" {
 #endif
 
-#import <sys/ucontext.h>
-#import <pthread.h>
+#include <sys/ucontext.h>
+#include <pthread.h>
 
-#import <stdint.h>
-#import <stdbool.h>
-#import <unistd.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <unistd.h>
 
-#import <mach/mach.h>
+#include <mach/mach.h>
 
 #include "PLCrashAsyncThread.h"
 #include "PLCrashAsyncImageList.h"

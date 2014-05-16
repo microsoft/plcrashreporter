@@ -26,10 +26,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashAsyncMObject.h"
+#include "PLCrashAsyncMObject.h"
 
-#import <stdint.h>
-#import <inttypes.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 /**
  * @internal

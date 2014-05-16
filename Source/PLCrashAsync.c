@@ -26,12 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashAsync.h"
+#include "PLCrashAsync.h"
 
-#import <stdint.h>
-#import <errno.h>
-#import <string.h>
-#import <inttypes.h>
+#include <stdint.h>
+#include <errno.h>
+#include <string.h>
+#include <inttypes.h>
 
 /**
  * @internal
