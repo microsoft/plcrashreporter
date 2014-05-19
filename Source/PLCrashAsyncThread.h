@@ -173,7 +173,7 @@ typedef enum {
     /**
      * Invalid register. This value must not be assigned to a platform register.
      */
-    PLCRASH_REG_INVALID = UINT32_MAX
+    PLCRASH_REG_INVALID = INT32_MAX
 } plcrash_gen_regnum_t;
 
 #include "PLCrashAsyncThread_x86.h"
