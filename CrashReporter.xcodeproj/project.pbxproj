@@ -4385,6 +4385,7 @@
 					"-Wimport-preprocessor-directive-pedantic",
 					"-Wimplicit-fallthrough",
 					"-Wreceiver-forward-class",
+					"-Wshift-sign-overflow",
 					"$(PL_NEVER_WARN)",
 				);
 			};
@@ -4426,6 +4427,7 @@
 					"-Wimport-preprocessor-directive-pedantic",
 					"-Wimplicit-fallthrough",
 					"-Wreceiver-forward-class",
+					"-Wshift-sign-overflow",
 					"$(PL_NEVER_WARN)",
 				);
 			};

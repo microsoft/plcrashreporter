@@ -65,7 +65,7 @@ static uint32_t END_OF_METHODS_LIST = -1;
  *
  * Class's rw data structure has been realized.
  */
-static const uint32_t RW_REALIZED = (1<<31);
+static const uint32_t RW_REALIZED = (1U<<31);
 
 /**
  * @internal
