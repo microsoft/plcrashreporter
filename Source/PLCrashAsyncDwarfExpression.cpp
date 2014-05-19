@@ -280,6 +280,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                 
             case DW_OP_bregx:
                 dw_expr_push(dw_thread_regval(dw_expr_read_sleb128()) + dw_expr_read_sleb128());
+                break;
                 
             case DW_OP_dup:
                 if (!stack.dup()) {
@@ -339,6 +340,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                 
                 /* This can't fail after the swap suceeded */
                 stack.drop();
+                PLCR_FALLTHROUGH;
                 
             case DW_OP_deref: {
                 machine_ptr addr;
@@ -368,6 +370,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
 
                 /* This can't fail after the swap suceeded */
                 stack.drop();
+                PLCR_FALLTHROUGH;
 
             case DW_OP_deref_size: {
                 /* Fetch the target size */

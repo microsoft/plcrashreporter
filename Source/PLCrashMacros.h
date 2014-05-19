@@ -81,4 +81,12 @@
 #  define PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH()
 #endif /* PLCR_PRIVATE */
 
+#ifdef PLCR_PRIVATE
+#  if defined(__clang__) && __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
+#    define PLCR_FALLTHROUGH [[clang::fallthrough]]
+#  else
+#    define PLCR_FALLTHROUGH do {} while (0)
+#  endif
+#endif
+
 #endif /* PLCRASH_CONSTANTS_H */

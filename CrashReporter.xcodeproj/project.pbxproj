@@ -4382,6 +4382,8 @@
 					"-Werror",
 					"-Wno-shorten-64-to-32",
 					"-Wimport-preprocessor-directive-pedantic",
+					"-Wimplicit-fallthrough",
+					"$(PL_NEVER_WARN)",
 				);
 			};
 			name = Debug;
@@ -4412,6 +4414,7 @@
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
 				PL_MIN_MACOSX_SDK = 1080;
+				PL_NEVER_WARN = "-Wno-objc-interface-ivars -Wno-c++98-compat-pedantic -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-variadic-macros";
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64 arm64";
 				WARNING_CFLAGS = (
@@ -4419,6 +4422,8 @@
 					"-Werror",
 					"-Wno-shorten-64-to-32",
 					"-Wimport-preprocessor-directive-pedantic",
+					"-Wimplicit-fallthrough",
+					"$(PL_NEVER_WARN)",
 				);
 			};
 			name = Release;
