@@ -4384,6 +4384,7 @@
 					"-Wno-shorten-64-to-32",
 					"-Wimport-preprocessor-directive-pedantic",
 					"-Wimplicit-fallthrough",
+					"-Wreceiver-forward-class",
 					"$(PL_NEVER_WARN)",
 				);
 			};
@@ -4424,6 +4425,7 @@
 					"-Wno-shorten-64-to-32",
 					"-Wimport-preprocessor-directive-pedantic",
 					"-Wimplicit-fallthrough",
+					"-Wreceiver-forward-class",
 					"$(PL_NEVER_WARN)",
 				);
 			};

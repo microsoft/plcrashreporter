@@ -27,6 +27,7 @@
  */
 
 #import "PLCrashReportSystemInfo.h"
+#import "PLCrashReportProcessorInfo.h"
 
 /**
  * @ingroup constants
