@@ -217,16 +217,13 @@ plcrash_error_t plcrash_async_task_memcpy (mach_port_t task, pl_vm_address_t add
 
         case KERN_INVALID_ADDRESS:
             return PLCRASH_ENOTFOUND;
-            break;
             
         case KERN_PROTECTION_FAILURE:
             return PLCRASH_EACCESS;
-            break;
 
         default:
             PLCF_DEBUG("Unexpected error from vm_read_overwrite: %d", kt);
             return PLCRASH_EUNKNOWN;
-            break;
     }
 }
 

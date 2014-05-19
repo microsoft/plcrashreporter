@@ -35,8 +35,6 @@ struct _PLCrashReportDecoder {
     Plcrash__CrashReport *crashReport;
 };
 
-#define IMAGE_UUID_DIGEST_LEN 16
-
 @interface PLCrashReport (PrivateMethods)
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
