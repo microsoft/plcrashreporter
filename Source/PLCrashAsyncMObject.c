@@ -370,7 +370,7 @@ void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_
     if (!plcrash_async_mobject_verify_local_pointer(mobj, (uintptr_t) remapped, offset, length))
         return NULL;
 
-    return (void *) remapped + offset;
+    return (void *) (remapped + offset);
 }
 
 /**

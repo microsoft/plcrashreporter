@@ -405,12 +405,12 @@ void *plcrash_async_memset(void *dest, uint8_t value, size_t n) {
  * should be necessary
  */
 ssize_t plcrash_async_writen (int fd, const void *data, size_t len) {
-    const void *p;
+    const uint8_t *p;
     size_t left;
     ssize_t written = 0;
     
     /* Loop until all bytes are written */
-    p = data;
+    p = (const uint8_t *) data;
     left = len;
     while (left > 0) {
         if ((written = write(fd, p, left)) <= 0) {
