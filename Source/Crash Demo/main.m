@@ -33,13 +33,13 @@
 #import <sys/sysctl.h>
 
 /* A custom post-crash callback */
-void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
+static void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
     // this is not async-safe, but this is a test implementation
     NSLog(@"post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
 }
 
 
-void stackFrame (void) {
+static void stackFrame (void) __attribute__((noinline)) {
     /* Trigger a crash */
     ((char *)NULL)[1] = 0;
 }

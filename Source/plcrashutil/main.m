@@ -36,7 +36,7 @@
 /*
  * Print command line usage.
  */
-void print_usage () {
+static void print_usage () {
     fprintf(stderr, "Usage: plcrashutil <command> <options>\n"
                     "Commands:\n"
                     "  convert --format=<format> <file>\n"
@@ -49,7 +49,7 @@ void print_usage () {
 /*
  * Run a conversion.
  */
-int convert_command (int argc, char *argv[]) {
+static int convert_command (int argc, char *argv[]) {
     const char *format = "iphone";
     const char *input_file;
     FILE *output = stdout;
