@@ -278,7 +278,8 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                 break;
                 
             case DW_OP_bregx:
-                dw_expr_push(dw_thread_regval(dw_expr_read_sleb128()) + dw_expr_read_sleb128());
+                dw_expr_push(dw_thread_regval(dw_expr_read_uleb128()) + dw_expr_read_sleb128());
+                break;
                 
             case DW_OP_dup:
                 if (!stack.dup()) {
