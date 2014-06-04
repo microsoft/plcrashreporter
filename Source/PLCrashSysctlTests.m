@@ -31,6 +31,7 @@
 #import "PLCrashSysctl.h"
 
 #include <sys/mman.h>
+#include <mach/mach.h>
 
 @interface PLCrashSysctlTests : SenTestCase @end
 
