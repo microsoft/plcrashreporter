@@ -37,6 +37,8 @@
 #import "PLCrashHostInfo.h"
 #import "PLCrashAsync.h"
 
+#include <sys/mman.h> // mprotect()
+
 @interface PLCrashMachExceptionServerTests : SenTestCase {
     plcrash_mach_exception_port_set_t _task_ports;
     plcrash_mach_exception_port_set_t _thread_ports;
