@@ -1,0 +1,35 @@
+/* 
+  PLCrashReportWindow.strings
+  CrashReporter
+
+  Created by alf on 8/19/14.
+
+*/
+
+"PLCrashWindowCancelString" = "Cancel";
+"PLCrashWindowSendString" = "Send";
+"PLCrashWindowEmailString" = "Email";
+
+"PLCrashWindowReportString" = "Report";
+"PLCrashWindowRestartString" = "Restart";
+"PLCrashWindowQuitString" = "Quit";
+
+"PLCrashWindowCrashReportString" = "Crash Report";
+"PLCrashWindowExceptionReportString" = "Exception Report";
+"PLCrashWindowErrorReportString" = "Error Report";
+
+"PLCrashWindowCrashedString" = "Crashed!";
+"PLCrashWindowRaisedExceptionString" = "Raised an Exception";
+"PLCrashWindowReportedErrorString" = "Reported an Error";
+
+"PLCrashWindowInsecureConnectionString" = "Insecure Connection";
+"PLCrashWIndowInsecureConnectionInformationString" = "%@ does not support secure crash reporting, your crash report will be sent in plaintext and may be observed while in transit.";
+"PLCrashWindowInsecureConnectionEmailAlternateString" = "\n\nEmail may be a more secure option, depending on your provider.";
+
+"PLCrashWindowCrashDispositionString" = "Click Report to send the report to the devleoper, or Cancel to ignore it.";
+"PLCrashWindowErrorDispositionString" = "Click Restart to send the report to the devloper and restart the application, or Quit.";
+
+"PLCrashWindowCommentsString" = "please enter any comments here";
+
+"PLCrashWindowSubmitFailedString" = "Submitting Report Failed";
+"PLCrashWindowSubmitFailedInformationString" = "%@ was not able to submit the report to: %@\n\nyou can send the report by email";

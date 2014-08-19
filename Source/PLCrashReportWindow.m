@@ -10,6 +10,29 @@ NSString* const PLCrashWindowSubmitEmailKey = @"PLCrashWindowSubmitEmailKey";
 NSString* const PLCrashWindowIncludeSyslogKey = @"PLCrashWindowIncludeSyslogKey";
 NSString* const PLCrashWindowIncludeDefaultsKey = @"PLCrashWindowIncludeDefaultsKey";
 
+NSString* const PLCrashWindowInsecureConnectionString = @"PLCrashWindowInsecureConnectionString";
+NSString* const PLCrashWIndowInsecureConnectionInformationString = @"PLCrashWIndowInsecureConnectionInformationString";
+NSString* const PLCrashWindowInsecureConnectionEmailAlternateString = @"PLCrashWindowInsecureConnectionEmailAlternateString";
+NSString* const PLCrashWindowCancelString = @"PLCrashWindowCancelString";
+NSString* const PLCrashWindowSendString = @"PLCrashWindowSendString";
+NSString* const PLCrashWindowEmailString = @"PLCrashWindowEmailString";
+NSString* const PLCrashWindowCrashReportString = @"PLCrashWindowCrashReportString";
+NSString* const PLCrashWindowExceptionReportString = @"PLCrashWindowExceptionReportString";
+NSString* const PLCrashWindowErrorReportString = @"PLCrashWindowErrorReportString";
+NSString* const PLCrashWindowCrashedString = @"PLCrashWindowCrashedString";
+NSString* const PLCrashWindowRaisedExceptionString = @"PLCrashWindowRaisedExceptionString";
+NSString* const PLCrashWindowReportedErrorString = @"PLCrashWindowReportedErrorString";
+NSString* const PLCrashWindowCrashDispositionString = @"PLCrashWindowCrashDispositionString";
+NSString* const PLCrashWindowErrorDispositionString = @"PLCrashWindowErrorDispositionString";
+NSString* const PLCrashWindowReportString = @"PLCrashWindowReportString";
+NSString* const PLCrashWindowRestartString = @"PLCrashWindowRestartString";
+NSString* const PLCrashWindowQuitString = @"PLCrashWindowQuitString";
+NSString* const PLCrashWindowCommentsString = @"PLCrashWindowCommentsString";
+NSString* const PLCrashWindowSubmitFailedString = @"PLCrashWindowSubmitFailedString";
+NSString* const PLCrashWindowSubmitFailedInformationString = @"PLCrashWindowSubmitFailedInformationString";
+
+#define PLLocalizedString(key) [[NSBundle bundleForClass:[self class]] localizedStringForKey:(key) value:@"" table:[self className]]
+
 #pragma mark -
 
 @implementation PLCrashReportWindow
@@ -295,14 +318,14 @@ NSString* const PLCrashWindowIncludeDefaultsKey = @"PLCrashWindowIncludeDefaults
         NSURL* emailURL = [NSURL URLWithString:[[[NSBundle mainBundle] infoDictionary] objectForKey:PLCrashWindowSubmitEmailKey]];
         NSAlert* plaintextAlert = [NSAlert new];
         plaintextAlert.alertStyle = NSCriticalAlertStyle;
-        plaintextAlert.messageText = NSLocalizedString(PLCrashWindowInsecureConnectionString,nil);
-        plaintextAlert.informativeText = [NSString stringWithFormat:NSLocalizedString(PLCrashWIndowInsecureConnectionInformationString,nil), appName];
-        [plaintextAlert addButtonWithTitle:NSLocalizedString(PLCrashWindowCancelString,nil)];
-        [plaintextAlert addButtonWithTitle:NSLocalizedString(PLCrashWindowSendString,nil)];
+        plaintextAlert.messageText = PLLocalizedString(PLCrashWindowInsecureConnectionString);
+        plaintextAlert.informativeText = [NSString stringWithFormat:PLLocalizedString(PLCrashWIndowInsecureConnectionInformationString), appName];
+        [plaintextAlert addButtonWithTitle:PLLocalizedString(PLCrashWindowCancelString)];
+        [plaintextAlert addButtonWithTitle:PLLocalizedString(PLCrashWindowSendString)];
         if( emailURL) // backup email key is specified
         {
-            [plaintextAlert addButtonWithTitle:NSLocalizedString(PLCrashWindowEmailString,nil)];
-            plaintextAlert.informativeText = [plaintextAlert.informativeText stringByAppendingString:NSLocalizedString(PLCrashWindowInsecureConnectionEmailAlternateString,nil)];
+            [plaintextAlert addButtonWithTitle:PLLocalizedString(PLCrashWindowEmailString)];
+            plaintextAlert.informativeText = [plaintextAlert.informativeText stringByAppendingString:PLLocalizedString(PLCrashWindowInsecureConnectionEmailAlternateString)];
         }
         [plaintextAlert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode)
         {
@@ -336,10 +359,10 @@ NSString* const PLCrashWindowIncludeDefaultsKey = @"PLCrashWindowIncludeDefaults
         NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey];
         NSAlert* alert = [NSAlert new];
         alert.alertStyle = NSCriticalAlertStyle;
-        alert.messageText = NSLocalizedString(PLCrashWindowSubmitFailedString,nil);
-        alert.informativeText = [NSString stringWithFormat:NSLocalizedString(PLCrashWindowSubmitFailedInformationString,nil), appName, emailURL];
-        [alert addButtonWithTitle:NSLocalizedString(PLCrashWindowEmailString,nil)];
-        [alert addButtonWithTitle:NSLocalizedString(PLCrashWindowCancelString,nil)];
+        alert.messageText = PLLocalizedString(PLCrashWindowSubmitFailedString);
+        alert.informativeText = [NSString stringWithFormat:PLLocalizedString(PLCrashWindowSubmitFailedInformationString), appName, emailURL];
+        [alert addButtonWithTitle:PLLocalizedString(PLCrashWindowEmailString)];
+        [alert addButtonWithTitle:PLLocalizedString(PLCrashWindowCancelString)];
         [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode)
          {
              if( returnCode == NSAlertFirstButtonReturn)
@@ -359,28 +382,28 @@ NSString* const PLCrashWindowIncludeDefaultsKey = @"PLCrashWindowIncludeDefaults
 - (void) awakeFromNib
 {
     // set the window title
-    if( self.reporter.hasPendingCrashReport) self.window.title = NSLocalizedString(PLCrashWindowCrashReportString,nil);
-    else if( self.exception)                 self.window.title = NSLocalizedString(PLCrashWindowExceptionReportString,nil);
-    else if( self.error)                     self.window.title = NSLocalizedString(PLCrashWindowErrorReportString,nil);
+    if( self.reporter.hasPendingCrashReport) self.window.title = PLLocalizedString(PLCrashWindowCrashReportString);
+    else if( self.exception)                 self.window.title = PLLocalizedString(PLCrashWindowExceptionReportString);
+    else if( self.error)                     self.window.title = PLLocalizedString(PLCrashWindowErrorReportString);
 
     // build the headline from the app name and event message
     NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey];
     NSString* message = nil;
     
-    if( self.reporter.hasPendingCrashReport) message = NSLocalizedString(PLCrashWindowCrashedString,nil);
-    else if( self.exception)                 message = NSLocalizedString(PLCrashWindowRaisedExceptionString,nil);
-    else if( self.error)                     message = NSLocalizedString(PLCrashWindowReportedErrorString,nil);
+    if( self.reporter.hasPendingCrashReport) message = PLLocalizedString(PLCrashWindowCrashedString);
+    else if( self.exception)                 message = PLLocalizedString(PLCrashWindowRaisedExceptionString);
+    else if( self.error)                     message = PLLocalizedString(PLCrashWindowReportedErrorString);
     self.headline.stringValue = [NSString stringWithFormat:@"%@ %@", appName, message];
 
     // build the subhead from the app name, event message and dispostion strings
-    if( self.reporter.hasPendingCrashReport) self.subhead.stringValue = NSLocalizedString(PLCrashWindowCrashDispositionString,nil);
-    else if( self.exception || self.error)   self.subhead.stringValue = NSLocalizedString(PLCrashWindowErrorDispositionString, nil);
+    if( self.reporter.hasPendingCrashReport) self.subhead.stringValue = PLLocalizedString(PLCrashWindowCrashDispositionString);
+    else if( self.exception || self.error)   self.subhead.stringValue = PLLocalizedString(PLCrashWindowErrorDispositionString);
     
-    if( self.reporter.hasPendingCrashReport) self.send.title = NSLocalizedString(PLCrashWindowReportString,nil);
+    if( self.reporter.hasPendingCrashReport) self.send.title = PLLocalizedString(PLCrashWindowReportString);
     else if( self.exception || self.error)
     {
-        self.send.title = NSLocalizedString(PLCrashWindowRestartString, nil);
-        self.cancel.title = NSLocalizedString(PLCrashWindowQuitString, nil);
+        self.send.title = PLLocalizedString(PLCrashWindowRestartString);
+        self.cancel.title = PLLocalizedString(PLCrashWindowQuitString);
     }
     
     [self.progress startAnimation:self];
@@ -391,7 +414,7 @@ NSString* const PLCrashWindowIncludeDefaultsKey = @"PLCrashWindowIncludeDefaults
 
     // fill in the comments section
     NSDictionary* commentsAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo" size:9]};
-    [self.comments.textStorage appendAttributedString:[[NSAttributedString alloc] initWithString:NSLocalizedString(PLCrashWindowCommentsString,nil) attributes:commentsAttributes]];
+    [self.comments.textStorage appendAttributedString:[[NSAttributedString alloc] initWithString:PLLocalizedString(PLCrashWindowCommentsString) attributes:commentsAttributes]];
 
     // if the error wasn't explicity set, grab the last one
     if( self.error )
