@@ -41,25 +41,27 @@
 #define PLCF_COMPAT_HAS_UPDATED_OSX_SDK(sdk_version) (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > sdk_version) || (MAC_OS_X_VERSION_MAX_ALLOWED <= sdk_version))
 
 
-/* ARM64 compact unwind constants. The iPhoneSimulator 7.0 SDK includes the compact unwind enums,
- * but not the actual CPU_TYPE_ARM64 defines, so we must special case it here. */
-#if !defined(CPU_TYPE_ARM64) && !TARGET_IPHONE_SIMULATOR
-enum {
-    UNWIND_ARM64_MODE_MASK                  = 0x0F000000,
-    UNWIND_ARM64_MODE_FRAME_OLD             = 0x01000000,
-    UNWIND_ARM64_MODE_FRAMELESS             = 0x02000000,
-    UNWIND_ARM64_MODE_DWARF                 = 0x03000000,
-    UNWIND_ARM64_MODE_FRAME                 = 0x04000000,
-    
-    UNWIND_ARM64_FRAME_X19_X20_PAIR         = 0x00000001,
-    UNWIND_ARM64_FRAME_X21_X22_PAIR         = 0x00000002,
-    UNWIND_ARM64_FRAME_X23_X24_PAIR         = 0x00000004,
-    UNWIND_ARM64_FRAME_X25_X26_PAIR         = 0x00000008,
-    UNWIND_ARM64_FRAME_X27_X28_PAIR         = 0x00000010,
-    
-    UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK  = 0x00FFF000,
-    UNWIND_ARM64_DWARF_SECTION_OFFSET       = 0x00FFFFFF,
-};
+/*
+ * ARM64 compact unwind constants; Since these values are fixed by the ABI, we can safely include them directly here.
+ *
+ * These are not defined on OS X, and they are defined as enums on iOS, preventing a stable #ifdef check. As such,
+ * we always define these values on any Mac OS X target, potentially overriding the existing enum identifiers. To
+ * ensure this doesn't break inclusion of the header in which the enum identifiers may be defined, we explicitly
+ * include the compact unwind header.
+ */
+#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#include <mach-o/compact_unwind_encoding.h>
+#define UNWIND_ARM64_MODE_MASK                  0x0F000000
+#define UNWIND_ARM64_MODE_FRAMELESS             0x02000000
+#define UNWIND_ARM64_MODE_DWARF                 0x03000000
+#define UNWIND_ARM64_MODE_FRAME                 0x04000000
+#define UNWIND_ARM64_FRAME_X19_X20_PAIR         0x00000001
+#define UNWIND_ARM64_FRAME_X21_X22_PAIR         0x00000002
+#define UNWIND_ARM64_FRAME_X23_X24_PAIR         0x00000004
+#define UNWIND_ARM64_FRAME_X25_X26_PAIR         0x00000008
+#define UNWIND_ARM64_FRAME_X27_X28_PAIR         0x00000010
+#define UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK  0x00FFF000
+#define UNWIND_ARM64_DWARF_SECTION_OFFSET       0x00FFFFFF
 #elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_8)
 # warning UNWIND_ARM64_* constants are now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
