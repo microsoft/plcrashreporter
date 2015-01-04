@@ -294,7 +294,7 @@
 		05A533DE16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
-		05A5E28117A82751008A75E5 /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; };
+		05A5E28117A82751008A75E5 /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05A5E28217A82751008A75E5 /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; };
 		05A5E28817C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */; };
 		05A5E28917C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */; };
@@ -2365,6 +2365,7 @@
 			files = (
 				05CD318B0EE93A90000FDE88 /* CrashReporter.h in Headers */,
 				05A04D8C15AB38C10011CFA4 /* PLCrashNamespace.h in Headers */,
+				05A5E28117A82751008A75E5 /* PLCrashMacros.h in Headers */,
 				05CD33A00EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */,
 				054F51080EEC73C80034B184 /* PLCrashReporter.h in Headers */,
 				059666DC0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */,
@@ -2408,7 +2409,6 @@
 				05C76DAE176B8C7000E9B10D /* dwarf_opstream.hpp in Headers */,
 				05C76DD0176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
 				05920D26177B9257001E8975 /* PLCrashFrameDWARFUnwind.h in Headers */,
-				05A5E28117A82751008A75E5 /* PLCrashMacros.h in Headers */,
 				05102E1617B0151000B5D925 /* PLCrashProcessInfo.h in Headers */,
 				05102E2517B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
 				051F067B17B6B0D4006D0EFA /* PLCrashMachExceptionPort.h in Headers */,
@@ -4356,7 +4356,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CURRENT_PROJECT_VERSION = "1.2";
+				CURRENT_PROJECT_VERSION = "1.2.1";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -4388,7 +4388,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CURRENT_PROJECT_VERSION = "1.2";
+				CURRENT_PROJECT_VERSION = "1.2.1";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
