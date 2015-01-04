@@ -27,6 +27,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CommonCrypto/CommonDigest.h>
 
 #import "PLCrashReportApplicationInfo.h"
 #import "PLCrashReportBinaryImageInfo.h"
@@ -119,6 +120,26 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 - (id) initWithData: (NSData *) encodedData error: (NSError **) outError;
 
 - (PLCrashReportBinaryImageInfo *) imageForAddress: (uint64_t) address;
+
+
+typedef enum{
+    PLCrashReportFingerPrintOptionDefault = 0,
+    PLCrashReportFingerPrintOptionIgnoreDeviceInfo = 1,
+    PLCrashReportFingerPrintOptionIgnoreOSVersion = 1 << 1,
+    PLCrashReportFingerPrintOptionIgnoreAppVersion = 1 << 2,
+}PLCrashReportFingerPrintOption;
+
+/**
+ Calculate SHA1 string of crash key string to distinguish between different crash logs.
+ May use this as primary key to store crash log on server.
+ */
+- (NSString *)fingerPrint;
+- (NSString *)fingerPrintWithOption:(PLCrashReportFingerPrintOption)option;
+
+/*
+ Export crash report to text in apple crash log format.
+ */
+- (NSString *)exportCrashReportString;
 
 /**
  * System information.
