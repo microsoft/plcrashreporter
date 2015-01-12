@@ -295,7 +295,7 @@
 		05A533DF16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 05A533DD16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m */; };
 		05A5E28117A82751008A75E5 /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		05A5E28217A82751008A75E5 /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; };
+		05A5E28217A82751008A75E5 /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05A5E28817C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */; };
 		05A5E28917C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */; };
 		05A5E28A17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */; };
@@ -2211,6 +2211,7 @@
 				0527063417CCF31400E6A5D8 /* PLCrashFeatureConfig.h in Headers */,
 				05B69E1417CE6271001807C9 /* PLCrashReporterConfig.h in Headers */,
 				0513E23C17D15EE500727919 /* PLCrashReportMachExceptionInfo.h in Headers */,
+				05A5E28217A82751008A75E5 /* PLCrashMacros.h in Headers */,
 				054627AD11D998BB007891C7 /* PLCrashReportTextFormatter.h in Headers */,
 				054627BD11D99D06007891C7 /* PLCrashReportFormatter.h in Headers */,
 				05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */,
@@ -2223,7 +2224,6 @@
 				05659DEC17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.hpp in Headers */,
 				05E7485B1760D62A009B8745 /* PLCrashAsyncDwarfFDE.hpp in Headers */,
 				05E748701760D8AE009B8745 /* PLCrashAsyncDwarfCIE.hpp in Headers */,
-				05A5E28217A82751008A75E5 /* PLCrashMacros.h in Headers */,
 				05BEC42F17BD4F400082CBFB /* PLCrashAsyncMachExceptionInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
