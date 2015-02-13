@@ -29,10 +29,6 @@
 #ifndef PLCRASH_FRAMEWALKER_H
 #define PLCRASH_FRAMEWALKER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <sys/ucontext.h>
 #include <pthread.h>
 
