@@ -26,12 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashAsyncThread.h"
-#import "PLCrashAsync.h"
+#include "PLCrashAsyncThread.h"
+#include "PLCrashAsync.h"
 
-#import <signal.h>
-#import <assert.h>
-#import <stdlib.h>
+#include <signal.h>
+#include <assert.h>
+#include <stdlib.h>
 
 #define RETGEN(name, type, ts) {\
     return (ts->x86_state. type . __ ## name); \

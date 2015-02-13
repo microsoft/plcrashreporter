@@ -65,48 +65,6 @@ const char *plframe_strerror (plframe_error_t error) {
     return "Unhandled error code";
 }
 
-#pragma mark Test Thread
-
-/* A thread that exists just to give us a stack to iterate */
-static void *test_stack_thr (void *arg) {
-    plcrash_test_thread_t *args = arg;
-    
-    /* Acquire the lock and inform our caller that we're active */
-    pthread_mutex_lock(&args->lock);
-    pthread_cond_signal(&args->cond);
-    
-    /* Wait for a shut down request, and then drop the acquired lock immediately */
-    pthread_cond_wait(&args->cond, &args->lock);
-    pthread_mutex_unlock(&args->lock);
-    
-    return NULL;
-}
-
-
-/** Spawn a test thread that may be used as an iterable stack. (For testing only!) */
-void plframe_test_thread_spawn (plcrash_test_thread_t *args) {
-    /* Initialize the args */
-    pthread_mutex_init(&args->lock, NULL);
-    pthread_cond_init(&args->cond, NULL);
-    
-    /* Lock and start the thread */
-    pthread_mutex_lock(&args->lock);
-    pthread_create(&args->thread, NULL, test_stack_thr, args);
-    pthread_cond_wait(&args->cond, &args->lock);
-    pthread_mutex_unlock(&args->lock);
-}
-
-/** Stop a test thread. */
-void plframe_test_thread_stop (plcrash_test_thread_t *args) {
-    /* Signal the thread to exit */
-    pthread_mutex_lock(&args->lock);
-    pthread_cond_signal(&args->cond);
-    pthread_mutex_unlock(&args->lock);
-    
-    /* Wait for exit */
-    pthread_join(args->thread, NULL);
-}
-
 #pragma mark Frame Walking
 
 /**

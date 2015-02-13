@@ -19,6 +19,7 @@
 */
 
 
+#include "unwind_test_harness.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -60,7 +61,7 @@ extern void *unwind_tester_list_arm64_frameless[];
 extern int unwind_tester (void *test, void **sp);
 extern void *unwind_tester_target_ip;
 
-void uwind_to_main ();
+void uwind_to_main (void);
 
 plframe_cursor_frame_reader_t *frame_readers_frame[] = {
     plframe_cursor_read_frame_ptr,
@@ -227,7 +228,7 @@ bool unwind_test_harness (void) {
     } \
 } while (0)
 
-plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
+static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
     plframe_cursor_t cursor;
     plcrash_async_image_list_t image_list;
     plframe_cursor_frame_reader_t **readers = global_harness_state.test_case->frame_readers_dwarf;
@@ -320,7 +321,7 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
 // called by test function
 // we unwind through the test function
 // and resume at caller (unwind_tester)
-void uwind_to_main () {
+void uwind_to_main (void) {
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */
     if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
