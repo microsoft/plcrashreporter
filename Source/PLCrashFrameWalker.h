@@ -59,6 +59,10 @@ extern "C" {
 #include <mach/arm/thread_state.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @internal
  * @defgroup plframe_backtrace Backtrace Frame Walker

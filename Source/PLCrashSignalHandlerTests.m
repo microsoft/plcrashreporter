@@ -32,13 +32,11 @@
 #import "PLCrashProcessInfo.h"
 
 #import <sys/mman.h>
+#import <mach/mach.h>
 
 @interface PLCrashSignalHandlerTests : SenTestCase {
 }
 @end
-
-/* Page-aligned to allow us to tweak memory protections for test purposes. */
-static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
 static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     return true;
@@ -46,10 +44,32 @@ static bool crash_callback (int signal, siginfo_t *siginfo, ucontext_t *uap, voi
 
 @implementation PLCrashSignalHandlerTests
 
+/* Page-sized, page aligned, and allocated/deallocated with vm_allocate()/vm_deallocate via -setUp/-tearDown.
+ * We use this page to test exception handler behavior by adjusting its page protections and triggering crashes. */
+static uint8_t *crash_page;
+
 - (void) setUp {
+    kern_return_t kr;
+
     /* Ensure that handlers registered in each test are not automatically chained by the PLCrashSignalHandler. This
      * includes any saved references to previously registered signal handlers. */
     [PLCrashSignalHandler resetHandlers];
+
+
+    /* Allocate a test page that can be used to test exception handler behavior by adjusting its page protections
+     * and triggering crashes via read/write (or execution) into the page. */
+    vm_address_t crash_page_addr;
+    kr = vm_allocate(mach_task_self(), &crash_page_addr, PAGE_SIZE, VM_PROT_READ|VM_PROT_WRITE);
+    STAssertEquals(KERN_SUCCESS, kr, @"Failed to allocate test page: %d", kr);
+    crash_page = (uint8_t *) crash_page_addr;
+}
+
+- (void) tearDown {
+    kern_return_t kr;
+
+    /* Deallocate our test page */
+    kr = vm_deallocate(mach_task_self(), (vm_address_t) crash_page, PAGE_SIZE);
+    STAssertEquals(KERN_SUCCESS, kr, @"Failed to deallocate test page: %d", kr);
 }
 
 - (void) testSharedHandler {
