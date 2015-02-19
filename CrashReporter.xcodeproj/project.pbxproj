@@ -166,7 +166,8 @@
 		05507A531784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; settings = {COMPILER_FLAGS = "-fexceptions"; }; };
 		05507A541784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
 		05507A551784DEE4009D5168 /* unwind_test_x86_frame.S in Sources */ = {isa = PBXBuildFile; fileRef = 05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */; };
-		0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
+		05614E291A966F5A00D62442 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
+		05614E2A1A96722600D62442 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
 		05654F770EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F780EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
 		05654F790EFA5B54004283F5 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05654F760EFA5B54004283F5 /* CoreServices.framework */; };
@@ -187,7 +188,6 @@
 		0573B4311681098E00395F2A /* PLCrashMachExceptionServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */; };
 		0573B4321681098E00395F2A /* PLCrashMachExceptionServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */; };
 		0573B4331681098E00395F2A /* PLCrashMachExceptionServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573B42B1681098E00395F2A /* PLCrashMachExceptionServer.m */; };
-		0573B43416810AB400395F2A /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
 		0573B4481681107F00395F2A /* PLCrashReportRegisterInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E54E16765A0200B39833 /* PLCrashReportRegisterInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0573B4491681108200395F2A /* PLCrashReportStackFrameInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E5431676598200B39833 /* PLCrashReportStackFrameInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0573B44A1681108500395F2A /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05D9E55916765D0200B39833 /* PLCrashReportSymbolInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -985,6 +985,20 @@
 			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
 			remoteInfo = "CrashReporter-iPhoneOS";
 		};
+		05614E221A966B7700D62442 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05F40CE60EF7AB80008050CF;
+			remoteInfo = DemoCrash;
+		};
+		05614E261A966C3C00D62442 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 052A45CE136353FB00987004;
+			remoteInfo = "DemoCrash-iOS-Device";
+		};
 		058812C9104058DA009128FB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -1148,6 +1162,7 @@
 		05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_unusual.S; sourceTree = "<group>"; };
 		05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frame.S; sourceTree = "<group>"; };
 		05614E111A965A6100D62442 /* SenTestCompat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SenTestCompat.h; sourceTree = "<group>"; };
+		05614E281A966E4200D62442 /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
@@ -1230,9 +1245,9 @@
 		05CD318A0EE93A90000FDE88 /* CrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashReporter.m; sourceTree = "<group>"; };
 		05CD32690EE93DC3000FDE88 /* Tests-MacOSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-MacOSX.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-MacOSX-Info.plist"; sourceTree = "<group>"; };
-		05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iOS-Simulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-iOS-Simulator.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD32AF0EE94086000FDE88 /* Tests-iPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Tests-iPhone-Info.plist"; sourceTree = "<group>"; };
-		05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iOS-Device.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD33240EE94439000FDE88 /* Tests-iOS-Device.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-iOS-Device.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD33520EE9457D000FDE88 /* CrashReporter.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; path = CrashReporter.exp; sourceTree = "<group>"; };
 		05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashSignalHandler.h; sourceTree = "<group>"; };
 		05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashSignalHandler.mm; sourceTree = "<group>"; };
@@ -1394,7 +1409,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0550A1100EECFEDC0037F7C3 /* libCrashReporter-iphonesimulator.a in Frameworks */,
+				05614E2A1A96722600D62442 /* libCrashReporter-iphonesimulator.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1402,7 +1417,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0573B43416810AB400395F2A /* libCrashReporter-iphoneos.a in Frameworks */,
+				05614E291A966F5A00D62442 /* libCrashReporter-iphoneos.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1449,8 +1464,8 @@
 				05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */,
 				05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */,
 				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.xctest */,
-				05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */,
-				05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */,
+				05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.xctest */,
+				05CD33240EE94439000FDE88 /* Tests-iOS-Device.xctest */,
 				05F40CE70EF7AB80008050CF /* DemoCrash.app */,
 				05E731E30EFA1A3E005EDFB7 /* plcrashutil */,
 				05E731F30EFA1AAB005EDFB7 /* libCrashReporter-MacOSX-Static.a */,
@@ -2075,6 +2090,7 @@
 			children = (
 				057CD98516CD5D5C0067E670 /* Default-568h@2x.png */,
 				05F40CE90EF7AB80008050CF /* DemoCrash-Info.plist */,
+				05614E281A966E4200D62442 /* DemoCrash-iOS-Info.plist */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				05CD32AF0EE94086000FDE88 /* Tests-iPhone-Info.plist */,
 				05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */,
@@ -2511,9 +2527,10 @@
 			);
 			dependencies = (
 				05CD342A0EEA5FFA000FDE88 /* PBXTargetDependency */,
+				05614E231A966B7700D62442 /* PBXTargetDependency */,
 			);
 			name = "Tests-MacOSX";
-			productName = "Tests-MacOSX";
+			productName = "$(TARGET_NAME)";
 			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -2532,9 +2549,9 @@
 				05CD32F30EE94153000FDE88 /* PBXTargetDependency */,
 			);
 			name = "Tests-iOS-Simulator";
-			productName = "Tests-iPhoneSimulator";
-			productReference = 05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */;
-			productType = "com.apple.product-type.application";
+			productName = "$(TARGET_NAME)";
+			productReference = 05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		05CD33230EE94439000FDE88 /* Tests-iOS-Device */ = {
 			isa = PBXNativeTarget;
@@ -2549,11 +2566,12 @@
 			);
 			dependencies = (
 				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
+				05614E271A966C3C00D62442 /* PBXTargetDependency */,
 			);
 			name = "Tests-iOS-Device";
-			productName = "Tests-iPhoneOS";
-			productReference = 05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */;
-			productType = "com.apple.product-type.application";
+			productName = "$(TARGET_NAME)";
+			productReference = 05CD33240EE94439000FDE88 /* Tests-iOS-Device.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		05E731E20EFA1A3E005EDFB7 /* plcrashutil */ = {
 			isa = PBXNativeTarget;
@@ -2639,6 +2657,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = NO;
 				LastUpgradeCheck = 0610;
+				TargetAttributes = {
+					05CD33230EE94439000FDE88 = {
+						TestTargetID = 052A45CE136353FB00987004;
+					};
+				};
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -3472,6 +3495,16 @@
 			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */;
 			targetProxy = 054F50E80EEC50B30034B184 /* PBXContainerItemProxy */;
 		};
+		05614E231A966B7700D62442 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05F40CE60EF7AB80008050CF /* DemoCrash */;
+			targetProxy = 05614E221A966B7700D62442 /* PBXContainerItemProxy */;
+		};
+		05614E271A966C3C00D62442 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 052A45CE136353FB00987004 /* DemoCrash-iOS-Device */;
+			targetProxy = 05614E261A966C3C00D62442 /* PBXContainerItemProxy */;
+		};
 		058812CA104058DA009128FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 058812B81040582D009128FB /* CrashReporter-iOS */;
@@ -3625,17 +3658,16 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_THUMB_SUPPORT = NO;
-				INFOPLIST_FILE = "Resources/DemoCrash-Info.plist";
+				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				"IPHONEOS_DEPLOYMENT_TARGET[arch=arm64]" = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 					"-framework",
 					UIKit,
 				);
-				PRODUCT_NAME = "DemoCrash-iOS-Device";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -3653,17 +3685,16 @@
 					"$(BUILD_ROOT)",
 				);
 				GCC_THUMB_SUPPORT = NO;
-				INFOPLIST_FILE = "Resources/DemoCrash-Info.plist";
+				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				"IPHONEOS_DEPLOYMENT_TARGET[arch=arm64]" = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 					"-framework",
 					UIKit,
 				);
-				PRODUCT_NAME = "DemoCrash-iOS-Device";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				ZERO_LINK = NO;
 			};
@@ -3682,7 +3713,7 @@
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				INFOPLIST_FILE = "Resources/DemoCrash-Info.plist";
+				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				MACOSX_DEPLOYMENT_TARGET = "";
@@ -3692,7 +3723,7 @@
 					"-framework",
 					UIKit,
 				);
-				PRODUCT_NAME = "DemoCrash-iOS-Simulator";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphonesimulator;
 			};
 			name = Debug;
@@ -3709,7 +3740,7 @@
 					"$(inherited)",
 					"$(BUILD_ROOT)",
 				);
-				INFOPLIST_FILE = "Resources/DemoCrash-Info.plist";
+				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				MACOSX_DEPLOYMENT_TARGET = "";
@@ -3719,7 +3750,7 @@
 					"-framework",
 					UIKit,
 				);
-				PRODUCT_NAME = "DemoCrash-iOS-Simulator";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphonesimulator;
 				ZERO_LINK = NO;
 			};
@@ -3809,8 +3840,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_THUMB_SUPPORT = NO;
 				GENERATE_MASTER_OBJECT_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				"IPHONEOS_DEPLOYMENT_TARGET[arch=arm64]" = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
@@ -3830,8 +3860,7 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GCC_THUMB_SUPPORT = NO;
 				GENERATE_MASTER_OBJECT_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				"IPHONEOS_DEPLOYMENT_TARGET[arch=arm64]" = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "CrashReporter${EFFECTIVE_PLATFORM_NAME}";
@@ -3966,24 +3995,23 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				MACOSX_DEPLOYMENT_TARGET = "";
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
+					"$(inherited)",
 					"-framework",
 					UIKit,
 				);
 				PRODUCT_NAME = "Tests-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
-				TEST_AFTER_BUILD = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
 		};
@@ -3995,24 +4023,23 @@
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				MACOSX_DEPLOYMENT_TARGET = "";
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
+					"$(inherited)",
 					"-framework",
 					UIKit,
 				);
 				PRODUCT_NAME = "Tests-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
-				TEST_AFTER_BUILD = YES;
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
+				WRAPPER_EXTENSION = xctest;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4021,30 +4048,30 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(PL_ARM_ARCHS)";
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				"IPHONEOS_DEPLOYMENT_TARGET[arch=arm64]" = 7.0;
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
+					"$(inherited)",
 					"-framework",
 					UIKit,
 				);
 				PRODUCT_NAME = "Tests-iOS-Device";
 				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DemoCrash-iOS-Device.app/DemoCrash-iOS-Device";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
 		};
@@ -4052,18 +4079,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(PL_ARM_ARCHS)";
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				"IPHONEOS_DEPLOYMENT_TARGET[arch=arm64]" = 7.0;
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
+					"$(inherited)",
 					"-framework",
 					UIKit,
 				);
@@ -4071,10 +4097,12 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DemoCrash-iOS-Device.app/DemoCrash-iOS-Device";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
+				WRAPPER_EXTENSION = xctest;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4202,7 +4230,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = DemoCrash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
 				SKIP_INSTALL = YES;
 			};
@@ -4228,7 +4256,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = DemoCrash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
 				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
