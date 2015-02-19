@@ -25,7 +25,7 @@
  */
 
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 #import "PLCrashFrameCompactUnwind.h"
 #import "PLCrashFeatureConfig.h"
 

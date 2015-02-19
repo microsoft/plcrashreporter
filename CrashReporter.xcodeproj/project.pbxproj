@@ -438,13 +438,6 @@
 		05CD318F0EE93A90000FDE88 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; };
 		05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		05CD32110EE93AF9000FDE88 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
-		05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
-		05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */; };
-		05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */; };
-		05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
-		05CD332C0EE94464000FDE88 /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */; };
-		05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */; };
-		05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */; };
 		05CD339C0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
 		05CD339D0EE948EB000FDE88 /* PLCrashSignalHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05CD339B0EE948EB000FDE88 /* PLCrashSignalHandler.mm */; settings = {COMPILER_FLAGS = "-fno-objc-exceptions"; }; };
 		05CD339E0EE948EB000FDE88 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
@@ -1154,6 +1147,7 @@
 		05507A3E178364E8009D5168 /* unwind_test_x86_64_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_frame.S; sourceTree = "<group>"; };
 		05507A4E1784DA8A009D5168 /* unwind_test_x86_64_unusual.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_64_unusual.S; sourceTree = "<group>"; };
 		05507A521784DEE4009D5168 /* unwind_test_x86_frame.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_x86_frame.S; sourceTree = "<group>"; };
+		05614E111A965A6100D62442 /* SenTestCompat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SenTestCompat.h; sourceTree = "<group>"; };
 		05654F760EFA5B54004283F5 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		05659DEA17455DD400D2EE21 /* PLCrashAsyncDwarfEncoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = PLCrashAsyncDwarfEncoding.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
@@ -1234,15 +1228,10 @@
 		05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCrashReporter-iphonesimulator.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD31890EE93A90000FDE88 /* CrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashReporter.h; sourceTree = "<group>"; };
 		05CD318A0EE93A90000FDE88 /* CrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashReporter.m; sourceTree = "<group>"; };
-		05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-MacOSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05CD32690EE93DC3000FDE88 /* Tests-MacOSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests-MacOSX.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD326A0EE93DC3000FDE88 /* Tests-MacOSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-MacOSX-Info.plist"; sourceTree = "<group>"; };
-		05CD328B0EE93F5E000FDE88 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMDefines.h; sourceTree = "<group>"; };
-		05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMSenTestCase.h; path = UnitTesting/GTMSenTestCase.h; sourceTree = "<group>"; };
-		05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMSenTestCase.m; path = UnitTesting/GTMSenTestCase.m; sourceTree = "<group>"; };
 		05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iOS-Simulator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD32AF0EE94086000FDE88 /* Tests-iPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Tests-iPhone-Info.plist"; sourceTree = "<group>"; };
-		05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestDelegate.m; path = UnitTesting/GTMIPhoneUnitTestDelegate.m; sourceTree = "<group>"; };
-		05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMIPhoneUnitTestMain.m; path = UnitTesting/GTMIPhoneUnitTestMain.m; sourceTree = "<group>"; };
 		05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tests-iOS-Device.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		05CD33520EE9457D000FDE88 /* CrashReporter.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; path = CrashReporter.exp; sourceTree = "<group>"; };
 		05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashSignalHandler.h; sourceTree = "<group>"; };
@@ -1324,8 +1313,6 @@
 		05F4150C0EF9DD9B008050CF /* PLCrashReportBinaryImageInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportBinaryImageInfo.m; sourceTree = "<group>"; };
 		05F415510EF9E078008050CF /* PLCrashReportExceptionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportExceptionInfo.h; sourceTree = "<group>"; };
 		05F415520EF9E078008050CF /* PLCrashReportExceptionInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportExceptionInfo.m; sourceTree = "<group>"; };
-		05F76DCF162DBF8300A668C7 /* GTMObjC2Runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GTMObjC2Runtime.h; path = Foundation/GTMObjC2Runtime.h; sourceTree = "<group>"; };
-		05F76DD0162DC2BC00A668C7 /* GTMGarbageCollection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GTMGarbageCollection.h; path = Foundation/GTMGarbageCollection.h; sourceTree = "<group>"; };
 		05F76DD2162F213E00A668C7 /* PLCrashAsyncMachOImage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncMachOImage.c; sourceTree = "<group>"; };
 		05F76DD7162F215800A668C7 /* PLCrashAsyncMachOImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncMachOImage.h; sourceTree = "<group>"; };
 		05F76DD9162F238E00A668C7 /* PLCrashAsyncMachOImageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOImageTests.m; sourceTree = "<group>"; };
@@ -1461,7 +1448,7 @@
 				8DC2EF5B0486A6940098B216 /* CrashReporter.framework */,
 				05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */,
 				05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */,
-				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */,
+				05CD32690EE93DC3000FDE88 /* Tests-MacOSX.xctest */,
 				05CD32A90EE94062000FDE88 /* Tests-iOS-Simulator.app */,
 				05CD33240EE94439000FDE88 /* Tests-iOS-Device.app */,
 				05F40CE70EF7AB80008050CF /* DemoCrash.app */,
@@ -1895,28 +1882,6 @@
 			name = "Host and Process Info";
 			sourceTree = "<group>";
 		};
-		05CD32750EE93E5A000FDE88 /* Tools */ = {
-			isa = PBXGroup;
-			children = (
-				05CD32890EE93F44000FDE88 /* google-toolbox-for-mac-trunk-r582 */,
-			);
-			path = Tools;
-			sourceTree = "<group>";
-		};
-		05CD32890EE93F44000FDE88 /* google-toolbox-for-mac-trunk-r582 */ = {
-			isa = PBXGroup;
-			children = (
-				05F76DD0162DC2BC00A668C7 /* GTMGarbageCollection.h */,
-				05F76DCF162DBF8300A668C7 /* GTMObjC2Runtime.h */,
-				05CD328C0EE93F7C000FDE88 /* GTMSenTestCase.h */,
-				05CD328D0EE93F7C000FDE88 /* GTMSenTestCase.m */,
-				05CD328B0EE93F5E000FDE88 /* GTMDefines.h */,
-				05CD32B10EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m */,
-				05CD32B00EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m */,
-			);
-			path = "google-toolbox-for-mac-trunk-r582";
-			sourceTree = "<group>";
-		};
 		05D8FE4916ACAA44000ED70C /* Allocator */ = {
 			isa = PBXGroup;
 			children = (
@@ -2091,7 +2056,6 @@
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
-				05CD32750EE93E5A000FDE88 /* Tools */,
 				059670E30EEFADA6008A0601 /* Dependencies */,
 			);
 			name = CrashReporter;
@@ -2165,8 +2129,9 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				05614E111A965A6100D62442 /* SenTestCompat.h */,
 			);
-			name = "Other Sources";
+			path = "Other Sources";
 			sourceTree = "<group>";
 		};
 		FCE4576E42A51370AD81A734 /* Stack Frame Unwind */ = {
@@ -2549,8 +2514,8 @@
 			);
 			name = "Tests-MacOSX";
 			productName = "Tests-MacOSX";
-			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		05CD32A80EE94062000FDE88 /* Tests-iOS-Simulator */ = {
 			isa = PBXNativeTarget;
@@ -3009,7 +2974,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05CD328E0EE93F7C000FDE88 /* GTMSenTestCase.m in Sources */,
 				05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E30EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702E0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -3113,9 +3077,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05CD32F00EE94148000FDE88 /* GTMSenTestCase.m in Sources */,
-				05CD32B20EE940B8000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
-				05CD32B30EE940B8000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
 				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702F0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -3218,9 +3179,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05CD332C0EE94464000FDE88 /* GTMSenTestCase.m in Sources */,
-				05CD332D0EE94464000FDE88 /* GTMIPhoneUnitTestDelegate.m in Sources */,
-				05CD332E0EE94464000FDE88 /* GTMIPhoneUnitTestMain.m in Sources */,
 				05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E40EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				059670300EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -3955,20 +3913,13 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks $(DEVELOPER_DIR)/Library/Frameworks";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -3976,7 +3927,7 @@
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
 		};
@@ -3989,18 +3940,11 @@
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks $(DEVELOPER_DIR)/Library/Frameworks";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -4008,7 +3952,7 @@
 					"$(inherited)",
 					"$(OTHER_WARNING_NO_ADDRESS)",
 				);
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4351,7 +4295,7 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.2.1";
+				CURRENT_PROJECT_VERSION = 1.2.1;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -4380,7 +4324,7 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = "1.2.1";
+				CURRENT_PROJECT_VERSION = 1.2.1;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;

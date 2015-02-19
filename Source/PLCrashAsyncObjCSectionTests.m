@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 #import <dlfcn.h>
 #import <mach-o/dyld.h>

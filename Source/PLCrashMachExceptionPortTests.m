@@ -30,7 +30,7 @@
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 #import "PLCrashMachExceptionPort.h"
 #import "PLCrashAsync.h"
 
