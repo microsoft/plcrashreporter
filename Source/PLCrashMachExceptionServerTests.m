@@ -102,7 +102,7 @@ static uint8_t *crash_page;
         if (MACH_PORT_VALID(!_task_ports.ports[i]))
             continue;
     
-        kr = task_set_exception_ports(mach_task_self(), _task_ports.masks[i], _task_ports.ports[i], _task_ports.behaviors[i], _task_ports.flavors);
+        kr = task_set_exception_ports(mach_task_self(), _task_ports.masks[i], _task_ports.ports[i], _task_ports.behaviors[i], _task_ports.flavors[i]);
         STAssertEquals(kr, KERN_SUCCESS, @"Failed to set task ports");
     }
     
@@ -110,7 +110,7 @@ static uint8_t *crash_page;
         if (MACH_PORT_VALID(!_thread_ports.ports[i]))
             continue;
         
-        kr = thread_set_exception_ports(pl_mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors);
+        kr = thread_set_exception_ports(pl_mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors[i]);
         STAssertEquals(kr, KERN_SUCCESS, @"Failed to set thread ports");
     }
 }
