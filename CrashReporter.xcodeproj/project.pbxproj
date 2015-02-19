@@ -2550,7 +2550,7 @@
 			name = "Tests-MacOSX";
 			productName = "Tests-MacOSX";
 			productReference = 05CD32690EE93DC3000FDE88 /* Tests-MacOSX.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 		05CD32A80EE94062000FDE88 /* Tests-iOS-Simulator */ = {
 			isa = PBXNativeTarget;
@@ -2673,7 +2673,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = NO;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
 			compatibilityVersion = "Xcode 3.2";
