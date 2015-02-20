@@ -177,9 +177,9 @@ static char mktemp_padchar_prev (char current_char) {
  * @warning While this method is a loose analogue of libc mkstemp(3), the semantics differ, and API clients should not
  * rely on any similarities with the standard library function that are not explicitly documented.
  */
-plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
+plcrash_error_t AsyncFile::mktemp (char *pathTemplate, mode_t mode, int *outfd) {
     /* Fetch the template string length, not including trailing NULL */
-    size_t ptemplate_len = strlen(ptemplate);
+    size_t ptemplate_len = strlen(pathTemplate);
     
     /* Find the start and length of the suffix ('X') */
     size_t suffix_i = 0;
@@ -188,12 +188,12 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
     /* Find the suffix length and position */
     for (size_t i = 0; i < ptemplate_len; i++) {
         /* Walk candidate suffix string, verifying that it occurs at the end of the string. */
-        if (ptemplate[i] == 'X') {
+        if (pathTemplate[i] == 'X') {
             /* Record the suffix position */
             suffix_i = i;
 
             /* Search for the end of the suffix string */
-            while (ptemplate[i] == 'X') {
+            while (pathTemplate[i] == 'X') {
                 suffix_len++;
                 i++;
                 PLCF_ASSERT(i < ptemplate_len+1);
@@ -201,7 +201,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
             
             /* If the candidate suffix didn't end at the end of the string, this wasn't actually the suffix; allow
              * the loop to continue. */
-            if (ptemplate[i] != '\0') {
+            if (pathTemplate[i] != '\0') {
                 suffix_len = 0;
                 suffix_i = 0;
             }
@@ -209,7 +209,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
     }
     
     /* Assert that the computed suffix length matches the actual NUL-terminated string length */
-    PLCF_ASSERT(strlen(&ptemplate[suffix_i]) == suffix_len);
+    PLCF_ASSERT(strlen(&pathTemplate[suffix_i]) == suffix_len);
     
     /* Insert random suffix into the template. */
     SecureRandom rnd = SecureRandom();
@@ -226,12 +226,12 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
         /* Update the suffix. */
         PLCF_ASSERT(charIndex < sizeof(mktemp_padchar));
         PLCF_ASSERT(suffix_i + i < ptemplate_len);
-        ptemplate[suffix_i + i] = mktemp_padchar[charIndex];
+        pathTemplate[suffix_i + i] = mktemp_padchar[charIndex];
     }
 
     /* Save a copy of the suffix. We use this to determine when roll-over occurs while trying all possible combinations. */
     char original_suffix[suffix_len];
-    plcrash_async_memcpy(original_suffix, &ptemplate[suffix_i], suffix_len);
+    plcrash_async_memcpy(original_suffix, &pathTemplate[suffix_i], suffix_len);
     
     /* Recursion state; this tracks the 'last' position in the alphabet for all suffix positions. This varies based on the
      * starting position. */
@@ -245,7 +245,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
      */
     while (true) {
         /* Try to open the file. */
-        *outfd = open(ptemplate, O_CREAT|O_EXCL|O_RDWR, mode);
+        *outfd = open(pathTemplate, O_CREAT|O_EXCL|O_RDWR, mode);
         
         /* Terminate on success */
         if (*outfd >= 0)
@@ -253,7 +253,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
         
         /* Terminate if we get an error other than EEXIST */
         if (errno != EEXIST) {
-            PLCF_DEBUG("Failed to open output file '%s' in mktemp(): %d", ptemplate, errno);
+            PLCF_DEBUG("Failed to open output file '%s' in mktemp(): %d", pathTemplate, errno);
             return PLCRASH_OUTPUT_ERR;
         }
 
@@ -263,7 +263,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
         for (size_t depth = 0; depth < suffix_len; depth++) {
             /* If found, save the position, and then keep looking */
             PLCF_ASSERT(suffix_i + depth < ptemplate_len);
-            if (ptemplate[suffix_i + depth] != last_alphabet_suffix[depth]) {
+            if (pathTemplate[suffix_i + depth] != last_alphabet_suffix[depth]) {
                 target_pos = depth;
                 target_pos_found = true;
             }
@@ -273,10 +273,10 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
         if (target_pos_found) {
             PLCF_ASSERT(suffix_i + target_pos < ptemplate_len);
             
-            char pchar = mktemp_padchar_next(ptemplate[suffix_i + target_pos]);
-            ptemplate[suffix_i + target_pos] = pchar;
+            char pchar = mktemp_padchar_next(pathTemplate[suffix_i + target_pos]);
+            pathTemplate[suffix_i + target_pos] = pchar;
         } else {
-            PLCF_DEBUG("Tried all possible combinations of '%s'", ptemplate);
+            PLCF_DEBUG("Tried all possible combinations of '%s'", pathTemplate);
             return PLCRASH_OUTPUT_ERR;
         }
 
@@ -284,7 +284,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
          * can restart iteration. */
         for (size_t depth = target_pos+1; depth < suffix_len; depth++) {
             PLCF_ASSERT(suffix_i + depth < ptemplate_len);
-            ptemplate[suffix_i + depth] = original_suffix[depth];
+            pathTemplate[suffix_i + depth] = original_suffix[depth];
         }
     }
 
@@ -300,12 +300,7 @@ plcrash_error_t AsyncFile::mktemp (char *ptemplate, mode_t mode, int *outfd) {
  * safety measure prevent a run-away crash log writer from filling the disk. Specify
  * 0 to disable any limits. Once the limit is reached, all data will be dropped.
  */
-AsyncFile::AsyncFile (int fd, off_t output_limit) {
-    this->fd = fd;
-    this->buflen = 0;
-    this->total_bytes = 0;
-    this->limit_bytes = output_limit;
-}
+AsyncFile::AsyncFile (int fd, off_t output_limit) : _fd(fd), _limit_bytes(output_limit), _total_bytes(0), _buflen(0) {}
 
 /**
  * @internal
@@ -319,7 +314,7 @@ AsyncFile::AsyncFile (int fd, off_t output_limit) {
  * and should not be used externally.
  */
 size_t AsyncFile::buffer_size (void) {
-    return sizeof(this->buffer);
+    return sizeof(_buffer);
 }
 
 /**
@@ -331,33 +326,33 @@ size_t AsyncFile::buffer_size (void) {
  */
 bool AsyncFile::write (const void *data, size_t len) {
     /* Check and update output limit */
-    if (this->limit_bytes != 0 && len + this->total_bytes > this->limit_bytes) {
+    if (_limit_bytes != 0 && len + _total_bytes > _limit_bytes) {
         return false;
-    } else if (this->limit_bytes != 0) {
-        this->total_bytes += len;
+    } else if (_limit_bytes != 0) {
+        _total_bytes += len;
     }
     
     /* Check if the buffer will fill */
-    if (this->buflen + len > sizeof(this->buffer)) {
+    if (_buflen + len > sizeof(_buffer)) {
         /* Flush the buffer */
-        if (AsyncFile::writen(this->fd, this->buffer, this->buflen) < 0) {
+        if (AsyncFile::writen(_fd, _buffer, _buflen) < 0) {
             PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
             return false;
         }
         
-        this->buflen = 0;
+        _buflen = 0;
     }
     
     /* Check if the new data fits within the buffer, if so, buffer it */
-    if (len + this->buflen <= sizeof(this->buffer)) {
-        plcrash_async_memcpy(this->buffer + this->buflen, data, len);
-        this->buflen += len;
+    if (len + _buflen <= sizeof(_buffer)) {
+        plcrash_async_memcpy(_buffer + _buflen, data, len);
+        _buflen += len;
         
         return true;
         
     } else {
         /* Won't fit in the buffer, just write it */
-        if (AsyncFile::writen(this->fd, data, len) < 0) {
+        if (AsyncFile::writen(_fd, data, len) < 0) {
             PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
             return false;
         }
@@ -372,16 +367,16 @@ bool AsyncFile::write (const void *data, size_t len) {
  */
 bool AsyncFile::flush (void) {
     /* Anything to do? */
-    if (this->buflen == 0)
+    if (_buflen == 0)
         return true;
     
     /* Write remaining */
-    if (AsyncFile::writen(this->fd, this->buffer, this->buflen) < 0) {
+    if (AsyncFile::writen(_fd, _buffer, _buflen) < 0) {
         PLCF_DEBUG("Error occured writing to crash log: %s", strerror(errno));
         return false;
     }
     
-    this->buflen = 0;
+    _buflen = 0;
     
     return true;
 }
@@ -396,7 +391,7 @@ bool AsyncFile::close (void) {
         return false;
     
     /* Close the file descriptor */
-    if (::close(this->fd) != 0) {
+    if (::close(_fd) != 0) {
         PLCF_DEBUG("Error closing file: %s", strerror(errno));
         return false;
     }

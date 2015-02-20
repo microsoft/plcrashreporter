@@ -278,7 +278,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          */
         Dl_info dlInfo;
         STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &dlInfo) != 0, @"dladdr() failed to find image");
-        struct mach_header *hdr = (struct mach_header *) info.dli_fbase;
+        struct mach_header *hdr = (struct mach_header *) dlInfo.dli_fbase;
 
         STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");

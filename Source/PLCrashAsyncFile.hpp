@@ -63,19 +63,19 @@ public:
 
 private:
     /** Output file descriptor */
-    int fd;
+    int _fd;
     
     /** Output limit */
-    off_t limit_bytes;
+    off_t _limit_bytes;
     
     /** Total bytes written */
-    off_t total_bytes;
+    off_t _total_bytes;
     
     /** Current length of data in buffer */
-    size_t buflen;
+    size_t _buflen;
     
     /** Buffered output */
-    char buffer[256];
+    char _buffer[256];
 };
     
 }}
