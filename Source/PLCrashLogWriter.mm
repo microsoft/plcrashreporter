@@ -316,7 +316,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             writer->process_info.process_id = pinfo.processID;
 
             /* Retrieve name and start time. */
-            writer->process_info.process_name = strdup([pinfo.processName UTF8String]);
+            if (pinfo.processName != nil) {
+                writer->process_info.process_name = strdup([pinfo.processName UTF8String]);
+            }
             writer->process_info.start_time = pinfo.startTime.tv_sec;
 
             /* Retrieve path */
@@ -339,7 +341,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             /* Retrieve name */
             PLCrashProcessInfo *parentInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID] autorelease];
             if (parentInfo != nil) {
-                writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
+                if (parentInfo.processName != nil) {
+                    writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
+                }
             } else {
                 PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
             }
@@ -589,7 +593,7 @@ static size_t plcrash_writer_write_system_info (AsyncFile *file, plcrash_log_wri
  *
  * @param file Output file
  * @param cpu_type The Mach CPU type.
- * @param cpu_subtype_t The Mach CPU subtype
+ * @param cpu_subtype The Mach CPU subtype
  */
 static size_t plcrash_writer_write_processor_info (AsyncFile *file, uint64_t cpu_type, uint64_t cpu_subtype) {
     size_t rv = 0;
@@ -670,10 +674,10 @@ static size_t plcrash_writer_write_app_info (AsyncFile *file, const char *app_id
  * Write the process info message.
  *
  * @param file Output file
- * @param process_name Process name
+ * @param process_name Process name, or NULL if unavailable.
  * @param process_id Process ID
- * @param process_path Process path
- * @param parent_process_name Parent process name
+ * @param process_path Process path, or NULL if unavailable.
+ * @param parent_process_name Parent process name, or NULL if unavailable.
  * @param parent_process_id Parent process ID
  * @param native If false, process is running under emulation.
  * @param start_time The start time of the process.
@@ -731,10 +735,11 @@ static size_t plcrash_writer_write_process_info (AsyncFile *file, const char *pr
 /**
  * @internal
  *
- * Write a thread backtrace register
+ * Write a single register.
  *
  * @param file Output file
- * @param cursor The cursor from which to acquire frame data.
+ * @param regname The register to write's name.
+ * @param regval The register to write's value.
  */
 static size_t plcrash_writer_write_thread_register (AsyncFile *file, const char *regname, plcrash_greg_t regval) {
     uint64_t uint64val;
@@ -989,8 +994,7 @@ static size_t plcrash_writer_write_thread (AsyncFile *file,
  * Write a binary image frame
  *
  * @param file Output file
- * @param name binary image path (or name).
- * @param image_base Mach-O image base.
+ * @param image Mach-O image.
  */
 static size_t plcrash_writer_write_binary_image (AsyncFile *file, plcrash_async_macho_t *image) {
     size_t rv = 0;

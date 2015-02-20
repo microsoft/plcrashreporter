@@ -19,10 +19,10 @@
 
 #include "PLCrashMacros.h"
 
-PLCR_C_BEGIN_DECLS
-
 #include "PLCrashAsync.h"
 #include "PLCrashAsyncFile.hpp"
+
+PLCR_C_BEGIN_DECLS
 
 typedef enum {
         PLPROTOBUF_C_TYPE_INT32,

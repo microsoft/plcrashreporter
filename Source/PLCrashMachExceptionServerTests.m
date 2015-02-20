@@ -30,14 +30,14 @@
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 #import "PLCrashMachExceptionServer.h"
 #import "PLCrashMachExceptionPort.h"
 #import "PLCrashHostInfo.h"
 #import "PLCrashAsync.h"
 
-#include <sys/mman.h>
+#include <sys/mman.h> // mprotect()
 
 @interface PLCrashMachExceptionServerTests : SenTestCase {
     plcrash_mach_exception_port_set_t _task_ports;
@@ -46,6 +46,10 @@
 @end
 
 @implementation PLCrashMachExceptionServerTests
+
+/* Page-sized, page aligned, and allocated/deallocated with vm_allocate()/vm_deallocate via -setUp/-tearDown.
+ * We use this page to test exception handler behavior by adjusting its page protections and triggering crashes. */
+static uint8_t *crash_page;
 
 - (void) setUp {
     /*
@@ -77,17 +81,28 @@
                                      _thread_ports.behaviors,
                                      _thread_ports.flavors);
     STAssertEquals(kr, KERN_SUCCESS, @"Failed to reset thread ports");
+
+    /* Allocate a test page that can be used to test exception handler behavior by adjusting its page protections
+     * and triggering crashes via read/write (or execution) into the page. */
+    vm_address_t crash_page_addr;
+    kr = vm_allocate(mach_task_self(), &crash_page_addr, PAGE_SIZE, VM_PROT_READ|VM_PROT_WRITE);
+    STAssertEquals(KERN_SUCCESS, kr, @"Failed to allocate test page: %d", kr);
+    crash_page = (uint8_t *) crash_page_addr;
 }
 
 - (void) tearDown {
     kern_return_t kr;
+
+    /* Deallocate our test page */
+    kr = vm_deallocate(mach_task_self(), (vm_address_t) crash_page, PAGE_SIZE);
+    STAssertEquals(KERN_SUCCESS, kr, @"Failed to deallocate test page: %d", kr);
 
     /* Restore the original exception ports */
     for (mach_msg_type_number_t i = 0; i < _task_ports.count; i++) {
         if (MACH_PORT_VALID(!_task_ports.ports[i]))
             continue;
     
-        kr = task_set_exception_ports(mach_task_self(), _task_ports.masks[i], _task_ports.ports[i], _task_ports.behaviors[i], _task_ports.flavors);
+        kr = task_set_exception_ports(mach_task_self(), _task_ports.masks[i], _task_ports.ports[i], _task_ports.behaviors[i], _task_ports.flavors[i]);
         STAssertEquals(kr, KERN_SUCCESS, @"Failed to set task ports");
     }
     
@@ -95,12 +110,10 @@
         if (MACH_PORT_VALID(!_thread_ports.ports[i]))
             continue;
         
-        kr = thread_set_exception_ports(pl_mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors);
+        kr = thread_set_exception_ports(pl_mach_thread_self(), _thread_ports.masks[i], _thread_ports.ports[i], _thread_ports.behaviors[i], _thread_ports.flavors[i]);
         STAssertEquals(kr, KERN_SUCCESS, @"Failed to set thread ports");
     }
 }
-
-static uint8_t crash_page[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 
 static kern_return_t exception_callback (task_t task,
                                 thread_t thread,

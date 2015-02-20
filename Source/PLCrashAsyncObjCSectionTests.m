@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
@@ -131,7 +131,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
 }
 
 - (void) testParse {
-    plcrash_error_t err;
+    __block plcrash_error_t err;
     
     plcrash_async_objc_cache_t objCContext;
     err = plcrash_async_objc_cache_init(&objCContext);
@@ -141,7 +141,6 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
     err = plcrash_async_objc_find_method(&_image, &objCContext, pc, ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;
@@ -171,7 +170,6 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     didCall = NO;
     err = plcrash_async_objc_find_method(&_image, &objCContext, [self addressInCategory], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;
@@ -202,7 +200,6 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     didCall = NO;
     err = plcrash_async_objc_find_method(&_image, &objCContext, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;
@@ -232,7 +229,6 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     didCall = NO;
     err = plcrash_async_objc_find_method(&_image, &objCContext, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
-        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;

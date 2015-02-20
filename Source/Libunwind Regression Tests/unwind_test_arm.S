@@ -24,14 +24,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef __arm__
+#if defined(__arm__)
 
-#
-# This is a generic function to test that restoring registers during unwinding work correctly.
-#
+.data
+.globl _unwind_tester_target_ip
+_unwind_tester_target_ip:
 
 .text
-.align 4
+.align 2
 .globl _unwind_tester
 _unwind_tester:
 # TODO: Unimplemented

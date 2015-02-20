@@ -57,7 +57,7 @@
  * @param reader The reader instance to initialize.
  * @param mobj The memory object containing CFE data at the start address. This instance must survive for the lifetime
  * of the reader.
- * @param cpu_type The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
+ * @param cputype The target architecture of the CFE data, encoded as a Mach-O CPU type. Interpreting CFE data is
  * architecture-specific, and Apple has not defined encodings for all supported architectures.
  */
 plcrash_error_t plcrash_async_cfe_reader_init (plcrash_async_cfe_reader_t *reader, plcrash_async_mobject_t *mobj, cpu_type_t cputype) {
@@ -913,10 +913,6 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                     entry->stack_offset = -(entry->register_count * sizeof(uint64_t));
             
                 return PLCRASH_ESUCCESS;
-                
-            case UNWIND_ARM64_MODE_FRAME_OLD:
-                PLCF_DEBUG("Unhandled UNWIND_ARM64_MODE_FRAME_OLD encoding");
-                return PLCRASH_ENOTSUP;
                 
             case UNWIND_ARM64_MODE_DWARF:
                 entry->type = PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF;

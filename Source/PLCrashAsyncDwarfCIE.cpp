@@ -50,8 +50,8 @@ using namespace plcrash::async;
  *
  * @param info The CIE info instance to initialize.
  * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address.
- * @param byteoder The byte order of the data referenced by @a mobj.
- * @param ptr_state The pointer state to be used when decoding GNU eh_frame pointer values.
+ * @param byteorder The byte order of the data referenced by @a mobj.
+ * @param ptr_reader The pointer reader to be used when decoding GNU eh_frame pointer values.
  * @param address The task-relative address within @a mobj of the CIE to be decoded.
  */
 template <typename machine_ptr>
@@ -411,18 +411,18 @@ void plcrash::async::plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_
 
 /* Provide explicit 32/64-bit instantiations */
 template
-plcrash_error_t plcrash_async_dwarf_cie_info_init<uint32_t> (plcrash_async_dwarf_cie_info_t *info,
-                                                             plcrash_async_mobject_t *mobj,
-                                                             const plcrash_async_byteorder_t *byteorder,
-                                                             gnu_ehptr_reader<uint32_t> *ptr_reader,
-                                                             pl_vm_address_t address);
+plcrash_error_t plcrash::async::plcrash_async_dwarf_cie_info_init<uint32_t> (plcrash_async_dwarf_cie_info_t *info,
+                                                                             plcrash_async_mobject_t *mobj,
+                                                                             const plcrash_async_byteorder_t *byteorder,
+                                                                             gnu_ehptr_reader<uint32_t> *ptr_reader,
+                                                                             pl_vm_address_t address);
 
 template
-plcrash_error_t plcrash_async_dwarf_cie_info_init<uint64_t> (plcrash_async_dwarf_cie_info_t *info,
-                                                             plcrash_async_mobject_t *mobj,
-                                                             const plcrash_async_byteorder_t *byteorder,
-                                                             gnu_ehptr_reader<uint64_t> *ptr_reader,
-                                                             pl_vm_address_t address);
+plcrash_error_t plcrash::async::plcrash_async_dwarf_cie_info_init<uint64_t> (plcrash_async_dwarf_cie_info_t *info,
+                                                                             plcrash_async_mobject_t *mobj,
+                                                                             const plcrash_async_byteorder_t *byteorder,
+                                                                             gnu_ehptr_reader<uint64_t> *ptr_reader,
+                                                                             pl_vm_address_t address);
 
 /**
  * @}

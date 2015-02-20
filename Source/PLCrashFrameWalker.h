@@ -29,18 +29,14 @@
 #ifndef PLCRASH_FRAMEWALKER_H
 #define PLCRASH_FRAMEWALKER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <sys/ucontext.h>
+#include <pthread.h>
 
-#import <sys/ucontext.h>
-#import <pthread.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <unistd.h>
 
-#import <stdint.h>
-#import <stdbool.h>
-#import <unistd.h>
-
-#import <mach/mach.h>
+#include <mach/mach.h>
 
 #include "PLCrashAsyncThread.h"
 #include "PLCrashAsyncImageList.h"
@@ -57,6 +53,10 @@ extern "C" {
 #if defined(__arm__) || defined(__arm64__)
 #define PLFRAME_ARM_SUPPORT 1
 #include <mach/arm/thread_state.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /**

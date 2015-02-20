@@ -26,12 +26,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 #import "PLCrashLogWriter.hpp"
 #import "PLCrashFrameWalker.h"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashReport.h"
+#import "PLCrashProcessInfo.h"
 
 #import <sys/stat.h>
 #import <sys/mman.h>
@@ -96,7 +97,10 @@ using namespace plcrash::async;
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
+#pragma clang diagnostic pop
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
@@ -142,20 +146,16 @@ using namespace plcrash::async;
         STAssertTrue(procInfo->native, @"No proc_native sysctl specified; native should be assumed");
     }
 
-    /* Fetch and verify process data via sysctl */
-    struct kinfo_proc process_info;
-    size_t process_info_len = sizeof(process_info);
-    int process_info_mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, 0 };
-    int process_info_mib_len = 4;
-    
-    /* Current process name name */
-    process_info_mib[3] = getpid();
-    if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
-        STAssertEqualCStrings(procInfo->process_name, process_info.kp_proc.p_comm, @"Incorrect process name");
-    } else {
-        STFail(@"Could not retreive process name: %s", strerror(errno));
-    }
-    
+    /* Fetch and verify process data */
+    PLCrashProcessInfo *processInfo = [PLCrashProcessInfo currentProcessInfo];
+    STAssertNotNil(processInfo, @"Could not retrieve process info");
+    STAssertNotNil(processInfo.processName, @"Could not retrieve parent process name");
+
+    NSString *parsedProcessName = [[[NSString alloc] initWithCString: procInfo->process_name encoding: NSUTF8StringEncoding] autorelease];
+    STAssertNotNil(parsedProcessName, @"Process name contains invalid UTF-8");
+    STAssertEqualStrings(parsedProcessName, processInfo.processName, @"Incorrect process name");
+
+
     /* Current process path */
     char *process_path = NULL;
     uint32_t process_path_len = 0;
@@ -169,12 +169,13 @@ using namespace plcrash::async;
     }
     
     /* Parent process */
-    process_info_mib[3] = getppid();
-    if (sysctl(process_info_mib, process_info_mib_len, &process_info, &process_info_len, NULL, 0) == 0) {
-        STAssertEqualCStrings(procInfo->parent_process_name, process_info.kp_proc.p_comm, @"Incorrect process name");
-    } else {
-        STFail(@"Could not retreive parent process name: %s", strerror(errno));
-    }
+    PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
+    STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");
+    STAssertNotNil(parentProcessInfo.processName, @"Could not retrieve parent process name");
+
+    NSString *parsedParentProcessName = [[[NSString alloc] initWithCString: procInfo->parent_process_name encoding: NSUTF8StringEncoding] autorelease];
+    STAssertNotNil(parsedParentProcessName, @"Process name contains invalid UTF-8");
+    STAssertEqualStrings(parsedParentProcessName, parentProcessInfo.processName, @"Incorrect process name");
 }
 
 - (void) checkThreads: (Plcrash__CrashReport *) crashReport {
@@ -402,15 +403,15 @@ using namespace plcrash::async;
 #endif
     BOOL foundCrashed = NO;
     for (int i = 0; i < crashReport->n_threads; i++) {
-        Plcrash__CrashReport__Thread *thread = crashReport->threads[i];        
-        if (!thread->crashed)
+        Plcrash__CrashReport__Thread *reportThread = crashReport->threads[i];        
+        if (!reportThread->crashed)
             continue;
         
         foundCrashed = YES;
 
         /* Load the first frame */
-        STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
-        Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[0];
+        STAssertNotEquals((size_t)0, reportThread->n_frames, @"No frames available in backtrace");
+        Plcrash__CrashReport__Thread__StackFrame *f = reportThread->frames[0];
 
         /* Validate PC. This check is inexact, as otherwise we would need to carefully instrument the 
          * call to plcrash_log_writer_write_curthread() in order to determine the exact PC value. */

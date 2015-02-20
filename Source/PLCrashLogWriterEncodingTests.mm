@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 #import "PLCrashAsync.h"
 #import "PLCrashLogWriterEncoding.hpp"
 
@@ -35,7 +35,7 @@
 
 using namespace plcrash::async;
 
-@interface PLCrashLogWriterEncodingTests : GTMTestCase {
+@interface PLCrashLogWriterEncodingTests : SenTestCase {
 @private
     AsyncFile *_file;
     NSString *_filePath;

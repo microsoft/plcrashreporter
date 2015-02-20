@@ -65,7 +65,7 @@ static uint32_t END_OF_METHODS_LIST = -1;
  *
  * Class's rw data structure has been realized.
  */
-static const uint32_t RW_REALIZED = (1<<31);
+static const uint32_t RW_REALIZED = (1U<<31);
 
 /**
  * @internal
@@ -214,7 +214,7 @@ struct pl_objc2_list_header {
  * if the cache size has been set.
  *
  * @param context The context.
- * @param The key.
+ * @param key The key.
  * @return The index.
  */
 static size_t cache_index (plcrash_async_objc_cache_t *context, pl_vm_address_t key) {

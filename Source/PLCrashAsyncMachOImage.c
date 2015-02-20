@@ -74,11 +74,10 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     task_initialized = true;
 
     /* Read in the Mach-O header */
-    kern_return_t kt;
-    if ((kt = plcrash_async_read_addr(image->task, image->header_addr, &image->header, sizeof(image->header))) != KERN_SUCCESS) {
+    if ((ret = plcrash_async_task_memcpy(image->task, image->header_addr, 0, &image->header, sizeof(image->header))) != PLCRASH_ESUCCESS) {
         /* NOTE: The image struct must be fully initialized before returning here, as otherwise our _free() function
          * will crash */
-        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, kern_error=%d", (uint64_t) image->header_addr, name, kt);
+        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, ret=%d", (uint64_t) image->header_addr, name, ret);
         ret = PLCRASH_EINTERNAL;
         goto error;
     }
@@ -390,9 +389,6 @@ void *plcrash_async_macho_find_command (plcrash_async_macho_t *image, uint32_t e
  *
  * @param image The image to search for @a segname.
  * @param segname The name of the segment to search for.
- * @param outAddress On successful return, contains the address of the found segment.
- * @param outCmd_32 On successful return with a 32-bit image, contains the segment header.
- * @param outCmd_64 On successful return with a 64-bit image, contains the segment header.
  *
  * @return Returns a mapped pointer to the segment on success, or NULL on failure.
  */

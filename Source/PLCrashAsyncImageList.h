@@ -29,10 +29,6 @@
 #ifndef PLCRASH_ASYNC_IMAGE_LIST_H
 #define PLCRASH_ASYNC_IMAGE_LIST_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <libkern/OSAtomic.h>
 #include <stdbool.h>
@@ -48,6 +44,10 @@ extern "C" {
 #include "PLCrashAsyncLinkedList.hpp"
 #endif
     
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct plcrash_async_image plcrash_async_image_t;
 
 /**

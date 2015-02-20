@@ -42,7 +42,7 @@
  * Map a Mach exception to its BSD signal representation.
  *
  * @param exception_type Mach exception type.
- * @param code Mach exception codes.
+ * @param codes Mach exception codes.
  * @param code_count The number of codes provided.
  * @param cpu_type The target architecture on which the exception was generated, encoded as a Mach-O CPU type. Interpreting Mach exception data is
  * architecture-specific. If the CPU type is unknown, CPU_TYPE_ANY may be provided.
