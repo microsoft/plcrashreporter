@@ -54,7 +54,7 @@ static void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context
 }
 
 
-static void stackFrame (void) __attribute__((noinline)) {
+__attribute__((noinline)) static void stackFrame (void) {
     /* Trigger a crash */
     ((char *)NULL)[1] = 0;
 }
