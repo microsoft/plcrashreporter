@@ -76,7 +76,7 @@ static void save_crash_report (PLCrashReporter *reporter) {
     }
 
 
-    NSData *data = [[PLCrashReporter sharedReporter] loadPendingCrashReportDataAndReturnError: &error];
+    NSData *data = [reporter loadPendingCrashReportDataAndReturnError: &error];
     if (data == nil) {
         NSLog(@"Failed to load crash report data: %@", error);
         return;
