@@ -54,7 +54,7 @@ static void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context
 }
 
 
-static void stackFrame (void) __attribute__((noinline)) {
+__attribute__((noinline)) static void stackFrame (void) {
     /* Trigger a crash */
     ((char *)NULL)[1] = 0;
 }
@@ -76,7 +76,7 @@ static void save_crash_report (PLCrashReporter *reporter) {
     }
 
 
-    NSData *data = [[PLCrashReporter sharedReporter] loadPendingCrashReportDataAndReturnError: &error];
+    NSData *data = [reporter loadPendingCrashReportDataAndReturnError: &error];
     if (data == nil) {
         NSLog(@"Failed to load crash report data: %@", error);
         return;
