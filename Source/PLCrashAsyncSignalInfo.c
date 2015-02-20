@@ -28,8 +28,8 @@
 
 #include "PLCrashAsyncSignalInfo.h"
 
-#import <unistd.h>
-#import <signal.h>
+#include <unistd.h>
+#include <signal.h>
 
 /**
  * @ingroup plcrash_async_signal_info

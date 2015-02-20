@@ -2073,8 +2073,11 @@
 				034768DFFF38A50411DB9C8B /* Products */,
 				059670E30EEFADA6008A0601 /* Dependencies */,
 			);
+			indentWidth = 4;
 			name = CrashReporter;
 			sourceTree = "<group>";
+			tabWidth = 4;
+			usesTabs = 0;
 		};
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
@@ -4323,12 +4326,17 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CURRENT_PROJECT_VERSION = 1.2.1;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashNamespace.h";
+				GCC_PREPROCESSOR_DEFINITIONS = PLCR_PRIVATE;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_SHADOW = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
@@ -4339,12 +4347,18 @@
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
 				PL_MIN_MACOSX_SDK = 1080;
+				PL_NEVER_WARN = "-Wno-objc-interface-ivars -Wno-c++98-compat-pedantic -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-variadic-macros";
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64 arm64";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
 					"-Wno-shorten-64-to-32",
+					"-Wimport-preprocessor-directive-pedantic",
+					"-Wimplicit-fallthrough",
+					"-Wreceiver-forward-class",
+					"-Wshift-sign-overflow",
+					"$(PL_NEVER_WARN)",
 				);
 			};
 			name = Debug;
@@ -4352,12 +4366,17 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CURRENT_PROJECT_VERSION = 1.2.1;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashNamespace.h";
+				GCC_PREPROCESSOR_DEFINITIONS = PLCR_PRIVATE;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_SHADOW = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
@@ -4370,12 +4389,18 @@
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
 				PL_MIN_MACOSX_SDK = 1080;
+				PL_NEVER_WARN = "-Wno-objc-interface-ivars -Wno-c++98-compat-pedantic -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-variadic-macros";
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 ppc armv7 armv7s armv6 x86_64 arm64";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
 					"-Wno-shorten-64-to-32",
+					"-Wimport-preprocessor-directive-pedantic",
+					"-Wimplicit-fallthrough",
+					"-Wreceiver-forward-class",
+					"-Wshift-sign-overflow",
+					"$(PL_NEVER_WARN)",
 				);
 			};
 			name = Release;

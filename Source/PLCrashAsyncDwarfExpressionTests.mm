@@ -75,8 +75,8 @@
 
 - (BOOL) is32;
 - (cpu_type_t) targetCPU;
-- (uint64_t) dwarfTestRegister;
-- (uint64_t) dwarfBadRegister;
+- (uint8_t) dwarfTestRegister;
+- (uint8_t) dwarfBadRegister;
 
 @end
 
@@ -123,7 +123,7 @@
 /**
  * Return the DWARF register number to be used for tests.
  */
-- (uint64_t) dwarfTestRegister {
+- (uint8_t) dwarfTestRegister {
     if ([self is32])
         return TEST_THREAD_32_DWARF_REG1;
     else
@@ -133,7 +133,7 @@
 /**
  * Return a known-bad DWARF register to use for tests.
  */
-- (uint64_t) dwarfBadRegister {
+- (uint8_t) dwarfBadRegister {
     if ([self is32])
         return TEST_THREAD_32_DWARF_REG_INVALID;
     else
@@ -190,7 +190,7 @@
 - (void) testLitN {
     for (uint64_t i = 0; i < (DW_OP_lit31 - DW_OP_lit0); i++) {
         uint8_t opcodes[] = {
-            DW_OP_lit0 + i // The opcodes are defined in monotonically increasing order.
+            static_cast<uint8_t>(DW_OP_lit0 + i) // The opcodes are defined in monotonically increasing order.
         };
         
         PERFORM_EVAL_TEST(opcodes, uint64_t, i);
@@ -325,11 +325,11 @@
     plcrash_async_thread_state_set_reg(&_ts, regnum, 0xFF);
 
     /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, plus 5 (the value is sleb128 encoded) */
-    uint8_t opcodes[] = { DW_OP_breg0 + [self dwarfTestRegister], 0x5 };
+    uint8_t opcodes[] = { static_cast<uint8_t>(DW_OP_breg0 + [self dwarfTestRegister]), 0x5 };
     PERFORM_EVAL_TEST(opcodes, uint64_t, 0xFF+5);
     
     /* Should evaluate to value of the TEST_THREAD_DWARF_REG1 register, minus 2 (the value is sleb128 encoded)*/
-    uint8_t opcodes_negative[] = { DW_OP_breg0 + [self dwarfTestRegister], 0x7e };
+    uint8_t opcodes_negative[] = { static_cast<uint8_t>(DW_OP_breg0 + [self dwarfTestRegister]), 0x7e };
     PERFORM_EVAL_TEST(opcodes_negative, uint64_t, 0xFF-2);
 }
 
@@ -644,7 +644,7 @@
 
 /** Test evaluation of DW_OP_shra */
 - (void) testShiftRightArithmetic {
-    uint8_t opcodes[] = { DW_OP_const1s, -10, DW_OP_const1u, 0x1, DW_OP_shra };
+    uint8_t opcodes[] = { DW_OP_const1s, static_cast<uint8_t>(-10), DW_OP_const1u, 0x1, DW_OP_shra };
     PERFORM_EVAL_TEST(opcodes, int32_t, -10>>1);
 }
 

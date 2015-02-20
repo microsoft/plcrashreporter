@@ -129,7 +129,7 @@ plcrash_error_t plcrash_async_find_symbol (plcrash_async_macho_t *image,
  *
  * @param str String to which character should be appended.
  * @param c Character to append.
- * @param cursorPtr Cursor used to store the current write position.
+ * @param cursor Cursor used to store the current write position.
  * @param limit Maximum number of bytes that may be written to @a str.
  *
  * @return Returns true if the character was appended successfully, false

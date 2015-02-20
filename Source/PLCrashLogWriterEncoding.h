@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-#import "PLCrashAsync.h"
+#include "PLCrashAsync.h"
 
 typedef enum {
         PLPROTOBUF_C_TYPE_INT32,
