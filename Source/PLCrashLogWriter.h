@@ -109,7 +109,7 @@ typedef struct plcrash_log_writer {
         /** Application version */
         char *app_version;
         
-        /** Application marketing version */
+        /** Application marketing version (may be null) */
         char *app_marketing_version;
     } application_info;
     

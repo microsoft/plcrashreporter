@@ -260,7 +260,7 @@ enum {
  * @param writer Writer instance to be initialized.
  * @param app_identifier Unique per-application identifier. On Mac OS X, this is likely the CFBundleIdentifier.
  * @param app_version Application version string.
- * @param app_marketing_version Application marketing version string.
+ * @param app_marketing_version Application marketing version string (may be nil).
  * @param symbol_strategy The strategy to use for local symbolication.
  * @param user_requested If true, the written report will be marked as a 'generated' non-crash report, rather than as
  * a true crash report created upon an actual crash.

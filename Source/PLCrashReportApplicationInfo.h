@@ -52,7 +52,7 @@
 @property(nonatomic, readonly) NSString *applicationVersion;
 
 /**
- * The application marketing version. This is usually the application's CFBundleShortVersionString value.
+ * The application marketing version. This is usually the application's CFBundleShortVersionString value if available. May be nil.
  */
 @property(nonatomic, readonly) NSString *applicationMarketingVersion;
 
