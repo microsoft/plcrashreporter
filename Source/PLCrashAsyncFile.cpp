@@ -207,6 +207,10 @@ plcrash_error_t AsyncFile::mktemp (char *pathTemplate, mode_t mode, int *outfd) 
             }
         }
     }
+
+    /* If no suffix is found, set the suffix index to the empty end of the template */
+    if (suffix_i == 0 && pathTemplate[suffix_i] != 'X')
+        suffix_i = strlen(pathTemplate);
     
     /* Assert that the computed suffix length matches the actual NUL-terminated string length */
     PLCF_ASSERT(strlen(&pathTemplate[suffix_i]) == suffix_len);
