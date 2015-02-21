@@ -369,7 +369,7 @@ static void uncaught_exception_handler (NSException *exception) {
 @interface PLCrashReporter (PrivateMethods)
 
 - (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration;
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion configuration: (PLCrashReporterConfig *) configuration;
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration;
 
 - (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
@@ -577,7 +577,7 @@ static PLCrashReporter *sharedReporter = nil;
     signal_handler_context.path = strdup([[self crashReportPath] UTF8String]); // NOTE: would leak if this were not a singleton struct
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
-    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);
+    plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, _applicationMarketingVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);
     
     
     /* Enable the signal handler */
@@ -702,7 +702,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     }
 
     /* Initialize the output context */
-    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
+    plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, _applicationMarketingVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
     
     /* Mock up a SIGTRAP-based signal info */
@@ -835,12 +835,13 @@ cleanup:
  *
  * @param applicationIdentifier The application identifier to be included in crash reports.
  * @param applicationVersion The application version number to be included in crash reports.
+ * @param applicationMarketingVersion The application marketing version number to be included in crash reports.
  * @param configuration The PLCrashReporter configuration.
  *
  * @todo The appId and version values should be fetched from the PLCrashReporterConfig, once the API
  * has been extended to allow supplying these values.
  */
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion configuration: (PLCrashReporterConfig *) configuration {
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration {
     /* Initialize our superclass */
     if ((self = [super init]) == nil)
         return nil;
@@ -849,6 +850,7 @@ cleanup:
     _config = [configuration retain];
     _applicationIdentifier = [applicationIdentifier retain];
     _applicationVersion = [applicationVersion retain];
+    _applicationMarketingVersion = [applicationMarketingVersion retain];
     
     /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
     NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
@@ -872,6 +874,7 @@ cleanup:
 - (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration {
     NSString *bundleIdentifier = [bundle bundleIdentifier];
     NSString *bundleVersion = [[bundle infoDictionary] objectForKey: (NSString *) kCFBundleVersionKey];
+    NSString *bundleMarketingVersion = [[bundle infoDictionary] objectForKey: @"CFBundleShortVersionString"];
     
     /* Verify that the identifier is available */
     if (bundleIdentifier == nil) {
@@ -892,7 +895,7 @@ cleanup:
         bundleVersion = @"";
     }
     
-    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion configuration: configuration];
+    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion configuration: configuration];
 }
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
@@ -980,6 +983,7 @@ cleanup:
     [_crashReportDirectory release];
     [_applicationIdentifier release];
     [_applicationVersion release];
+    [_applicationMarketingVersion release];
 
     [super dealloc];
 }
