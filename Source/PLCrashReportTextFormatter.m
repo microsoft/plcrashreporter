@@ -183,6 +183,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
         NSString *processPath = unknownString;
         NSString *parentProcessName = unknownString;
         NSString *parentProcessId = unknownString;
+        NSString *versionString = unknownString;
         
         /* Process information was not available in earlier crash report versions */
         if (report.hasProcessInfo) {
@@ -205,10 +206,17 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
             parentProcessId = [[NSNumber numberWithUnsignedInteger: report.processInfo.parentProcessID] stringValue];
         }
         
+        /* Marketing version is optional */
+        if (report.applicationInfo.applicationMarketingVersion != nil) {
+            versionString = [NSString stringWithFormat: @"%@ (%@)", report.applicationInfo.applicationMarketingVersion, report.applicationInfo.applicationVersion];
+        } else {
+            versionString = report.applicationInfo.applicationVersion;
+        }
+        
         [text appendFormat: @"Process:         %@ [%@]\n", processName, processId];
         [text appendFormat: @"Path:            %@\n", processPath];
         [text appendFormat: @"Identifier:      %@\n", report.applicationInfo.applicationIdentifier];
-        [text appendFormat: @"Version:         %@\n", report.applicationInfo.applicationVersion];
+        [text appendFormat: @"Version:         %@\n", versionString];
         [text appendFormat: @"Code Type:       %@\n", codeType];
         [text appendFormat: @"Parent Process:  %@ [%@]\n", parentProcessName, parentProcessId];
     }
