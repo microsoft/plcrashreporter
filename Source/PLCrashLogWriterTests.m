@@ -114,6 +114,7 @@
 
     STAssertTrue(strcmp(appInfo->identifier, "test.id") == 0, @"Incorrect app ID written");
     STAssertTrue(strcmp(appInfo->version, "1.0") == 0, @"Incorrect app version written");
+    STAssertTrue(strcmp(appInfo->marketing_version, "2.0") == 0, @"Incorrect app marketing version written");
 }
 
 // check a crash report's process info
@@ -323,7 +324,7 @@
     plcrash_async_file_init(&file, fd, 0);
 
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", @"2.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
 
     /* Set an exception with a valid return address call stack. */
     NSException *e;
