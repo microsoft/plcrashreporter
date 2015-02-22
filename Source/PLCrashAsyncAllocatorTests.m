@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 #import "PLCrashAsyncAllocator.h"
 
 @interface PLCrashAsyncAllocatorTests : SenTestCase {

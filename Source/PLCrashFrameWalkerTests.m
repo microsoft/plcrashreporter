@@ -28,7 +28,7 @@
 
 #import <pthread.h>
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 #import "PLCrashFrameWalker.h"
 #import "PLCrashTestThread.h"

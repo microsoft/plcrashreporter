@@ -32,6 +32,21 @@
 #import <sys/types.h>
 #import <sys/sysctl.h>
 
+#include <Availability.h>
+
+#if TARGET_IPHONE_OS
+#import <UIKit/UIKit.h>
+@interface DemoCrashAppDelegate : NSObject <UIApplicationDelegate> @end
+@implementation DemoCrashAppDelegate
+- (BOOL) application: (UIApplication *) application didFinishLaunchingWithOptions: (NSDictionary *) launchOptions {
+    UIWindow *window = [[UIWindow alloc] init];
+    window.rootViewController = [[UIViewController alloc] init];
+    [window makeKeyAndVisible];
+    return YES;
+}
+@end
+#endif /* TARGET_IPHONE_OS */
+
 /* A custom post-crash callback */
 void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
     // this is not async-safe, but this is a test implementation
@@ -121,6 +136,19 @@ static bool debugger_should_exit (void) {
 int main (int argc, char *argv[]) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSError *error = nil;
+
+    /*
+     * Standalone "logic" tests aren't supported by XCTest when targeting an actual iOS device; instead,
+     * they require a host application under which the tests will run.
+     *
+     * The DemoCrash application serves as a test host; we simply look for the existence of the XCTest framework
+     * and assume that, should it be available, we're running as a test harness.
+     */
+#if TARGET_IPHONE_OS
+    if (NSClassFromString(@"XCTestCase") != nil) {
+        return UIApplicationMain(argc, argv, nil, @"DemoCrashAppDelegate");
+    }
+#endif /* TARGET_IPHONE_OS */
 
     if (debugger_should_exit()) {
         NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");

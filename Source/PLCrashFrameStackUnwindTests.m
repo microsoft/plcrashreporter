@@ -27,7 +27,7 @@
  */
 
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 #import "PLCrashFrameStackUnwind.h"
 
 struct stack_frame {
