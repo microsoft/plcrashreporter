@@ -109,7 +109,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     AsyncFile file = AsyncFile(fd, 0);
     
     /* Initialize a writer */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", @"1.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
     
     /* Set an exception with a valid return address call stack. */
     plcrash_log_objc_exception_info_t objc_exc_info;
