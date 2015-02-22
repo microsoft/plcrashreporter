@@ -35,6 +35,9 @@
     
     /** Application version */
     NSString *_applicationVersion;
+    
+    /** Application marketing version */
+    NSString *_applicationMarketingVersion;
 }
 
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier 
