@@ -108,6 +108,9 @@ typedef struct plcrash_log_writer {
 
         /** Application version */
         char *app_version;
+        
+        /** Application marketing version (may be null) */
+        char *app_marketing_version;
     } application_info;
     
     /** Process data */
@@ -212,6 +215,7 @@ typedef struct plcrash_log_signal_info {
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          NSString *app_identifier,
                                          NSString *app_version,
+                                         NSString *app_marketing_version,
                                          plcrash_async_symbol_strategy_t symbol_strategy,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
