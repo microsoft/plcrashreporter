@@ -223,7 +223,7 @@ inline bool dwarf_opstream::read_gnueh_ptr (gnu_ehptr_reader<machine_ptr> *reade
 {
     pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
     plcrash_error_t err;
-    size_t size;
+    pl_vm_size_t size;
 
     /* Perform the read; this will safely handle the case where the target falls outside
      * of the maximum range */

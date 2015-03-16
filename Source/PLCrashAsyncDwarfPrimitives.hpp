@@ -295,7 +295,7 @@ public:
                           pl_vm_off_t offset,
                           DW_EH_PE_t encoding,
                           machine_ptr *result,
-                          size_t *size);
+                          pl_vm_size_t *size);
 private:
     const plcrash_async_byteorder_t *_byteorder;
 

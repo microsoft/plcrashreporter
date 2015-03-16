@@ -304,7 +304,7 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_cie_info_init (plcrash_async
                 case 'P': {
                     machine_ptr value;
                     uint8_t ptr_enc;
-                    size_t size;
+                    pl_vm_size_t size;
                     
                     /* Read the personality routine pointer encoding */
                     if ((err = plcrash_async_mobject_read_uint8(mobj, address, data_offset, &ptr_enc)) != PLCRASH_ESUCCESS) {

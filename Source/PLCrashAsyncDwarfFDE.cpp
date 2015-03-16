@@ -154,7 +154,7 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init (plcrash_async
      */
     {
         machine_ptr value;
-        size_t ptr_size;
+        pl_vm_size_t ptr_size;
         
         /* Determine the correct encoding to use. This will either be encoded using the standard plaform
          * pointer size (as per DWARF), or using the encoding defined in the augmentation string

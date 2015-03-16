@@ -122,7 +122,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
                                                                                      pl_vm_off_t offset,
                                                                                      DW_EH_PE_t encoding,
                                                                                      machine_ptr *result,
-                                                                                     size_t *size)
+                                                                                     pl_vm_size_t *size)
 {
     plcrash_error_t err;
     

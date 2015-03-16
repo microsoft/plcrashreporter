@@ -53,7 +53,7 @@ using namespace plcrash::async;
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     uint64_t result;
-    size_t size;
+    pl_vm_size_t size;
 
     /* 64-bit reader (supports both 32-bit and 64-bit test hosts) */
     gnu_ehptr_reader<uint64_t> reader(plcrash_async_byteorder_big_endian());
@@ -85,7 +85,7 @@ using namespace plcrash::async;
     gnu_ehptr_reader<uint64_t> reader(&plcrash_async_byteorder_direct);
     plcrash_error_t err;
     uint64_t result;
-    size_t size;
+    pl_vm_size_t size;
     
     /* Test data */
     struct {
@@ -114,7 +114,7 @@ using namespace plcrash::async;
     gnu_ehptr_reader<uint64_t> reader(&plcrash_async_byteorder_direct);
     plcrash_error_t err;
     uint64_t result;
-    size_t size;
+    pl_vm_size_t size;
     
     /* Test data */
     union {
@@ -188,7 +188,7 @@ using namespace plcrash::async;
     gnu_ehptr_reader<uint64_t> reader(&plcrash_async_byteorder_direct);
     plcrash_error_t err;
     uint64_t result;
-    size_t size;
+    pl_vm_size_t size;
     
     /* Test data */
     union {
