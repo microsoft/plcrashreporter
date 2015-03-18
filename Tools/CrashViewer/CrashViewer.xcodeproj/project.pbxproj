@@ -272,6 +272,7 @@
 				D891CC1718D0C9510048AC0F /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		D891CC1718D0C9510048AC0F /* Products */ = {
 			isa = PBXGroup;
@@ -418,9 +419,9 @@
 		D891CC0E18D0C9510048AC0F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				CLASSPREFIX = XOJ;
+				CLASSPREFIX = PL;
 				LastUpgradeCheck = 0510;
-				ORGANIZATIONNAME = "Xojo, Inc.";
+				ORGANIZATIONNAME = "Plausible Labs Cooperative, Inc.";
 			};
 			buildConfigurationList = D891CC1118D0C9510048AC0F /* Build configuration list for PBXProject "CrashViewer" */;
 			compatibilityVersion = "Xcode 3.2";

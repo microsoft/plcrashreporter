@@ -97,8 +97,8 @@
     symbolicationTaks.stdinData = [crashText dataUsingEncoding: NSUTF8StringEncoding];
 
     [symbolicationTaks launchWithCompletionHandler: ^(PLAsyncTask *task, NSData *stdoutData, NSData *stderrData) {
-	    /* The data arguments aren't guaranteed to be valid after returning from
-	     * this callback, so make our strings immediately. */
+        /* The data arguments aren't guaranteed to be valid after returning from
+         * this callback, so make our strings immediately. */
         NSString *stdoutText = [[NSString alloc] initWithData: stdoutData encoding: NSUTF8StringEncoding];
         NSString *stderrText = [[NSString alloc] initWithData: stderrData encoding: NSUTF8StringEncoding];
         self.symbolicationTask = nil;
@@ -130,7 +130,7 @@
     self.alertTextView.string = details;
 
     [alert beginSheetModalForWindow: self.window completionHandler: ^(NSModalResponse returnCode) {
-	    /* This dialog is informational only and we have no action to take. */
+        /* This dialog is informational only and we have no action to take. */
     }];
 }
 
