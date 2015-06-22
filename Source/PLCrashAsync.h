@@ -131,17 +131,6 @@ typedef int64_t pl_vm_off_t;
 
 #endif /* PLCF_RELEASE_BUILD */
 
-/**
- * Static compile-time assertion.
- *
- * @param name The assertion name; must be valid for use within a C identifier.
- * @param cond Assertion condition
- */
-#define PLCF_ASSERT_STATIC(name, cond) PLCF_ASSERT_STATIC_(name, cond, __LINE__)
-
-#define PLCF_ASSERT_STATIC_(name, cond, line) PLCF_ASSERT_STATIC__(name, cond, line)
-#define PLCF_ASSERT_STATIC__(name, cond, line) typedef int plcf_static_assert_##name##_##line [(cond) ? 1 : -1]
-
 // Debug output support. Lines are capped at 128 (stack space is scarce). This implemention
 // is not async-safe and should not be enabled in release builds
 #ifdef PLCF_RELEASE_BUILD
