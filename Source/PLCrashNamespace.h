@@ -37,13 +37,14 @@
  */
 // #define PLCRASHREPORTER_PREFIX AcmeCo
 
-#ifdef PLCRASHREPORTER_PREFIX
 
 // We need two extra layers of indirection to make CPP substitute
 // the PLCRASHREPORTER_PREFIX define.
 #define PLNS_impl2(prefix, symbol) prefix ## symbol
 #define PLNS_impl(prefix, symbol) PLNS_impl2(prefix, symbol)
 #define PLNS(symbol) PLNS_impl(PLCRASHREPORTER_PREFIX, symbol)
+
+#ifdef PLCRASHREPORTER_PREFIX
 
 #define PLCrashMachExceptionServer          PLNS(PLCrashMachExceptionServer)
 #define PLCrashReport                       PLNS(PLCrashReport)
@@ -78,3 +79,42 @@
 #define plcrash_signal_handler              PLNS(plcrash_signal_handler)
 
 #endif
+
+/*
+ * The following symbols are exported by the protobuf-c library. When building
+ * a shared library, we can hide these as private symbols.
+ *
+ * However, when building a static library, we can only do so if we use
+ * MH_OBJECT "single object prelink". The MH_OBJECT approach allows us to apply
+ * symbol hiding/aliasing/etc similar to that supported by dylibs, but because it is
+ * seemingly unused within Apple, the use thereof regularly introduces linking bugs
+ * and errors in new Xcode releases.
+ *
+ * Rather than fighting the linker, we use the namespacing machinery to rewrite these
+ * symbols, but only when explicitly compiling PLCrashReporter. Since protobuf-c is a library
+ * that may be used elsewhere, we don't want to rewrite these symbols if they're used
+ * independently by PLCrashReporter API clients.
+ */
+#ifdef PLCR_PRIVATE
+   /* If no prefix has been defined, we need to specify our own private prefix */
+#  ifndef PLCRASHREPORTER_PREFIX
+#    define PLCRASHREPORTER_PREFIX PL_
+#  endif
+
+#  define protobuf_c_buffer_simple_append                   PLNS(protobuf_c_buffer_simple_append)
+#  define protobuf_c_default_allocator                      PLNS(protobuf_c_default_allocator)
+#  define protobuf_c_enum_descriptor_get_value              PLNS(protobuf_c_enum_descriptor_get_value)
+#  define protobuf_c_enum_descriptor_get_value_by_name      PLNS(protobuf_c_enum_descriptor_get_value_by_name)
+#  define protobuf_c_message_descriptor_get_field           PLNS(protobuf_c_message_descriptor_get_field)
+#  define protobuf_c_message_descriptor_get_field_by_name   PLNS(protobuf_c_message_descriptor_get_field_by_name)
+#  define protobuf_c_message_free_unpacked                  PLNS(protobuf_c_message_free_unpacked)
+#  define protobuf_c_message_get_packed_size                PLNS(protobuf_c_message_get_packed_size)
+#  define protobuf_c_message_pack                           PLNS(protobuf_c_message_pack)
+#  define protobuf_c_message_pack_to_buffer                 PLNS(protobuf_c_message_pack_to_buffer)
+#  define protobuf_c_message_unpack                         PLNS(protobuf_c_message_unpack)
+#  define protobuf_c_out_of_memory                          PLNS(protobuf_c_out_of_memory)
+#  define protobuf_c_service_descriptor_get_method_by_name  PLNS(protobuf_c_service_descriptor_get_method_by_name)
+#  define protobuf_c_service_destroy                        PLNS(protobuf_c_service_destroy)
+#  define protobuf_c_service_generated_init                 PLNS(protobuf_c_service_generated_init)
+#  define protobuf_c_system_allocator                       PLNS(protobuf_c_system_allocator)
+#endif /* PLCR_PRIVATE */
