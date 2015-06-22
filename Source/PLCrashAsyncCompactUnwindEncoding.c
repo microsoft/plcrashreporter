@@ -31,6 +31,7 @@
 
 #include "PLCrashFeatureConfig.h"
 #include "PLCrashCompatConstants.h"
+#include "PLCrashMacros.h"
 
 #include <inttypes.h>
 
@@ -444,7 +445,7 @@ uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t
      */
     
     /* Assert that the maximum register count matches our switch() statement. */
-    PLCF_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
+    PLCR_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
     switch (count) {
         case 1:
             permutation |= renumbered[0];
@@ -514,7 +515,7 @@ permutation -= (permunreg[pos]*factor); \
 } while (0)
 
     /* Assert that the maximum register count matches our switch() statement. */
-    PLCF_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
+    PLCR_ASSERT_STATIC(expected_max_register_count, PLCRASH_ASYNC_CFE_PERMUTATION_REGISTER_MAX == 6);
 	switch (count) {
 		case 6:
             PERMUTE(0, 120);

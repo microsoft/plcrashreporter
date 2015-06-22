@@ -32,6 +32,8 @@
 #include "PLCrashAsyncThread.h"
 #include "PLCrashAsyncThread_current_defs.h"
 
+#include "PLCrashMacros.h"
+
 /*
  * Implements the interior function called by plcrash_async_thread_state_current()
  * after it has populated the mctx thread state.
@@ -134,7 +136,7 @@ VOFF(es, trapno, 0);
 #elif defined(__arm64__)
 
 /* There's a hard-coded dependency on this size in the trampoline assembly, so we explicitly validate it here. */
-PLCF_ASSERT_STATIC(MCONTEXT_SIZE, sizeof(pl_mcontext_t) == 816);
+PLCR_ASSERT_STATIC(MCONTEXT_SIZE, sizeof(pl_mcontext_t) == 816);
 
 /* Verify the expected offsets */
 VOFF(ss, x, 16);
