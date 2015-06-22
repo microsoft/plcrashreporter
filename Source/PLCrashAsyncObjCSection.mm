@@ -29,6 +29,8 @@
 #include "PLCrashAsyncObjCSection.h"
 #include "PLCrashCompatConstants.h"
 
+#include <Foundation/Foundation.h>
+
 /**
  * @internal
  * @ingroup plcrash_async_image
@@ -39,6 +41,24 @@
  * @{
  */
 
+/**
+ * @internal
+ * Executed in static initializers to determine whether the host uses the iOS 9+ ABI.
+ */
+static bool plcrash_async_image_objc_has_ios9_abi () {
+    static dispatch_once_t onceToken;
+    static bool is_ios9;
+    dispatch_once(&onceToken, ^{
+        NSProcessInfo *pi = [NSProcessInfo processInfo];
+        if (TARGET_OS_IOS && !TARGET_OS_SIMULATOR && [pi respondsToSelector: @selector(operatingSystemVersion)] && pi.operatingSystemVersion.majorVersion >= 9) {
+            is_ios9 = true;
+        } else {
+            is_ios9 = false;
+        }
+    });
+    
+    return is_ios9;
+};
 
 static const char * const kObjCSegmentName = "__OBJC";
 static const char * const kDataSegmentName = "__DATA";
@@ -51,6 +71,15 @@ static const char * const kObjCDataSectionName = "__objc_data";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
+
+/**
+ * @internal
+ * The pointer mask for non-pointer ISAs. This flag is not ABI stable, and may change; it is validated
+ * at development time via our unit tests. As per our API invariants, if this flag becomes out-of-sync
+ * with the host OS, our symbolication implementation will either fail to find some symbols, or will
+ * return incorrect symbols, but it will not crash.
+ */
+const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_objc_has_ios9_abi() ? 0xffffffff8ULL : 0x1fffffff8ULL;
 
 /* TAGGED_ISA() returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
  * used to designate a non-pointer isa; see the plcrash_async_objc_supports_nonptr_isa documentation for more details */
