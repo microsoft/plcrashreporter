@@ -44,6 +44,13 @@
 #define PLNS_impl(prefix, symbol) PLNS_impl2(prefix, symbol)
 #define PLNS(symbol) PLNS_impl(PLCRASHREPORTER_PREFIX, symbol)
 
+
+/*
+ * Rewrite all ObjC/C symbols.
+ *
+ * For C++ symbol handling, refer to the PLCR_CPP_BEGIN_NS and PLCR_CPP_END_NS
+ * macros.
+ */
 #ifdef PLCRASHREPORTER_PREFIX
 
 #define PLCrashMachExceptionServer          PLNS(PLCrashMachExceptionServer)
