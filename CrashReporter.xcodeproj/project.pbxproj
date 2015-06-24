@@ -122,10 +122,6 @@
 		052A46FA13637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 052A46F713637DE000987004 /* PLCrashAsyncImageListTests.m */; };
 		052A473E1363844600987004 /* PLCrashAsyncImageList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 052A46BD1363650100987004 /* PLCrashAsyncImageList.cpp */; };
 		052A474C136384B300987004 /* PLCrashAsyncImageList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 052A46BD1363650100987004 /* PLCrashAsyncImageList.cpp */; };
-		053347A617E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
-		053347A717E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
-		053347A817E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
-		053347A917E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AA17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AB17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
 		053347AC17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
@@ -2904,7 +2900,6 @@
 				05F3CD7A16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				05E7484F175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
 				05E748611760D64D009B8745 /* PLCrashAsyncDwarfFDE.cpp in Sources */,
-				053347A817E161CB00C52E50 /* unwind_test_arm64.S in Sources */,
 				05E748691760D891009B8745 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
 				05E7487D176118C2009B8745 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
 				05E7488F176135CF009B8745 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
@@ -2935,7 +2930,6 @@
 				05CD36460EF24758000FDE88 /* PLCrashAsync.c in Sources */,
 				05CD36D20EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */,
 				05F40ACB0EF7379F008050CF /* PLCrashReporter.m in Sources */,
-				053347A917E161CB00C52E50 /* unwind_test_arm64.S in Sources */,
 				05F411A70EF8DA31008050CF /* PLCrashReport.m in Sources */,
 				05F411F70EF8E001008050CF /* protobuf-c.c in Sources */,
 				05F411F50EF8DFE4008050CF /* crash_report.proto in Sources */,
@@ -3351,7 +3345,6 @@
 				0581B521168FDB280098C103 /* mach_exc.defs in Sources */,
 				05D8FE4C16ACAA6E000ED70C /* PLCrashAsyncAllocator.c in Sources */,
 				FCE4550BA74D9DF923CFCD5A /* PLCrashFrameStackUnwind.c in Sources */,
-				053347A617E161CB00C52E50 /* unwind_test_arm64.S in Sources */,
 				05A17DC516D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DF116DBD0AD00888448 /* PLCrashAsyncThread_x86.c in Sources */,
 				05A17DF616DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */,
@@ -3429,7 +3422,6 @@
 				0581B522168FDB280098C103 /* mach_exc.defs in Sources */,
 				05D8FE4D16ACAA6E000ED70C /* PLCrashAsyncAllocator.c in Sources */,
 				FCE4566DF9168DCC484928E1 /* PLCrashFrameStackUnwind.c in Sources */,
-				053347A717E161CB00C52E50 /* unwind_test_arm64.S in Sources */,
 				05A17DC616D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DF216DBD0AD00888448 /* PLCrashAsyncThread_x86.c in Sources */,
 				05A17DF716DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */,
