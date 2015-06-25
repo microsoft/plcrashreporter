@@ -41,6 +41,19 @@
 #   define PLCR_C_END_DECLS
 #endif
 
+#if defined(__cplusplus)
+#  if defined(PLCRASHREPORTER_PREFIX)
+     /** @internal Define the plcrash namespace, automatically inserting an inline namespace containing the configured PLCRASHREPORTER_PREFIX, if any. */
+#    define PLCR_CPP_BEGIN_NS namespace plcrash { inline namespace PLCRASHREPORTER_PREFIX {
+
+    /** @internal Close the definition of the `plcrash` namespace (and the PLCRASHREPORTER_PREFIX inline namespace, if any). */
+#    define PLCR_CPP_END_NS }}
+#  else
+#   define PLCR_CPP_BEGIN_NS namespace plcrash {
+#   define PLCR_CPP_END_NS }
+#  endif
+#endif
+
 #ifdef __clang__
 #  define PLCR_PRAGMA_CLANG(_p) _Pragma(_p)
 #else

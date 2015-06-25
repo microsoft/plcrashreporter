@@ -27,10 +27,12 @@
 #include "dwarf_opstream.hpp"
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -87,6 +89,7 @@ plcrash_error_t dwarf_opstream::init (plcrash_async_mobject_t *mobj,
  * @}
  */
 
-}}
+PLCR_CPP_END_NS
+}
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */

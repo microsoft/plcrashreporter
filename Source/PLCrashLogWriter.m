@@ -334,7 +334,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             /* Retrieve PID */
             writer->process_info.parent_process_id = pinfo.parentProcessID;
 
-            /* Retrieve name */
+            /* Retrieve name. This will fail on iOS 9+, where EPERM is returned due to new sandbox constraints. */
             PLCrashProcessInfo *parentInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID] autorelease];
             if (parentInfo != nil) {
                 if (parentInfo.processName != nil) {

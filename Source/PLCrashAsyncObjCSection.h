@@ -47,13 +47,8 @@ extern "C" {
  * Flag set for non-ptr ISAs. This flag is not ABI stable, and may change.
  */
 #define PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG 0x1
-    
-/**
- * @internal
- * The pointer mask for non-pointer ISAs. This flag is not ABI stable, and may change; it is validated
- * at development time via our unit tests.
- */
-#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x1fffffff8ULL
+
+extern const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK;
 
 /**
  * @internal
