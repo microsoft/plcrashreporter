@@ -34,6 +34,8 @@
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
+using namespace plcrash::async;
+
 /*
  * Configure the test cases for thread states that are supported by the host.
  *

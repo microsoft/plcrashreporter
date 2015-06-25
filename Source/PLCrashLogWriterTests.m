@@ -32,7 +32,9 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashReport.h"
+
 #import "PLCrashProcessInfo.h"
+#import "PLCrashHostInfo.h"
 
 #import <sys/stat.h>
 #import <sys/mman.h>
@@ -167,14 +169,23 @@
         free(process_path);
     }
     
-    /* Parent process */
+    /* Parent process; fetching the process info is expected to fail on iOS 9+ due to new sandbox constraints */
     PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
-    STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");
-    STAssertNotNil(parentProcessInfo.processName, @"Could not retrieve parent process name");
 
-    NSString *parsedParentProcessName = [[[NSString alloc] initWithCString: procInfo->parent_process_name encoding: NSUTF8StringEncoding] autorelease];
-    STAssertNotNil(parsedParentProcessName, @"Process name contains invalid UTF-8");
-    STAssertEqualStrings(parsedParentProcessName, parentProcessInfo.processName, @"Incorrect process name");
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
+        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS");
+        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS");
+        
+    } else {
+        STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");
+        STAssertNotNil(parentProcessInfo.processName, @"Could not retrieve parent process name");
+        STAssertNotNULL(procInfo->parent_process_name, @"Crash log writer could not retrieve parent process name");
+        
+        NSString *parsedParentProcessName = [[[NSString alloc] initWithCString: procInfo->parent_process_name encoding: NSUTF8StringEncoding] autorelease];
+        STAssertNotNil(parsedParentProcessName, @"Process name contains invalid UTF-8");
+        STAssertEqualStrings(parsedParentProcessName, parentProcessInfo.processName, @"Incorrect process name");
+
+    }
 }
 
 - (void) checkThreads: (Plcrash__CrashReport *) crashReport {

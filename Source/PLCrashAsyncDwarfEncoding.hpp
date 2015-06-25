@@ -35,10 +35,12 @@
 #include "PLCrashAsyncDwarfFDE.hpp"
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -76,7 +78,8 @@ private:
     bool _debug_frame;
 };
     
-}}
+PLCR_CPP_END_NS
+}
 
 /**
  * @}
