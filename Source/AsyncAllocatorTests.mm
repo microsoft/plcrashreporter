@@ -27,7 +27,9 @@
  */
 
 #import "SenTestCompat.h"
-#import "PLCrashAsyncAllocator.h"
+#import "AsyncAllocator.hpp"
+
+using namespace plcrash::async;
 
 @interface PLCrashAsyncAllocatorTests : SenTestCase {
 @private
@@ -41,16 +43,24 @@
  * Test allocation of guard pages.
  */
 - (void) testGuardPages {
-    plcrash_async_allocator_t *alloc;
+    AsyncAllocator *allocator;
     plcrash_error_t err;
+    
+    /* Create our test allocator */
+    err = AsyncAllocator::Create(&allocator, PAGE_SIZE, AsyncAllocator::GuardLowPage | AsyncAllocator::GuardHighPage);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to construct allocator");
 
-    err = plcrash_async_allocator_new(&alloc, PAGE_SIZE, PLCrashAsyncGuardLowPage|PLCrashAsyncGuardHighPage);
-    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize allocator");
-
-    void *buffer = plcrash_async_allocator_alloc(alloc, PAGE_SIZE, true);
+    
+    /* Try allocating a full page of data */
+    void *buffer;
+    err = allocator->alloc(&buffer, PAGE_SIZE);
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to allocate a full page");
     STAssertNotNULL(buffer, @"Failed to allocate page");
-    // TODO
-    // XXX missing free();
+    
+    allocator->dealloc(buffer);
+    
+    /* Clean up */
+    delete allocator;
 }
 
 @end
