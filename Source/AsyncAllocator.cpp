@@ -42,6 +42,13 @@
 #define PL_ROUNDDOWN_ALIGN(x)   ((x) & (~(PL_NATURAL_ALIGNMENT - 1)))
 #define PL_ROUNDUP_ALIGN(x)     PL_ROUNDDOWN_ALIGN((x) + (PL_NATURAL_ALIGNMENT - 1))
 
+/* The number of bytes at the start of an allocation that must be preserved for the control block */
+#define PL_CONTROLBLOCK_HEADER_BYTES PL_ROUNDUP_ALIGN(sizeof(control_block))
+
+/* Minimum useful allocation size; we won't bother to split a free block if the new free block would be
+ * less than this size. */
+#define PL_MINIMUM_USEFUL_FREEBLOCK_SIZE (PL_ROUNDUP_ALIGN(sizeof(control_block)) * 2)
+
 namespace plcrash { namespace async {
     /* Tag parameter required for our custom placement new operators defined below */
     struct internal_placement_new_tag_t {};
@@ -54,17 +61,47 @@ void *operator new[] (size_t, const plcrash::async::internal_placement_new_tag_t
 
 namespace plcrash { namespace async {
     
+    /** Return the initial address of this entry. */
+    vm_address_t AsyncAllocator::control_block::head () { return (vm_address_t) this; }
+    
+    /** Return the data address of this entry. */
+    vm_address_t AsyncAllocator::control_block::data () { return PL_ROUNDUP_ALIGN(head() + sizeof(*this)); }
+    
+    /** Return the tail address of this entry. */
+    vm_address_t AsyncAllocator::control_block::tail () { return head() + _size; }
+    
 /**
  * @internal
  * Internal contructor used when creating a new instance.
+ *
+ * @param base_page The base address of all allocated pages, including the leading guard page, if any.
+ * @param total_size The total number of bytes allocated at base_page, including all guard pages.
+ * @param usable_page The base address of the first page within @a base_page that is not a guard page.
+ * @param usable_size The number of writable pages allocated at @a usable_page (ie, total_size, minus the guard pages).
+ * @param next_addr The first address within usable_page that may be used by our allocator.
  */
 AsyncAllocator::AsyncAllocator (vm_address_t base_page, vm_size_t total_size, vm_address_t usable_page, vm_size_t usable_size, vm_address_t next_addr) :
     _base_page(base_page),
     _total_size(total_size),
     _usable_page(usable_page),
     _usable_size(usable_size),
-    _next_addr(PL_ROUNDUP_ALIGN(next_addr)) /* MUST be kept aligned */
+    _free_list(NULL)
 {
+    /* assert sane parameters */
+    PLCF_ASSERT(base_page <= usable_page);
+    PLCF_ASSERT(usable_page <= base_page + total_size);
+    PLCF_ASSERT(usable_page + usable_size <= base_page + total_size);
+    
+    PLCF_ASSERT(next_addr >= usable_page);
+    PLCF_ASSERT(next_addr < usable_page + usable_size);
+    
+    /* Calculate the location and size of the first free block. */
+    vm_address_t first_block = PL_ROUNDUP_ALIGN(next_addr);
+    vm_size_t unused_bytes = usable_size - (first_block - base_page);
+    
+    /* Construct the first free list entry in-place, covering all unallocated data */
+    _free_list = new (internal_placement_new_tag_t(), first_block) control_block(NULL, unused_bytes);
+    _free_list->_next = _free_list;
 }
 
 AsyncAllocator::~AsyncAllocator () {
@@ -152,7 +189,7 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
         total_size,
         usable_page,
         usable_size,
-        next_addr + sizeof(AsyncAllocator) /* Remove this initial allocation from the 'free' list */
+        next_addr + sizeof(AsyncAllocator) /* Skip this initial allocation. */
     );
     
     
@@ -171,29 +208,59 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
  * @return On success, returns PLCRASH_ESUCCESS. If additional bytes can not be allocated, PLCRASH_ENOMEM will be returned.
  */
 plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
-    vm_address_t old_value;
-    vm_address_t new_value;
+    /* Sanity check that adding size to sizeof(control_block) won't overflow */
+    if (SIZE_MAX - size < PL_CONTROLBLOCK_HEADER_BYTES)
+        return PLCRASH_ENOMEM;
     
-    /* This /must/ be kept aligned */
-    PLCF_ASSERT(_next_addr == PL_ROUNDUP_ALIGN(_next_addr));
+    /* Compute the total number of bytes our allocation will need -- we have to lead with a control block. */
+    size_t new_block_size = PL_ROUNDUP_ALIGN(PL_CONTROLBLOCK_HEADER_BYTES + size);
     
-    /* Sanity check to verify that our use of OSAtomicCompareAndSwapPtrBarrier on a vm_address_t is correct */
-    PLCF_ASSERT((sizeof(_next_addr)) == sizeof(void *));
-    
-    /* Atomically bump the next_addr value */
-    do {
-        /* Verify available space */
-        if (_usable_size - (_next_addr - _usable_page) < size) {
-            // TODO - we should grow our pool on-demand
-            return PLCRASH_ENOMEM;
+    /* Find a free block with sufficient space for our allocation. */
+    // TODO - Locking
+    control_block *prev_cb = _free_list;
+    for (control_block *cb = _free_list;; prev_cb = cb, cb = cb->_next) {
+        /* Blocks must always be properly aligned! */
+        PLCF_ASSERT(cb->_size == PL_ROUNDUP_ALIGN(cb->_size));
+
+        /* Insufficient space; we need to keep looking. */
+        if (cb->_size < new_block_size) {
+            // TODO - we need to terminate when the free list comes up completely empty.
+            continue;
         }
         
-        old_value = _next_addr;
-        new_value = PL_ROUNDUP_ALIGN(_next_addr + size);
-    } while(!OSAtomicCompareAndSwapPtrBarrier((void *) old_value, (void *) new_value, (void **) &_next_addr));
-    
-    *allocated = (void *) old_value;
-    return PLCRASH_ESUCCESS;
+        /* The block is large enough, but not so much larger that we should split it into two blocks. We can
+         * use the block directly and remove it from the free list. */
+        if (cb->_size >= new_block_size && (cb->_size - new_block_size) < PL_MINIMUM_USEFUL_FREEBLOCK_SIZE) {
+            /* Remove the current block */
+            prev_cb->_next = cb->_next;
+            
+            /* Update the free pointer. If this is the only block in the free list, we've now run out of memory. */
+            if (prev_cb == cb) {
+                // TODO - allocate additional pages from the OS
+                __builtin_trap();
+            } else {
+                _free_list = prev_cb;
+            }
+            
+            /* Return our result */
+            *allocated = (void *) cb->data();
+            return PLCRASH_ESUCCESS;
+        }
+        
+        /* Otherwise, the block is big enough to be split into two blocks. We reserve the latter half of the free block for our
+         * new allocation. */
+        cb->_size -= new_block_size;
+        
+        /* We have to create a control block for the new allocation. */
+        control_block *split_cb = new (internal_placement_new_tag_t(), (((vm_address_t) cb) + cb->_size)) control_block(NULL, new_block_size);
+        
+        /* Lastly, we can return the user's allocation address (which falls just past the control block */
+        *allocated = (void *) split_cb->data();
+        return PLCRASH_ESUCCESS;
+    }
+
+    /* If we got here, we couldn't find a free block, and we couldn't grow our pool. */
+    return PLCRASH_ENOMEM;
 }
 
 /**
@@ -202,7 +269,37 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
  * @param ptr A pointer previously returned from alloc(), for which all associated memory will be deallocated.
  */
 void AsyncAllocator::dealloc (void *ptr) {
-    // TODO - we'd need a real allocator
-}    
+    /* Fetch the control block */
+    control_block *freeblock = ((control_block *) ptr) - 1;
+    
+    /*
+     * Find the insertion point at which freeblock will be inserted as the next free block. We walk the list
+     * until we either:
+     * 1) Find two blocks that we'll fit between, or
+     * 2) Hit the final node of the cyclic list, at which point high addresses cycle back to low addresses.
+     */
+    // TODO - Locking
+    control_block *parent;
+    for (parent = _free_list; freeblock > parent->_next && parent > parent->_next; parent = parent->_next) {};
+    
+    /* Try to coalesce with the next node. */
+    if (freeblock->tail() == parent->_next->head()) {
+        freeblock->_size += parent->_next->_size;
+        freeblock->_next = parent->_next->_next;
+    } else {
+        freeblock->_next = parent->_next;
+    }
+    
+    /* Try to coalesce with the previous node. */
+    if (parent->tail() == freeblock->head()) {
+        parent->_size += freeblock->_size;
+        parent->_next = freeblock->_next;
+    } else {
+        parent->_next = freeblock;
+    }
+    
+    /* Update the initial search point of our free list */
+    _free_list = parent;
+}
 
 }}

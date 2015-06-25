@@ -75,7 +75,7 @@ private:
 /**
  * @internal
  *
- * An async-safe page-guarded and locking memory pool allocator. The allocator
+ * An async-safe page-guarded and locking memory allocator. The allocator
  * will allocate itself within the target pages, ensuring that its own metadata is
  * guarded.
  */
@@ -115,6 +115,8 @@ public:
 
 private:
     AsyncAllocator (vm_address_t base_page, vm_size_t total_size, vm_address_t usable_page, vm_size_t usable_size, vm_address_t next_addr);
+    
+    size_t bytes_available ();
 
     /** The address base of the allocation. */
     vm_address_t _base_page;
@@ -125,11 +127,41 @@ private:
     /** The base address of the first usable page of the allocation */
     vm_address_t _usable_page;
     
-    /** The usable size of the allocation (ie, total size, minus guard pages.) */
+    /** The usable size of the allocation (ie, total size, minus guard pages) */
     vm_size_t _usable_size;
     
-    /** The next valid allocation address. Note that this must be kept page-aligned. */
-    vm_address_t _next_addr;
+    /**
+     * @internal
+     * 
+     * A control block sits at the start of all allocations, and is used to form a circular
+     * free list.
+     */
+    struct control_block {
+        /* Construct a new control block instance */
+        control_block (control_block *next, size_t size) : _next(next), _size(size) {}
+        
+        /** Pointer to next block in the free list, or NULL if the free list contains a single entry. */
+        control_block *_next;
+        
+        /** Size of this block */
+        size_t _size;
+        
+        vm_address_t head ();
+        vm_address_t data ();
+        vm_address_t tail ();
+    };
+    
+    /**
+     * Head of the circular free list, or NULL if memory has been exhausted and additional pages
+     * could not be allocated.
+     *
+     * Note:
+     * - The list is sorted in ascending order by address, but
+     * - The list is also circular, the highest address entry will loop back to the lowest address entry.
+     * - This pointer will not necessarily point to the lowest address as the "head" of the list.
+     * - The 'next' element in a single element list will refer cyclically to itself.
+     */
+    control_block *_free_list;
 };
     
 }}
