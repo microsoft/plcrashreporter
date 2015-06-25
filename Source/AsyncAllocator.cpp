@@ -137,7 +137,7 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
     }
     
     if (options & GuardHighPage) {
-        kt = vm_protect(mach_task_self(), base_page + (total_size - PAGE_SIZE), PAGE_SIZE, false, VM_PROT_NONE);
+        kt = vm_protect(mach_task_self(), base_page + usable_size, PAGE_SIZE, false, VM_PROT_NONE);
         if (kt != KERN_SUCCESS) {
             PLCF_DEBUG("[AsyncAllocator] vm_protect() failure: %d", kt);
             vm_deallocate(mach_task_self(), base_page, total_size);
