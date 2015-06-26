@@ -43,6 +43,18 @@
  * @{
  */
 
+// TODO - Namespacing.
+/* These assume 16-byte malloc() alignment, which is true for just about everything */
+#if defined(__arm__) || defined(__arm64__) || defined(__i386__) || defined(__x86_64__)
+#define PL_NATURAL_ALIGNMENT ((vm_size_t) 16)
+#else
+#error Define required alignment
+#endif
+
+/* Macros to handling rounding to the nearest valid allocation alignment */
+#define PL_ROUNDDOWN_ALIGN(x)   ((x) & (~(PL_NATURAL_ALIGNMENT - 1)))
+#define PL_ROUNDUP_ALIGN(x)     PL_ROUNDDOWN_ALIGN((x) + (PL_NATURAL_ALIGNMENT - 1))
+
 namespace plcrash { namespace async {
 /**
  * Tag parameter required when invoking the async-safe placement new operators defined by
@@ -107,10 +119,13 @@ public:
     AsyncAllocator operator= (const AsyncAllocator &other) = delete;
     AsyncAllocator &operator= (AsyncAllocator &&other) = delete;
 
+#ifndef PLCF_ASYNCALLOCATOR_DEBUG
 private:
+#endif
+
     AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initial_size, vm_address_t first_block, vm_size_t first_block_size);
     
-    plcrash_error_t grow (void);
+    plcrash_error_t grow (vm_size_t required);
     
     /**
      * @internal
@@ -175,6 +190,24 @@ private:
      * - The 'next' element in a single element list will refer cyclically to itself.
      */
     control_block *_free_list;
+    
+#ifdef PLCF_ASYNCALLOCATOR_DEBUG
+    vm_size_t debug_bytes_free () {
+        vm_size_t bytes_free = 0;
+        
+        _lock.lock();
+        control_block *first = _free_list;
+        for (control_block *b = _free_list; b != NULL; b = b->_next) {
+            bytes_free += b->_size;
+            
+            if (b->_next == first)
+                break;
+        }
+        _lock.unlock();
+        
+        return bytes_free;
+    }
+#endif    
 };
     
 }}

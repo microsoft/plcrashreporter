@@ -28,20 +28,10 @@
 
 #include "AsyncAllocator.hpp"
 #include "PLCrashAsync.h"
+
 #include "AsyncPageAllocator.hpp"
 
 #include <libkern/OSAtomic.h>
-
-/* These assume 16-byte malloc() alignment, which is true for just about everything */
-#if defined(__arm__) || defined(__arm64__) || defined(__i386__) || defined(__x86_64__)
-#define PL_NATURAL_ALIGNMENT 16
-#else
-#error Define required alignment
-#endif
-
-/* Macros to handling rounding to the nearest valid allocation alignment */
-#define PL_ROUNDDOWN_ALIGN(x)   ((x) & (~(PL_NATURAL_ALIGNMENT - 1)))
-#define PL_ROUNDUP_ALIGN(x)     PL_ROUNDDOWN_ALIGN((x) + (PL_NATURAL_ALIGNMENT - 1))
 
 /* The number of bytes at the start of an allocation that must be preserved for the control block */
 #define PL_CONTROLBLOCK_HEADER_BYTES PL_ROUNDUP_ALIGN(sizeof(control_block))
@@ -117,15 +107,17 @@ AsyncAllocator::~AsyncAllocator () {
  * @internal
  *
  * Grow the backing pool. This <em>must</em> be called with _lock held.
+ *
+ * @param required The minimum number of additional bytes required.
  */
-plcrash_error_t AsyncAllocator::grow (void) {
+plcrash_error_t AsyncAllocator::grow (vm_size_t required) {
     PLCF_ASSERT(!_lock.tryLock());
 
     plcrash_error_t err;
     
     /* Try allocating a new page pool */
     AsyncPageAllocator *newPages;
-    err = AsyncPageAllocator::Create(&newPages, _initial_size, AsyncPageAllocator::GuardLowPage | AsyncPageAllocator::GuardHighPage);
+    err = AsyncPageAllocator::Create(&newPages, _initial_size + required, AsyncPageAllocator::GuardLowPage | AsyncPageAllocator::GuardHighPage);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("AsyncPageAllocator::Create() failed while attempting to grow the pool: %d", err);
         
@@ -234,8 +226,8 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
     _lock.lock();
     
     /* If our pool has been exhausted, try to allocate additional pages from the OS. */
-    if (_free_list) {
-        if ((err = grow()) != PLCRASH_ESUCCESS) {
+    if (_free_list == NULL) {
+        if ((err = grow(size)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("Failed to grow the free list: %d", err);
             
             _lock.unlock();
@@ -259,7 +251,7 @@ retry:
              * additional pages for our pool */
             if (cb->_next == start_cb) {
                 /* Try to grow */
-                err = grow();
+                err = grow(size);
                 if (err != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("Failed to grow the free list: %d", err);
 
@@ -346,8 +338,11 @@ void AsyncAllocator::dealloc (void *ptr) {
      * 1) Find two blocks that we'll fit between, or
      * 2) Hit the final node of the cyclic list, at which point high addresses cycle back to low addresses.
      */
-    control_block *parent;
-    for (parent = _free_list; freeblock > parent->_next && parent > parent->_next; parent = parent->_next) {};
+    control_block *parent = _free_list;
+    control_block *start = _free_list;
+    do {
+        parent = parent->_next;
+    } while (freeblock > parent && parent->_next != start);
     
     /* Try to coalesce with the next node. */
     if (freeblock->tail() == parent->_next->head()) {
