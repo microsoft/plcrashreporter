@@ -116,8 +116,6 @@ public:
 private:
     AsyncAllocator (vm_address_t base_page, vm_size_t total_size, vm_address_t usable_page, vm_size_t usable_size, vm_address_t next_addr);
     
-    size_t bytes_available ();
-
     /** The address base of the allocation. */
     vm_address_t _base_page;
     
