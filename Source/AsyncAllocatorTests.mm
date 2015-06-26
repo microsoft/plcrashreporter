@@ -40,6 +40,31 @@ using namespace plcrash::async;
 
 @implementation PLCrashAsyncAllocatorTests
 
+/* Test allocation of whole blocks */
+- (void) testWholeBlockAllocation {
+    // TODO
+}
+
+/* Test splitting of the free list into multiple blocks */
+- (void) testBlockSplitting {
+    // TODO
+}
+
+/* Test coalescing of adjacent blocks */
+- (void) testBlockCoalescing {
+    // TODO
+}
+
+/* Test automatic page allocation after exhausting all blocks */
+- (void) testFreeListExhaustion {
+    // TODO
+}
+
+/* Test automatic page allocation when all remaining blocks are too small for the requested allocation */
+- (void) testFragementationExhaustion {
+    // TODO
+}
+
 /**
  * TODO: Properly exercise the allocator code paths.
  */
