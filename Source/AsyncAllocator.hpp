@@ -65,7 +65,7 @@ class AsyncPageAllocator;
  *
  * The allocator will automatically insert PROT_NONE guard pages before and after any
  * allocated memory pools from which allocations are made, helping to ensure that a
- * buffer overflow that occurs elsewhere in the code will not overwrite allocations
+ * buffer overflow that occurs elsewhere in the process will not overwrite allocations
  * within this allocator.
  */
 class AsyncAllocator {

@@ -61,7 +61,7 @@ public:
         /**
          * Enable a low guard page. This will insert a PROT_NONE page prior to the
          * allocatable region, helping to ensure that a buffer overflow that occurs elsewhere
-         * in the code will not overwrite the allocatable space.
+         * in the process will not overwrite the allocatable space.
          */
         GuardLowPage = 1 << 0,
         
