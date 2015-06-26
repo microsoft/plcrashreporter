@@ -43,18 +43,6 @@
  * @{
  */
 
-// TODO - Namespacing.
-/* These assume 16-byte malloc() alignment, which is true for just about everything */
-#if defined(__arm__) || defined(__arm64__) || defined(__i386__) || defined(__x86_64__)
-#define PL_NATURAL_ALIGNMENT ((vm_size_t) 16)
-#else
-#error Define required alignment
-#endif
-
-/* Macros to handling rounding to the nearest valid allocation alignment */
-#define PL_ROUNDDOWN_ALIGN(x)   ((x) & (~(PL_NATURAL_ALIGNMENT - 1)))
-#define PL_ROUNDUP_ALIGN(x)     PL_ROUNDDOWN_ALIGN((x) + (PL_NATURAL_ALIGNMENT - 1))
-
 namespace plcrash { namespace async {
 /**
  * Tag parameter required when invoking the async-safe placement new operators defined by
@@ -122,7 +110,43 @@ public:
 #ifndef PLCF_ASYNCALLOCATOR_DEBUG
 private:
 #endif
-
+    
+    /**
+     * @internal
+     *
+     * Return the natural alignment to be used on this platform for all allocations.
+     */
+    static inline vm_address_t natural_alignment () {
+        /* 16-byte natural alignment is true for just about everything */
+#if defined(__arm__) || defined(__arm64__) || defined(__i386__) || defined(__x86_64__)
+        return 16;
+#else
+#       error Define required alignment
+#endif
+    }
+    
+    /**
+     * @internal
+     *
+     * Round @a value up to the nearest natural alignment boundary.
+     *
+     * @param value the value to be aligned.
+     */
+    static inline vm_address_t round_align (vm_address_t value) {
+        return trunc_align((value) + (natural_alignment() - 1));
+    }
+    
+    /**
+     * @internal
+     *
+     * Truncate @a value up to the nearest natural alignment boundary.
+     *
+     * @param value the value to be aligned.
+     */
+    static inline vm_address_t trunc_align (vm_address_t value) {
+        return ((value) & (~(natural_alignment() - 1)));
+    }
+    
     AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initial_size, vm_address_t first_block, vm_size_t first_block_size);
     
     plcrash_error_t grow (vm_size_t required);

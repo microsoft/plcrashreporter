@@ -45,6 +45,8 @@ using namespace plcrash::async;
 
 @implementation PLCrashAsyncAllocatorTests
 
+#define PL_ROUNDUP_ALIGN(x) AsyncAllocator::round_align(x)
+
 /* Verify the initial allocation state; all the other tests below assume the assertions verified here. */
 - (void) testInitialization {
     AsyncAllocator *allocator;

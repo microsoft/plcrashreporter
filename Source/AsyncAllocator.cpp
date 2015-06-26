@@ -34,11 +34,11 @@
 #include <libkern/OSAtomic.h>
 
 /* The number of bytes at the start of an allocation that must be preserved for the control block */
-#define PL_CONTROLBLOCK_HEADER_BYTES PL_ROUNDUP_ALIGN(sizeof(control_block))
+#define PL_CONTROLBLOCK_HEADER_BYTES plcrash::async::AsyncAllocator::round_align(sizeof(control_block))
 
 /* Minimum useful allocation size; we won't bother to split a free block if the new free block would be
  * less than this size. */
-#define PL_MINIMUM_USEFUL_FREEBLOCK_SIZE (PL_ROUNDUP_ALIGN(sizeof(control_block)) * 2)
+#define PL_MINIMUM_USEFUL_FREEBLOCK_SIZE (plcrash::async::AsyncAllocator::round_align(sizeof(control_block)) * 2)
 
 /**
  * @internal
@@ -126,11 +126,11 @@ plcrash_error_t AsyncAllocator::grow (vm_size_t required) {
     }
 
     /* Calculate the first usable address at which we can construct our page control. This must be aligned as per PL_NATURAL_ALIGNMENT. */
-    vm_address_t aligned_address = PL_ROUNDUP_ALIGN(newPages->usable_address());
+    vm_address_t aligned_address = round_align(newPages->usable_address());
     vm_size_t aligned_size = newPages->usable_size() - (aligned_address - newPages->usable_address());
     
     /* Calculate the first usable free block past our page control. This must also be naturally aligned. */
-    vm_address_t free_block_address = PL_ROUNDUP_ALIGN(aligned_address + sizeof(page_control_block));
+    vm_address_t free_block_address = round_align(aligned_address + sizeof(page_control_block));
     vm_size_t free_block_size = aligned_size - (free_block_address - aligned_address);
     
     /* Construct our page control within the newly allocated pages and add to our PCB list. */
@@ -170,18 +170,18 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
     
     /* Allocate memory pool */
     AsyncPageAllocator *pageAllocator;
-    err = AsyncPageAllocator::Create(&pageAllocator, initial_size + PL_ROUNDUP_ALIGN(sizeof(page_control_block)), AsyncPageAllocator::GuardHighPage | AsyncPageAllocator::GuardLowPage);
+    err = AsyncPageAllocator::Create(&pageAllocator, initial_size + round_align(sizeof(page_control_block)), AsyncPageAllocator::GuardHighPage | AsyncPageAllocator::GuardLowPage);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("AsyncPageAllocator::Create() failed: %d", err);
         return err;
     }
     
     /* Calculate the first usable address at which we can construct our AsyncAllocator. This must be aligned as per PL_NATURAL_ALIGNMENT. */
-    vm_address_t aligned_address = PL_ROUNDUP_ALIGN(pageAllocator->usable_address());
+    vm_address_t aligned_address = round_align(pageAllocator->usable_address());
     vm_size_t aligned_size = pageAllocator->usable_size() - (aligned_address - pageAllocator->usable_address());
     
     /* Calculate the first usable free block past our AsyncAllocator instance. This must also be naturally aligned. */
-    vm_address_t free_block_address = PL_ROUNDUP_ALIGN(aligned_address + sizeof(AsyncAllocator));
+    vm_address_t free_block_address = round_align(aligned_address + sizeof(AsyncAllocator));
     vm_size_t free_block_size = aligned_size - (free_block_address - aligned_address);
 
     /* Construct the allocator state in-place at the start of our allocated page.  */
@@ -197,7 +197,7 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
 vm_address_t AsyncAllocator::control_block::head () { return (vm_address_t) this; }
 
 /** Return the data address of this entry. */
-vm_address_t AsyncAllocator::control_block::data () { return PL_ROUNDUP_ALIGN(head() + sizeof(*this)); }
+vm_address_t AsyncAllocator::control_block::data () { return round_align(head() + sizeof(*this)); }
 
 /** Return the tail address of this entry. */
 vm_address_t AsyncAllocator::control_block::tail () { return head() + _size; }
@@ -220,7 +220,7 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
         return PLCRASH_ENOMEM;
     
     /* Compute the total number of bytes our allocation will need -- we have to lead with a control block. */
-    size_t new_block_size = PL_ROUNDUP_ALIGN(PL_CONTROLBLOCK_HEADER_BYTES + size);
+    size_t new_block_size = round_align(PL_CONTROLBLOCK_HEADER_BYTES + size);
     
     /* Acquire our state lock */
     _lock.lock();
@@ -243,7 +243,7 @@ retry:
     control_block *start_cb = prev_cb;
     for (control_block *cb = _free_list;; prev_cb = cb, cb = cb->_next) {
         /* Blocks must always be properly aligned! */
-        PLCF_ASSERT(cb->_size == PL_ROUNDUP_ALIGN(cb->_size));
+        PLCF_ASSERT(cb->_size == round_align(cb->_size));
 
         /* Insufficient space; we need to keep looking. */
         if (cb->_size < new_block_size) {
