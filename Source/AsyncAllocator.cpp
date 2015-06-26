@@ -82,24 +82,18 @@ namespace plcrash { namespace async {
  * Internal contructor used when creating a new instance.
  *
  * @param pageAllocator The initial set of pages to be used as our allocation pool. The allocator will claim ownership of this pointer.
+ * @param initial_size The initial requested pool size.
  * @param first_block_address The naturally aligned address of the initial free block.
  * @param first_block_size The size in bytes of the initial free block.
  */
-AsyncAllocator::AsyncAllocator (AsyncPageAllocator *pageAllocator, vm_address_t first_block_address, vm_size_t first_block_size) :
-    _pageControls(NULL),
+AsyncAllocator::AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initial_size, vm_address_t first_block_address, vm_size_t first_block_size) :
+    _initial_size(initial_size),
+    _initial_page_control(pageAllocator),
+    _pageControls(&_initial_page_control),
     _free_list(NULL)
 {
-    PLCF_ASSERT(first_block_size >= sizeof(page_control_block));
-    
-    /* Construct our first page control */
-    _pageControls = new (placement_new_tag_t(), first_block_address) page_control_block(pageAllocator, NULL);
-    
-    /* Calculate the remaining unallocated space */
-    vm_address_t free_block = PL_ROUNDUP_ALIGN(first_block_address + sizeof(page_control_block));
-    vm_size_t free_size = first_block_size - (free_block - first_block_address);
-
     /* Construct the first free list entry in-place, covering all remaining unallocated data */
-    _free_list = new (placement_new_tag_t(), free_block) control_block(NULL, free_size);
+    _free_list = new (placement_new_tag_t(), first_block_address) control_block(NULL, first_block_size);
     _free_list->_next = _free_list;
 }
 
@@ -118,6 +112,50 @@ AsyncAllocator::~AsyncAllocator () {
         delete pageControl->_pageAllocator;
     }
 }
+    
+/**
+ * @internal
+ *
+ * Grow the backing pool. This <em>must</em> be called with _lock held.
+ */
+plcrash_error_t AsyncAllocator::grow (void) {
+    PLCF_ASSERT(!_lock.tryLock());
+
+    plcrash_error_t err;
+    
+    /* Try allocating a new page pool */
+    AsyncPageAllocator *newPages;
+    err = AsyncPageAllocator::Create(&newPages, _initial_size, AsyncPageAllocator::GuardLowPage | AsyncPageAllocator::GuardHighPage);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("AsyncPageAllocator::Create() failed while attempting to grow the pool: %d", err);
+        
+        _lock.unlock();
+        return err;
+    }
+
+    /* Calculate the first usable address at which we can construct our page control. This must be aligned as per PL_NATURAL_ALIGNMENT. */
+    vm_address_t aligned_address = PL_ROUNDUP_ALIGN(newPages->usable_address());
+    vm_size_t aligned_size = newPages->usable_size() - (aligned_address - newPages->usable_address());
+    
+    /* Calculate the first usable free block past our page control. This must also be naturally aligned. */
+    vm_address_t free_block_address = PL_ROUNDUP_ALIGN(aligned_address + sizeof(page_control_block));
+    vm_size_t free_block_size = aligned_size - (free_block_address - aligned_address);
+    
+    /* Construct our page control within the newly allocated pages and add to our PCB list. */
+    page_control_block *pcb = new (placement_new_tag_t(), aligned_address) page_control_block(newPages, _pageControls);
+    _pageControls = pcb;
+
+    /* Construct the first free list entry in-place, covering all remaining unallocated data */
+    control_block *new_block = new (placement_new_tag_t(), free_block_address) control_block(NULL, free_block_size);
+    
+    /* Use the deallocation machinery to insert the new block into the free list, while maintaining sorting/coalescing */
+    _lock.unlock(); /* Avoid deadlock */
+    dealloc((void *) new_block->data());
+    _lock.lock();
+
+    return PLCRASH_ESUCCESS;
+}
+
 
 /* Deallocation of the allocator's memory is handled by the destructor itself; there's nothing for us to do. */
 void AsyncAllocator::operator delete (void *ptr, size_t size) {}
@@ -155,7 +193,7 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
     vm_size_t free_block_size = aligned_size - (free_block_address - aligned_address);
 
     /* Construct the allocator state in-place at the start of our allocated page.  */
-    AsyncAllocator *a = ::new (placement_new_tag_t(), aligned_address) AsyncAllocator(pageAllocator, free_block_address, free_block_size);
+    AsyncAllocator *a = new (placement_new_tag_t(), aligned_address) AsyncAllocator(pageAllocator, initial_size, free_block_address, free_block_size);
     
     /* Provide the newly allocated (and self-referential) structure to the caller. */
     *allocator = a;
@@ -183,6 +221,8 @@ vm_address_t AsyncAllocator::control_block::tail () { return head() + _size; }
  * @return On success, returns PLCRASH_ESUCCESS. If additional bytes can not be allocated, PLCRASH_ENOMEM will be returned.
  */
 plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
+    plcrash_error_t err;
+    
     /* Sanity check that adding size to sizeof(control_block) won't overflow */
     if (SIZE_MAX - size < PL_CONTROLBLOCK_HEADER_BYTES)
         return PLCRASH_ENOMEM;
@@ -192,16 +232,45 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
     
     /* Acquire our state lock */
     _lock.lock();
+    
+    /* If our pool has been exhausted, try to allocate additional pages from the OS. */
+    if (_free_list) {
+        if ((err = grow()) != PLCRASH_ESUCCESS) {
+            PLCF_DEBUG("Failed to grow the free list: %d", err);
+            
+            _lock.unlock();
+            return PLCRASH_ENOMEM;
+        }
+        
+        PLCF_ASSERT(_free_list != NULL);
+    }
 
     /* Find a free block with sufficient space for our allocation. */
+retry:
     control_block *prev_cb = _free_list;
+    control_block *start_cb = prev_cb;
     for (control_block *cb = _free_list;; prev_cb = cb, cb = cb->_next) {
         /* Blocks must always be properly aligned! */
         PLCF_ASSERT(cb->_size == PL_ROUNDUP_ALIGN(cb->_size));
 
         /* Insufficient space; we need to keep looking. */
         if (cb->_size < new_block_size) {
-            // TODO - we need to terminate when the free list comes up completely empty.
+            /* If we've iterated the entire free list, there isn't sufficient memory available. We need to allocate
+             * additional pages for our pool */
+            if (cb->_next == start_cb) {
+                /* Try to grow */
+                err = grow();
+                if (err != PLCRASH_ESUCCESS) {
+                    PLCF_DEBUG("Failed to grow the free list: %d", err);
+
+                    _lock.unlock();
+                    return PLCRASH_ENOMEM;
+                }
+                
+                /* Restart our search */
+                goto retry;
+            }
+
             continue;
         }
         
@@ -211,10 +280,9 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
             /* Remove the current block */
             prev_cb->_next = cb->_next;
             
-            /* Update the free pointer. If this is the only block in the free list, we've now run out of memory. */
+            /* Update the free pointer. If this is the only block in the free list, our pool is exhausted (and we'll have to grow the pool on the next call) */
             if (prev_cb == cb) {
-                // TODO - allocate additional pages from the OS
-                __builtin_trap();
+                _free_list = NULL;
             } else {
                 _free_list = prev_cb;
             }
@@ -263,6 +331,15 @@ void AsyncAllocator::dealloc (void *ptr) {
     /* Acquire our state lock */
     _lock.lock();
     
+    /* If the free list is empty, we can simply re-initialize it without worrying about sorting. */
+    if (_free_list == NULL) {
+        _free_list = freeblock;
+        freeblock->_next = freeblock;
+        
+        _lock.unlock();
+        return;
+    }
+
     /*
      * Find the insertion point at which freeblock will be inserted as the next free block. We walk the list
      * until we either:

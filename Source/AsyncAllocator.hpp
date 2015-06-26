@@ -108,7 +108,9 @@ public:
     AsyncAllocator &operator= (AsyncAllocator &&other) = delete;
 
 private:
-    AsyncAllocator (AsyncPageAllocator *pageAllocator, vm_address_t first_block, vm_size_t first_block_size);
+    AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initial_size, vm_address_t first_block, vm_size_t first_block_size);
+    
+    plcrash_error_t grow (void);
     
     /**
      * @internal
@@ -120,6 +122,9 @@ private:
         /* Construct a new page control block instance. */
         page_control_block (AsyncPageAllocator *pageAllocator, page_control_block *next) : _pageAllocator(pageAllocator), _next(next) {}
         
+        /* Construct a new page control block instance with a NULL `next` value. */
+        page_control_block (AsyncPageAllocator *pageAllocator) : _pageAllocator(pageAllocator), _next(NULL) {}
+        
         /** A borrowed reference to the AsyncPageAllocator associated with this page. */
         AsyncPageAllocator *_pageAllocator;
 
@@ -127,8 +132,14 @@ private:
         page_control_block *_next;
     };
     
+    /** The initial requested size. */
+    const size_t _initial_size;
+    
     /** Lock that must be held when operating on the non-const allocator state */
     SpinLock _lock;
+    
+    /** Inline allocation for the first page control block; there is always at least one. */
+    page_control_block _initial_page_control;
 
     /** All backing page controls. */
     page_control_block *_pageControls;
@@ -155,8 +166,7 @@ private:
     };
     
     /**
-     * Head of the circular free list, or NULL if memory has been exhausted and additional pages
-     * could not be allocated.
+     * Head of the circular free list, or NULL if memory has been exhausted.
      *
      * Note:
      * - The list is sorted in ascending order by address, but
