@@ -60,16 +60,7 @@ void *operator new (size_t, const plcrash::async::internal_placement_new_tag_t &
 void *operator new[] (size_t, const plcrash::async::internal_placement_new_tag_t &, vm_address_t p) { return (void *) p; };
 
 namespace plcrash { namespace async {
-    
-    /** Return the initial address of this entry. */
-    vm_address_t AsyncAllocator::control_block::head () { return (vm_address_t) this; }
-    
-    /** Return the data address of this entry. */
-    vm_address_t AsyncAllocator::control_block::data () { return PL_ROUNDUP_ALIGN(head() + sizeof(*this)); }
-    
-    /** Return the tail address of this entry. */
-    vm_address_t AsyncAllocator::control_block::tail () { return head() + _size; }
-    
+
 /**
  * @internal
  * Internal contructor used when creating a new instance.
@@ -197,6 +188,17 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
     *allocator = a;
     return PLCRASH_ESUCCESS;
 }
+    
+
+/** Return the initial address of this entry. */
+vm_address_t AsyncAllocator::control_block::head () { return (vm_address_t) this; }
+
+/** Return the data address of this entry. */
+vm_address_t AsyncAllocator::control_block::data () { return PL_ROUNDUP_ALIGN(head() + sizeof(*this)); }
+
+/** Return the tail address of this entry. */
+vm_address_t AsyncAllocator::control_block::tail () { return head() + _size; }
+
 
 /**
  * Attempt to allocate @a size bytes, returning a pointer to the allocation in @a allocated on success. If insufficient space
