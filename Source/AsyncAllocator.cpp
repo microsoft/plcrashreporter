@@ -242,6 +242,9 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
                 _free_list = prev_cb;
             }
             
+            /* Reset the next pointer to NULL; required for allocated blocks */
+            cb->_next = NULL;
+            
             /* Return our result */
             *allocated = (void *) cb->data();
             return PLCRASH_ESUCCESS;
@@ -271,6 +274,9 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
 void AsyncAllocator::dealloc (void *ptr) {
     /* Fetch the control block */
     control_block *freeblock = ((control_block *) ptr) - 1;
+    
+    /* Allocated blocks must have a NULL next value */
+    PLCF_ASSERT(freeblock->_next == NULL);
     
     /*
      * Find the insertion point at which freeblock will be inserted as the next free block. We walk the list

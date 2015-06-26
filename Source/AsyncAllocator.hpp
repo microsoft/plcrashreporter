@@ -140,7 +140,7 @@ private:
         /* Construct a new control block instance */
         control_block (control_block *next, size_t size) : _next(next), _size(size) {}
         
-        /** Pointer to next block in the free list, or NULL if the free list contains a single entry. */
+        /** Pointer to next block in the free list, or NULL if this block has been allocated. */
         control_block *_next;
         
         /** Size of this block */
