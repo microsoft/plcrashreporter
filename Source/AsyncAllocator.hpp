@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2013 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2013 - 2015 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -28,7 +28,6 @@
 
 #ifndef PLCRASH_ASYNC_ALLOCATOR_H
 #define PLCRASH_ASYNC_ALLOCATOR_H
-
 
 #include <unistd.h>
 #include <stdint.h>
@@ -57,29 +56,7 @@ void *operator new[] (size_t, const plcrash::async::placement_new_tag_t &tag, vm
 namespace plcrash { namespace async {
 
 /* Forward declarations */
-class AsyncAllocator;
 class AsyncPageAllocator;
-
-/**
- * @internal
- *
- * Provides new and delete operators that may only be used in combination with
- * an async-safe allocator.
- */
-class AsyncAllocatable {
-public:
-    void *operator new (size_t size, AsyncAllocator &allocator);
-    void *operator new[] (size_t size, AsyncAllocator &allocator);
-    
-    void operator delete (void *ptr, size_t size);
-    void operator delete[] (void *ptr, size_t size);
-
-private:
-    /* Disallow non-async-safe allocation entirely. */
-    void *operator new (size_t);
-    void *operator new[] (size_t);
-};
-
 
 /**
  * @internal
@@ -106,10 +83,6 @@ public:
     AsyncAllocator (AsyncAllocator &&other) = delete;
     AsyncAllocator operator= (const AsyncAllocator &other) = delete;
     AsyncAllocator &operator= (AsyncAllocator &&other) = delete;
-
-#ifndef PLCF_ASYNCALLOCATOR_DEBUG
-private:
-#endif
     
     /**
      * @internal
@@ -146,7 +119,10 @@ private:
     static inline vm_address_t trunc_align (vm_address_t value) {
         return ((value) & (~(natural_alignment() - 1)));
     }
-    
+
+#ifndef PLCF_ASYNCALLOCATOR_DEBUG
+private:
+#endif
     AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initial_size, vm_address_t first_block, vm_size_t first_block_size);
     
     plcrash_error_t grow (vm_size_t required);
@@ -216,6 +192,9 @@ private:
     control_block *_free_list;
     
 #ifdef PLCF_ASYNCALLOCATOR_DEBUG
+    /**
+     * Return the number of bytes consumed by all free list blocks.
+     */
     vm_size_t debug_bytes_free () {
         vm_size_t bytes_free = 0;
         
