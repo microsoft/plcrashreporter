@@ -40,17 +40,25 @@
  * @internal
  * @ingroup plcrash_async
  *
- * Implements async-safe memory allocation
- *
  * @{
  */
 
+namespace plcrash { namespace async {
+/**
+ * Tag parameter required when invoking the async-safe placement new operators defined by
+ * the PLCrashReporter async-safe allocator.
+ */
+struct placement_new_tag_t {};
+}}
 
+void *operator new (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p);
+void *operator new[] (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p);
 
 namespace plcrash { namespace async {
 
-/* Forward declaration */
+/* Forward declarations */
 class AsyncAllocator;
+class AsyncPageAllocator;
 
 /**
  * @internal
@@ -76,31 +84,16 @@ private:
 /**
  * @internal
  *
- * An async-safe page-guarded and locking memory allocator. The allocator
- * will allocate itself within the target pages, ensuring that its own metadata is
- * guarded.
+ * An async-safe memory allocator.
+ *
+ * The allocator will automatically insert PROT_NONE guard pages before and after any
+ * allocated memory pools from which allocations are made, helping to ensure that a
+ * buffer overflow that occurs elsewhere in the code will not overwrite allocations
+ * within this allocator.
  */
 class AsyncAllocator {
 public:
-    /**
-     * Initialization options for AsyncAllocator.
-     */
-    typedef enum {
-        /**
-         * Enable a low guard page. This will insert a PROT_NONE page prior to the
-         * allocatable region, helping to ensure that a buffer overflow that occurs elsewhere
-         * in the code will not overwrite the allocatable space.
-         */
-        GuardLowPage = 1 << 0,
-        
-        /**
-         * Enable a high guard page. This will insert a PROT_NONE page after to the
-         * allocatable region, helping to ensure that a buffer overflow (including a stack overflow)
-         * will be immediately detected. */
-        GuardHighPage = 1 << 1,
-    } AsyncAllocatorOption;
-    
-    static plcrash_error_t Create (AsyncAllocator **allocator, size_t initial_size, uint32_t options);
+    static plcrash_error_t Create (AsyncAllocator **allocator, size_t initial_size);
     ~AsyncAllocator ();
     void operator delete (void *ptr, size_t size);
 
@@ -115,22 +108,30 @@ public:
     AsyncAllocator &operator= (AsyncAllocator &&other) = delete;
 
 private:
-    AsyncAllocator (vm_address_t base_page, vm_size_t total_size, vm_address_t usable_page, vm_size_t usable_size, vm_address_t next_addr);
+    AsyncAllocator (AsyncPageAllocator *pageAllocator, vm_address_t first_block, vm_size_t first_block_size);
     
-    /** The address base of the allocation. */
-    const vm_address_t _base_page;
-    
-    /** The total size of the allocation, including guard pages. */
-    const vm_size_t _total_size;
-    
-    /** The base address of the first usable page of the allocation */
-    const vm_address_t _usable_page __attribute__((unused)); // TODO
-    
-    /** The usable size of the allocation (ie, total size, minus guard pages) */
-    const vm_size_t _usable_size __attribute__((unused)); // TODO
+    /**
+     * @internal
+     *
+     * A page pool header block that sits at the start of all page allocations and is used to
+     * maintain a linked list of all allocated pools.
+     */
+    struct page_control_block {
+        /* Construct a new page control block instance. */
+        page_control_block (AsyncPageAllocator *pageAllocator, page_control_block *next) : _pageAllocator(pageAllocator), _next(next) {}
+        
+        /** A borrowed reference to the AsyncPageAllocator associated with this page. */
+        AsyncPageAllocator *_pageAllocator;
+
+        /** The next page control block, or NULL if this is the final control block. */
+        page_control_block *_next;
+    };
     
     /** Lock that must be held when operating on the non-const allocator state */
     SpinLock _lock;
+
+    /** All backing page controls. */
+    page_control_block *_pageControls;
 
     /**
      * @internal

@@ -28,6 +28,7 @@
 
 #include "AsyncAllocator.hpp"
 #include "PLCrashAsync.h"
+#include "AsyncPageAllocator.hpp"
 
 #include <libkern/OSAtomic.h>
 
@@ -49,15 +50,30 @@
  * less than this size. */
 #define PL_MINIMUM_USEFUL_FREEBLOCK_SIZE (PL_ROUNDUP_ALIGN(sizeof(control_block)) * 2)
 
-namespace plcrash { namespace async {
-    /* Tag parameter required for our custom placement new operators defined below */
-    struct internal_placement_new_tag_t {};
-}}
+/**
+ * @internal
+ * @ingroup plcrash_async
+ *
+ * @{
+ */
 
-/* Custom placement new alternatives that do not depend on the c++ stdlib, and use a type tag parameter that
- * will prevent symbol collision. */
-void *operator new (size_t, const plcrash::async::internal_placement_new_tag_t &, vm_address_t p) { return (void *) p; };
-void *operator new[] (size_t, const plcrash::async::internal_placement_new_tag_t &, vm_address_t p) { return (void *) p; };
+/**
+ * An implementation of the C++11 'placement new' operator that does not depend on the C++ standard library.
+ *
+ * @param tag A tag parameter required to use the custom operator. The use of a tag parameter prevents symbol
+ * collision with any other placement new overrides.
+ * @param p The address at which the instance should be constructed.
+ */
+void *operator new (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p) { return (void *) p; };
+
+/**
+ * An implementation of the C++11 array 'placement new' operator that does not depend on the C++ standard library.
+ *
+ * @param tag A tag parameter required to use the custom operator. The use of a tag parameter prevents symbol
+ * collision with any other placement new overrides.
+ * @param p The address at which the instances should be constructed.
+ */
+void *operator new[] (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p) { return (void *) p; };
 
 namespace plcrash { namespace async {
 
@@ -65,44 +81,41 @@ namespace plcrash { namespace async {
  * @internal
  * Internal contructor used when creating a new instance.
  *
- * @param base_page The base address of all allocated pages, including the leading guard page, if any.
- * @param total_size The total number of bytes allocated at base_page, including all guard pages.
- * @param usable_page The base address of the first page within @a base_page that is not a guard page.
- * @param usable_size The number of writable pages allocated at @a usable_page (ie, total_size, minus the guard pages).
- * @param next_addr The first address within usable_page that may be used by our allocator.
+ * @param pageAllocator The initial set of pages to be used as our allocation pool. The allocator will claim ownership of this pointer.
+ * @param first_block_address The naturally aligned address of the initial free block.
+ * @param first_block_size The size in bytes of the initial free block.
  */
-AsyncAllocator::AsyncAllocator (vm_address_t base_page, vm_size_t total_size, vm_address_t usable_page, vm_size_t usable_size, vm_address_t next_addr) :
-    _base_page(base_page),
-    _total_size(total_size),
-    _usable_page(usable_page),
-    _usable_size(usable_size),
+AsyncAllocator::AsyncAllocator (AsyncPageAllocator *pageAllocator, vm_address_t first_block_address, vm_size_t first_block_size) :
+    _pageControls(NULL),
     _free_list(NULL)
 {
-    /* assert sane parameters */
-    PLCF_ASSERT(base_page <= usable_page);
-    PLCF_ASSERT(usable_page <= base_page + total_size);
-    PLCF_ASSERT(usable_page + usable_size <= base_page + total_size);
+    PLCF_ASSERT(first_block_size >= sizeof(page_control_block));
     
-    PLCF_ASSERT(next_addr >= usable_page);
-    PLCF_ASSERT(next_addr < usable_page + usable_size);
+    /* Construct our first page control */
+    _pageControls = new (placement_new_tag_t(), first_block_address) page_control_block(pageAllocator, NULL);
     
-    /* Calculate the location and size of the first free block. */
-    vm_address_t first_block = PL_ROUNDUP_ALIGN(next_addr);
-    vm_size_t unused_bytes = usable_size - (first_block - base_page);
-    
-    /* Construct the first free list entry in-place, covering all unallocated data */
-    _free_list = new (internal_placement_new_tag_t(), first_block) control_block(NULL, unused_bytes);
+    /* Calculate the remaining unallocated space */
+    vm_address_t free_block = PL_ROUNDUP_ALIGN(first_block_address + sizeof(page_control_block));
+    vm_size_t free_size = first_block_size - (free_block - first_block_address);
+
+    /* Construct the first free list entry in-place, covering all remaining unallocated data */
+    _free_list = new (placement_new_tag_t(), free_block) control_block(NULL, free_size);
     _free_list->_next = _free_list;
 }
 
 AsyncAllocator::~AsyncAllocator () {
-    PLCF_ASSERT(_base_page != 0x0);
+    PLCF_ASSERT(_pageControls != NULL);
     
-    /* Clean up our backing allocation. */
-    kern_return_t kr = vm_deallocate(mach_task_self(), _base_page, _total_size);
-    if (kr != KERN_SUCCESS) {
-        /* This should really never fail ... */
-        PLCF_DEBUG("[AsyncAllocator] vm_deallocate() failure: %d", kr);
+    /* Clean up our backing allocations. Note that we copy out the next page control, as deallocating
+     * the previous page will also deallocate its control. */
+    page_control_block *next = NULL;
+    for (page_control_block *pageControl = _pageControls; pageControl != NULL; pageControl = next) {
+        /* Save a reference to the next control */
+        next = pageControl->_next;
+        
+        /* Deallocate the page allocator. This will deallocate the pageControl instance, and if this is the first set of
+         * pages, it will deallocate this AsyncAllocator instance. */
+        delete pageControl->_pageAllocator;
     }
 }
 
@@ -113,76 +126,36 @@ void AsyncAllocator::operator delete (void *ptr, size_t size) {}
  * Create a new allocator instance, returning the pointer to the allocator in @a allocator on success. It is the caller's
  * responsibility to free this allocator (which will in turn free any memory allocated by the allocator) via `delete`.
  *
- * The allocator will be allocated within the same mapping, ensuring that the allocator metadata is
+ * The allocator will be allocated within its own guarded memory pool, ensuring that the allocator metadata is
  * itself guarded.
  *
  * @param allocator On success, will contain a pointer to the newly created allocator.
  * @param initial_size The initial size of the allocated memory pool to be available for user allocations. This pool
  * will automatically grow as required.
- * @param options The AsyncAllocatorOption flags to be used for this allocator.
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned.
  */
-plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initial_size, uint32_t options) {
-    kern_return_t kt;
-    
-    /* Set defaults. */
-    PLCF_ASSERT(SIZE_MAX - initial_size > sizeof(AsyncAllocator));
-    vm_size_t total_size = round_page(initial_size + sizeof(AsyncAllocator));
-    vm_size_t usable_size = total_size;
-    
-    /* Adjust total size to account for guard pages */
-    if (options & GuardLowPage)
-        total_size += PAGE_SIZE;
-    
-    if (options & GuardHighPage)
-        total_size += PAGE_SIZE;
+plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initial_size) {
+    plcrash_error_t err;
     
     /* Allocate memory pool */
-    vm_address_t base_page;
-    kt = vm_allocate(mach_task_self(), &base_page, total_size, VM_FLAGS_ANYWHERE);
-    if (kt != KERN_SUCCESS) {
-        PLCF_DEBUG("[AsyncAllocator] vm_allocate() failure: %d", kt);
-        return PLCRASH_ENOMEM;
+    AsyncPageAllocator *pageAllocator;
+    err = AsyncPageAllocator::Create(&pageAllocator, initial_size + PL_ROUNDUP_ALIGN(sizeof(page_control_block)), AsyncPageAllocator::GuardHighPage | AsyncPageAllocator::GuardLowPage);
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("AsyncPageAllocator::Create() failed: %d", err);
+        return err;
     }
     
-    vm_address_t next_addr = base_page;
-    vm_address_t usable_page = base_page;
+    /* Calculate the first usable address at which we can construct our AsyncAllocator. This must be aligned as per PL_NATURAL_ALIGNMENT. */
+    vm_address_t aligned_address = PL_ROUNDUP_ALIGN(pageAllocator->usable_address());
+    vm_size_t aligned_size = pageAllocator->usable_size() - (aligned_address - pageAllocator->usable_address());
     
-    
-    /* Protect the guard pages */
-    if (options & GuardLowPage) {
-        next_addr += PAGE_SIZE;
-        usable_page += PAGE_SIZE;
-        
-        kt = vm_protect(mach_task_self(), base_page, PAGE_SIZE, false, VM_PROT_NONE);
-        
-        if (kt != KERN_SUCCESS) {
-            PLCF_DEBUG("[AsyncAllocator] vm_protect() failure: %d", kt);
-            vm_deallocate(mach_task_self(), base_page, total_size);
-            return PLCRASH_ENOMEM;
-        }
-    }
-    
-    if (options & GuardHighPage) {
-        kt = vm_protect(mach_task_self(), base_page + usable_size, PAGE_SIZE, false, VM_PROT_NONE);
-        if (kt != KERN_SUCCESS) {
-            PLCF_DEBUG("[AsyncAllocator] vm_protect() failure: %d", kt);
-            vm_deallocate(mach_task_self(), base_page, total_size);
-            return PLCRASH_ENOMEM;
-        }
-    }
-    
-    
+    /* Calculate the first usable free block past our AsyncAllocator instance. This must also be naturally aligned. */
+    vm_address_t free_block_address = PL_ROUNDUP_ALIGN(aligned_address + sizeof(AsyncAllocator));
+    vm_size_t free_block_size = aligned_size - (free_block_address - aligned_address);
+
     /* Construct the allocator state in-place at the start of our allocated page.  */
-    AsyncAllocator *a = ::new (internal_placement_new_tag_t(), usable_page) AsyncAllocator(
-        base_page,
-        total_size,
-        usable_page,
-        usable_size,
-        next_addr + sizeof(AsyncAllocator) /* Skip this initial allocation. */
-    );
-    
+    AsyncAllocator *a = ::new (placement_new_tag_t(), aligned_address) AsyncAllocator(pageAllocator, free_block_address, free_block_size);
     
     /* Provide the newly allocated (and self-referential) structure to the caller. */
     *allocator = a;
@@ -261,7 +234,7 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
         cb->_size -= new_block_size;
         
         /* We have to create a control block for the new allocation. */
-        control_block *split_cb = new (internal_placement_new_tag_t(), (((vm_address_t) cb) + cb->_size)) control_block(NULL, new_block_size);
+        control_block *split_cb = new (placement_new_tag_t(), (((vm_address_t) cb) + cb->_size)) control_block(NULL, new_block_size);
         
         /* Lastly, we can return the user's allocation address (which falls just past the control block */
         *allocated = (void *) split_cb->data();
@@ -323,3 +296,7 @@ void AsyncAllocator::dealloc (void *ptr) {
 }
 
 }}
+
+/**
+ * @}
+ */
