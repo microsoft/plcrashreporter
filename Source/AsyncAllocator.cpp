@@ -217,8 +217,10 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
     /* Compute the total number of bytes our allocation will need -- we have to lead with a control block. */
     size_t new_block_size = PL_ROUNDUP_ALIGN(PL_CONTROLBLOCK_HEADER_BYTES + size);
     
+    /* Acquire our state lock */
+    _lock.lock();
+
     /* Find a free block with sufficient space for our allocation. */
-    // TODO - Locking
     control_block *prev_cb = _free_list;
     for (control_block *cb = _free_list;; prev_cb = cb, cb = cb->_next) {
         /* Blocks must always be properly aligned! */
@@ -249,6 +251,8 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
             
             /* Return our result */
             *allocated = (void *) cb->data();
+            
+            _lock.unlock();
             return PLCRASH_ESUCCESS;
         }
         
@@ -261,10 +265,13 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
         
         /* Lastly, we can return the user's allocation address (which falls just past the control block */
         *allocated = (void *) split_cb->data();
+        
+        _lock.unlock();
         return PLCRASH_ESUCCESS;
     }
 
     /* If we got here, we couldn't find a free block, and we couldn't grow our pool. */
+    _lock.unlock();
     return PLCRASH_ENOMEM;
 }
 
@@ -280,13 +287,15 @@ void AsyncAllocator::dealloc (void *ptr) {
     /* Allocated blocks must have a NULL next value */
     PLCF_ASSERT(freeblock->_next == NULL);
     
+    /* Acquire our state lock */
+    _lock.lock();
+    
     /*
      * Find the insertion point at which freeblock will be inserted as the next free block. We walk the list
      * until we either:
      * 1) Find two blocks that we'll fit between, or
      * 2) Hit the final node of the cyclic list, at which point high addresses cycle back to low addresses.
      */
-    // TODO - Locking
     control_block *parent;
     for (parent = _free_list; freeblock > parent->_next && parent > parent->_next; parent = parent->_next) {};
     
@@ -308,6 +317,9 @@ void AsyncAllocator::dealloc (void *ptr) {
     
     /* Update the initial search point of our free list */
     _free_list = parent;
+    
+    /* Release our state lock */
+    _lock.unlock();
 }
 
 }}

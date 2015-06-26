@@ -34,6 +34,7 @@
 #include <stdint.h>
 
 #include "PLCrashAsync.h"
+#include "SpinLock.hpp"
 
 /**
  * @internal
@@ -117,17 +118,20 @@ private:
     AsyncAllocator (vm_address_t base_page, vm_size_t total_size, vm_address_t usable_page, vm_size_t usable_size, vm_address_t next_addr);
     
     /** The address base of the allocation. */
-    vm_address_t _base_page;
+    const vm_address_t _base_page;
     
     /** The total size of the allocation, including guard pages. */
-    vm_size_t _total_size;
+    const vm_size_t _total_size;
     
     /** The base address of the first usable page of the allocation */
-    vm_address_t _usable_page;
+    const vm_address_t _usable_page __attribute__((unused)); // TODO
     
     /** The usable size of the allocation (ie, total size, minus guard pages) */
-    vm_size_t _usable_size;
+    const vm_size_t _usable_size __attribute__((unused)); // TODO
     
+    /** Lock that must be held when operating on the non-const allocator state */
+    SpinLock _lock;
+
     /**
      * @internal
      * 
