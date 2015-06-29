@@ -45,8 +45,6 @@ using namespace plcrash::async;
 
 @implementation PLCrashAsyncAllocatorTests
 
-#define PL_ROUNDUP_ALIGN(x) AsyncAllocator::round_align(x)
-
 /* Sanity-check the natural alignment declared by the allocator */
 - (void) testNaturalAlignment {
     void *malloc_buffer = malloc(64);
@@ -73,7 +71,7 @@ using namespace plcrash::async;
 
     /* Calculate the address at which the allocator should have been placed, and the remaining number of bytes
      * that should be in the free list. */
-    vm_address_t allocator_addr = PL_ROUNDUP_ALIGN(allocator->_pageControls->_pageAllocator->usable_address());
+    vm_address_t allocator_addr = AsyncAllocator::round_align(allocator->_pageControls->_pageAllocator->usable_address());
     STAssertEquals((vm_address_t) allocator, allocator_addr, @"The allocator was not placed at the first usable aligned address");
 
     vm_size_t free_size = usable_size - (allocator_addr - usable_address) - sizeof(AsyncAllocator);
@@ -89,7 +87,7 @@ using namespace plcrash::async;
     STAssertEquals(PLCRASH_ESUCCESS, AsyncAllocator::Create(&allocator, PAGE_SIZE), @"Failed to construct allocator");
 
     /* Try to allocate all remaining data, triggering a whole-block assignment */
-    vm_size_t available = allocator->_free_list->_size - PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block));
+    vm_size_t available = allocator->_free_list->_size - AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block));
     void *buffer;
 
     STAssertEquals(PLCRASH_ESUCCESS, allocator->alloc(&buffer, available), @"Allocation failed");
@@ -113,7 +111,7 @@ using namespace plcrash::async;
     /* Allocate a small part of the only available free block, triggering block splitting. */
     void *buffer;
     STAssertEquals(PLCRASH_ESUCCESS, allocator->alloc(&buffer, 16), @"Allocation failed");
-    vm_size_t free_block_consumed = PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)) + 16;
+    vm_size_t free_block_consumed = AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)) + 16;
     
     /* Sanity check writability of the allocation; If this doesn't explode, we're good. */
     memset(buffer, 0, 16);
@@ -138,7 +136,7 @@ using namespace plcrash::async;
     STAssertEquals(PLCRASH_ESUCCESS, AsyncAllocator::Create(&allocator, 64), @"Failed to construct allocator");
 
     /* The full size of our allocated blocks */
-    vm_size_t test_block_size = PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)) + 16;
+    vm_size_t test_block_size = AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)) + 16;
 
     /* Save the original free size */
     vm_size_t orig_free_size = allocator->debug_bytes_free();
@@ -146,23 +144,23 @@ using namespace plcrash::async;
     /* Allocate a set of test blocks */
     void *high_buf;
     STAssertEquals(PLCRASH_ESUCCESS, allocator->alloc(&high_buf, 16), @"Allocation failed");
-    AsyncAllocator::control_block *high_cb = (AsyncAllocator::control_block *) ((pl_vm_address_t) high_buf - PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)));
+    AsyncAllocator::control_block *high_cb = (AsyncAllocator::control_block *) ((pl_vm_address_t) high_buf - AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)));
 
     void *mid_buf;
     STAssertEquals(PLCRASH_ESUCCESS, allocator->alloc(&mid_buf, 16), @"Allocation failed");
-    AsyncAllocator::control_block *mid_cb = (AsyncAllocator::control_block *) ((pl_vm_address_t) mid_buf - PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)));
+    AsyncAllocator::control_block *mid_cb = (AsyncAllocator::control_block *) ((pl_vm_address_t) mid_buf - AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)));
 
     void *low_buf;
     STAssertEquals(PLCRASH_ESUCCESS, allocator->alloc(&low_buf, 16), @"Allocation failed");
-    AsyncAllocator::control_block *low_cb = (AsyncAllocator::control_block *) ((pl_vm_address_t) low_buf - PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)));
+    AsyncAllocator::control_block *low_cb = (AsyncAllocator::control_block *) ((pl_vm_address_t) low_buf - AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)));
 
 
     /* Verify that the allocations were performed in the expected decreasing address order, at the expected addresses. */
     STAssertTrue(high_buf > mid_buf, @"");
     STAssertTrue(mid_buf > low_buf, @"");
     
-    STAssertTrue(PL_ROUNDUP_ALIGN((vm_address_t)mid_buf + 16) == (vm_address_t) high_cb, @"Buffer was not allocated at expected location");
-    STAssertTrue(PL_ROUNDUP_ALIGN((vm_address_t)low_buf + 16) == (vm_address_t) mid_cb, @"Buffer was not allocated at expected location");
+    STAssertTrue(AsyncAllocator::round_align((vm_address_t)mid_buf + 16) == (vm_address_t) high_cb, @"Buffer was not allocated at expected location");
+    STAssertTrue(AsyncAllocator::round_align((vm_address_t)low_buf + 16) == (vm_address_t) mid_cb, @"Buffer was not allocated at expected location");
 
     /* The free list should have one entry */
     AsyncAllocator::control_block *orig_free_list = allocator->_free_list;
@@ -179,7 +177,7 @@ using namespace plcrash::async;
     STAssertEquals(allocator->_free_list->_next, mid_cb, @"The parent block does not reference the newly freed block");
     STAssertEquals(allocator->_free_list->_next->_next, allocator->_free_list, @"The free list pointer doesn't cycle back around to the first block");
     
-    STAssertEquals(mid_cb->_size, PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)) + 16, @"The deallocated block's size was corrupted");
+    STAssertEquals(mid_cb->_size, AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)) + 16, @"The deallocated block's size was corrupted");
     STAssertEquals(allocator->debug_bytes_free(), orig_free_size - (test_block_size * 2), @"The free list size does not match the expected size");
 
 
@@ -191,7 +189,7 @@ using namespace plcrash::async;
     STAssertEquals(allocator->_free_list->_next, orig_free_list, @"The free list pointer doesn't cycle back around to the first block");
     STAssertEquals(allocator->_free_list->_next->_next, allocator->_free_list, @"The free list pointer doesn't cycle back around to the freed block");
 
-    STAssertEquals(mid_cb->_size, (PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block)) + 16) * 2, @"The coalesced mid_cb block's size was not updated");
+    STAssertEquals(mid_cb->_size, (AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block)) + 16) * 2, @"The coalesced mid_cb block's size was not updated");
     STAssertEquals(allocator->debug_bytes_free(), orig_free_size - (test_block_size), @"The free list size does not match the expected size");
 
 
@@ -214,7 +212,7 @@ using namespace plcrash::async;
     STAssertEquals(PLCRASH_ESUCCESS, AsyncAllocator::Create(&allocator, PAGE_SIZE), @"Failed to construct allocator");
     
     /* Allocate all available data, triggering free list exhaustion */
-    vm_size_t available = allocator->_free_list->_size - PL_ROUNDUP_ALIGN(sizeof(AsyncAllocator::control_block));
+    vm_size_t available = allocator->_free_list->_size - AsyncAllocator::round_align(sizeof(AsyncAllocator::control_block));
     void *buffer;
     STAssertEquals(PLCRASH_ESUCCESS, allocator->alloc(&buffer, available), @"Allocation failed");
     
