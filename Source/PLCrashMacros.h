@@ -66,11 +66,11 @@
 #  define PLCR_PRAGMA_CLANG(_p)
 #endif
 
-
 #ifdef __clang__
 #  define PLCR_DEPRECATED __attribute__((deprecated))
 #else
 #  define PLCR_DEPRECATED
+#endif
 
 #if defined(__clang__) || defined(__GNUC__)
 #  define PLCR_UNUSED __attribute__((unused))
@@ -83,7 +83,7 @@
  * Marks a definition as deprecated only for for external clients, allowing
  * uses of it internal fo the framework.
  */
-#define PLCR_EXTERNAL_DEPRECATED
+#  define PLCR_EXTERNAL_DEPRECATED
 
 /**
  * @internal
@@ -102,10 +102,13 @@
  * definition not being marked deprecated.
  */
 #  define PLCR_EXTERNAL_DEPRECATED_NOWARN_POP() PLCR_PRAGMA_CLANG("clang diagnostic pop")
+
 #else
+
 #  define PLCR_EXTERNAL_DEPRECATED PLCR_DEPRECATED
 #  define PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH()
 #  define PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH()
+
 #endif /* PLCR_PRIVATE */
 
 #ifdef PLCR_PRIVATE
@@ -116,6 +119,7 @@
 #  endif
 #endif
 
+#ifdef PLCR_PRIVATE
 /**
  * @internal
  * Static compile-time assertion.
