@@ -191,9 +191,10 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
     vm_address_t aligned_address = round_align(pageAllocator->usable_address());
     vm_size_t aligned_size = pageAllocator->usable_size() - (aligned_address - pageAllocator->usable_address());
     
-    /* Calculate the first usable free block past our AsyncAllocator instance. This must also be naturally aligned. */
+    /* Calculate the first usable free block past our AsyncAllocator instance. This must also be naturally aligned. The block size must also be aligned
+     * to the natural alignment; this should always be true when our backing pages are (by definition) paged align. */
     vm_address_t free_block_address = round_align(aligned_address + sizeof(AsyncAllocator));
-    vm_size_t free_block_size = aligned_size - (free_block_address - aligned_address);
+    vm_size_t free_block_size = trunc_align(aligned_size - (free_block_address - aligned_address));
 
     /* Construct the allocator state in-place at the start of our allocated page.  */
     AsyncAllocator *a = new (placement_new_tag_t(), aligned_address) AsyncAllocator(pageAllocator, initial_size, free_block_address, free_block_size);
