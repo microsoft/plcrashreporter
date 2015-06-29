@@ -31,8 +31,6 @@
 
 #include "AsyncPageAllocator.hpp"
 
-#include <libkern/OSAtomic.h>
-
 /* The number of bytes at the start of an allocation that must be preserved for the control block */
 #define PL_CONTROLBLOCK_HEADER_BYTES plcrash::async::AsyncAllocator::round_align(sizeof(control_block))
 
