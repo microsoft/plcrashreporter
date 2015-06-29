@@ -396,9 +396,15 @@ static void uncaught_exception_handler (NSException *exception) {
 + (void) initialize {
     if (![[self class] isEqual: [PLCrashReporter class]])
         return;
-
+    
+    /* Instantiate an allocator for our image list. */
+    // XXX-TODO: This must be moved to crash-time
+    plcrash_async_allocator_t *allocator;
+    plcrash_error_t err = plcrash_async_allocator_create(&allocator, MAX_REPORT_BYTES);
+    assert(err == PLCRASH_ESUCCESS);
+    
     /* Enable dyld image monitoring */
-    plcrash_nasync_image_list_init(&shared_image_list, mach_task_self());
+    plcrash_nasync_image_list_init(&shared_image_list, allocator, mach_task_self());
     _dyld_register_func_for_add_image(image_add_callback);
     _dyld_register_func_for_remove_image(image_remove_callback);
 }

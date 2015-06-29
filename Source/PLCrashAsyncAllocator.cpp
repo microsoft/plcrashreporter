@@ -33,27 +33,27 @@ using namespace plcrash::async;
 /**
  * Equivalent to AsyncAllocator::Create();
  */
-plcrash_error_t plcrash_async_allocator_create (PLCR_ASYNC_ALLOCATOR_T *allocator, size_t initial_size) {
+plcrash_error_t plcrash_async_allocator_create (plcrash_async_allocator_t **allocator, size_t initial_size) {
     return AsyncAllocator::Create(allocator, initial_size);
 }
 
 /**
  * Equivalent to AsyncAllocator::alloc();
  */
-plcrash_error_t plcrash_async_allocator_alloc (PLCR_ASYNC_ALLOCATOR_T allocator, void **allocated, size_t size) {
+plcrash_error_t plcrash_async_allocator_alloc (plcrash_async_allocator_t *allocator, void **allocated, size_t size) {
     return allocator->alloc(allocated, size);
 }
 
 /**
  * Equivalent to AsyncAllocator::dealloc();
  */
-void plcrash_async_allocator_dealloc (PLCR_ASYNC_ALLOCATOR_T allocator, void *ptr) {
+void plcrash_async_allocator_dealloc (plcrash_async_allocator_t *allocator, void *ptr) {
     return allocator->dealloc(ptr);
 }
 
 /**
  * Equivalent to `delete AsyncAllocator`;
  */
-void plcrash_async_allocator_free (PLCR_ASYNC_ALLOCATOR_T allocator) {
+void plcrash_async_allocator_free (plcrash_async_allocator_t *allocator) {
     delete allocator;
 }

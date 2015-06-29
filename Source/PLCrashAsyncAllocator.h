@@ -29,6 +29,8 @@
 #ifndef PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H
 #define PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H
 
+#include "PLCrashMacros.h"
+
 /*
  * Provides a pure C interface to the C++ AsyncAllocator.
  *
@@ -38,18 +40,21 @@
 
 #ifdef __cplusplus
 #include "AsyncAllocator.hpp"
-#define PLCR_ASYNC_ALLOCATOR_T plcrash::async::AsyncAllocator*
+using plcrash_async_allocator_t = plcrash::async::AsyncAllocator;
 #else
-typedef struct AsyncAllocator *AsyncAllocator;
-#define PLCR_ASYNC_ALLOCATOR_T AsyncAllocator
+typedef struct plcrash_async_allocator plcrash_async_allocator_t;
 #endif
 
-plcrash_error_t plcrash_async_allocator_create (PLCR_ASYNC_ALLOCATOR_T *allocator, size_t initial_size);
+PLCR_C_BEGIN_DECLS
 
-plcrash_error_t plcrash_async_allocator_alloc (PLCR_ASYNC_ALLOCATOR_T allocator, void **allocated, size_t size);
-void plcrash_async_allocator_dealloc (PLCR_ASYNC_ALLOCATOR_T allocator, void *ptr);
+PLCR_EXPORT plcrash_error_t plcrash_async_allocator_create (plcrash_async_allocator_t **allocator, size_t initial_size);
 
-void plcrash_async_allocator_free (PLCR_ASYNC_ALLOCATOR_T allocator);
+PLCR_EXPORT plcrash_error_t plcrash_async_allocator_alloc (plcrash_async_allocator_t *allocator, void **allocated, size_t size);
+PLCR_EXPORT void plcrash_async_allocator_dealloc (plcrash_async_allocator_t *allocator, void *ptr);
+
+PLCR_EXPORT void plcrash_async_allocator_free (plcrash_async_allocator_t *allocator);
+
+PLCR_C_END_DECLS
 
 
 #endif /* PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H */

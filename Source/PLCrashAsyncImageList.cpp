@@ -59,9 +59,10 @@ using namespace plcrash::async;
  *
  * @warning This method is not async safe.
  */
-void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, mach_port_t task) {
+void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, plcrash_async_allocator_t *allocator, mach_port_t task) {
     memset(list, 0, sizeof(*list));
 
+    list->_allocator = allocator;
     list->_list = new async_list<plcrash_async_image_t *>();
     list->task = task;
     mach_port_mod_refs(mach_task_self(), list->task, MACH_PORT_RIGHT_SEND, 1);
@@ -80,10 +81,10 @@ void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
         plcrash_async_image_t *image = next->value();
         
         /* Deallocate the Mach-O reference. */
-        plcrash_nasync_macho_free(&image->macho_image);
+        plcrash_async_macho_free(&image->macho_image);
         
         /* Deallocate the actual image value */
-        free(image);
+        list->_allocator->dealloc(image);
     }
     list->_list->set_reading(false);
 
@@ -105,11 +106,17 @@ void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
 void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, const char *name) {
     plcrash_error_t ret;
 
+    /* Allocate the new entry */
+    plcrash_async_image_t *new_entry;
+    if ((ret = list->_allocator->alloc((void **) &new_entry, sizeof(plcrash_async_image_t))) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Unexpected failure allocating Mach-O structure for %s: %d", name, ret);
+        return;
+    }
+    
     /* Initialize the new entry. */
-    plcrash_async_image_t *new_entry = (plcrash_async_image_t *) calloc(1, sizeof(plcrash_async_image_t));
-    if ((ret = plcrash_nasync_macho_init(&new_entry->macho_image, list->task, name, header)) != PLCRASH_ESUCCESS) {
+    if ((ret = plcrash_async_macho_init(&new_entry->macho_image, list->_allocator, list->task, name, header)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Unexpected failure initializing Mach-O structure for %s: %d", name, ret);
-        free(new_entry);
+        
         return;
     }
 

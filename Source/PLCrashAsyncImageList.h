@@ -34,6 +34,7 @@
 #include <stdbool.h>
 
 #include "PLCrashAsyncMachOImage.h"
+#include "PLCrashAsyncAllocator.h"
 
 /*
  * NOTE: We keep this code C-compatible for backwards-compatibility purposes. If the entirity
@@ -75,7 +76,10 @@ struct plcrash_async_image {
  * Async-safe binary image list. May be used to iterate over the binary images currently
  * available in-process.
  */
-typedef struct plcrash_async_image_list {    
+typedef struct plcrash_async_image_list {
+    /** A borrowed reference to our backing allocator. */
+    plcrash_async_allocator_t *_allocator;
+    
     /** The Mach task in which all Mach-O images can be found */
     mach_port_t task;
 
@@ -87,7 +91,7 @@ typedef struct plcrash_async_image_list {
 #endif
 } plcrash_async_image_list_t;
 
-void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, mach_port_t task);
+void plcrash_nasync_image_list_init (plcrash_async_image_list_t *list, plcrash_async_allocator_t *allocator, mach_port_t task);
 void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list);
 void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, const char *name);
 void plcrash_nasync_image_list_remove (plcrash_async_image_list_t *list, pl_vm_address_t header);

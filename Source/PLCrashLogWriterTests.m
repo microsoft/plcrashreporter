@@ -56,6 +56,9 @@
     
     /* Test thread */
     plcrash_test_thread_t _thr_args;
+    
+    /** Allocator to use with async-safe APIs. */
+    plcrash_async_allocator_t *_allocator;
 }
 
 @end
@@ -69,6 +72,9 @@
     
     /* Create the test thread */
     plcrash_test_thread_spawn(&_thr_args);
+    
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
 }
 
 - (void) tearDown {
@@ -82,6 +88,9 @@
 
     /* Stop the test thread */
     plcrash_test_thread_stop(&_thr_args);
+    
+    /* Drop our allocator */
+    plcrash_async_allocator_free(_allocator);
 }
 
 // check a crash report's system info
@@ -297,7 +306,7 @@
     thread_t thread;
 
     /* Initialize the image list */
-    plcrash_nasync_image_list_init(&image_list, mach_task_self());
+    plcrash_nasync_image_list_init(&image_list, _allocator, mach_task_self());
     for (uint32_t i = 0; i < _dyld_image_count(); i++)
         plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
 

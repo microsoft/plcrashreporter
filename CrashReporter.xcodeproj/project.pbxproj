@@ -229,6 +229,9 @@
 		0576DAB61B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
 		0576DAB71B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
 		0576DAB81B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
+		0576DAB91B41D869000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
+		0576DABA1B41D86D000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
+		0576DABB1B41D871000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
 		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		057C9BBE17970F54006B242E /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
@@ -3184,6 +3187,7 @@
 				05A5E28C17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29417C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
 				05B929F117C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
+				0576DAB91B41D869000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3290,6 +3294,7 @@
 				05A5E28D17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29517C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
 				05B929F217C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
+				0576DABA1B41D86D000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3398,6 +3403,7 @@
 				05A5E28E17C04188008A75E5 /* PLCrashAsyncLinkedList.cpp in Sources */,
 				05A5E29617C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm in Sources */,
 				05B929F317C9337D00B051E3 /* PLCrashUncaughtExceptionHandlerTests.m in Sources */,
+				0576DABB1B41D871000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

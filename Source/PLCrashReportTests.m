@@ -48,6 +48,9 @@
 @private
     /* Path to crash log */
     NSString *_logPath;
+    
+    /** Allocator to use with async-safe APIs. */
+    plcrash_async_allocator_t *_allocator;
 }
 
 @end
@@ -55,6 +58,9 @@
 @implementation PLCrashReportTests
 
 - (void) setUp {
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+    
     /* Create a temporary log path */
     _logPath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
 }
@@ -65,6 +71,9 @@
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
     [_logPath release];
+    
+    /* Clean up our allocator */
+    plcrash_async_allocator_free(_allocator);
 }
 
 struct plcr_live_report_context {
@@ -122,7 +131,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_writer_set_exception(&writer, exception);
 
     /* Provide binary image info */
-    plcrash_nasync_image_list_init(&image_list, mach_task_self());
+    plcrash_nasync_image_list_init(&image_list, _allocator, mach_task_self());
     uint32_t image_count = _dyld_image_count();
     for (uint32_t i = 0; i < image_count; i++) {
         plcrash_nasync_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_name(i));

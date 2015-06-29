@@ -37,6 +37,9 @@
 
 
 @interface PLCrashAsyncSymbolicationTests : SenTestCase {
+    /** The allocator used to initialize our Mach-O image */
+    plcrash_async_allocator_t *_allocator;
+    
     /** The image containing our class. */
     plcrash_async_macho_t _image;
 }
@@ -46,6 +49,9 @@
 @implementation PLCrashAsyncSymbolicationTests
 
 - (void) setUp {
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+    
     /* Fetch our containing image's dyld info */
     Dl_info info;
     STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
@@ -62,7 +68,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
     
-    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
+    plcrash_async_macho_init(&_image, _allocator, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
     
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -75,7 +81,10 @@
 }
 
 - (void) tearDown {
-    plcrash_nasync_macho_free(&_image);
+    plcrash_async_macho_free(&_image);
+    
+    /* Clean up our allocator (must be done *after* deallocating the _image allocated from this allocator) */
+    plcrash_async_allocator_free(_allocator);
 }
 
 /* testFindSymbol callback handling */

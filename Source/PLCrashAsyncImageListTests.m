@@ -39,6 +39,9 @@
 
 @interface PLCrashAsyncImageTests : SenTestCase {
     plcrash_async_image_list_t _list;
+    
+    /** The allocator used by our _list instance. */
+    plcrash_async_allocator_t *_allocator;
 }
 @end
 
@@ -50,11 +53,17 @@
 @implementation PLCrashAsyncImageTests
 
 - (void) setUp {
-    plcrash_nasync_image_list_init(&_list, mach_task_self());
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+    
+    plcrash_nasync_image_list_init(&_list, _allocator, mach_task_self());
 }
 
 - (void) tearDown {
     plcrash_nasync_image_list_free(&_list);
+    
+    /* Clean up our allocator (must be done *after* cleaning up the _list allocated from this allocator. */
+    plcrash_async_allocator_free(_allocator);
 }
 
 - (void) testAppendImage {
