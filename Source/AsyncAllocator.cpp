@@ -133,7 +133,7 @@ plcrash_error_t AsyncAllocator::grow (vm_size_t required) {
         return err;
     }
 
-    /* Calculate the first usable address at which we can construct our page control. This must be aligned as per PL_NATURAL_ALIGNMENT. */
+    /* Calculate the first usable address at which we can construct our page control. This must be aligned to natural_alignment(). */
     vm_address_t aligned_address = round_align(newPages->usable_address());
     vm_size_t aligned_size = newPages->usable_size() - (aligned_address - newPages->usable_address());
     
@@ -187,7 +187,7 @@ plcrash_error_t AsyncAllocator::Create (AsyncAllocator **allocator, size_t initi
         return err;
     }
     
-    /* Calculate the first usable address at which we can construct our AsyncAllocator. This must be aligned as per PL_NATURAL_ALIGNMENT. */
+    /* Calculate the first usable address at which we can construct our AsyncAllocator. This must be aligned to natural_alignment(). */
     vm_address_t aligned_address = round_align(pageAllocator->usable_address());
     vm_size_t aligned_size = pageAllocator->usable_size() - (aligned_address - pageAllocator->usable_address());
     
