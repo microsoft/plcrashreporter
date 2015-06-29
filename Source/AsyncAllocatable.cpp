@@ -28,14 +28,14 @@
 
 #include "AsyncAllocatable.hpp"
 
-using namespace plcrash::async;
-
 /**
  * @internal
  * @ingroup plcrash_async
  *
  * @{
  */
+
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /*
  * The size of the header we attach to allocations. This is necessary to retain
@@ -122,6 +122,8 @@ void AsyncAllocatable::operator delete (void *ptr, size_t size) {
 void AsyncAllocatable::operator delete[] (void *ptr, size_t size) {
     return perform_delete(ptr, size);
 }
+
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}

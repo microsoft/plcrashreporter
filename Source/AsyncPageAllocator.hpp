@@ -34,6 +34,7 @@
 #include <stdint.h>
 
 #include "PLCrashAsync.h"
+#include "PLCrashMacros.h"
 
 /**
  * @internal
@@ -42,7 +43,7 @@
  * @{
  */
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -105,7 +106,7 @@ private:
     const vm_size_t _usable_size;
 };
     
-}}
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}

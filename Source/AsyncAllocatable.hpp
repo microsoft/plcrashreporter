@@ -34,6 +34,8 @@
 #include <stdint.h>
 
 #include "PLCrashAsync.h"
+#include "PLCrashMacros.h"
+
 #include "AsyncAllocator.hpp"
 
 /**
@@ -43,7 +45,7 @@
  * @{
  */
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -67,7 +69,7 @@ private:
     void *operator new[] (size_t);
 };
 
-}}
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}

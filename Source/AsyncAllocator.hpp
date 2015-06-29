@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#include "PLCrashMacros.h"
+
 #include "PLCrashAsync.h"
 #include "SpinLock.hpp"
 
@@ -42,18 +44,21 @@
  * @{
  */
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
+
 /**
  * Tag parameter required when invoking the async-safe placement new operators defined by
  * the PLCrashReporter async-safe allocator.
  */
 struct placement_new_tag_t {};
-}}
 
+PLCR_CPP_END_ASYNC_NS
+
+/* These must be defined in the root namespace */
 void *operator new (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p);
 void *operator new[] (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p);
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /* Forward declarations */
 class AsyncPageAllocator;
@@ -212,8 +217,8 @@ private:
     }
 #endif    
 };
-    
-}}
+
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}

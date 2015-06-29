@@ -65,7 +65,7 @@ void *operator new (size_t, const plcrash::async::placement_new_tag_t &tag, vm_a
  */
 void *operator new[] (size_t, const plcrash::async::placement_new_tag_t &tag, vm_address_t p) { return (void *) p; };
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -367,7 +367,7 @@ void AsyncAllocator::dealloc (void *ptr) {
     _lock.unlock();
 }
 
-}}
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}

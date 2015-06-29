@@ -35,14 +35,16 @@
 #import "AsyncAllocatable.hpp"
 
 
-namespace plcrash { namespace async {
-    /* An async-allocatable class to be used for testing */
-    class ExampleAsyncAllocatable : public AsyncAllocatable {
-    public:
-        uint32_t _magic;
-        ExampleAsyncAllocatable (uint32_t magic) : _magic(magic) {}
-    };
-}}
+PLCR_CPP_BEGIN_ASYNC_NS
+
+/* An async-allocatable class to be used for testing */
+class ExampleAsyncAllocatable : public AsyncAllocatable {
+public:
+    uint32_t _magic;
+    ExampleAsyncAllocatable (uint32_t magic) : _magic(magic) {}
+};
+
+PLCR_CPP_END_ASYNC_NS
 
 using namespace plcrash::async;
 

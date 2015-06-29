@@ -33,7 +33,7 @@
 
 #include <libkern/OSAtomic.h>
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -151,4 +151,4 @@ plcrash_error_t AsyncPageAllocator::Create (AsyncPageAllocator **allocator, size
     return PLCRASH_ESUCCESS;
 }
 
-}}
+PLCR_CPP_END_ASYNC_NS

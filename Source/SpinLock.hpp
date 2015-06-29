@@ -30,6 +30,7 @@
 #define PLCRASH_ASYNC_SPINLOCK_H
 
 #include "PLCrashAsync.h"
+#include "PLCrashMacros.h"
 
 /**
  * @internal
@@ -38,7 +39,7 @@
  * @{
  */
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * An async-safe spinlock implementation.
@@ -85,7 +86,7 @@ private:
     volatile uint32_t _mtx = 0;
 };
 
-}}
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}
