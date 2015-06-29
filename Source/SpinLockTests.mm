@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2008-2013 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2015 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -27,30 +27,25 @@
  */
 
 #import "SenTestCompat.h"
-#import "PLCrashAsyncAllocator.h"
+#import "SpinLock.hpp"
 
-@interface PLCrashAsyncAllocatorTests : SenTestCase {
-@private
+using namespace plcrash::async;
+
+@interface PLCrashAsyncSpinLockTests : SenTestCase @end
+@implementation PLCrashAsyncSpinLockTests
+
+/* A simple smoke test for our expected locking behavior. */
+- (void) testLocking {
+    SpinLock l;
+    
+    l.lock();
+    STAssertFalse(l.tryLock(), @"The lock is already locked; acquiring the lock should fail");
+    
+    l.unlock();
+    STAssertTrue(l.tryLock(), @"The lock could not be acquired");
+    
+    l.unlock();
 }
 
-@end
-
-@implementation PLCrashAsyncAllocatorTests
-
-/**
- * Test allocation of guard pages.
- */
-- (void) testGuardPages {
-    plcrash_async_allocator_t *alloc;
-    plcrash_error_t err;
-
-    err = plcrash_async_allocator_new(&alloc, PAGE_SIZE, PLCrashAsyncGuardLowPage|PLCrashAsyncGuardHighPage);
-    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize allocator");
-
-    void *buffer = plcrash_async_allocator_alloc(alloc, PAGE_SIZE, true);
-    STAssertNotNULL(buffer, @"Failed to allocate page");
-    // TODO
-    // XXX missing free();
-}
 
 @end
