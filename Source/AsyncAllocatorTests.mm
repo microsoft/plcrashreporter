@@ -47,6 +47,16 @@ using namespace plcrash::async;
 
 #define PL_ROUNDUP_ALIGN(x) AsyncAllocator::round_align(x)
 
+/* Sanity-check the natural alignment declared by the allocator */
+- (void) testNaturalAlignment {
+    void *malloc_buffer = malloc(64);
+    
+    STAssertNotNULL(malloc_buffer, @"malloc() failed");
+    STAssertTrue((uintptr_t) malloc_buffer % AsyncAllocator::natural_alignment() == 0, @"The buffer returned by malloc does not match our declared natural alignment");
+    
+    free(malloc_buffer);
+}
+
 /* Verify the initial allocation state; all the other tests below assume the assertions verified here. */
 - (void) testInitialization {
     AsyncAllocator *allocator;
