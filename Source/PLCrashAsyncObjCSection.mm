@@ -412,7 +412,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
     pl_vm_address_t namePtr = image->byteorder->swap32(cls->name);
     bool classNameInitialized = false;
     plcrash_async_macho_string_t className;
-    err = plcrash_async_macho_string_init(&className, image, namePtr);
+    err = plcrash_async_macho_string_init(&className, image->task, namePtr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)namePtr, err);
         return err;
@@ -487,7 +487,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             /* Load the method name from the .name field pointer. */
             pl_vm_address_t methodNamePtr = image->byteorder->swap32(method.name);
             plcrash_async_macho_string_t methodName;
-            err = plcrash_async_macho_string_init(&methodName, image, methodNamePtr);
+            err = plcrash_async_macho_string_init(&methodName, image->task, methodNamePtr);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
                 goto cleanup;
@@ -682,7 +682,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
         
         /* Read the method name. */
         plcrash_async_macho_string_t method_name;
-        if ((err = plcrash_async_macho_string_init(&method_name, image, methodNamePtr)) != PLCRASH_ESUCCESS) {
+        if ((err = plcrash_async_macho_string_init(&method_name, image->task, methodNamePtr)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
             return err;
         }
@@ -791,7 +791,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     
     /* Fetch the pointer to the class name, and make the string. */
     pl_vm_address_t class_name_ptr = image->byteorder->swap(cls_data_ro->name);
-    err = plcrash_async_macho_string_init(class_name, image, class_name_ptr);
+    err = plcrash_async_macho_string_init(class_name, image->task, class_name_ptr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)class_name_ptr, err);
         return PLCRASH_EINVALID_DATA;

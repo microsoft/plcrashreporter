@@ -92,7 +92,7 @@
     plcrash_error_t err;
     
     plcrash_async_macho_string_t strObj;
-    err = plcrash_async_macho_string_init(&strObj, &_image, (pl_vm_address_t)str);
+    err = plcrash_async_macho_string_init(&strObj, _image.task, (pl_vm_address_t)str);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Error initializing string object. (How did you even manage to pull that off?)");
     
     pl_vm_size_t len;
