@@ -119,6 +119,10 @@ plcrash_error_t AsyncAllocator::grow (vm_size_t required) {
 
     plcrash_error_t err;
     
+    /* While vm_allocate is generally async-safe, it is not gauranteed to be so. Ideally this allocator will be initialized once without
+     * sufficient free space for all crash-time allocation operations. */
+    PLCF_DEBUG("WARNING: Growing the AsyncAllocator free list via vm_allocate(). Increasing the initial size of this allocator is recommended.");
+    
     /* Try allocating a new page pool */
     AsyncPageAllocator *newPages;
     err = AsyncPageAllocator::Create(&newPages, _initial_size + required, AsyncPageAllocator::GuardLowPage | AsyncPageAllocator::GuardHighPage);

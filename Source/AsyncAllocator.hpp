@@ -72,6 +72,28 @@ class AsyncPageAllocator;
  * allocated memory pools from which allocations are made, helping to ensure that a
  * buffer overflow that occurs elsewhere in the process will not overwrite allocations
  * within this allocator.
+ *
+ * @par Async-Safe Usage
+ *
+ * There are a number of caveats to async-safety that must be kept in mind when leveraging the
+ * AsyncAllocator:
+ *
+ * - Page allocations are performed via vm_allocate(), which is <em>not</em> gauranteed to be async-safe. It happens
+ *   to be async-safe in all known implementations, with one exception: Libc malloc stack logging will set a
+ *   __syscall_logger callback that make invoke non-async-safe API from vm_allocate.
+ * 
+ * - The allocator is only async-safe insofar as the process does not crash while holding a lock in an
+ *   allocator instance that will be required for crash-time allocation.
+ *
+ * Given the above, we recommend that an instance of the AsyncAllocator be created prior to the crash, and be
+ * set aside for use inside the signal/exception handler. By not using the allocator outside the signal/exception handler,
+ * implementors can gaurantee that the crash reporter will not crash with the AsyncAllocator's lock held, triggering
+ * a crash-time deadlock. Additionally, if the allocator is sufficiently large, further page allocations
+ * will not be required.
+ *
+ * This solutions still introduces the potential for deadlock in the case that a double-fault occurs inside the
+ * signal/exception handler. This should be addressed by introducing a simpler second-level double-fault handler
+ * that maintains an independent allocator instance.
  */
 class AsyncAllocator {
 public:
