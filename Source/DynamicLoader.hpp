@@ -29,12 +29,21 @@
 #ifndef PLCRASH_DYNAMIC_LOADER_H
 #define PLCRASH_DYNAMIC_LOADER_H
 
+#include <mach/mach.h>
 #include <mach/task_info.h>
 
 #include "PLCrashMacros.h"
 #include "PLCrashAsync.h"
 
+#include "AsyncAllocator.hpp"
+#include "AsyncAllocatable.hpp"
+
+#include "PLCrashAsyncMachOImage.h"
+
 PLCR_CPP_BEGIN_ASYNC_NS
+
+/* Forward declaration */
+template<typename machine_ptr> class DyldImageInfo;
 
 /**
  * An immutable reference to a source of dynamic loader data for
@@ -43,17 +52,58 @@ PLCR_CPP_BEGIN_ASYNC_NS
 class DynamicLoader {
 public:
     /**
-     * Attempt to fetch a DynamicLoader reference for @a task, placing the result
-     * in @a loader on success.
-     *
-     * @param task The target task.
-     * @param[out] loader On success, will be initialized with a valid DynamicLoader instance.
-     *
-     * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned.
-     *
-     * @warning This method is not gauranteed async-safe.
+     * An immutable array of Mach-O images.
      */
-    static plcrash_error_t nasync_get (mach_port_t task, DynamicLoader &loader);
+    class ImageList : public AsyncAllocatable {
+        template<typename> friend class DyldImageInfo;
+        
+    public:
+        /* Copy/move are not supported. */
+        ImageList (const ImageList &) = delete;
+        ImageList (ImageList &&) = delete;
+        
+        ImageList &operator= (const ImageList &) = delete;
+        ImageList &operator= (ImageList &&) = delete;
+        
+        /**
+         * Return a borrowed reference to the Mach-O image entry at @a index.
+         */
+        plcrash_async_macho_t *get_image (size_t index) {
+            PLCF_ASSERT(index < _count);
+            return &_images[index];
+        }
+        
+        /**
+         * Return the total number of available images.
+         */
+        size_t count () { return _count; }
+
+        ~ImageList ();
+
+    private:
+        /**
+         * Construct a new image list; the new list will assume ownership of @a images.
+         *
+         * @param allocator A borrowed reference to the allocator to be used to deallocate @a images.
+         * @param images An array of images. Ownership of this value will be assumed.
+         * @param count The total number of images in @a images.
+         */
+        ImageList (AsyncAllocator *allocator, plcrash_async_macho_t *images, size_t count) : _allocator(allocator), _images(images), _count(count) {}
+        
+        /** A borrowed reference to the allocator to be used to deallocate _images */
+        AsyncAllocator *_allocator;
+        
+        /** The array of Mach-O image instances. */
+        plcrash_async_macho_t *_images;
+
+        /** The number of images in this image list. */
+        size_t _count;
+    };
+    
+    static plcrash_error_t nasync_find (task_t task, DynamicLoader &loader);
+    
+    plcrash_error_t read_image_list (AsyncAllocator *allocator, DynamicLoader::ImageList **image_list);
+
     
     DynamicLoader ();
     ~DynamicLoader ();
@@ -95,12 +145,11 @@ public:
     struct task_dyld_info dyld_info () { return _dyld_info; }
     
 private:
-    DynamicLoader (mach_port_t task, struct task_dyld_info dyld_info);
-
-    void set_task (mach_port_t new_task);
+    DynamicLoader (task_t task, struct task_dyld_info dyld_info);
+    void set_task (task_t new_task);
     
     /** The task containing the fetched dyld info. */
-    mach_port_t _task;
+    task_t _task;
 
     /** The dyld info fetched from _task */
     struct task_dyld_info _dyld_info;
