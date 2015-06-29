@@ -83,10 +83,16 @@ AsyncAllocator::AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initia
     /* Construct the first free list entry in-place, covering all remaining unallocated data */
     _free_list = new (placement_new_tag_t(), first_block_address) control_block(NULL, first_block_size);
     _free_list->_next = _free_list;
+    
+    _expected_unleaked_free_bytes = first_block_size;
 }
 
 AsyncAllocator::~AsyncAllocator () {
     PLCF_ASSERT(_pageControls != NULL);
+    
+    /* Check for leaks */
+    if (_expected_unleaked_free_bytes != debug_bytes_free())
+        PLCF_DEBUG("WARNING! Leaked %zd bytes in allocator %p", (ssize_t) (_expected_unleaked_free_bytes - debug_bytes_free()), this);
     
     /* Clean up our backing allocations. Note that we copy out the next page control, as deallocating
      * the previous page will also deallocate its control. */
@@ -137,6 +143,9 @@ plcrash_error_t AsyncAllocator::grow (vm_size_t required) {
 
     /* Construct the first free list entry in-place, covering all remaining unallocated data */
     control_block *new_block = new (placement_new_tag_t(), free_block_address) control_block(NULL, free_block_size);
+    
+    /* Update leak detection state */
+    _expected_unleaked_free_bytes += free_block_size;
     
     /* Use the deallocation machinery to insert the new block into the free list, while maintaining sorting/coalescing */
     _lock.unlock(); /* Avoid deadlock */

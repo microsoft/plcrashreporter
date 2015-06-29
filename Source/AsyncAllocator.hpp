@@ -158,6 +158,9 @@ private:
     /** Lock that must be held when operating on the non-const allocator state */
     SpinLock _lock;
     
+    /** The expected number of free bytes after all allocations are freed; used for leak detection. */
+    vm_size_t _expected_unleaked_free_bytes;
+    
     /** Inline allocation for the first page control block; there is always at least one. */
     page_control_block _initial_page_control;
 
@@ -196,9 +199,11 @@ private:
      */
     control_block *_free_list;
     
-#ifdef PLCF_ASYNCALLOCATOR_DEBUG
     /**
      * Return the number of bytes consumed by all free list blocks.
+     *
+     * This does not define the number of bytes available for actual usable allocation, and should not be used
+     * by non-implementation code outside of unit tests or debugging.
      */
     vm_size_t debug_bytes_free () {
         vm_size_t bytes_free = 0;
@@ -215,7 +220,6 @@ private:
         
         return bytes_free;
     }
-#endif    
 };
 
 PLCR_CPP_END_ASYNC_NS

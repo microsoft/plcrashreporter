@@ -74,7 +74,7 @@ using namespace plcrash::async;
     vm_address_t allocator_addr = AsyncAllocator::round_align(allocator->_pageControls->_pageAllocator->usable_address());
     STAssertEquals((vm_address_t) allocator, allocator_addr, @"The allocator was not placed at the first usable aligned address");
 
-    vm_size_t free_size = usable_size - (allocator_addr - usable_address) - sizeof(AsyncAllocator);
+    vm_size_t free_size = usable_size - (allocator_addr - usable_address) - AsyncAllocator::round_align(sizeof(AsyncAllocator));
 
     /* Sanity check the free list */
     STAssertEquals(allocator->_free_list->_next, allocator->_free_list, @"The initial free list is not circular");
@@ -98,6 +98,7 @@ using namespace plcrash::async;
     /* Verify that this left the the free list exhausted */
     STAssertNULL(allocator->_free_list, @"_free_list was not marked as exhausted");
 
+    allocator->dealloc(buffer);
     delete allocator;
 }
 
@@ -127,6 +128,7 @@ using namespace plcrash::async;
     STAssertNULL(block->_next, @"The _next field was not set to NULL on an allocated block");
     STAssertEquals(block->_size, free_block_consumed, @"The allocated block's size is incorrect");
     
+    allocator->dealloc(buffer);
     delete allocator;
 }
 
@@ -228,6 +230,9 @@ using namespace plcrash::async;
     STAssertNotNULL(allocator->_free_list, @"The free list was not updated");
     STAssertTrue(allocator->_free_list == allocator->_free_list->_next, @"The free list has more than one entry, or in invalid _next value");
 
+    allocator->dealloc(buffer);
+    allocator->dealloc(buffer_2);
+    
     delete allocator;
 }
 
@@ -247,6 +252,9 @@ using namespace plcrash::async;
     STAssertNotNULL(allocator->_free_list, @"The free list was not updated");
     STAssertEquals(allocator->_free_list, orig_free_list, "The free list pointer wasn't updated to point at the new free block's parent");
     STAssertNotEquals(allocator->_free_list, allocator->_free_list->_next, "No new free block was added");
+    
+    allocator->dealloc(buffer);
+    delete allocator;
 }
 
 @end
