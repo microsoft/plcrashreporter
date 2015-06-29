@@ -221,6 +221,14 @@
 		0576DAAC1B3E0C74000BCA73 /* AsyncAllocatableTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAB1B3E0C74000BCA73 /* AsyncAllocatableTests.mm */; };
 		0576DAAD1B3E0C74000BCA73 /* AsyncAllocatableTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAB1B3E0C74000BCA73 /* AsyncAllocatableTests.mm */; };
 		0576DAAE1B3E0C74000BCA73 /* AsyncAllocatableTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAB1B3E0C74000BCA73 /* AsyncAllocatableTests.mm */; };
+		0576DAB11B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
+		0576DAB21B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
+		0576DAB31B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
+		0576DAB41B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */; };
+		0576DAB51B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
+		0576DAB61B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
+		0576DAB71B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
+		0576DAB81B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */; };
 		05771CE213683ED4001DE4B1 /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		05771CE313683EDD001DE4B1 /* PLCrashReportMachineInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83EF1364AD3E00D53B84 /* PLCrashReportMachineInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		057C9BBE17970F54006B242E /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
@@ -1209,6 +1217,8 @@
 		0576DA9E1B3E0856000BCA73 /* AsyncAllocatable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AsyncAllocatable.cpp; sourceTree = "<group>"; };
 		0576DA9F1B3E0856000BCA73 /* AsyncAllocatable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AsyncAllocatable.hpp; sourceTree = "<group>"; };
 		0576DAAB1B3E0C74000BCA73 /* AsyncAllocatableTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AsyncAllocatableTests.mm; sourceTree = "<group>"; };
+		0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PLCrashAsyncAllocator.cpp; sourceTree = "<group>"; };
+		0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncAllocator.h; sourceTree = "<group>"; };
 		057CD98516CD5D5C0067E670 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		0581B520168FDB280098C103 /* mach_exc.defs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mig; name = mach_exc.defs; path = usr/include/mach/mach_exc.defs; sourceTree = SDKROOT; };
 		058484AD1804841100A56049 /* unwind_test_arm64_frameless.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = unwind_test_arm64_frameless.S; sourceTree = "<group>"; };
@@ -1948,6 +1958,8 @@
 		05D8FE4916ACAA44000ED70C /* Allocator */ = {
 			isa = PBXGroup;
 			children = (
+				0576DAB01B41CCE0000BCA73 /* PLCrashAsyncAllocator.h */,
+				0576DAAF1B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp */,
 				0576DA871B3DC81B000BCA73 /* AsyncPageAllocator.hpp */,
 				0576DA861B3DC81B000BCA73 /* AsyncPageAllocator.cpp */,
 				0576DA931B3DC83A000BCA73 /* AsyncPageAllocatorTests.mm */,
@@ -2269,6 +2281,7 @@
 				059666E00EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */,
 				059670270EEF6B1A008A0601 /* PLCrashLogWriter.h in Headers */,
 				05CD36D30EF25717000FDE88 /* PLCrashLogWriterEncoding.h in Headers */,
+				0576DAB71B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */,
 				05F411A80EF8DA31008050CF /* PLCrashReport.h in Headers */,
 				0576DA911B3DC81B000BCA73 /* AsyncPageAllocator.hpp in Headers */,
 				05F413470EF995C0008050CF /* PLCrashReportSystemInfo.h in Headers */,
@@ -2321,6 +2334,7 @@
 				059666DE0EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */,
 				0596702B0EEF6B1A008A0601 /* PLCrashLogWriter.h in Headers */,
 				05CD36D10EF25717000FDE88 /* PLCrashLogWriterEncoding.h in Headers */,
+				0576DAB81B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */,
 				05F411A60EF8DA31008050CF /* PLCrashReport.h in Headers */,
 				0576DA921B3DC81B000BCA73 /* AsyncPageAllocator.hpp in Headers */,
 				05F413450EF995C0008050CF /* PLCrashReportSystemInfo.h in Headers */,
@@ -2391,6 +2405,7 @@
 				05E748AE17616D30009B8745 /* dwarf_stack.hpp in Headers */,
 				05C76DAD176B8C7000E9B10D /* dwarf_opstream.hpp in Headers */,
 				05C76DCF176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
+				0576DAB51B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */,
 				05102E2417B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
 				05BEC41717BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
 				05BEC43617BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
@@ -2454,6 +2469,7 @@
 				05C76DD0176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
 				05920D26177B9257001E8975 /* PLCrashFrameDWARFUnwind.h in Headers */,
 				05102E1617B0151000B5D925 /* PLCrashProcessInfo.h in Headers */,
+				0576DAB61B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */,
 				05102E2517B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
 				051F067B17B6B0D4006D0EFA /* PLCrashMachExceptionPort.h in Headers */,
 				05BEC41817BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
@@ -2979,6 +2995,7 @@
 				05C76DA8176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DCA176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.cpp in Sources */,
 				05920D21177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
+				0576DAB31B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 				05102E1A17B0151000B5D925 /* PLCrashProcessInfo.m in Sources */,
 				05102E2A17B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
 				051F067F17B6B0D4006D0EFA /* PLCrashMachExceptionPort.m in Sources */,
@@ -3049,6 +3066,7 @@
 				05C76DA9176B8C7000E9B10D /* dwarf_opstream.cpp in Sources */,
 				05C76DCB176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.cpp in Sources */,
 				05920D22177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
+				0576DAB41B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 				05102E1B17B0151000B5D925 /* PLCrashProcessInfo.m in Sources */,
 				05102E2B17B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
 				051F068017B6B0D4006D0EFA /* PLCrashMachExceptionPort.m in Sources */,
@@ -3442,6 +3460,7 @@
 				05E7484D175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
 				05E7485F1760D64D009B8745 /* PLCrashAsyncDwarfFDE.cpp in Sources */,
 				0576DAA01B3E0856000BCA73 /* AsyncAllocatable.cpp in Sources */,
+				0576DAB11B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 				05E748671760D891009B8745 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
 				05E7487B176118C2009B8745 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
 				05E748A717616D30009B8745 /* dwarf_stack.cpp in Sources */,
@@ -3521,6 +3540,7 @@
 				05659DEE17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				05E7484E175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
 				0576DAA11B3E0856000BCA73 /* AsyncAllocatable.cpp in Sources */,
+				0576DAB21B41CCE0000BCA73 /* PLCrashAsyncAllocator.cpp in Sources */,
 				05E748601760D64D009B8745 /* PLCrashAsyncDwarfFDE.cpp in Sources */,
 				05E748681760D891009B8745 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
 				05E7487C176118C2009B8745 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
