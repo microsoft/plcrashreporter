@@ -38,49 +38,30 @@
 PLCR_CPP_BEGIN_ASYNC_NS
 
 /*
- * The size of the header we attach to allocations. This is necessary to retain
- * access to our original AsyncAllocator.
- *
- * In the future, we might instead consider having the AsyncAllocator place
- * a reference to itself at the end of every allocation page; that would allow us
- * to find the original allocator without actually have to spend 8-16 additional bytes
- * for every allocation.
- */
-#define PL_ALLOC_HEADER_SIZE AsyncAllocator::round_align(sizeof(AsyncAllocator *))
-
-/*
  * Shared new() implementation.
  */
 static void *perform_new (size_t size, AsyncAllocator *allocator) {
-    size_t total_size = size + PL_ALLOC_HEADER_SIZE;
-    
-    /* Try to allocate space for the instance *and* our allocator back-reference */
+    /* Try to allocate space for the instance. */
     void *buffer;
-    plcrash_error_t err = allocator->alloc(&buffer, total_size);
+    plcrash_error_t err = allocator->alloc(&buffer, size);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("async-safe new() allocation failed!");
         return NULL;
     }
     
-    /* Add our allocator reference */
-    *((AsyncAllocator **) buffer) = allocator;
-    
     /* Return the buffer to be used for instance construction */
-    return (void *) ((vm_address_t) buffer + PL_ALLOC_HEADER_SIZE);
+    return buffer;
 }
 
 /*
  * Shared delete() implementation.
  */
 static void perform_delete (void *ptr, size_t size) {
-    /* Calculate the real allocation base */
-    void *base = (void *) (((vm_address_t) ptr) - PL_ALLOC_HEADER_SIZE);
+    /* Find the allocator */
+    AsyncAllocator *allocator = AsyncAllocator::allocator(ptr);
     
-    /* Fetch the saved allocator pointer */
-    AsyncAllocator *allocator = *(AsyncAllocator **) (base);
-    
-    /* Perform the actual deallocation */
-    allocator->dealloc(base);
+    /* Request deallocation */
+    allocator->dealloc(ptr);
 }
 
 /**

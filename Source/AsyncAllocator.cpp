@@ -31,9 +31,6 @@
 
 #include "AsyncPageAllocator.hpp"
 
-/* The number of bytes at the start of an allocation that must be preserved for the control block */
-#define PL_CONTROLBLOCK_HEADER_BYTES plcrash::async::AsyncAllocator::round_align(sizeof(control_block))
-
 /* Minimum useful allocation size; we won't bother to split a free block if the new free block would be
  * less than this size. */
 #define PL_MINIMUM_USEFUL_FREEBLOCK_SIZE (plcrash::async::AsyncAllocator::round_align(sizeof(control_block)) * 2)
@@ -81,7 +78,7 @@ AsyncAllocator::AsyncAllocator (AsyncPageAllocator *pageAllocator, size_t initia
     _free_list(NULL)
 {
     /* Construct the first free list entry in-place, covering all remaining unallocated data */
-    _free_list = new (placement_new_tag_t(), first_block_address) control_block(NULL, first_block_size);
+    _free_list = new (placement_new_tag_t(), first_block_address) control_block(this, NULL, first_block_size);
     _free_list->_next = _free_list;
     
     _expected_unleaked_free_bytes = first_block_size;
@@ -146,7 +143,7 @@ plcrash_error_t AsyncAllocator::grow (vm_size_t required) {
     _pageControls = pcb;
 
     /* Construct the first free list entry in-place, covering all remaining unallocated data */
-    control_block *new_block = new (placement_new_tag_t(), free_block_address) control_block(NULL, free_block_size);
+    control_block *new_block = new (placement_new_tag_t(), free_block_address) control_block(this, NULL, free_block_size);
     
     /* Update leak detection state */
     _expected_unleaked_free_bytes += free_block_size;
@@ -228,11 +225,11 @@ plcrash_error_t AsyncAllocator::alloc (void **allocated, size_t size) {
     plcrash_error_t err;
     
     /* Sanity check that adding size to sizeof(control_block) won't overflow */
-    if (SIZE_MAX - size < PL_CONTROLBLOCK_HEADER_BYTES)
+    if (SIZE_MAX - size < round_align(sizeof(control_block)))
         return PLCRASH_ENOMEM;
     
     /* Compute the total number of bytes our allocation will need -- we have to lead with a control block. */
-    size_t new_block_size = round_align(PL_CONTROLBLOCK_HEADER_BYTES + size);
+    size_t new_block_size = round_align(round_align(sizeof(control_block)) + size);
     
     /* Acquire our state lock */
     _lock.lock();
@@ -254,6 +251,9 @@ retry:
     control_block *prev_cb = _free_list;
     control_block *start_cb = prev_cb;
     for (control_block *cb = _free_list;; prev_cb = cb, cb = cb->_next) {
+        /* Sanity check; blocks must be owned by this allocator */
+        PLCF_ASSERT(cb->_allocator == this);
+
         /* Blocks must always be properly aligned! */
         PLCF_ASSERT(cb->_size == round_align(cb->_size));
 
@@ -306,7 +306,7 @@ retry:
         cb->_size -= new_block_size;
         
         /* We have to create a control block for the new allocation. */
-        control_block *split_cb = new (placement_new_tag_t(), (((vm_address_t) cb) + cb->_size)) control_block(NULL, new_block_size);
+        control_block *split_cb = new (placement_new_tag_t(), (((vm_address_t) cb) + cb->_size)) control_block(this, NULL, new_block_size);
         
         /* Lastly, we can return the user's allocation address (which falls just past the control block */
         *allocated = (void *) split_cb->data();
@@ -321,13 +321,30 @@ retry:
 }
 
 /**
+ * Return the AsyncAllocator used to allocate @a ptr.
+ *
+ * @param ptr Memory allocated by an AsyncAllocator instance.
+ */
+AsyncAllocator *AsyncAllocator::allocator (void *ptr) {
+    /* Fetch the control block */
+    control_block *block = (control_block *) ((vm_address_t) ptr - round_align(sizeof(control_block)));
+    
+    PLCF_ASSERT(block->_allocator != nullptr);
+    return block->_allocator;
+}
+
+
+/**
  * Deallocate the memory associated with @a ptr.
  *
  * @param ptr A pointer previously returned from alloc(), for which all associated memory will be deallocated.
  */
 void AsyncAllocator::dealloc (void *ptr) {
     /* Fetch the control block */
-    control_block *freeblock = ((control_block *) ptr) - 1;
+    control_block *freeblock = (control_block *) ((vm_address_t) ptr - round_align(sizeof(control_block)));
+    
+    /* Blocks must be owned by this allocator */
+    PLCF_ASSERT(freeblock->_allocator == this);
     
     /* Allocated blocks must have a NULL next value */
     PLCF_ASSERT(freeblock->_next == NULL);
