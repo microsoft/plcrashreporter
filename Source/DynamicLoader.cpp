@@ -84,7 +84,7 @@ public:
      *
      * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned.
      */
-    static plcrash_error_t read_image_list (AsyncAllocator *allocator, task_t task, struct task_dyld_info &dyld_info, DynamicLoader::ImageList **image_list) {
+    static plcrash_error_t readImageList (AsyncAllocator *allocator, task_t task, struct task_dyld_info &dyld_info, DynamicLoader::ImageList **image_list) {
         all_image_infos all_infos;
         size_t invalid_info_count;
         size_t image_list_count;
@@ -178,17 +178,19 @@ public:
 };
 
 /**
- * Attempt to fetch a DynamicLoader reference for @a task, placing the result
- * in @a loader on success.
+ * Attempt to construct a DynamicLoader reference for @a task, placing a pointer to the allocated
+ * instance in @a loader on success.
  *
+ * @param allocator The allocator to be used when instantiating the new DynamicLoader instance.
+ * @param[out] loader On success, will be initialized with a pointer to a new DynamicLoader instance. It is the caller's
+ * responsibility to free this instance via `delete`.
  * @param task The target task.
- * @param[out] loader On success, will be initialized with a valid DynamicLoader instance.
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned.
  *
  * @warning This method is not gauranteed async-safe.
  */
-plcrash_error_t DynamicLoader::nasync_find (task_t task, DynamicLoader &loader) {
+plcrash_error_t DynamicLoader::NonAsync_Create (DynamicLoader **loader, AsyncAllocator *allocator, task_t task) {
     kern_return_t kr;
 
     /* Try to fetch the task info. */
@@ -202,7 +204,7 @@ plcrash_error_t DynamicLoader::nasync_find (task_t task, DynamicLoader &loader) 
     }
     
     /* Success! Initialize via our copy/move constructor */
-    loader = DynamicLoader(task, data);
+    *loader = new (allocator) DynamicLoader(task, data);
     return PLCRASH_ESUCCESS;
 }
 
@@ -215,13 +217,13 @@ plcrash_error_t DynamicLoader::nasync_find (task_t task, DynamicLoader &loader) 
  *
  * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned.
  */
-plcrash_error_t DynamicLoader::read_image_list (AsyncAllocator *allocator, DynamicLoader::ImageList **image_list) {
+plcrash_error_t DynamicLoader::readImageList (AsyncAllocator *allocator, DynamicLoader::ImageList **image_list) {
     switch (_dyld_info.all_image_info_format) {
         case TASK_DYLD_ALL_IMAGE_INFO_32:
-            return DyldImageInfo<uint32_t>::read_image_list(allocator, _task, _dyld_info, image_list);
+            return DyldImageInfo<uint32_t>::readImageList(allocator, _task, _dyld_info, image_list);
             
         case TASK_DYLD_ALL_IMAGE_INFO_64:
-            return DyldImageInfo<uint64_t>::read_image_list(allocator, _task, _dyld_info, image_list);
+            return DyldImageInfo<uint64_t>::readImageList(allocator, _task, _dyld_info, image_list);
             
         default:
             PLCF_DEBUG("The fetched TASK_DYLD_INFO contains an unknown info format value: %d", _dyld_info.all_image_info_format);
@@ -237,14 +239,7 @@ plcrash_error_t DynamicLoader::read_image_list (AsyncAllocator *allocator, Dynam
  */
 DynamicLoader::DynamicLoader (task_t task, struct task_dyld_info dyld_info) : _task(MACH_PORT_NULL), _dyld_info(dyld_info) {
     /* Add a proper refcount for the task */
-    set_task(task);
-}
-
-/**
- * Construct a new, empty dynamic loader instance.
- */
-DynamicLoader::DynamicLoader () : _task(MACH_PORT_NULL) {
-    plcrash_async_memset(&_dyld_info, 0, sizeof(_dyld_info));
+    setTask(task);
 }
 
 /**
@@ -252,7 +247,7 @@ DynamicLoader::DynamicLoader () : _task(MACH_PORT_NULL) {
  *
  * @param new_task The new task port value. May be MACH_PORT_NULL or MACH_PORT_DEAD.
  */
-void DynamicLoader::set_task (task_t new_task) {
+void DynamicLoader::setTask (task_t new_task) {
     /* Is there anything to do? */
     if (_task == new_task)
         return;
@@ -271,7 +266,7 @@ void DynamicLoader::set_task (task_t new_task) {
 
 DynamicLoader::~DynamicLoader () {
     /* Discard our task port reference, if any */
-    set_task(MACH_PORT_NULL);
+    setTask(MACH_PORT_NULL);
 }
 
 DynamicLoader::ImageList::~ImageList () {

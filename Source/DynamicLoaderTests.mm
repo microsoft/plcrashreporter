@@ -41,9 +41,11 @@ using namespace plcrash::async;
 @implementation PLCrashAsyncDynamicLoaderTests
 
 - (void) testFindDynamicLoaderInfo {
-    DynamicLoader dyld;
+    DynamicLoader *loader;
+    AsyncAllocator *allocator;
     
-    STAssertEquals(DynamicLoader::nasync_find(mach_task_self(), dyld), PLCRASH_ESUCCESS, @"Failed to fetch dyld info");
+    STAssertEquals(AsyncAllocator::Create(&allocator, 4 * 1024 * 1024 /* 4MB */), PLCRASH_ESUCCESS, @"Failed to create allocator");
+    STAssertEquals(DynamicLoader::NonAsync_Create(&loader, allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to fetch dyld info");
 
     /* If this is an LP64 binary, so should be our dyld image data (and vis versa) */
 #ifdef __LP64__
@@ -52,11 +54,14 @@ using namespace plcrash::async;
     integer_t expectedFormat = TASK_DYLD_ALL_IMAGE_INFO_32;
 #endif
     
-    STAssertEquals(dyld.dyld_info().all_image_info_format, expectedFormat, @"Got unexpected image info format");
+    STAssertEquals(loader->dyld_info().all_image_info_format, expectedFormat, @"Got unexpected image info format");
+
+    delete loader;
+    delete allocator;
 }
 
 - (void) testFetchImageList {
-    DynamicLoader loader;
+    DynamicLoader *loader = nullptr;
     DynamicLoader::ImageList *images = nullptr;
     AsyncAllocator *allocator = nullptr;
 
@@ -64,10 +69,10 @@ using namespace plcrash::async;
     STAssertEquals(AsyncAllocator::Create(&allocator, 64 * 1024 * 1024), PLCRASH_ESUCCESS, @"Failed to create allocator");
     
     /* Find our image info */
-    STAssertEquals(DynamicLoader::nasync_find(mach_task_self(), loader), PLCRASH_ESUCCESS, @"Failed to fetch dyld info");
+    STAssertEquals(DynamicLoader::NonAsync_Create(&loader, allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to fetch dyld info");
 
     /* Fetch our image list */
-    STAssertEquals(loader.read_image_list(allocator, &images), PLCRASH_ESUCCESS, @"Failed to read image list");
+    STAssertEquals(loader->readImageList(allocator, &images), PLCRASH_ESUCCESS, @"Failed to read image list");
     STAssertNotNULL(images, @"Reading of images succeeded, but returned NULL!");
     
     /* Compare against our dyld-reported image list */
@@ -75,7 +80,7 @@ using namespace plcrash::async;
     
     size_t found = 0;
     for (size_t i = 0; i < images->count(); i++) {
-        plcrash_async_macho_t *image = images->get_image(i);
+        plcrash_async_macho_t *image = images->getImage(i);
         
         /* Search for a matching dyld image */
         for (uint32_t j = 0; j < _dyld_image_count(); j++) {

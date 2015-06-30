@@ -39,6 +39,7 @@
 #include "AsyncAllocatable.hpp"
 
 #include "PLCrashAsyncMachOImage.h"
+#include "PLCrashAsyncAllocator.h"
 
 PLCR_CPP_BEGIN_ASYNC_NS
 
@@ -49,7 +50,7 @@ template<typename machine_ptr> class DyldImageInfo;
  * An immutable reference to a source of dynamic loader data for
  * a specific target task.
  */
-class DynamicLoader {
+class DynamicLoader : public AsyncAllocatable {
 public:
     /**
      * An immutable array of Mach-O images.
@@ -68,7 +69,7 @@ public:
         /**
          * Return a borrowed reference to the Mach-O image entry at @a index.
          */
-        plcrash_async_macho_t *get_image (size_t index) {
+        plcrash_async_macho_t *getImage (size_t index) {
             PLCF_ASSERT(index < _count);
             return &_images[index];
         }
@@ -100,12 +101,10 @@ public:
         size_t _count;
     };
     
-    static plcrash_error_t nasync_find (task_t task, DynamicLoader &loader);
+    static plcrash_error_t NonAsync_Create (DynamicLoader **loader, AsyncAllocator *allocator, task_t task);
     
-    plcrash_error_t read_image_list (AsyncAllocator *allocator, DynamicLoader::ImageList **image_list);
-
+    plcrash_error_t readImageList (AsyncAllocator *allocator, DynamicLoader::ImageList **image_list);
     
-    DynamicLoader ();
     ~DynamicLoader ();
     
     /** Copy constructor */
@@ -119,7 +118,7 @@ public:
     /** Copy assignment operator */
     DynamicLoader &operator= (const DynamicLoader &other) {
         /* Update our task reference */
-        set_task(other._task);
+        setTask(other._task);
         
         /* Update dyld info */
         _dyld_info = other._dyld_info;
@@ -146,7 +145,7 @@ public:
     
 private:
     DynamicLoader (task_t task, struct task_dyld_info dyld_info);
-    void set_task (task_t new_task);
+    void setTask (task_t new_task);
     
     /** The task containing the fetched dyld info. */
     task_t _task;
