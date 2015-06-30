@@ -44,6 +44,8 @@
 
 #import "PLCrashReporterNSError.h"
 
+#import <libkern/OSAtomic.h>
+
 #import <fcntl.h>
 
 #define NSDEBUG(msg, args...) {\
