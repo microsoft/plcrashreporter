@@ -31,10 +31,12 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
+#import <objc/runtime.h>
 
 #import "PLCrashAsyncMachOImage.h"
 #import "PLCrashAsyncSymbolication.h"
 
+#import "PLCrashDLCompat.h"
 
 @interface PLCrashAsyncSymbolicationTests : SenTestCase {
     /** The allocator used to initialize our Mach-O image */
@@ -54,7 +56,8 @@
     
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
+    STAssertTrue(pl_dladdr((void *) localIMP, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;

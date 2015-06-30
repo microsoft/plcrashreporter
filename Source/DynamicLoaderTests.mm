@@ -35,6 +35,8 @@
 #include <mach-o/dyld.h>
 #include <objc/runtime.h>
 
+#include "PLCrashDLCompat.h"
+
 using namespace plcrash::async;
 
 @interface PLCrashAsyncDynamicLoaderTests : SenTestCase
@@ -141,7 +143,7 @@ using namespace plcrash::async;
     /* Fetch the our IMP address and symbolicate it using dladdr(). */
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
-    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
+    STAssertTrue(pl_dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;

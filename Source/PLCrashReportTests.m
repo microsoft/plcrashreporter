@@ -36,6 +36,8 @@
 
 #import "PLCrashHostInfo.h"
 
+#import "PLCrashDLCompat.h"
+
 #import <fcntl.h>
 #import <dlfcn.h>
 
@@ -283,7 +285,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          * to a larger, unsigned uint64_t value.
          */
         Dl_info info;
-        STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
+        STAssertTrue(pl_dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
         struct mach_header *hdr = info.dli_fbase;
         STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");

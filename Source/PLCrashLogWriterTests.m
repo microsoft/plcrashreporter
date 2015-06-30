@@ -46,6 +46,7 @@
 
 #import "crash_report.pb-c.h"
 #import "PLCrashTestThread.h"
+#import "PLCrashDLCompat.h"
 
 #import "PLCrashSysctl.h"
 
@@ -252,7 +253,7 @@
          * The 32-bit and 64-bit mach_header structures are equivalent for our purposes.
          */ 
         Dl_info info;
-        STAssertTrue(dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
+        STAssertTrue(pl_dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
         struct mach_header *hdr = info.dli_fbase;
         STAssertEquals(image->code_type->type, hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(image->code_type->subtype, hdr->cpusubtype, @"Incorrect CPU subtype");
