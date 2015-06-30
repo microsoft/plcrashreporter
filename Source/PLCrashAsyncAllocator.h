@@ -30,6 +30,7 @@
 #define PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H
 
 #include "PLCrashMacros.h"
+#include "PLCrashAsync.h"
 
 /*
  * Provides a pure C interface to the C++ AsyncAllocator.

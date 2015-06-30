@@ -159,6 +159,9 @@ public:
                 invalid_info_count++;
             }
             
+            /* Iterate */
+            info++;
+            
             /* Clean up! */
             plcrash_async_macho_string_free(&name_str);
         }
@@ -267,6 +270,75 @@ void DynamicLoader::setTask (task_t new_task) {
 DynamicLoader::~DynamicLoader () {
     /* Discard our task port reference, if any */
     setTask(MACH_PORT_NULL);
+}
+
+/**
+ * Attempt to read an image list directly from @a task, placing a pointer to the allocated
+ * list instance in @a imageList on success.
+ *
+ * This method is equivalent to combining the non-async-safe DynamicLoader::NonAsync_Create() with the async-safe
+ * DynamicLoader::readImageList(), and is primarily useful when operating outside of a mandatory async-safe
+ * context.
+ *
+ * @param allocator The allocator to be used when instantiating the new ImageList instance.
+ * @param[out] loader On success, will be initialized with a pointer to a new ImageList instance. It is the caller's
+ * responsibility to free this instance via `delete`.
+ * @param task The target task.
+ *
+ * @return On success, returns PLCRASH_ESUCCESS. On failure, one of the plcrash_error_t error values will be returned.
+ *
+ * @warning This method is not gauranteed async-safe.
+ */
+plcrash_error_t DynamicLoader::ImageList::NonAsync_Read (DynamicLoader::ImageList **imageList, AsyncAllocator *allocator, task_t task) {
+    DynamicLoader *loader;
+    plcrash_error_t err;
+    
+    /* Instantiate a loader instance for reading */
+    if ((err = DynamicLoader::NonAsync_Create(&loader, allocator, task)) != PLCRASH_ESUCCESS)
+        return err;
+    
+    /* Perform the read */
+    err = loader->readImageList(allocator, imageList);
+    
+    /* Clean up the no-longer-necessary loader instance and return. */
+    delete loader;
+    return err;
+}
+
+/**
+ * Construct an empty image list.
+ */
+DynamicLoader::ImageList::ImageList () : _allocator(NULL), _images(NULL), _count(0) {}
+
+/**
+ * Return a borrowed reference to the Mach-O image entry at @a index.
+ */
+plcrash_async_macho_t *DynamicLoader::ImageList::getImage (size_t index) {
+    PLCF_ASSERT(index < _count);
+    return &_images[index];
+}
+
+/**
+ * Return the total number of available images.
+ */
+size_t DynamicLoader::ImageList::count () { return _count; }
+
+/**
+ * Return a borrowed reference to image containing the given @a address within its TEXT segment.
+ * If image is not found, NULL will be returned.
+ *
+ * @param address The target-relative address to be searched for.
+ *
+ * @warning The list must be retained for reading via plcrash_async_image_list_set_reading() before calling this function.
+ */
+plcrash_async_macho_t *DynamicLoader::ImageList::imageContainingAddress (pl_vm_address_t address) {
+    for (size_t i = 0; i < _count; i++) {
+        if (plcrash_async_macho_contains_address(getImage(i), address))
+            return getImage(i);
+    }
+    
+    /* Not found */
+    return NULL;
 }
 
 DynamicLoader::ImageList::~ImageList () {

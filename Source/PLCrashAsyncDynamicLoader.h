@@ -31,6 +31,7 @@
 
 #include "PLCrashMacros.h"
 #include "PLCrashAsyncAllocator.h"
+#include "PLCrashAsyncMachOImage.h"
 
 /*
  * Provides a pure C interface to the C++ DynamicLoader.
@@ -52,12 +53,17 @@ typedef struct plcrash_async_image_list plcrash_async_image_list_t;
 PLCR_C_BEGIN_DECLS
 
 plcrash_error_t plcrash_nasync_dynloader_new (plcrash_async_dynloader_t **loader, plcrash_async_allocator_t *allocator, task_t task);
-plcrash_error_t plcrash_async_read_image_list (plcrash_async_allocator_t *allocator, plcrash_async_image_list_t **image_list);
+plcrash_error_t plcrash_async_dynloader_read_image_list (plcrash_async_dynloader_t *loader, plcrash_async_allocator_t *allocator, plcrash_async_image_list_t **image_list);
 void plcrash_async_dynloader_free (plcrash_async_dynloader_t *loader);
 
 
+plcrash_error_t plcrash_nasync_image_list_new (plcrash_async_image_list_t **list, plcrash_async_allocator_t *allocator, task_t task);
+
+plcrash_async_image_list_t *plcrash_async_image_list_new_empty (plcrash_async_allocator_t *allocator);
+
 plcrash_async_macho_t *plcrash_async_image_list_get_image (plcrash_async_image_list_t *list, size_t index);
-size_t plcrash_async_image_list_get_count (plcrash_async_image_list_t *list);
+size_t plcrash_async_image_list_count (plcrash_async_image_list_t *list);
+plcrash_async_macho_t *plcrash_async_image_containing_address (plcrash_async_image_list_t *list, pl_vm_address_t address);
 void plcrash_async_image_list_free (plcrash_async_image_list_t *list);
 
 PLCR_C_END_DECLS

@@ -59,6 +59,8 @@ public:
         template<typename> friend class DyldImageInfo;
         
     public:
+        static plcrash_error_t NonAsync_Read (ImageList **imageList, AsyncAllocator *allocator, task_t task);
+
         /* Copy/move are not supported. */
         ImageList (const ImageList &) = delete;
         ImageList (ImageList &&) = delete;
@@ -66,19 +68,13 @@ public:
         ImageList &operator= (const ImageList &) = delete;
         ImageList &operator= (ImageList &&) = delete;
         
-        /**
-         * Return a borrowed reference to the Mach-O image entry at @a index.
-         */
-        plcrash_async_macho_t *getImage (size_t index) {
-            PLCF_ASSERT(index < _count);
-            return &_images[index];
-        }
-        
-        /**
-         * Return the total number of available images.
-         */
-        size_t count () { return _count; }
 
+        plcrash_async_macho_t *getImage (size_t index);
+        size_t count ();
+        
+        plcrash_async_macho_t *imageContainingAddress (pl_vm_address_t address);
+        
+        ImageList ();
         ~ImageList ();
 
     private:

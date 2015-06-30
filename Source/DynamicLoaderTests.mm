@@ -30,7 +30,10 @@
 
 
 #include "DynamicLoader.hpp"
+
+#include <dlfcn.h>
 #include <mach-o/dyld.h>
+#include <objc/runtime.h>
 
 using namespace plcrash::async;
 
@@ -93,9 +96,82 @@ using namespace plcrash::async;
             STAssertEqualCStrings(_dyld_get_image_name(j), image->name, @"Name does not match!");
             STAssertEquals(_dyld_get_image_vmaddr_slide(j), image->vmaddr_slide, @"Slide does not match!");
             found++;
+            break;
         }
     };
     STAssertEquals(found, images->count(), @"Could not find a match for all images!");
+    
+    
+    /* Perform the same comparison in reverse, verifying that we didn't just find the *same* image N times
+     * in the dyld list. */
+    found = 0;
+    for (uint32_t j = 0; j < _dyld_image_count(); j++) {
+        for (size_t i = 0; i < images->count(); i++) {
+            plcrash_async_macho_t *image = images->getImage(i);
+
+            /* Header must match */
+            if ((pl_vm_address_t) _dyld_get_image_header(j) != image->header_addr)
+                continue;
+            
+            /* If the header address matches, so should everything else. */
+            STAssertEqualCStrings(_dyld_get_image_name(j), image->name, @"Name does not match!");
+            STAssertEquals(_dyld_get_image_vmaddr_slide(j), image->vmaddr_slide, @"Slide does not match!");
+            found++;
+            break;
+        }
+    }
+    STAssertEquals(found, _dyld_image_count(), @"Could not find a match for all images!");
+
+    delete images;
+    delete loader;
+    delete allocator;
+}
+
+- (void) testImageForAddress {
+    DynamicLoader::ImageList *images = nullptr;
+    AsyncAllocator *allocator = nullptr;
+    
+    /* Create our allocator */
+    STAssertEquals(AsyncAllocator::Create(&allocator, 64 * 1024 * 1024), PLCRASH_ESUCCESS, @"Failed to create allocator");
+    
+    /* Fetch our image list */
+    STAssertEquals(DynamicLoader::ImageList::NonAsync_Read(&images, allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to fetch dyld info");
+    STAssertNotNULL(images, @"Reading of images succeeded, but returned NULL!");
+
+    /* Fetch the our IMP address and symbolicate it using dladdr(). */
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
+    Dl_info dli;
+    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
+    
+    /* Look up the vmaddr slide for our image */
+    pl_vm_off_t vmaddr_slide = 0;
+    bool found_image = false;
+    for (uint32_t i = 0; i < _dyld_image_count(); i++) {
+        if (_dyld_get_image_header(i) == dli.dli_fbase) {
+            vmaddr_slide = _dyld_get_image_vmaddr_slide(i);
+            found_image = true;
+            break;
+        }
+    }
+    STAssertTrue(found_image, @"Could not find dyld image record");
+    
+    /* Verify that image_base returns a valid value */
+    plcrash_async_macho_t *image;
+    plcrash_async_macho_t *current_image;
+    
+    image = current_image = images->imageContainingAddress((pl_vm_address_t) dli.dli_fbase);
+    STAssertNotNULL(image, @"Failed to return valid image");
+    STAssertEquals(image->header_addr, (pl_vm_address_t)dli.dli_fbase, @"Incorrect Mach-O header address");
+    STAssertEquals(image->vmaddr_slide, vmaddr_slide, @"Incorrect slide value");
+    
+    /* Verify that image_base+image_length-1 returns our image. */
+    STAssertEquals(current_image, images->imageContainingAddress((pl_vm_address_t) dli.dli_fbase + image->text_size-1), @"Failed to find our image for an address within base + text_size");
+    
+    /* Verify that image_base+image_length does not return our image. */
+    STAssertNotEquals(current_image, images->imageContainingAddress((pl_vm_address_t) dli.dli_fbase + image->text_size), @"Returned our image for an address past the end of the text size");
+    
+    /* Verify that NULL is returned when an image is not found (we can be fairly certain that there's no image loaded at the NULL page!) */
+    STAssertNULL(images->imageContainingAddress(0x0), @"Returned an image pointer for an impossible image address!");
     
     delete images;
     delete allocator;
