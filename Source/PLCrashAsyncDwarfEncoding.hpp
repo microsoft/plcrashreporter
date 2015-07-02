@@ -39,7 +39,8 @@
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-PLCR_CPP_BEGIN_ASYNC_NS
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -80,7 +81,8 @@ private:
     bool _debug_frame;
 };
     
-PLCR_CPP_END_ASYNC_NS
+PLCR_CPP_END_NS
+}
 
 /**
  * @}
