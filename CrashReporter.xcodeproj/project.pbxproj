@@ -497,6 +497,9 @@
 		05CD36D40EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */; };
 		05CD36D50EF25717000FDE88 /* PLCrashLogWriterEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */; };
 		05CD36D60EF25717000FDE88 /* PLCrashLogWriterEncoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */; };
+		05D0AE2E1B45EE2000296632 /* XCTestRunner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */; };
+		05D0AE2F1B45EE3000296632 /* XCTestRunner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */; };
+		05D0AE301B45EE3C00296632 /* XCTestRunner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */; };
 		05D8FE4C16ACAA6E000ED70C /* AsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */; };
 		05D8FE4D16ACAA6E000ED70C /* AsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */; };
 		05D8FE4E16ACAA6E000ED70C /* AsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */; };
@@ -1294,6 +1297,10 @@
 		05CD36480EF247A9000FDE88 /* PLCrashAsyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncTests.m; sourceTree = "<group>"; };
 		05CD36CC0EF25717000FDE88 /* PLCrashLogWriterEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashLogWriterEncoding.h; sourceTree = "<group>"; };
 		05CD36CD0EF25717000FDE88 /* PLCrashLogWriterEncoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashLogWriterEncoding.c; sourceTree = "<group>"; };
+		05D0AE2A1B45EE0900296632 /* catch.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
+		05D0AE2B1B45EE0900296632 /* LICENSE_1_0.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE_1_0.txt; sourceTree = "<group>"; };
+		05D0AE2C1B45EE0900296632 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
+		05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = XCTestRunner.mm; sourceTree = "<group>"; };
 		05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AsyncAllocator.cpp; sourceTree = "<group>"; };
 		05D8FE5316ACAA81000ED70C /* AsyncAllocator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AsyncAllocator.hpp; sourceTree = "<group>"; };
 		05D8FE5716ACC8CD000ED70C /* AsyncAllocatorTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AsyncAllocatorTests.mm; sourceTree = "<group>"; };
@@ -1666,6 +1673,7 @@
 		059670E30EEFADA6008A0601 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				05D0AE291B45EE0900296632 /* Catch */,
 				059670E40EEFADA6008A0601 /* protobuf-2.0.3 */,
 			);
 			path = Dependencies;
@@ -1943,6 +1951,17 @@
 				05102E1C17B0152B00B5D925 /* PLCrashProcessInfoTests.m */,
 			);
 			name = "Host and Process Info";
+			sourceTree = "<group>";
+		};
+		05D0AE291B45EE0900296632 /* Catch */ = {
+			isa = PBXGroup;
+			children = (
+				05D0AE2A1B45EE0900296632 /* catch.hpp */,
+				05D0AE2B1B45EE0900296632 /* LICENSE_1_0.txt */,
+				05D0AE2C1B45EE0900296632 /* README.txt */,
+				05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */,
+			);
+			path = Catch;
 			sourceTree = "<group>";
 		};
 		05D8FE4916ACAA44000ED70C /* Allocator */ = {
@@ -3068,6 +3087,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05D0AE2E1B45EE2000296632 /* XCTestRunner.mm in Sources */,
 				0576DA9D1B3DCE04000BCA73 /* AsyncPageAllocator.cpp in Sources */,
 				0576DA831B3DC59C000BCA73 /* SpinLockTests.mm in Sources */,
 				05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
@@ -3176,6 +3196,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05D0AE2F1B45EE3000296632 /* XCTestRunner.mm in Sources */,
 				0576DA8D1B3DC81B000BCA73 /* AsyncPageAllocator.cpp in Sources */,
 				0576DA841B3DC59C000BCA73 /* SpinLockTests.mm in Sources */,
 				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
@@ -3282,6 +3303,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05D0AE301B45EE3C00296632 /* XCTestRunner.mm in Sources */,
 				0576DA9C1B3DCDFC000BCA73 /* AsyncPageAllocator.cpp in Sources */,
 				0576DA851B3DC59C000BCA73 /* SpinLockTests.mm in Sources */,
 				05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
@@ -4026,7 +4048,7 @@
 				COPY_PHASE_STRIP = NO;
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
@@ -4052,7 +4074,7 @@
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EFFECTIVE_PLATFORM_NAME = "-MacOSX";
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
@@ -4076,6 +4098,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
@@ -4105,6 +4128,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = "$(PL_IOS_DEPLOYMENT_TARGET)";
@@ -4135,6 +4159,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
@@ -4166,6 +4191,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
@@ -4424,6 +4450,7 @@
 				);
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
+				PL_CATCH_CONFIG_FLAGS = CATCH_CONFIG_NO_CPP11;
 				PL_IOS_DEPLOYMENT_TARGET = 6.0;
 				PL_MIN_MACOSX_SDK = 1080;
 				PL_NEVER_WARN = "-Wno-objc-interface-ivars -Wno-c++98-compat-pedantic -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-variadic-macros";
@@ -4467,6 +4494,7 @@
 				);
 				PL_ARM_ARCHS = "armv7 armv7s arm64";
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
+				PL_CATCH_CONFIG_FLAGS = CATCH_CONFIG_NO_CPP11;
 				PL_IOS_DEPLOYMENT_TARGET = 6.0;
 				PL_MIN_MACOSX_SDK = 1080;
 				PL_NEVER_WARN = "-Wno-objc-interface-ivars -Wno-c++98-compat-pedantic -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-variadic-macros";
