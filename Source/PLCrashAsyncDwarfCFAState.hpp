@@ -46,8 +46,7 @@
  * @{
  */
 
-PLCR_CPP_BEGIN_NS
-namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /* Maximum DWARF register number supported by dwarf_cfa_state and dwarf_cfa_state_regnum_t. */
 #define DWARF_CFA_STATE_REGNUM_MAX UINT32_MAX
@@ -367,8 +366,7 @@ public:
     bool next (dwarf_cfa_state_regnum_t *regnum, plcrash_dwarf_cfa_reg_rule_t *rule, machine_ptr *value);
 };
 
-PLCR_CPP_END_NS
-}
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}
