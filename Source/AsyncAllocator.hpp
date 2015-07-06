@@ -104,6 +104,8 @@ public:
     plcrash_error_t alloc (void **allocated, size_t size);
     void dealloc (void *ptr);
     
+    static AsyncAllocator *allocator (void *ptr);
+    
     /* An allocation instance may not be copied or moved; all access must be performed through the pointer returned
      * via Create(). */
     AsyncAllocator (const AsyncAllocator &other) = delete;
@@ -194,10 +196,18 @@ private:
      * 
      * A control block sits at the start of all allocations, and is used to form a circular
      * free list.
+     *
+     * We currently track the containing AsyncAllocator within each control block; as an optimization,
+     * we may want to use the final bytes of each allocated page (with the exception of allocations
+     * that span pages) to track the allocator without the overhead of an additional pointer in each
+     * allocation's control block.
      */
     struct control_block {
         /* Construct a new control block instance */
-        control_block (control_block *next, size_t size) : _next(next), _size(size) {}
+        control_block (AsyncAllocator *allocator, control_block *next, size_t size) : _allocator(allocator), _next(next), _size(size) {}
+        
+        /** Pointer back to the containing AsyncAllocator instance. */
+        AsyncAllocator *_allocator;
         
         /** Pointer to next block in the free list, or NULL if this block has been allocated. */
         control_block *_next;

@@ -30,7 +30,7 @@
 
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
-#import "PLCrashAsyncImageList.h"
+#import "PLCrashAsyncDynamicLoader.h"
 #import "PLCrashReport.h"
 
 #import "PLCrashProcessInfo.h"
@@ -46,6 +46,7 @@
 
 #import "crash_report.pb-c.h"
 #import "PLCrashTestThread.h"
+#import "PLCrashDLCompat.h"
 
 #import "PLCrashSysctl.h"
 
@@ -56,6 +57,9 @@
     
     /* Test thread */
     plcrash_test_thread_t _thr_args;
+    
+    /** Allocator to use with async-safe APIs. */
+    plcrash_async_allocator_t *_allocator;
 }
 
 @end
@@ -69,6 +73,9 @@
     
     /* Create the test thread */
     plcrash_test_thread_spawn(&_thr_args);
+    
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
 }
 
 - (void) tearDown {
@@ -82,6 +89,9 @@
 
     /* Stop the test thread */
     plcrash_test_thread_stop(&_thr_args);
+    
+    /* Drop our allocator */
+    plcrash_async_allocator_free(_allocator);
 }
 
 // check a crash report's system info
@@ -244,7 +254,7 @@
          * The 32-bit and 64-bit mach_header structures are equivalent for our purposes.
          */ 
         Dl_info info;
-        STAssertTrue(dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
+        STAssertTrue(pl_dladdr((void *)(uintptr_t)image->base_address, &info) != 0, @"dladdr() failed to find image");
         struct mach_header *hdr = info.dli_fbase;
         STAssertEquals(image->code_type->type, hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(image->code_type->subtype, hdr->cpusubtype, @"Incorrect CPU subtype");
@@ -293,14 +303,16 @@
     plframe_cursor_t cursor;
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
-    plcrash_async_image_list_t image_list;
+    plcrash_async_dynloader_t *loader;
+    plcrash_async_image_list_t *image_list;
     plcrash_async_thread_state_t thread_state;
     thread_t thread;
 
-    /* Initialize the image list */
-    plcrash_nasync_image_list_init(&image_list, mach_task_self());
-    for (uint32_t i = 0; i < _dyld_image_count(); i++)
-        plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
+    /* Initialize the dynamic loader reference */
+    STAssertEquals(plcrash_nasync_dynloader_new(&loader, _allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to create loader reference");
+    
+    /* Initialize the image list. */
+    STAssertEquals(plcrash_async_dynloader_read_image_list(loader, _allocator, &image_list), PLCRASH_ESUCCESS, @"Failed to read image list");
 
     /* Initialze faux crash data */
     plcrash_log_signal_info_t info;
@@ -323,7 +335,7 @@
         
         /* Steal the test thread's stack for iteration */
         thread = pthread_mach_thread_np(_thr_args.thread);
-        plframe_cursor_thread_init(&cursor, mach_task_self(), thread, &image_list);
+        plframe_cursor_thread_init(&cursor, mach_task_self(), thread, image_list);
         plcrash_async_thread_state_mach_thread_init(&thread_state, thread);
     }
 
@@ -345,12 +357,14 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Write the crash report */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &thread_state), @"Crash log failed");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, loader, &file, &info, &thread_state), @"Crash log failed");
 
     /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
-    plcrash_nasync_image_list_free(&image_list);
+    
+    plcrash_async_dynloader_free(loader);
+    plcrash_async_image_list_free(image_list);
 
     /* Flush the output */
     plcrash_async_file_flush(&file);

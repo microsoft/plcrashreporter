@@ -38,25 +38,36 @@
 @interface PLCrashFrameWalkerTests : SenTestCase {
 @private
     plcrash_test_thread_t _thr_args;
-    plcrash_async_image_list_t _image_list;
+    plcrash_async_image_list_t *_image_list;
+    
+    /** The allocator used by our _image_list */
+    plcrash_async_allocator_t *_allocator;
 }
 @end
 
 @implementation PLCrashFrameWalkerTests
     
 - (void) setUp {
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+
     plcrash_test_thread_spawn(&_thr_args);
-    plcrash_nasync_image_list_init(&_image_list, mach_task_self());
+    
+    /* Read our image list */
+    STAssertEquals(plcrash_nasync_image_list_new(&_image_list, _allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to create image list");
 }
 
 - (void) tearDown {
     plcrash_test_thread_stop(&_thr_args);
-    plcrash_nasync_image_list_free(&_image_list);
+    plcrash_async_image_list_free(_image_list);
+    
+    /* Clean up our allocator (must be done *after* deallocating the _image_list allocated from this allocator) */
+    plcrash_async_allocator_free(_allocator);
 }
 
 - (void) testGetRegName {
     plframe_cursor_t cursor;
-    plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), &_image_list);
+    plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), _image_list);
 
     for (int i = 0; i < plframe_cursor_get_regcount(&cursor); i++) {
         const char *name = plframe_cursor_get_regname(&cursor, i);
@@ -72,7 +83,7 @@
     plframe_cursor_t cursor;
 
     /* Initialize the cursor */
-    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), &_image_list), @"Initialization failed");
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), _image_list), @"Initialization failed");
 
     /* Try fetching the first frame */
     plframe_error_t ferr = plframe_cursor_next(&cursor);
@@ -115,7 +126,7 @@ static plframe_error_t esuccess_reader (task_t task,
     plframe_cursor_t cursor;
     
     /* Initialize the cursor */
-    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), &_image_list), @"Initialization failed");
+    STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_thread_init(&cursor, mach_task_self(), pthread_mach_thread_np(_thr_args.thread), _image_list), @"Initialization failed");
     
     /* Try fetching the first frame */
     STAssertEquals(PLFRAME_ESUCCESS, plframe_cursor_next(&cursor), @"Failed to fetch first frame");

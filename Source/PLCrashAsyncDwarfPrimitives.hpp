@@ -28,7 +28,7 @@
 #define PLCRASH_ASYNC_DWARF_PRIVATE_H 1
 
 #include "PLCrashAsync.h"
-#include "PLCrashAsyncImageList.h"
+#include "PLCrashAsyncDynamicLoader.h"
 #include "PLCrashAsyncThread.h"
 
 #include "PLCrashFeatureConfig.h"
