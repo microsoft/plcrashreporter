@@ -29,16 +29,17 @@
 #ifndef PLCRASH_ASYNC_MACHO_IMAGE_H
 #define PLCRASH_ASYNC_MACHO_IMAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <mach/mach.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
 
 #include "PLCrashAsyncMObject.h"
+#include "PLCrashAsyncAllocator.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @internal
@@ -51,7 +52,10 @@ extern "C" {
  *
  * A Mach-O image instance.
  */
-typedef struct plcrash_async_macho {    
+typedef struct plcrash_async_macho {
+    /** A borrowed reference to our backing allocator instance. */
+    plcrash_async_allocator_t *_allocator;
+
     /** The Mach task in which the Mach-O image can be found */
     mach_port_t task;
 
@@ -61,7 +65,7 @@ typedef struct plcrash_async_macho {
     /** The binary's dyld-reported reported vmaddr slide. */
     pl_vm_off_t vmaddr_slide;
 
-    /** The binary image's name/path. */
+    /** The binary image's name/path, allocated from _allocator. */
     char *name;
 
     /** The Mach-O header. For our purposes, the 32-bit and 64-bit headers are identical. Note that the header
@@ -186,7 +190,7 @@ typedef struct plcrash_async_macho_symtab_reader {
  */
 typedef void (*pl_async_macho_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 
-plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header);
+plcrash_error_t plcrash_async_macho_init (plcrash_async_macho_t *image, plcrash_async_allocator_t *allocator, mach_port_t task, const char *name, pl_vm_address_t header);
 
 const plcrash_async_byteorder_t *plcrash_async_macho_byteorder (plcrash_async_macho_t *image);
 const struct mach_header *plcrash_async_macho_header (plcrash_async_macho_t *image);
@@ -215,7 +219,7 @@ void plcrash_async_macho_symtab_reader_free (plcrash_async_macho_symtab_reader_t
 
 void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *segment);
 
-void plcrash_nasync_macho_free (plcrash_async_macho_t *image);
+void plcrash_async_macho_free (plcrash_async_macho_t *image);
 
 /**
  * @}

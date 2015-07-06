@@ -224,34 +224,27 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     }
     plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
 
-    /*
-     * Mark the list as being read; this prevents any deallocation of our borrowed reference to a plcrash_async_image_t,
-     * and must be balanced by a call (in our cleanup section below) to mark reading as completed.
-     */
-    plcrash_async_image_list_set_reading(image_list, true);
     
     /* Find the corresponding image */
-    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, pc);
+    plcrash_async_macho_t *image = plcrash_async_image_containing_address(image_list, pc);
     if (image == NULL) {
         PLCF_DEBUG("Could not find a loaded image for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
-        plcrash_async_image_list_set_reading(image_list, false);
         return PLFRAME_ENOTSUP;
     }
     
     /* Perform the actual read */
-    if (image->macho_image.m64) {
+    if (image->m64) {
         /* Could only happen due to programmer error; eg, an image that doesn't actually match our thread state */
         PLCF_ASSERT(pc <= UINT64_MAX);
 
-        ferr = plframe_cursor_read_dwarf_unwind_int<uint64_t, int64_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
+        ferr = plframe_cursor_read_dwarf_unwind_int<uint64_t, int64_t>(task, pc, image, current_frame, previous_frame, next_frame);
     } else {
         /* Could only happen due to programmer error; eg, an image that doesn't actually match our thread state */
         PLCF_ASSERT(pc <= UINT32_MAX);
 
-        ferr = plframe_cursor_read_dwarf_unwind_int<uint32_t, int32_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
+        ferr = plframe_cursor_read_dwarf_unwind_int<uint32_t, int32_t>(task, pc, image, current_frame, previous_frame, next_frame);
     }
     
-    plcrash_async_image_list_set_reading(image_list, false);
     return ferr;
 }
 

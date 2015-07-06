@@ -82,6 +82,9 @@
 
     /** The CFE reader */
     plcrash_async_cfe_reader_t _reader;
+    
+    /** The allocator used for async-safe APIs. */
+    plcrash_async_allocator_t *_allocator;
 }
 @end
 
@@ -89,6 +92,9 @@
 
 
 - (void) setUp {
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+
     /*
      * Warning: This code assumes 1:1 correspondance between vmaddr/vmsize and foffset/fsize in the loaded binary.
      * This is currently the case with our test binaries, but it could possibly change in the future. To handle this,
@@ -110,7 +116,7 @@
     plcrash_error_t err;
     NSData *mappedImage = [self nativeBinaryFromTestResource: TEST_BINARY];
     
-    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], [mappedImage bytes]);
+    err = plcrash_async_macho_init(&_image, _allocator, mach_task_self(), [TEST_BINARY UTF8String], [mappedImage bytes]);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
     
     /* Map the unwind section */
@@ -132,9 +138,12 @@
 }
 
 - (void) tearDown {
-    plcrash_nasync_macho_free(&_image);
+    plcrash_async_macho_free(&_image);
     plcrash_async_mobject_free(&_unwind_mobj);
     plcrash_async_cfe_reader_free(&_reader);
+    
+    /* Clean up our allocator (must be done *after* deallocating any instances allocated from this allocator) */
+    plcrash_async_allocator_free(_allocator);
 }
 
 #define EXTRACT_BITS(value, mask) ((value >> __builtin_ctz(mask)) & (((1 << __builtin_popcount(mask)))-1))

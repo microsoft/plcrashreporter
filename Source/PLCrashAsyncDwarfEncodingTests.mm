@@ -49,6 +49,9 @@ using namespace plcrash::async;
 #endif
 
 @interface PLCrashAsyncDwarfEncodingTests : PLCrashTestCase {
+    /** The allocator used to initialize our Mach-O image */
+    plcrash_async_allocator_t *_allocator;
+
     /* Loaded test image */
     plcrash_async_macho_t _image;
 
@@ -68,6 +71,9 @@ using namespace plcrash::async;
 @implementation PLCrashAsyncDwarfEncodingTests
 
 - (void) setUp {
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+
     /*
      * Warning: This code assumes 1:1 correspondance between vmaddr/vmsize and foffset/fsize in the loaded binary.
      * This is currently the case with our test binaries, but it could possibly change in the future. To handle this,
@@ -92,7 +98,7 @@ using namespace plcrash::async;
     NSData *mappedImage = [self nativeBinaryFromTestResource: TEST_BINARY];
     STAssertNotNil(mappedImage, @"Failed to map image: %@", error);
     
-    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], (pl_vm_address_t) [mappedImage bytes]);
+    err = plcrash_async_macho_init(&_image, _allocator, mach_task_self(), [TEST_BINARY UTF8String], (pl_vm_address_t) [mappedImage bytes]);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
     
     /* Map the eh/debug frame sections. We use our own fake __PL_DWARF segment to avoid toolchain interference with our test data. */
@@ -127,7 +133,10 @@ using namespace plcrash::async;
     plcrash_async_mobject_free(&_eh_frame);
     plcrash_async_mobject_free(&_debug_frame);
 
-    plcrash_nasync_macho_free(&_image);
+    plcrash_async_macho_free(&_image);
+    
+    /* Clean up our allocator (must be done *after* deallocating the _image allocated from this allocator) */
+    plcrash_async_allocator_free(_allocator);
 }
 
 - (void) testFindEHFrameDescriptorEntry {
