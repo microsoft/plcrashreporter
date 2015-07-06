@@ -27,6 +27,8 @@
 #ifndef PLCRASH_ASYNC_REFERENCE_TYPE_H
 #define PLCRASH_ASYNC_REFERENCE_TYPE_H
 
+#include "AsyncAllocatable.hpp"
+
 #include "ReferenceValue.hpp"
 #include "PLCrashMacros.h"
 
@@ -41,12 +43,14 @@ PLCR_CPP_BEGIN_ASYNC_NS
 namespace refcount {
     
 /**
+ * @internal
+ *
  * A weak reference type. Will adjust a ReferenceValue's weak reference count, and deallocate
  * the ReferenceValue instance upon hitting a weak reference count of zero.
  *
  * @tparam The type of object managed by the target ReferenceValue.
  */
-template <typename T, typename ReferencedValue> class WeakReferenceType {
+template <typename T, typename ReferencedValue> class WeakReferenceType : public AsyncAllocatable {
 public:
     /**
      * Atomically increment the internal reference count.
@@ -69,14 +73,16 @@ public:
         }
     }
 };
-    
+
 /**
+ * @internal
+ *
  * A strong reference type. Will adjust a ReferenceValue's strong reference count, destroying the
  * backing object when the strong reference count hits zero.
  *
  * @tparam The type of object managed by the target ReferenceValue.
  */
-template <typename T, typename ReferencedValue> class StrongReferenceType {
+template <typename T, typename ReferencedValue> class StrongReferenceType : public AsyncAllocatable {
 public:
     /** Atomically increment the internal reference count. */
     inline void retain (ReferencedValue *sharedValue) noexcept {

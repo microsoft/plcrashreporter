@@ -27,6 +27,7 @@
 #include "PLCrashMacros.h"
 #include "PLCrashAsync.h"
 
+#include "AsyncAllocatable.hpp"
 #include "async_stl.hpp"
 
 #ifndef PLCRASH_ASYNC_REFERENCE_VALUE_H
@@ -49,7 +50,7 @@ namespace refcount {
  *
  * @tparam T The type held by this referenced value.
  */
-template <typename T> class ReferenceValue {
+template <typename T> class ReferenceValue : public AsyncAllocatable {
 public:
     /**
      * Construct an empty referenced value with a reference count of 1.

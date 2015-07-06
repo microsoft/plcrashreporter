@@ -32,8 +32,11 @@
 PLCR_CPP_BEGIN_ASYNC_NS
 
 TEST_CASE("Shared References") {
+    AsyncAllocator *allocator;
+    REQUIRE(AsyncAllocator::Create(&allocator, PAGE_SIZE) == PLCRASH_ESUCCESS);
+    
     WHEN("Wrapping primitive types") {
-        auto ptr = make_shared<int>(42);
+        auto ptr = make_shared<int>(allocator, 42);
 
         THEN("Primitive value should be dereferenceable by value and pointer-to-value") {
             REQUIRE(*ptr == 42);
@@ -49,7 +52,7 @@ TEST_CASE("Shared References") {
             ExampleClass (int v) : val(v) { }
         };
 
-        auto ptr = make_shared<ExampleClass>(42);
+        auto ptr = make_shared<ExampleClass>(allocator, 42);
         THEN("Object value should be dereferenceable by value and pointer-to-value") {
             REQUIRE((*ptr).val == 42);
             REQUIRE((ptr.get())->val == 42);
@@ -73,7 +76,7 @@ TEST_CASE("Shared References") {
         }
         
         THEN("Retain count should be 1 once a value is set") {
-            ptr = make_shared<int>(42);
+            ptr = make_shared<int>(allocator, 42);
             REQUIRE(ptr.referenceCount() == 1);
         }
         
@@ -83,7 +86,7 @@ TEST_CASE("Shared References") {
     }
     
     WHEN("Copying shared references") {
-        auto ptr = make_shared<int>(42);
+        auto ptr = make_shared<int>(allocator, 42);
         
         THEN("Retain count should start at 1") {
             REQUIRE(ptr.referenceCount() == 1);
@@ -105,19 +108,19 @@ TEST_CASE("Shared References") {
     
     WHEN("Moving shared references") {
         THEN("Retain count should remain constant after move construction") {
-            shared_ptr<int> ptr(atl::move(make_shared<int>(42)));
+            shared_ptr<int> ptr(atl::move(make_shared<int>(allocator, 42)));
             REQUIRE(ptr.referenceCount() == 1);
         }
 
         THEN("Retain count should remain constant after move assignment") {
             shared_ptr<int> ptr;
-            ptr = make_shared<int>(42);
+            ptr = make_shared<int>(allocator, 42);
             REQUIRE(ptr.referenceCount() == 1);
         }
     }
     
     WHEN("Clearing shared references") {
-        auto ptr = make_shared<int>(42);
+        auto ptr = make_shared<int>(allocator, 42);
         THEN("The reference should be empty after clear()") {
             REQUIRE(ptr.referenceCount() == 1);
             REQUIRE(!ptr.isEmpty());
@@ -137,7 +140,7 @@ TEST_CASE("Shared References") {
         }
 
         THEN("live weak references should return live strong references") {
-            auto sptr1 = make_shared<int>(42);
+            auto sptr1 = make_shared<int>(allocator, 42);
             weak_ptr<int> wptr(sptr1);
 
             /* New strong pointer must be non-empty */
@@ -158,7 +161,7 @@ TEST_CASE("Shared References") {
             
             /* Use a block scope to control the strong ptr's lifetime. */
             {
-                auto sptr = make_shared<int>(42);
+                auto sptr = make_shared<int>(allocator, 42);
                 wptr = sptr;
                 REQUIRE(sptr.referenceCount() == 1);
             }
@@ -189,7 +192,7 @@ TEST_CASE("Shared References") {
             
             /* Use a block scope to control the ptr's lifetime. */
             {
-                auto ptr = make_shared<ExampleClass>(&destCount);
+                auto ptr = make_shared<ExampleClass>(allocator, &destCount);
                 REQUIRE(destCount == 0);
                 REQUIRE(ptr.referenceCount() == 1);
             }
@@ -219,13 +222,13 @@ TEST_CASE("Shared References") {
         }
         
         THEN("empty references should not be equal to non-empty references") {
-            auto nonempty = make_shared<int>(42);
+            auto nonempty = make_shared<int>(allocator, 42);
             REQUIRE(ref != nonempty);
         }
     }
     
     WHEN("Comparing non-empty shared references") {
-        auto ref = make_shared<int>(42);
+        auto ref = make_shared<int>(allocator, 42);
 
         THEN("non-empty references should have a bool value of true") {
             REQUIRE(ref);
@@ -233,7 +236,7 @@ TEST_CASE("Shared References") {
         
         THEN("non-empty references should be equal if their pointer values are equal") {
             /* Point at different values, will not be equal */
-            auto refNEQ = make_shared<int>(42);
+            auto refNEQ = make_shared<int>(allocator, 42);
             REQUIRE(refNEQ != ref);
 
             /* Point at the same value, will be equal */
@@ -251,6 +254,9 @@ TEST_CASE("Shared References") {
             REQUIRE(ref != empty);
         }
     }
+    
+    /* Clean up */
+    delete allocator;
 }
 
 PLCR_CPP_END_ASYNC_NS

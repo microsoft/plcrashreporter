@@ -56,7 +56,7 @@ template <typename T> class shared_ptr;
  * weak_ptr instance, however, must not be concurrently mutated -- or accessed during mutation -- without
  * external synchronization.
  */
-template <typename T> class weak_ptr {
+template <typename T> class weak_ptr : public AsyncAllocatable {
 private:
     /* Mark shared_ptr as a friend to allow access to our backing _impl. */
     friend class shared_ptr<T>;

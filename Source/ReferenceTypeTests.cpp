@@ -52,12 +52,15 @@ private:
 
 
 TEST_CASE("StrongReferenceType") {
+    AsyncAllocator *allocator;
+    REQUIRE(AsyncAllocator::Create(&allocator, PAGE_SIZE) == PLCRASH_ESUCCESS);
+
     /** The reference type under test */
     StrongReferenceType<RefTestTarget, InlineReferencedValue<RefTestTarget>> refType;
     ssize_t count = 0;
 
     /* Allocate a test value we'll use with the reftype */
-    auto value = new InlineReferencedValue<RefTestTarget>(&count);
+    auto value = new (allocator) InlineReferencedValue<RefTestTarget>(&count);
     REQUIRE(value->refs == (size_t)1);
     REQUIRE(value->weakRefs == (size_t)1);
     REQUIRE(count == 1);
@@ -98,9 +101,15 @@ TEST_CASE("StrongReferenceType") {
         refType.release(value);
     }
     REQUIRE(count == 0);
+    
+    /* Clean up our allocator */
+    delete allocator;
 }
 
 TEST_CASE("WeakReferenceType") {
+    AsyncAllocator *allocator;
+    REQUIRE(AsyncAllocator::Create(&allocator, PAGE_SIZE) == PLCRASH_ESUCCESS);
+
     /** The reference type under test */
     WeakReferenceType<RefTestTarget, InlineReferencedValue<RefTestTarget>> refType;
     
@@ -110,7 +119,7 @@ TEST_CASE("WeakReferenceType") {
     ssize_t count = 0;
     
     /* Allocate a test value we'll use with the reftype */
-    auto value = new InlineReferencedValue<RefTestTarget>(&count);
+    auto value = new (allocator) InlineReferencedValue<RefTestTarget>(&count);
     REQUIRE(value->refs == (size_t)1);
     REQUIRE(value->weakRefs == (size_t)1);
     REQUIRE(count == 1);
@@ -166,6 +175,9 @@ TEST_CASE("WeakReferenceType") {
         strongRefType.release(value);
     }
     REQUIRE(count == 0);
+    
+    /* Clean up our allocator */
+    delete allocator;
 }
 
 PLCR_CPP_END_ASYNC_NS

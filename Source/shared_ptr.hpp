@@ -27,6 +27,9 @@
 #ifndef PLCRASH_ASYNC_SHARED_PTR_H
 #define PLCRASH_ASYNC_SHARED_PTR_H
 
+#include "AsyncAllocatable.hpp"
+#include "AsyncAllocator.hpp"
+
 #include "Reference.hpp"
 #include "PLCrashMacros.h"
 
@@ -58,7 +61,7 @@ template <typename T> class weak_ptr;
  * single shared_ptr instance, however, must not be concurrently mutated -- or accessed during mutation -- without
  * external synchronization.
  */
-template <typename T> class shared_ptr {
+template <typename T> class shared_ptr : public AsyncAllocatable {
 private:
     /**
      * Construct a new shared reference, assuming ownership of the @a value. The reference count of @a value will not
@@ -138,10 +141,11 @@ public:
      * Construct a new shared reference wrapping a newly constructed instance of @a T, using @a args as the parameter
      * list for the constructor of @a T.
      *
+     * @param allocator The allocator to be used to instantiate the new instance.
      * @param args The arguments with which an instance of @a T will be constructed.
      */
-    template <class ...Args> static shared_ptr<T> make_shared(Args&&... args) {
-        refcount::InlineReferencedValue<T> *s = new refcount::InlineReferencedValue<T>(atl::forward<Args>(args)...);
+    template <class ...Args> static shared_ptr<T> make_shared(AsyncAllocator *allocator, Args&&... args) {
+        refcount::InlineReferencedValue<T> *s = new (allocator) refcount::InlineReferencedValue<T>(atl::forward<Args>(args)...);
         return shared_ptr<T>(s);
     }
 
@@ -210,17 +214,17 @@ private:
     refcount::Reference<T, refcount::InlineReferencedValue<T>, refcount::StrongReferenceType<T, refcount::InlineReferencedValue<T>>> _impl;
 };
 
-
 /**
  * Construct an object of type @a T and wraps it in a reference counting shared_ptr, using @a args
  * as the parameter list for the constructor of @a T.
  *
+ * @param allocator The allocator to be used to instantiate the new instance.
  * @param args The arguments with which an instance of @a T will be constructed.
  *
  * @tparam T The object type.
  */
-template <class T, class ...Args> shared_ptr<T> make_shared (Args&&... args) {
-    return shared_ptr<T>::make_shared(atl::forward<Args>(args)...);
+template <class T, class ...Args> shared_ptr<T> make_shared (AsyncAllocator *allocator, Args&&... args) {
+    return shared_ptr<T>::make_shared(allocator, atl::forward<Args>(args)...);
 };
 
 /**

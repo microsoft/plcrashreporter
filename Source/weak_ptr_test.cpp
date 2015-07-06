@@ -32,6 +32,9 @@
 PLCR_CPP_BEGIN_ASYNC_NS
 
 TEST_CASE("Weak References") {
+    AsyncAllocator *allocator;
+    REQUIRE(AsyncAllocator::Create(&allocator, PAGE_SIZE) == PLCRASH_ESUCCESS);
+    
     WHEN("Operating on an empty shared reference") {
         weak_ptr<int> wptr;
         
@@ -40,7 +43,7 @@ TEST_CASE("Weak References") {
         }
         
         THEN("Retain count should be 1 once a value is set") {
-            auto strong = make_shared<int>(42);
+            auto strong = make_shared<int>(allocator, 42);
             wptr = strong;
             REQUIRE(wptr.referenceCount() == 1);
         }
@@ -48,7 +51,7 @@ TEST_CASE("Weak References") {
         THEN("Retain count should be 0 after the strong reference goes out of scope") {
             REQUIRE(wptr.referenceCount() == 0);
             {
-                auto strong = make_shared<int>(42);
+                auto strong = make_shared<int>(allocator, 42);
                 wptr = strong;
                 REQUIRE(wptr.referenceCount() == 1);
             }
@@ -58,7 +61,7 @@ TEST_CASE("Weak References") {
 
     WHEN("Constructing from an existing strong reference") {
         THEN("Strong reference count should not increase when constructing the weak reference") {
-            auto ptr = make_shared<int>(42);
+            auto ptr = make_shared<int>(allocator, 42);
             REQUIRE(ptr.referenceCount() == 1);
 
             auto wptr = weak_ptr<int>(ptr);
@@ -69,8 +72,8 @@ TEST_CASE("Weak References") {
         THEN("Retain count should be 0 after the strong reference goes out of scope") {
             weak_ptr<int> *wptr = NULL;
             {
-                auto ptr = make_shared<int>(42);
-                wptr = new weak_ptr<int>(ptr);
+                auto ptr = make_shared<int>(allocator, 42);
+                wptr = new (allocator) weak_ptr<int>(ptr);
                 REQUIRE(ptr.referenceCount() == 1);
             }
             REQUIRE(wptr->referenceCount() == 0);
@@ -97,7 +100,7 @@ TEST_CASE("Weak References") {
             {
                 weak_ptr<ExampleClass> wptr;
                 {
-                    auto ptr = make_shared<ExampleClass>(&destCount);
+                    auto ptr = make_shared<ExampleClass>(allocator, &destCount);
                     wptr = ptr;
                     REQUIRE(destCount == 0);
                     REQUIRE(ptr.referenceCount() == 1);
@@ -115,7 +118,7 @@ TEST_CASE("Weak References") {
     WHEN("Converting to a strong reference") {
         /* The actual conversion behavior is implemented and tested in shared_ptr; this is just a smoke test */
         THEN("a weak reference must a strong reference") {
-            auto sptr = make_shared<int>(42);
+            auto sptr = make_shared<int>(allocator, 42);
             weak_ptr<int> ref = sptr;
 
             /* Try creating a strong reference */
@@ -124,6 +127,9 @@ TEST_CASE("Weak References") {
             REQUIRE(sptr.referenceCount() == sptr2.referenceCount());
         }
     }
+    
+    /* Clean up */
+    delete allocator;
 }
 
 PLCR_CPP_END_ASYNC_NS
