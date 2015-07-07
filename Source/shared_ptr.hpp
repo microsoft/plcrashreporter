@@ -170,7 +170,7 @@ public:
      }
      @endcode
      */
-    inline operator bool () const {
+    inline explicit operator bool () const {
         return !isEmpty();
     }
 
