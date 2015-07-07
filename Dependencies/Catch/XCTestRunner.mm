@@ -26,7 +26,7 @@
  */
 
 #define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include "PLCrashCatchTest.hpp"
 
 #include <XCTest/XCTest.h>
 #include <inttypes.h>

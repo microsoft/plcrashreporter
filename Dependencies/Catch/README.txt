@@ -15,3 +15,5 @@ XCTestRunner.mm
         MIT License
         The test runner code is only used by the PLCrashReporter unit tests; it is not incorporated into the
         PLCrashReporter library.
+  Modifications:
+   - Replaced direct inclusion of "catch.hpp" with our own "PLCrashCatchTest.hpp" shim.
