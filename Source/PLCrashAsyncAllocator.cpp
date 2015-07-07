@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2008-2013 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2013 - 2015 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,31 +26,34 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
-#import "PLCrashAsyncAllocator.h"
+#include "PLCrashAsyncAllocator.h"
 
-@interface PLCrashAsyncAllocatorTests : SenTestCase {
-@private
-}
-
-@end
-
-@implementation PLCrashAsyncAllocatorTests
+using namespace plcrash::async;
 
 /**
- * Test allocation of guard pages.
+ * Equivalent to AsyncAllocator::Create();
  */
-- (void) testGuardPages {
-    plcrash_async_allocator_t *alloc;
-    plcrash_error_t err;
-
-    err = plcrash_async_allocator_new(&alloc, PAGE_SIZE, PLCrashAsyncGuardLowPage|PLCrashAsyncGuardHighPage);
-    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize allocator");
-
-    void *buffer = plcrash_async_allocator_alloc(alloc, PAGE_SIZE, true);
-    STAssertNotNULL(buffer, @"Failed to allocate page");
-    // TODO
-    // XXX missing free();
+plcrash_error_t plcrash_async_allocator_create (plcrash_async_allocator_t **allocator, size_t initial_size) {
+    return AsyncAllocator::Create(allocator, initial_size);
 }
 
-@end
+/**
+ * Equivalent to AsyncAllocator::alloc();
+ */
+plcrash_error_t plcrash_async_allocator_alloc (plcrash_async_allocator_t *allocator, void **allocated, size_t size) {
+    return allocator->alloc(allocated, size);
+}
+
+/**
+ * Equivalent to AsyncAllocator::dealloc();
+ */
+void plcrash_async_allocator_dealloc (plcrash_async_allocator_t *allocator, void *ptr) {
+    return allocator->dealloc(ptr);
+}
+
+/**
+ * Equivalent to `delete AsyncAllocator`;
+ */
+void plcrash_async_allocator_free (plcrash_async_allocator_t *allocator) {
+    delete allocator;
+}

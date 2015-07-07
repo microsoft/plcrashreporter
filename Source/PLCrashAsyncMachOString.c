@@ -38,14 +38,18 @@
  * Initialize a string object from a NUL-terminated C string.
  *
  * @param string A pointer to the string object to initialize.
- * @param image The Mach-O image in which the string resides.
+ * @param task The task in which the string resides.
  * @param address The address of the string.
  * @return An error code.
  */
-plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, plcrash_async_macho_t *image, pl_vm_address_t address) {
-    string->image = image;
+plcrash_error_t plcrash_async_macho_string_init (plcrash_async_macho_string_t *string, task_t task, pl_vm_address_t address) {
+    /* Save the task reference */
+    string->task = task;
+    mach_port_mod_refs(mach_task_self(), string->task, MACH_PORT_RIGHT_SEND, 1);
+    
     string->address = address;
     string->mobjIsInitialized = false;
+    
     return PLCRASH_ESUCCESS;
 }
 
@@ -64,7 +68,7 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
     /* Map in the page containing the string, +1 up to one additional page. Short reads are permitted, as the next page
      * may not be readable. */
     size_t page_count = 1;
-    plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, PAGE_SIZE, false);
+    plcrash_error_t err = plcrash_async_mobject_init(&string->mobj, string->task, string->address, PAGE_SIZE, false);
     if (err != PLCRASH_ESUCCESS)
         return err;
 
@@ -76,7 +80,7 @@ static plcrash_error_t plcrash_async_macho_string_read (plcrash_async_macho_stri
             PLCF_DEBUG("Mapped a string larger than one page! Remapping ...");
             page_count++;
             plcrash_async_mobject_free(&string->mobj);
-            err = plcrash_async_mobject_init(&string->mobj, string->image->task, string->address, page_count*PAGE_SIZE, false);
+            err = plcrash_async_mobject_init(&string->mobj, string->task, string->address, page_count*PAGE_SIZE, false);
             if (err != PLCRASH_ESUCCESS)
                 return err;
             
@@ -136,6 +140,9 @@ plcrash_error_t plcrash_async_macho_string_get_pointer (plcrash_async_macho_stri
 void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string) {
     if (string->mobjIsInitialized)
         plcrash_async_mobject_free(&string->mobj);
+    
+    /* Free the task reference */
+    mach_port_mod_refs(mach_task_self(), string->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
 /**

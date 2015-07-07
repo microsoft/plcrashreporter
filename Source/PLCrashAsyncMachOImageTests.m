@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 #import "PLCrashAsyncMachOImage.h"
 
@@ -36,7 +36,12 @@
 #import <objc/runtime.h>
 #import <execinfo.h>
 
+#include "PLCrashDLCompat.h"
+
 @interface PLCrashAsyncMachOImageTests : SenTestCase {
+    /** The allocator used to initialize our Mach-O image */
+    plcrash_async_allocator_t *_allocator;
+
     /** The image containing our class. */
     plcrash_async_macho_t _image;
 }
@@ -46,9 +51,13 @@
 @implementation PLCrashAsyncMachOImageTests
 
 - (void) setUp {
+    /* Set up our allocator */
+    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
+
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    IMP localIMP = class_getMethodImplementation([self class], _cmd);
+    STAssertNotEquals(0, pl_dladdr((void *) localIMP, &info), @"Could not fetch dyld info for %p", [self class]);
 
     /* Look up the vmaddr and slide for our image */
     uintptr_t text_vmaddr;
@@ -64,7 +73,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
 
-    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
+    plcrash_async_macho_init(&_image, _allocator, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
 
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -78,7 +87,10 @@
 }
 
 - (void) tearDown {
-    plcrash_nasync_macho_free(&_image);
+    plcrash_async_macho_free(&_image);
+    
+    /* Clean up our allocator (must be done *after* cleaning up the _image allocated from this allocator) */
+    plcrash_async_allocator_free(_allocator);
 }
 
 /**
@@ -132,7 +144,7 @@
 
     plcrash_async_macho_t image;
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-        plcrash_nasync_macho_init(&image, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i));
+        plcrash_async_macho_init(&image, _allocator, mach_task_self(), _dyld_get_image_name(i), (pl_vm_address_t) _dyld_get_image_header(i));
         struct load_command *cmd = NULL;
 
         for (uint32_t ncmd = 0; ncmd < image.ncmds; ncmd++) {
@@ -145,7 +157,7 @@
             STAssertNotEquals((uint32_t)0, cmd->cmdsize, @"This test simply ensures that dereferencing the cmd pointer doesn't crash: %d:%d:%s", ncmd, image.ncmds, image.name);
         }
 
-        plcrash_nasync_macho_free(&image);
+        plcrash_async_macho_free(&image);
     }
 }
 
@@ -347,8 +359,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     /* Fetch the our IMP address and symbolicate it using dladdr(). */
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
-    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
-    STAssertNotNULL(dli.dli_sname, @"Symbol name was stripped!");
+    STAssertTrue(pl_dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
     
     /* Now walk the Mach-O table ourselves */
     plcrash_async_macho_symtab_reader_t reader;
@@ -400,8 +411,8 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     /* Fetch the our IMP address and symbolicate it using dladdr(). */
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
-    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
-
+    STAssertTrue(pl_dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
+    
     /* Compare the results */
     STAssertEqualCStrings(dli.dli_sname, ctx.name, @"Returned incorrect symbol name");
     STAssertEquals(dli.dli_saddr, (void *) ctx.addr, @"Returned incorrect symbol address with slide %" PRId64, (int64_t) _image.vmaddr_slide);
@@ -414,8 +425,8 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     /* Fetch our current symbol name, to be used for symbol lookup */
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
-    STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
-
+    STAssertTrue(pl_dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
+    
     /* Perform our symbol lookup */
     pl_vm_address_t pc;
     plcrash_error_t res = plcrash_async_macho_find_symbol_by_name(&_image, (pl_vm_address_t) dli.dli_sname, &pc);

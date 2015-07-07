@@ -26,14 +26,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 #import "PLCrashAsync.h"
 #import "PLCrashLogWriterEncoding.h"
 
 #import "protobuf-c.h"
 #import "PLCrashLogWriterEncodingTests.pb-c.h"
 
-@interface PLCrashLogWriterEncodingTests : GTMTestCase {
+@interface PLCrashLogWriterEncodingTests : SenTestCase {
 @private
     plcrash_async_file_t _file;
     NSString *_filePath;

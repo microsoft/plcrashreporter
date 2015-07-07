@@ -39,7 +39,7 @@
 #include <mach/mach.h>
 
 #include "PLCrashAsyncThread.h"
-#include "PLCrashAsyncImageList.h"
+#include "PLCrashAsyncDynamicLoader.h"
 
 /* Configure supported targets based on the host build architecture. There's currently
  * no deployed architecture on which simultaneous support for different processor families

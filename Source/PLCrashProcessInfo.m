@@ -82,7 +82,8 @@
     struct kinfo_proc process_info;
     size_t process_info_len = sizeof(process_info);
 
-    /* This should always succeed unless the process is not found. */
+    /* This should always succeed unless the process is not found, or on iOS 9 and similar locked down operating systems where
+     * this may return EPERM. */
     if (sysctl(process_info_mib, sizeof(process_info_mib)/sizeof(process_info_mib[0]), &process_info, &process_info_len, NULL, 0) != 0) {
         if (errno == ENOENT)
             PLCF_DEBUG("Unexpected sysctl error %d: %s", errno, strerror(errno));

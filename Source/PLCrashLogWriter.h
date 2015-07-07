@@ -37,10 +37,11 @@ extern "C" {
 #import <Foundation/Foundation.h>
 
 #import "PLCrashAsync.h"
-#import "PLCrashAsyncImageList.h"
 #import "PLCrashFrameWalker.h"
     
 #import "PLCrashAsyncSymbolication.h"
+#import "PLCrashAsyncAllocator.h"
+#import "PLCrashAsyncDynamicLoader.h"
 
 #include <uuid/uuid.h>
 
@@ -61,6 +62,9 @@ extern "C" {
  * Crash log writer context.
  */
 typedef struct plcrash_log_writer {
+    /** The allocator to be used at crash time. */
+    plcrash_async_allocator_t *allocator;
+
     /** The strategy to use for symbolication */
     plcrash_async_symbol_strategy_t symbol_strategy;
 
@@ -108,6 +112,9 @@ typedef struct plcrash_log_writer {
 
         /** Application version */
         char *app_version;
+        
+        /** Application marketing version (may be null) */
+        char *app_marketing_version;
     } application_info;
     
     /** Process data */
@@ -212,13 +219,14 @@ typedef struct plcrash_log_signal_info {
 plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          NSString *app_identifier,
                                          NSString *app_version,
+                                         NSString *app_marketing_version,
                                          plcrash_async_symbol_strategy_t symbol_strategy,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
-                                          plcrash_async_image_list_t *image_list,
+                                          plcrash_async_dynloader_t *dynamic_loader,
                                           plcrash_async_file_t *file,
                                           plcrash_log_signal_info_t *siginfo,
                                           plcrash_async_thread_state_t *current_state);

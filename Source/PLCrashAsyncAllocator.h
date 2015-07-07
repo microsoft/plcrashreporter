@@ -1,7 +1,7 @@
 /*
  * Author: Landon Fuller <landonf@plausible.coop>
  *
- * Copyright (c) 2013 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2013 - 2015 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,56 +26,36 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCRASH_ASYNC_ALLOCATOR_H
-#define PLCRASH_ASYNC_ALLOCATOR_H
+#ifndef PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H
+#define PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * @internal
- * @ingroup plcrash_async
- *
- * Implements async-safe memory allocation
- *
- * @{
- */
-
-#include <unistd.h>
-#include <stdint.h>
-
+#include "PLCrashMacros.h"
 #include "PLCrashAsync.h"
 
-/**
- * Initialization options for plcrash_async_allocator_t.
+/*
+ * Provides a pure C interface to the C++ AsyncAllocator.
+ *
+ * This exists solely to support the remaining C/Objective-C code; once the codebase migrates to C/C++/Objective-C++,
+ * we can drop the C compatibility support used here.
  */
-typedef enum {
-    /**
-     * Enable a low guard page. This will insert a PROT_NONE page prior to the
-     * allocatable region, helping to ensure that a buffer overflow that occurs elsewhere
-     * in the code will not overwrite the allocatable space.
-     */
-    PLCrashAsyncGuardLowPage = 1 << 0,
-    
-    /**
-     * Enable a high guard page. This will insert a PROT_NONE page after to the
-     * allocatable region, helping to ensure that a buffer overflow (including a stack overflow)
-     * will be immediately detected. */
-    PLCrashAsyncGuardHighPage = 1 << 1,
-} PLCrashAsyncAllocatorOptions;
 
-typedef struct plcrash_async_allocator plcrash_async_allocator_t;
-
-plcrash_error_t plcrash_async_allocator_new (plcrash_async_allocator_t **allocator, size_t size, uint32_t options);
-void *plcrash_async_allocator_alloc (plcrash_async_allocator_t *allocator, size_t size, bool no_assert);
-
-/**
- * @}
- */
-    
 #ifdef __cplusplus
-}
+#include "AsyncAllocator.hpp"
+using plcrash_async_allocator_t = plcrash::async::AsyncAllocator;
+#else
+typedef struct plcrash_async_allocator plcrash_async_allocator_t;
 #endif
 
-#endif /* PLCRASH_ASYNC_ALLOCATOR_H */
+PLCR_C_BEGIN_DECLS
+
+PLCR_EXPORT plcrash_error_t plcrash_async_allocator_create (plcrash_async_allocator_t **allocator, size_t initial_size);
+
+PLCR_EXPORT plcrash_error_t plcrash_async_allocator_alloc (plcrash_async_allocator_t *allocator, void **allocated, size_t size);
+PLCR_EXPORT void plcrash_async_allocator_dealloc (plcrash_async_allocator_t *allocator, void *ptr);
+
+PLCR_EXPORT void plcrash_async_allocator_free (plcrash_async_allocator_t *allocator);
+
+PLCR_C_END_DECLS
+
+
+#endif /* PLCRASH_ASYNC_ALLOCATOR_C_COMPAT_H */

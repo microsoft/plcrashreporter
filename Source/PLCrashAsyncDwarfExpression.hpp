@@ -32,8 +32,11 @@
 #include "PLCrashAsyncThread.h"
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
+
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -572,6 +575,8 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
 /**
  * @}
  */
+
+PLCR_CPP_END_ASYNC_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_CFA_H */

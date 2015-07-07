@@ -133,6 +133,9 @@ message CrashReport {
 
         /* Application version string */
         required string version = 2;
+
+        /* Application marketing version string */
+        optional string marketing_version = 3;
     }
     required ApplicationInfo application_info = 2;
     

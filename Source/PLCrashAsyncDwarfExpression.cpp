@@ -38,6 +38,8 @@
 
 using namespace plcrash::async;
 
+PLCR_CPP_BEGIN_ASYNC_NS
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -726,5 +728,7 @@ template plcrash_error_t plcrash_async_dwarf_expression_eval<uint64_t, int64_t> 
 /**
  * @}
  */
+    
+PLCR_CPP_END_ASYNC_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */

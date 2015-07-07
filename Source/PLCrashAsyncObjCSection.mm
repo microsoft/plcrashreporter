@@ -29,6 +29,8 @@
 #include "PLCrashAsyncObjCSection.h"
 #include "PLCrashCompatConstants.h"
 
+#include <Foundation/Foundation.h>
+
 /**
  * @internal
  * @ingroup plcrash_async_image
@@ -39,6 +41,24 @@
  * @{
  */
 
+/**
+ * @internal
+ * Executed in static initializers to determine whether the host uses the iOS 9+ ABI.
+ */
+static bool plcrash_async_image_objc_has_ios9_abi () {
+    static dispatch_once_t onceToken;
+    static bool is_ios9;
+    dispatch_once(&onceToken, ^{
+        NSProcessInfo *procinfo = [NSProcessInfo processInfo];
+        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [procinfo respondsToSelector: @selector(operatingSystemVersion)] && procinfo.operatingSystemVersion.majorVersion >= 9) {
+            is_ios9 = true;
+        } else {
+            is_ios9 = false;
+        }
+    });
+    
+    return is_ios9;
+};
 
 static const char * const kObjCSegmentName = "__OBJC";
 static const char * const kDataSegmentName = "__DATA";
@@ -51,6 +71,15 @@ static const char * const kObjCDataSectionName = "__objc_data";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
+
+/**
+ * @internal
+ * The pointer mask for non-pointer ISAs. This flag is not ABI stable, and may change; it is validated
+ * at development time via our unit tests. As per our API invariants, if this flag becomes out-of-sync
+ * with the host OS, our symbolication implementation will either fail to find some symbols, or will
+ * return incorrect symbols, but it will not crash.
+ */
+const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_objc_has_ios9_abi() ? 0xffffffff8ULL : 0x1fffffff8ULL;
 
 /* TAGGED_ISA() returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
  * used to designate a non-pointer isa; see the plcrash_async_objc_supports_nonptr_isa documentation for more details */
@@ -383,7 +412,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
     pl_vm_address_t namePtr = image->byteorder->swap32(cls->name);
     bool classNameInitialized = false;
     plcrash_async_macho_string_t className;
-    err = plcrash_async_macho_string_init(&className, image, namePtr);
+    err = plcrash_async_macho_string_init(&className, image->task, namePtr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)namePtr, err);
         return err;
@@ -458,7 +487,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             /* Load the method name from the .name field pointer. */
             pl_vm_address_t methodNamePtr = image->byteorder->swap32(method.name);
             plcrash_async_macho_string_t methodName;
-            err = plcrash_async_macho_string_init(&methodName, image, methodNamePtr);
+            err = plcrash_async_macho_string_init(&methodName, image->task, methodNamePtr);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
                 goto cleanup;
@@ -653,7 +682,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
         
         /* Read the method name. */
         plcrash_async_macho_string_t method_name;
-        if ((err = plcrash_async_macho_string_init(&method_name, image, methodNamePtr)) != PLCRASH_ESUCCESS) {
+        if ((err = plcrash_async_macho_string_init(&method_name, image->task, methodNamePtr)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
             return err;
         }
@@ -762,7 +791,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     
     /* Fetch the pointer to the class name, and make the string. */
     pl_vm_address_t class_name_ptr = image->byteorder->swap(cls_data_ro->name);
-    err = plcrash_async_macho_string_init(class_name, image, class_name_ptr);
+    err = plcrash_async_macho_string_init(class_name, image->task, class_name_ptr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)class_name_ptr, err);
         return PLCRASH_EINVALID_DATA;
