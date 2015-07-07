@@ -88,7 +88,7 @@ typedef struct PLCrashReporterCallbacks {
 
     /** YES if the crash reporter has been enabled */
     BOOL _enabled;
-    
+
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
     /** The backing Mach exception server, if any. Nil if the reporter has not been enabled, or if
      * the configured signal handler type is not PLCrashReporterSignalHandlerTypeMach. */
