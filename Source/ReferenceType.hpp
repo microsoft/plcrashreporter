@@ -48,7 +48,8 @@ namespace refcount {
  * A weak reference type. Will adjust a ReferenceValue's weak reference count, and deallocate
  * the ReferenceValue instance upon hitting a weak reference count of zero.
  *
- * @tparam The type of object managed by the target ReferenceValue.
+ * @tparam T The type of object managed by the target ReferenceValue.
+ * @tparam ReferencedValue The referenced object container.
  */
 template <typename T, typename ReferencedValue> class WeakReferenceType : public AsyncAllocatable {
 public:
@@ -80,7 +81,8 @@ public:
  * A strong reference type. Will adjust a ReferenceValue's strong reference count, destroying the
  * backing object when the strong reference count hits zero.
  *
- * @tparam The type of object managed by the target ReferenceValue.
+ * @tparam T The type of object managed by the target ReferenceValue.
+ * @tparam ReferencedValue The referenced object container.
  */
 template <typename T, typename ReferencedValue> class StrongReferenceType : public AsyncAllocatable {
 public:

@@ -49,7 +49,7 @@ namespace refcount {
  * This class serves as a shared implementation used by both shared_ptr and weak_ptr.
  *
  * @tparam T The referenced object type.
- * @tparam ReferenceValue The referenced object container.
+ * @tparam ReferencedValue The referenced object container.
  * @tparam ReferenceType The reference type implementation (strong, weak, etc).
  *
  * @par Thread Safety
@@ -64,7 +64,7 @@ public:
      * Construct a new Reference, optionally incrementing the reference count of @a value.
      *
      * @param value The value for the newly constructed reference, or NULL.
-     * @param acquireRefererence If true, the reference count of a (non-NULL) @a value will be incremented.
+     * @param acquireReference If true, the reference count of a (non-NULL) @a value will be incremented.
      */
     Reference(ReferencedValue *value, bool acquireReference) : _v(nullptr) {
         put(value, acquireReference);
