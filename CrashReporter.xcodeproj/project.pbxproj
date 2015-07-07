@@ -557,6 +557,13 @@
 		05D0AE301B45EE3C00296632 /* XCTestRunner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */; };
 		05D0AE421B4B1EBF00296632 /* async_stl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05D0AE411B4B1EBF00296632 /* async_stl.hpp */; };
 		05D0AE431B4B1EBF00296632 /* async_stl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05D0AE411B4B1EBF00296632 /* async_stl.hpp */; };
+		05D0AE511B4C744300296632 /* AsyncList.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05D0AE491B4C744300296632 /* AsyncList.hpp */; };
+		05D0AE521B4C744300296632 /* AsyncList.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05D0AE491B4C744300296632 /* AsyncList.hpp */; };
+		05D0AE531B4C744300296632 /* AsyncList.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05D0AE491B4C744300296632 /* AsyncList.hpp */; };
+		05D0AE541B4C744300296632 /* AsyncList.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05D0AE491B4C744300296632 /* AsyncList.hpp */; };
+		05D0AE561B4C7B1400296632 /* AsyncListTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE551B4C7B1400296632 /* AsyncListTests.cpp */; };
+		05D0AE571B4C7B1400296632 /* AsyncListTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE551B4C7B1400296632 /* AsyncListTests.cpp */; };
+		05D0AE581B4C7B1400296632 /* AsyncListTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AE551B4C7B1400296632 /* AsyncListTests.cpp */; };
 		05D8FE4C16ACAA6E000ED70C /* AsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */; };
 		05D8FE4D16ACAA6E000ED70C /* AsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */; };
 		05D8FE4E16ACAA6E000ED70C /* AsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */; };
@@ -1375,6 +1382,8 @@
 		05D0AE2D1B45EE0900296632 /* XCTestRunner.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = XCTestRunner.mm; sourceTree = "<group>"; };
 		05D0AE411B4B1EBF00296632 /* async_stl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = async_stl.hpp; sourceTree = "<group>"; };
 		05D0AE471B4B2F6E00296632 /* PLCrashCatchTest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = PLCrashCatchTest.hpp; path = "Other Sources/PLCrashCatchTest.hpp"; sourceTree = SOURCE_ROOT; };
+		05D0AE491B4C744300296632 /* AsyncList.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AsyncList.hpp; sourceTree = "<group>"; };
+		05D0AE551B4C7B1400296632 /* AsyncListTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AsyncListTests.cpp; sourceTree = "<group>"; };
 		05D8FE4B16ACAA6E000ED70C /* AsyncAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AsyncAllocator.cpp; sourceTree = "<group>"; };
 		05D8FE5316ACAA81000ED70C /* AsyncAllocator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AsyncAllocator.hpp; sourceTree = "<group>"; };
 		05D8FE5716ACC8CD000ED70C /* AsyncAllocatorTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AsyncAllocatorTests.mm; sourceTree = "<group>"; };
@@ -1856,14 +1865,16 @@
 			name = Platforms;
 			sourceTree = "<group>";
 		};
-		05A5E28517C0411F008A75E5 /* Linked List */ = {
+		05A5E28517C0411F008A75E5 /* Data Structures */ = {
 			isa = PBXGroup;
 			children = (
+				05D0AE491B4C744300296632 /* AsyncList.hpp */,
+				05D0AE551B4C7B1400296632 /* AsyncListTests.cpp */,
 				05A5E28717C04188008A75E5 /* PLCrashAsyncLinkedList.hpp */,
 				05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */,
 				05A5E29317C056EB008A75E5 /* PLCrashAsyncLinkedListTests.mm */,
 			);
-			name = "Linked List";
+			name = "Data Structures";
 			sourceTree = "<group>";
 		};
 		05B929E517C9333800B051E3 /* ObjC Exception Handler */ = {
@@ -2023,7 +2034,7 @@
 				0576DA741B3DC1CD000BCA73 /* Locking */,
 				05D8FE4916ACAA44000ED70C /* Allocator */,
 				0576DACD1B42F329000BCA73 /* Reference Counting */,
-				05A5E28517C0411F008A75E5 /* Linked List */,
+				05A5E28517C0411F008A75E5 /* Data Structures */,
 				05BB4CA0166D40B90075171B /* Memory Objects */,
 				05BB4C9F166D40AD0075171B /* Symbolication */,
 				05BB4C9D166D3BE10075171B /* Mach-O ABI */,
@@ -2440,6 +2451,7 @@
 				0576DAA91B3E0856000BCA73 /* AsyncAllocatable.hpp in Headers */,
 				05102E2617B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
 				051F067C17B6B0D4006D0EFA /* PLCrashMachExceptionPort.h in Headers */,
+				05D0AE531B4C744300296632 /* AsyncList.hpp in Headers */,
 				05BEC41917BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
 				05BEC43817BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				05A5E29117C04188008A75E5 /* PLCrashAsyncLinkedList.hpp in Headers */,
@@ -2499,6 +2511,7 @@
 				0576DAAA1B3E0856000BCA73 /* AsyncAllocatable.hpp in Headers */,
 				05102E2717B2B80A00B5D925 /* PLCrashHostInfo.h in Headers */,
 				051F067D17B6B0D4006D0EFA /* PLCrashMachExceptionPort.h in Headers */,
+				05D0AE541B4C744300296632 /* AsyncList.hpp in Headers */,
 				05BEC41A17BAF92A0082CBFB /* PLCrashMachExceptionPortSet.h in Headers */,
 				05BEC43917BF1CB10082CBFB /* PLCrashReporterConfig.h in Headers */,
 				05A5E29217C04188008A75E5 /* PLCrashAsyncLinkedList.hpp in Headers */,
@@ -2534,6 +2547,7 @@
 				05F3CD7416DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.h in Headers */,
 				0576DA8F1B3DC81B000BCA73 /* AsyncPageAllocator.hpp in Headers */,
 				05E748AE17616D30009B8745 /* dwarf_stack.hpp in Headers */,
+				05D0AE511B4C744300296632 /* AsyncList.hpp in Headers */,
 				05C76DAD176B8C7000E9B10D /* dwarf_opstream.hpp in Headers */,
 				05C76DCF176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
 				0576DAFF1B430285000BCA73 /* PLCrashAsyncDynamicLoader.h in Headers */,
@@ -2606,6 +2620,7 @@
 				05E748AF17616D30009B8745 /* dwarf_stack.hpp in Headers */,
 				05C76DAE176B8C7000E9B10D /* dwarf_opstream.hpp in Headers */,
 				05C76DD0176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.hpp in Headers */,
+				05D0AE521B4C744300296632 /* AsyncList.hpp in Headers */,
 				05920D26177B9257001E8975 /* PLCrashFrameDWARFUnwind.h in Headers */,
 				05102E1617B0151000B5D925 /* PLCrashProcessInfo.h in Headers */,
 				0576DAB61B41CCE0000BCA73 /* PLCrashAsyncAllocator.h in Headers */,
@@ -3287,6 +3302,7 @@
 				0576DAFC1B430285000BCA73 /* PLCrashAsyncDynamicLoader.cpp in Sources */,
 				0518E0AA174E8A1F00BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				05E74851175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
+				05D0AE561B4C7B1400296632 /* AsyncListTests.cpp in Sources */,
 				05E74856175E5370009B8745 /* PLCrashAsyncDwarfPrimitivesTests.mm in Sources */,
 				05E748631760D64D009B8745 /* PLCrashAsyncDwarfFDE.cpp in Sources */,
 				05E7486B1760D891009B8745 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
@@ -3372,6 +3388,7 @@
 				C2198DDE1640188C006EB46A /* PLCrashAsyncObjCSection.mm in Sources */,
 				C2198DE516402B8A006EB46A /* PLCrashAsyncObjCSectionTests.m in Sources */,
 				C260228B1642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
+				05D0AE571B4C7B1400296632 /* AsyncListTests.cpp in Sources */,
 				0576DAEE1B42F387000BCA73 /* shared_ptr_test.cpp in Sources */,
 				C26022911642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */,
 				C2198E0B16441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
@@ -3517,6 +3534,7 @@
 				0576DAFE1B430285000BCA73 /* PLCrashAsyncDynamicLoader.cpp in Sources */,
 				05659DF417456A4000D2EE21 /* PLCrashAsyncDwarfEncodingTests.mm in Sources */,
 				05659DFB174D2E1200D2EE21 /* PLCrashTestCase.m in Sources */,
+				05D0AE581B4C7B1400296632 /* AsyncListTests.cpp in Sources */,
 				0518E0A9174E8A1300BB47DE /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				05E74853175E5349009B8745 /* PLCrashAsyncDwarfPrimitives.cpp in Sources */,
 				05E74858175E5370009B8745 /* PLCrashAsyncDwarfPrimitivesTests.mm in Sources */,
@@ -4624,7 +4642,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CURRENT_PROJECT_VERSION = "1.2.1";
+				CURRENT_PROJECT_VERSION = 1.2.1;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
@@ -4667,7 +4685,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CURRENT_PROJECT_VERSION = "1.2.1";
+				CURRENT_PROJECT_VERSION = 1.2.1;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
