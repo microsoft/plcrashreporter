@@ -107,7 +107,10 @@
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
+#pragma clang diagnostic pop
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
@@ -423,15 +426,15 @@
 #endif
     BOOL foundCrashed = NO;
     for (int i = 0; i < crashReport->n_threads; i++) {
-        Plcrash__CrashReport__Thread *thread = crashReport->threads[i];        
-        if (!thread->crashed)
+        Plcrash__CrashReport__Thread *reportThread = crashReport->threads[i];        
+        if (!reportThread->crashed)
             continue;
         
         foundCrashed = YES;
 
         /* Load the first frame */
-        STAssertNotEquals((size_t)0, thread->n_frames, @"No frames available in backtrace");
-        Plcrash__CrashReport__Thread__StackFrame *f = thread->frames[0];
+        STAssertNotEquals((size_t)0, reportThread->n_frames, @"No frames available in backtrace");
+        Plcrash__CrashReport__Thread__StackFrame *f = reportThread->frames[0];
 
         /* Validate PC. This check is inexact, as otherwise we would need to carefully instrument the 
          * call to plcrash_log_writer_write_curthread() in order to determine the exact PC value. */
