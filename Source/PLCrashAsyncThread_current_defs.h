@@ -59,6 +59,12 @@ extern "C" {
 
 #endif
 
+#ifndef __ASSEMBLER__
+plcrash_error_t plcrash_async_thread_state_current_stub (plcrash_async_thread_state_current_callback callback,
+                                                        void *context,
+                                                        pl_mcontext_t *mctx);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

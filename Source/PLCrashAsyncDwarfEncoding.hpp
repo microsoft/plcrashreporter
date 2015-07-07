@@ -51,9 +51,6 @@ PLCR_CPP_BEGIN_ASYNC_NS
  * @internal
  *
  * A DWARF frame reader. Performs DWARF eh_frame/debug_frame parsing from a backing memory object.
- *
- * @tparam machine_ptr The target machine's unsigned native pointer type.
- * @tparam machine_ptr_s The target machine's signed native pointer type.
  */
 class dwarf_frame_reader {
 public:

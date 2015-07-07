@@ -281,7 +281,7 @@ DynamicLoader::~DynamicLoader () {
  * context.
  *
  * @param allocator The allocator to be used when instantiating the new ImageList instance.
- * @param[out] loader On success, will be initialized with a pointer to a new ImageList instance. It is the caller's
+ * @param[out] imageList On success, will be initialized with a pointer to a new ImageList instance. It is the caller's
  * responsibility to free this instance via `delete`.
  * @param task The target task.
  *

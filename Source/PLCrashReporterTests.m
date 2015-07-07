@@ -39,8 +39,11 @@
 @implementation PLCrashReporterTests
 
 - (void) testSingleton {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertNotNil([PLCrashReporter sharedReporter], @"Returned nil singleton instance");
     STAssertTrue([PLCrashReporter sharedReporter] == [PLCrashReporter sharedReporter], @"Crash reporter did not return singleton instance");
+#pragma clang diagnostic pop
 }
 
 /**
@@ -53,13 +56,14 @@
 
     /* Spawn a thread and generate a report for it */
     plcrash_test_thread_spawn(&thr);
-    reportData = [[PLCrashReporter sharedReporter] generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
-                                                                              error: &error];
+    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]] autorelease];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
     plcrash_test_thread_stop(&thr);
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
 
     /* Try parsing the result */
-    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: reportData error: &error] autorelease];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
 
     /* Sanity check the signal info */
@@ -72,10 +76,11 @@
  */
 - (void) testGenerateLiveReport {
     NSError *error;
-    NSData *reportData = [[PLCrashReporter sharedReporter] generateLiveReportAndReturnError: &error];
+    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]] autorelease];
+    NSData *reportData = [reporter generateLiveReportAndReturnError: &error];
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
     
-    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: reportData error: &error] autorelease];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
 
     STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");

@@ -49,8 +49,7 @@ using namespace plcrash::async;
  *
  * @param info The FDE record to be initialized.
  * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address.
- * @param byteoder The byte order of the data referenced by @a mobj.
- * @param address_size The native address size of the target architecture.
+ * @param byteorder The byte order of the data referenced by @a mobj.
  * @param fde_address The target-relative address containing the FDE data to be decoded. This must include
  * the length field of the FDE.
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the

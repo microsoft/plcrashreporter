@@ -77,9 +77,9 @@
  * Initialize a new instance with the given async-safe C representation. The receiver will assume ownership of the associated mach ports, and
  * will decrement their reference count upon deallocation.
  *
- * @param set A set of up to EXC_TYPES_COUNT PLCrashMachExceptionPortState instances.
+ * @param asyncSafeRepresentation An async-safe representation of the port state set (@sa plcrash_mach_exception_port_set_t)
  *
- * @warning If @a set contains more than EXC_TYPES_COUNT instances, an exception will be thrown.
+ * @warning If @a asyncSafeRepresentation contains more than EXC_TYPES_COUNT instances, an exception will be thrown.
  */
 - (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_set_t) asyncSafeRepresentation {
     if ((self = [super init]) == nil)

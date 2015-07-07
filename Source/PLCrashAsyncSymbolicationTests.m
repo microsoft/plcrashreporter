@@ -103,6 +103,8 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     cb_ctx->name = strdup(name);
 }
 
+/* For the tests below, this must be non-static. */
+void PLCrashAsyncLocalSymbolicationTestsDummyFunction(void);
 void PLCrashAsyncLocalSymbolicationTestsDummyFunction(void) {}
 
 - (void) testFindSymbol {

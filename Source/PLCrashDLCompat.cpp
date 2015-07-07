@@ -26,10 +26,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PLCRASH_DLCOMPAT_H
-#define PLCRASH_DLCOMPAT_H 1
-
 #include "PLCrashMacros.h"
+#include "PLCrashDLCompat.h"
 
 #include "AsyncAllocator.hpp"
 #include "DynamicLoader.hpp"
@@ -189,6 +187,3 @@ PLCR_EXPORT int pl_dladdr (const void *addr, Dl_info *info) {
 /**
  * @}
  */
-
-
-#endif /* PLCRASH_DLCOMPAT_H */
