@@ -36,8 +36,6 @@
 
 #import "PLCrashHostInfo.h"
 
-#import "PLCrashDLCompat.h"
-
 #import <fcntl.h>
 #import <dlfcn.h>
 
