@@ -34,7 +34,6 @@
 #import <objc/runtime.h>
 
 #include "PLCrashAsyncObjCSection.h"
-#include "PLCrashDLCompat.h"
 
 @interface PLCrashAsyncObjCSectionTests : SenTestCase {
     /** The image containing our class. */
@@ -83,7 +82,7 @@
     /* Fetch our containing image's dyld info */
     Dl_info info;
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
-    STAssertTrue(pl_dladdr((void *) localIMP, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    STAssertTrue(dladdr((void *) localIMP, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;
