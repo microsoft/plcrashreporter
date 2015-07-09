@@ -348,12 +348,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
     STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
-    // XXX-TODO-DLADDR
-    //STAssertNotNULL(dli.dli_sname, @"Symbol name was stripped!");
-    if (dli.dli_sname == NULL) {
-        dli.dli_sname = __PRETTY_FUNCTION__;
-        NSLog(@"WARNING: dladdr() returned a NULL symbol name; this appears to be an iOS 9 bug.");
-    }
+    STAssertNotNULL(dli.dli_sname, @"Symbol name was stripped!");
     
     /* Now walk the Mach-O table ourselves */
     plcrash_async_macho_symtab_reader_t reader;
@@ -406,11 +401,6 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
     STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
-    // XXX-TODO-DLADDR
-    if (dli.dli_sname == NULL) {
-        dli.dli_sname = __PRETTY_FUNCTION__;
-        NSLog(@"WARNING: dladdr() returned a NULL symbol name; this appears to be an iOS 9 bug.");
-    }
     
     /* Compare the results */
     STAssertEqualCStrings(dli.dli_sname, ctx.name, @"Returned incorrect symbol name");
@@ -425,11 +415,6 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     IMP localIMP = class_getMethodImplementation([self class], _cmd);
     Dl_info dli;
     STAssertTrue(dladdr((void *)localIMP, &dli) != 0, @"Failed to look up symbol");
-    // XXX-TODO-DLADDR
-    if (dli.dli_sname == NULL) {
-        dli.dli_sname = __PRETTY_FUNCTION__;
-        NSLog(@"WARNING: dladdr() returned a NULL symbol name; this appears to be an iOS 9 bug.");
-    }
     
     /* Perform our symbol lookup */
     pl_vm_address_t pc;
