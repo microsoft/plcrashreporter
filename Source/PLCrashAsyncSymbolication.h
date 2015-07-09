@@ -102,7 +102,7 @@ void plcrash_async_symbol_cache_free (plcrash_async_symbol_cache_t *cache);
  * @param address The symbol address.
  * @param name The symbol name. The callback is responsible for copying this value, as its backing storage is not gauranteed to exist
  * after the callback returns.
- * @param context The API client's supplied context value.
+ * @param ctx The API client's supplied context value.
  */
 typedef void (*plcrash_async_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 

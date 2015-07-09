@@ -49,8 +49,7 @@ using namespace plcrash::async;
  *
  * @param info The FDE record to be initialized.
  * @param mobj The memory object containing frame data (eh_frame or debug_frame) at the start address.
- * @param byteoder The byte order of the data referenced by @a mobj.
- * @param address_size The native address size of the target architecture.
+ * @param byteorder The byte order of the data referenced by @a mobj.
  * @param fde_address The target-relative address containing the FDE data to be decoded. This must include
  * the length field of the FDE.
  * @param debug_frame If true, interpret the DWARF data as a debug_frame section. Otherwise, the
@@ -244,18 +243,18 @@ void plcrash::async::plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_
 
 /* Provide explicit 32/64-bit instantiations */
 template
-plcrash_error_t plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
-                                                             plcrash_async_mobject_t *mobj,
-                                                             const plcrash_async_byteorder_t *byteorder,
-                                                             pl_vm_address_t fde_address,
-                                                             bool debug_frame);
+plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
+                                                                             plcrash_async_mobject_t *mobj,
+                                                                             const plcrash_async_byteorder_t *byteorder,
+                                                                             pl_vm_address_t fde_address,
+                                                                             bool debug_frame);
 
 template
-plcrash_error_t plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
-                                                             plcrash_async_mobject_t *mobj,
-                                                             const plcrash_async_byteorder_t *byteorder,
-                                                             pl_vm_address_t fde_address,
-                                                             bool debug_frame);
+plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
+                                                                             plcrash_async_mobject_t *mobj,
+                                                                             const plcrash_async_byteorder_t *byteorder,
+                                                                             pl_vm_address_t fde_address,
+                                                                             bool debug_frame);
 
 /**
  * @}

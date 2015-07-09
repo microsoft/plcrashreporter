@@ -35,12 +35,13 @@ struct _PLCrashReportDecoder {
     Plcrash__CrashReport *crashReport;
 };
 
-#define IMAGE_UUID_DIGEST_LEN 16
-
 @interface PLCrashReport (PrivateMethods)
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
-- (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError;
+- (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo
+                                  processorInfo: (PLCrashReportProcessorInfo *) processorInfo
+                                          error: (NSError **) outError;
+- (PLCrashReportProcessorInfo *) synthesizeProcessorInfoFromArchitecture: (Plcrash__Architecture) architecture error: (NSError **) outError;
 - (PLCrashReportProcessorInfo *) extractProcessorInfo: (Plcrash__CrashReport__Processor *) processorInfo error: (NSError **) outError;
 - (PLCrashReportMachineInfo *) extractMachineInfo: (Plcrash__CrashReport__MachineInfo *) machineInfo error: (NSError **) outError;
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
@@ -112,17 +113,17 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
         }
     }
 
-    /* System info */
-    _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info error: outError] retain];
-    if (!_systemInfo)
-        goto error;
-    
     /* Machine info */
     if (_decoder->crashReport->machine_info != NULL) {
         _machineInfo = [[self extractMachineInfo: _decoder->crashReport->machine_info error: outError] retain];
         if (!_machineInfo)
             goto error;
     }
+
+    /* System info */
+    _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info processorInfo: _machineInfo.processorInfo error: outError] retain];
+    if (!_systemInfo)
+        goto error;
 
     /* Application info */
     _applicationInfo = [[self extractApplicationInfo: _decoder->crashReport->application_info error: outError] retain];
@@ -304,8 +305,20 @@ error:
 
 /**
  * Extract system information from the crash log. Returns nil on error.
+ *
+ * @param systemInfo The system info from the protobuf file.
+ * @param processorInfo The system info from the machine info. This may be nil for v1 reports, in which case the
+ * information will be synthesized from the architecture in the @a systemInfo.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer will contain an error
+ * object indicating why the system info could not be extracted. If no error occurs, this parameter will be left
+ * unmodified. You may specify nil for this parameter, and no error information will be provided.
+ *
+ * @return Returns the system information, or nil on failure.
  */
-- (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo error: (NSError **) outError {
+- (PLCrashReportSystemInfo *) extractSystemInfo: (Plcrash__CrashReport__SystemInfo *) systemInfo
+                                  processorInfo: (PLCrashReportProcessorInfo *) processorInfo
+                                          error: (NSError **) outError
+{
     NSDate *timestamp = nil;
     NSString *osBuild = nil;
     
@@ -331,12 +344,23 @@ error:
     /* Set up the timestamp, if available */
     if (systemInfo->timestamp != 0)
         timestamp = [NSDate dateWithTimeIntervalSince1970: systemInfo->timestamp];
+
+	/* v1 crash logs will not have machine info, so the only data available to
+	 * us is the deprecated architecture field. From that we will generate a
+	 * PLCrashReportProcessorInfo object so that library users don't have to
+	 * get at the architecture information multiple ways. */
+	if (processorInfo == nil) {
+        processorInfo = [self synthesizeProcessorInfoFromArchitecture: systemInfo->architecture error: outError];
+        if (processorInfo == nil)
+            return nil;
+    }
     
     /* Done */
     return [[[PLCrashReportSystemInfo alloc] initWithOperatingSystem: (PLCrashReportOperatingSystem) systemInfo->operating_system
                                               operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
                                                 operatingSystemBuild: osBuild
                                                         architecture: (PLCrashReportArchitecture) systemInfo->architecture
+                                                       processorInfo: processorInfo
                                                            timestamp: timestamp] autorelease];
 }
 
@@ -355,6 +379,55 @@ error:
     return [[[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) processorInfo->encoding
                                                                 type: processorInfo->type
                                                              subtype: processorInfo->subtype] autorelease];
+}
+
+/**
+ * Synthesize a processor information object from an architecture type. Returns nil on error.
+ */
+- (PLCrashReportProcessorInfo *) synthesizeProcessorInfoFromArchitecture: (Plcrash__Architecture) architecture error:(NSError **)outError {
+	uint64_t processorType;
+	uint64_t processorSubtype;
+	switch (architecture) {
+		case PLCRASH__ARCHITECTURE__X86_32:
+			processorType = CPU_TYPE_X86;
+			processorSubtype = CPU_SUBTYPE_X86_ALL;
+			break;
+
+		case PLCRASH__ARCHITECTURE__X86_64:
+			processorType = CPU_TYPE_X86_64;
+			processorSubtype = CPU_SUBTYPE_X86_64_ALL;
+			break;
+
+		case PLCRASH__ARCHITECTURE__PPC:
+			processorType = CPU_TYPE_POWERPC;
+			processorSubtype = CPU_SUBTYPE_POWERPC_ALL;
+			break;
+
+		case PLCRASH__ARCHITECTURE__PPC64:
+			processorType = CPU_TYPE_POWERPC64;
+			processorSubtype = CPU_SUBTYPE_POWERPC_ALL;
+			break;
+
+		case PLCRASH__ARCHITECTURE__ARMV6:
+			processorType = CPU_TYPE_ARM;
+			processorSubtype = CPU_SUBTYPE_ARM_V6;
+			break;
+
+		case PLCRASH__ARCHITECTURE__ARMV7:
+			processorType = CPU_TYPE_ARM;
+			processorSubtype = CPU_SUBTYPE_ARM_V7;
+			break;
+
+		default:
+            populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
+                             NSLocalizedString(@"Crash report has an unknown architecture",
+                                               @"Unknown architecture in crash report"));
+			return nil;
+	}
+
+    return [[[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: PLCrashReportProcessorTypeEncodingMach
+                                                                type: processorType
+                                                             subtype: processorSubtype] autorelease];
 }
 
 /**
@@ -396,6 +469,8 @@ error:
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
                                                     error: (NSError **) outError
 {    
+    NSString *marketingVersion = nil;
+    
     /* Validate */
     if (applicationInfo == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
@@ -420,12 +495,18 @@ error:
         return nil;
     }
     
+    /* Marketing Version available? */
+    if (applicationInfo->marketing_version != NULL) {
+        marketingVersion = [NSString stringWithUTF8String: applicationInfo->marketing_version];
+    }
+
     /* Done */
     NSString *identifier = [NSString stringWithUTF8String: applicationInfo->identifier];
     NSString *version = [NSString stringWithUTF8String: applicationInfo->version];
 
     return [[[PLCrashReportApplicationInfo alloc] initWithApplicationIdentifier: identifier
-                                                          applicationVersion: version] autorelease];
+                                                             applicationVersion: version
+                                                    applicationMarketingVersion:marketingVersion] autorelease];
 }
 
 
@@ -766,7 +847,6 @@ error:
  * and nothing is modified.
  * @param code The error code corresponding to this error.
  * @param description A localized error description.
- * @param cause The underlying cause, if any. May be nil.
  */
 static void populate_nserror (NSError **error, PLCrashReporterError code, NSString *description) {
     NSDictionary *userInfo;

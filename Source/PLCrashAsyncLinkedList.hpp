@@ -33,9 +33,7 @@
 #include "PLCrashMacros.h"
 #include <libkern/OSAtomic.h>
 
-PLCR_CPP_BEGIN_NS
-namespace async {
-    
+PLCR_CPP_BEGIN_ASYNC_NS
     
 /**
  * @internal
@@ -67,10 +65,10 @@ public:
             void *ptr = malloc(size);
             PLCF_ASSERT(ptr != NULL);
             return ptr;
-        };
+        }
         void operator delete (void *ptr) {
             free(ptr);
-        };
+        }
         
         /**
          * Return the list item value.
@@ -127,8 +125,8 @@ public:
         void *ptr = malloc(size);
         PLCF_ASSERT(ptr != NULL);
         return ptr;
-    };
-    void operator delete (void *ptr) { free(ptr); };
+    }
+    void operator delete (void *ptr) { free(ptr); }
     
     /**
      * Sanity check list validity. Intended to be used from the unit tests; will fire
@@ -442,7 +440,6 @@ template <typename V> void async_list<V>::free_list (node *next) {
     }
 }
 
-PLCR_CPP_END_NS
-}
+PLCR_CPP_END_ASYNC_NS
 
 #endif /* PLCRASH_ASYNC_LINKED_LIST_H */

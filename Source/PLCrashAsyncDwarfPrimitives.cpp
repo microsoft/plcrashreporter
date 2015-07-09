@@ -187,10 +187,10 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
             
             /* Compute the offset+alignment relative to the section base */
             PLCF_ASSERT(location >= _frame_section_base);
-            machine_ptr offset = location - _frame_section_base;
+            machine_ptr locationOffset = location - _frame_section_base;
             
             /* Apply to the VM load address for the section. */
-            machine_ptr vm_addr = _frame_section_vm_addr + offset;
+            machine_ptr vm_addr = _frame_section_vm_addr + locationOffset;
             machine_ptr vm_aligned = (vm_addr + (sizeof(machine_ptr)-1)) & ~(sizeof(machine_ptr)-1);
             
             /* Apply the new offset to the actual load address */
@@ -530,8 +530,8 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_read_sleb128 (plcrash_async_
 }
 
 /* Provide explicit 32/64-bit instantiations */
-template class gnu_ehptr_reader<uint32_t>;
-template class gnu_ehptr_reader<uint64_t>;
+template class plcrash::async::gnu_ehptr_reader<uint32_t>;
+template class plcrash::async::gnu_ehptr_reader<uint64_t>;
 
 
 /**
