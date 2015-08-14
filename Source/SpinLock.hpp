@@ -78,7 +78,10 @@ public:
         bool released = __sync_bool_compare_and_swap(&_mtx, 1, 0);
         
         /* If this isn't true, the lock wasn't actually held by the caller. */
-        PLCF_ASSERT(released);
+        if (!released) {
+            PLCF_DEBUG("Released lock that was not held by the caller!");
+            PLCF_ASSERT(released);
+        }
     }
 
 private:
