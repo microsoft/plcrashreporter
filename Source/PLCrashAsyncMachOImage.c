@@ -303,6 +303,21 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
 
     /* Advance to the next command */
     uint32_t cmdsize = image->byteorder->swap32(cmd->cmdsize);
+    
+    /* Sanity check the cmdsize */
+    if (cmdsize < sizeof(struct load_command)) {
+        /* This was observed in iOS 9 betas, in which a zero-length LC_CMD triggered an infinite loop. This is absolutely invalid, and
+         * there's nothing we can do but give up trying to iterate over the image. */
+        PLCF_DEBUG("Found invalid 0-length cmdsize in LC_CMD at address %p in: %s (terminating further iteration)", cmd, image->name);
+        return NULL;
+    }
+    
+    /* Verify that the address won't overflow */
+    if (UINTPTR_MAX - cmdsize < (uintptr_t) previous) {
+        PLCF_DEBUG("Found invalid cmdsize in LC_CMD at address %p in: %s", cmd, image->name);
+        return NULL;
+    }
+    
     void *next = ((uint8_t *)previous) + cmdsize;
 
     /* Avoid walking off the end of the cmd buffer */
