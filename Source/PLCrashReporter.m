@@ -29,6 +29,8 @@
 #import "PLCrashReporter.h"
 #import "CrashReporter.h"
 
+#import "PLCrashFeatureConfig.h"
+
 #import "PLCrashHostInfo.h"
 
 #import "PLCrashSignalHandler.h"
@@ -371,11 +373,12 @@ static void uncaught_exception_handler (NSException *exception) {
 - (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration;
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration;
 
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
 - (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
                                                                         error: (NSError **) outError;
-
+#endif
 - (plcrash_async_symbol_strategy_t) mapToAsyncSymbolicationStrategy: (PLCrashReporterSymbolicationStrategy) strategy;
 
 - (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
