@@ -36,6 +36,8 @@
 PLCrashReportOperatingSystem PLCrashReportHostOperatingSystem =
 #if TARGET_IPHONE_SIMULATOR
     PLCrashReportOperatingSystemiPhoneSimulator;
+#elif TARGET_OS_TV
+    PLCrashReportOperatingSystemtvOS;
 #elif TARGET_OS_IPHONE
     PLCrashReportOperatingSystemiPhoneOS;
 #elif TARGET_OS_MAC
