@@ -169,7 +169,7 @@
     /* Parent process; fetching the process info is expected to fail on iOS 9+ due to new sandbox constraints */
     PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
 
-    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS || PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemtvOS) && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
         STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS");
         STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS");
         
