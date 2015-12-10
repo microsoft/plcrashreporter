@@ -166,12 +166,16 @@
         free(process_path);
     }
     
-    /* Parent process; fetching the process info is expected to fail on iOS 9+ due to new sandbox constraints */
+    /* Parent process; fetching the process info is expected to fail on non-OSX systems (e.g. iOS 9+ and tvOS) due to
+     * new sandbox constraints */
     PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
 
-    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS || PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS) && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
-        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS");
-        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS");
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS ||
+        (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS &&
+         PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9))
+    {
+        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS-derived OS");
+        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS-derived OS");
         
     } else {
         STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");
