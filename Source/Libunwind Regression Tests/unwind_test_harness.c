@@ -19,6 +19,7 @@
 */
 
 
+#include "unwind_test_harness.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -60,7 +61,7 @@ extern void *unwind_tester_list_arm64_frameless[];
 extern int unwind_tester (void *test, void **sp);
 extern void *unwind_tester_target_ip;
 
-void uwind_to_main ();
+void uwind_to_main (void);
 
 plframe_cursor_frame_reader_t *frame_readers_frame[] = {
     plframe_cursor_read_frame_ptr,
@@ -227,12 +228,20 @@ bool unwind_test_harness (void) {
     } \
 } while (0)
 
-plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
+static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
     plframe_cursor_t cursor;
-    plcrash_async_image_list_t image_list;
+    plcrash_async_image_list_t *image_list;
     plframe_cursor_frame_reader_t **readers = global_harness_state.test_case->frame_readers_dwarf;
     size_t reader_count = 0;
     plframe_error_t err;
+    
+    /* Instantiate an allocator */
+    plcrash_async_allocator_t *allocator;
+    if ((err = plcrash_async_allocator_create(&allocator, 1 * 1024 * 1024 /* 1M */)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("plcrash_async_allocator_create() failed: %d", err);
+        return err;
+    }
+
 
     /* Determine the number of frame readers */
     if (readers != NULL) {
@@ -242,17 +251,22 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
     }
 
     /* Initialize the image list */
-    plcrash_nasync_image_list_init(&image_list, mach_task_self());
-    for (uint32_t i = 0; i < _dyld_image_count(); i++)
-        plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
+    err = plcrash_nasync_image_list_new(&image_list, allocator, mach_task_self());
+    if (err != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to fetch the image list: %d", err);
+        return PLCRASH_EINTERNAL;
+    }
 
     /* Initialie our cursor */
-    plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
+    plframe_cursor_init(&cursor, mach_task_self(), state, image_list);
 
     /* Walk the frames until we hit the test function */
     for (uint32_t i = 0; i < global_harness_state.test_case->intermediate_frames; i++) {
         if ((err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
             PLCF_DEBUG("Step failed: %d", err);
+            
+            plcrash_async_image_list_free(image_list);
+            plcrash_async_allocator_free(allocator);
             return PLCRASH_EINVAL;
         }
     }
@@ -268,8 +282,15 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
     
     if (err != PLFRAME_ESUCCESS) {
         PLCF_DEBUG("Step within test function failed: %d", err);
+        
+        plcrash_async_image_list_free(image_list);
+        plcrash_async_allocator_free(allocator);
         return PLFRAME_EINVAL;
     }
+    
+    /* Clean up */
+    plcrash_async_image_list_free(image_list);
+    plcrash_async_allocator_free(allocator); /* Must occur AFTER deallocating the image_list */
 
     /* Now in unwind_tester; verify that we unwound to the correct IP */
     plcrash_greg_t ip;
@@ -320,7 +341,7 @@ plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void 
 // called by test function
 // we unwind through the test function
 // and resume at caller (unwind_tester)
-void uwind_to_main () {
+void uwind_to_main (void) {
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */
     if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {

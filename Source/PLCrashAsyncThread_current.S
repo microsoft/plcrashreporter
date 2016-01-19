@@ -27,12 +27,21 @@
  */
 
 #include "PLCrashAsyncThread_current_defs.h"
-
+#include "PLCrashNamespace.h"
 
 /*
  * plcrash_error_t plcrash_async_thread_state_current (plcrash_async_thread_state_current_callback callback,
  *                                                    void *context);
  */
+
+/* Assembler underscore-prefixed symbol handling for use with the PLCrashNamespace.h symbol namespacing mechanism. */
+#ifdef PLCRASHREPORTER_PREFIX
+#define _SYM_2(_name)  _ ## _name
+#define _SYM_1(_name)  _SYM_2(_name)
+#define SYM(_name)     _SYM_1(_name)
+#else
+#define SYM(_name) _ ## _name
+#endif
 
 .text
 
@@ -40,8 +49,8 @@
 .align 2
 #endif
 
-.globl _plcrash_async_thread_state_current
-_plcrash_async_thread_state_current:
+.globl SYM(plcrash_async_thread_state_current)
+SYM(plcrash_async_thread_state_current):
 
 #if __x86_64__
 
@@ -92,7 +101,7 @@ MOVQ    (gs, 176);
 movq    %rsp, %rdx
 
 xorb	%al, %al
-callq    _plcrash_async_thread_state_current_stub
+callq    SYM(plcrash_async_thread_state_current_stub)
 
 addq    $720, %rsp
 popq    %rbp
@@ -156,7 +165,7 @@ movl    %esp, %eax      // arg3: mctx
 addl    $OFF, %eax
 movl    %eax, 8(%esp)
 
-call    _plcrash_async_thread_state_current_stub
+call    SYM(plcrash_async_thread_state_current_stub)
 
 addl    $616, %esp
 popl    %ebp
@@ -222,7 +231,7 @@ ldr     x1, [sp, #24];
 /* Provide arg 3 (mctx) */
 mov     x2, sp
 
-bl      _plcrash_async_thread_state_current_stub
+bl      SYM(plcrash_async_thread_state_current_stub)
 add	sp, fp, 0
 ldp	fp, lr, [sp], #16
 ret	lr
@@ -275,7 +284,7 @@ ldr     r1, [sp, #16];
 /* Provide arg 3 (mctx) */
 mov     r2, sp
 
-bl      _plcrash_async_thread_state_current_stub
+bl      SYM(plcrash_async_thread_state_current_stub)
 mov     sp, r7
 pop     {r7, pc}
 

@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Joe Ranieri <joe@alacatialabs.com>
  *
- * Copyright (c) 2008-2013 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2015 Plausible Labs Cooperative, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,31 +26,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "GTMSenTestCase.h"
-#import "PLCrashAsyncAllocator.h"
+#import <Cocoa/Cocoa.h>
 
-@interface PLCrashAsyncAllocatorTests : SenTestCase {
-@private
-}
-
-@end
-
-@implementation PLCrashAsyncAllocatorTests
-
-/**
- * Test allocation of guard pages.
- */
-- (void) testGuardPages {
-    plcrash_async_allocator_t *alloc;
-    plcrash_error_t err;
-
-    err = plcrash_async_allocator_new(&alloc, PAGE_SIZE, PLCrashAsyncGuardLowPage|PLCrashAsyncGuardHighPage);
-    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to initialize allocator");
-
-    void *buffer = plcrash_async_allocator_alloc(alloc, PAGE_SIZE, true);
-    STAssertNotNULL(buffer, @"Failed to allocate page");
-    // TODO
-    // XXX missing free();
-}
-
+@interface PLCrashDocument : NSDocument
+@property(nonatomic, copy) NSString *reportText;
 @end

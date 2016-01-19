@@ -38,6 +38,8 @@
 
 using namespace plcrash::async;
 
+PLCR_CPP_BEGIN_ASYNC_NS
+
 /**
  * @internal
  * @ingroup plcrash_async_dwarf
@@ -132,10 +134,11 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
 })
 
     /* Macro to fetch register valeus; handles unsupported register numbers and missing registers values */
-#define dw_thread_regval(_dw_regnum) ({ \
+#define dw_thread_regval(dw_regnum) ({ \
     plcrash_regnum_t rn; \
+	uint64_t _dw_regnum = dw_regnum; \
     if (!plcrash_async_thread_state_map_dwarf_to_reg(thread_state, _dw_regnum, &rn)) { \
-        PLCF_DEBUG("Unsupported DWARF register value of 0x%" PRIx64, (uint64_t)_dw_regnum);\
+        PLCF_DEBUG("Unsupported DWARF register value of 0x%" PRIx64, _dw_regnum);\
         return PLCRASH_ENOTSUP; \
     } \
 \
@@ -339,6 +342,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                 
                 /* This can't fail after the swap suceeded */
                 stack.drop();
+                PLCR_FALLTHROUGH;
                 
             case DW_OP_deref: {
                 machine_ptr addr;
@@ -368,6 +372,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
 
                 /* This can't fail after the swap suceeded */
                 stack.drop();
+                PLCR_FALLTHROUGH;
 
             case DW_OP_deref_size: {
                 /* Fetch the target size */
@@ -440,8 +445,8 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                     return PLCRASH_EINVAL;
                 }
                 
-                machine_ptr result = dividend / divisor;
-                dw_expr_push(result);
+                machine_ptr quotient = dividend / divisor;
+                dw_expr_push(quotient);
                 break;
             }
                 
@@ -466,8 +471,8 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                     return PLCRASH_EINVAL;
                 }
                 
-                machine_ptr result = dividend % divisor;
-                dw_expr_push(result);
+                machine_ptr remainder = dividend % divisor;
+                dw_expr_push(remainder);
                 break;
             }
                 
@@ -622,22 +627,22 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
             }
                 
             case DW_OP_skip: {
-                int16_t offset = dw_expr_read_int(int16_t);
-                if (!opstream.skip(offset)) {
-                    PLCF_DEBUG("DW_OP_skip offset %" PRId16 " falls outside of opcode range", offset);
+                int16_t skipOffset = dw_expr_read_int(int16_t);
+                if (!opstream.skip(skipOffset)) {
+                    PLCF_DEBUG("DW_OP_skip offset %" PRId16 " falls outside of opcode range", skipOffset);
                     return PLCRASH_EINVAL;
                 }
                 break;
             }
                 
             case DW_OP_bra: {
-                int16_t offset = dw_expr_read_int(int16_t);
+                int16_t skipOffset = dw_expr_read_int(int16_t);
                 machine_ptr cond;
 
                 dw_expr_pop(&cond);
                 if (cond != 0) {
-                    if (!opstream.skip(offset)) {
-                        PLCF_DEBUG("DW_OP_bra offset %" PRId16 " falls outside of opcode range", offset);
+                    if (!opstream.skip(skipOffset)) {
+                        PLCF_DEBUG("DW_OP_bra offset %" PRId16 " falls outside of opcode range", skipOffset);
                         return PLCRASH_EINVAL;
                     }
                 }
@@ -723,5 +728,7 @@ template plcrash_error_t plcrash_async_dwarf_expression_eval<uint64_t, int64_t> 
 /**
  * @}
  */
+    
+PLCR_CPP_END_ASYNC_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */

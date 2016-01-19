@@ -30,6 +30,7 @@
 #include <cstddef>
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
@@ -39,7 +40,7 @@
  * @{
  */
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -221,7 +222,7 @@ template <typename T, size_t S> inline bool dwarf_stack<T,S>::rotate (void) {
     return true;
 }
 
-}}
+PLCR_CPP_END_ASYNC_NS
 
 /**
  * @}

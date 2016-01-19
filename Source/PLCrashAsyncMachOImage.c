@@ -49,15 +49,17 @@
  * Initialize a new Mach-O binary image parser.
  *
  * @param image The image structure to be initialized.
+ * @param allocator A borrowed reference to the allocator to be used for any allocations.
  * @param name The file name or path for the Mach-O image.
  * @param header The task-local address of the image's Mach-O header.
  *
  * @return PLCRASH_ESUCCESS on success. PLCRASH_EINVAL will be returned in the Mach-O file can not be parsed,
- * or PLCRASH_EINTERNAL if an error occurs reading from the target task.
+ * PLCRASH_EINTERNAL if an error occurs reading from the target task, or PLCRASH_ENOMEM if memory allocation
+ * fails.
  *
  * @warning This method is not async safe.
  */
-plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header) {
+plcrash_error_t plcrash_async_macho_init (plcrash_async_macho_t *image, plcrash_async_allocator_t *allocator, mach_port_t task, const char *name, pl_vm_address_t header) {
     plcrash_error_t ret;
 
     /* Defaults checked in the  error cleanup handler */
@@ -66,10 +68,19 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     image->name = NULL;
 
     /* Basic initialization */
+    image->_allocator = allocator;
     image->task = task;
     image->header_addr = header;
-    image->name = strdup(name);
+    
+    /* Allocate memory and copy in the image name */
+    size_t name_len = strlen(name) + 1;
+    if ((ret = plcrash_async_allocator_alloc(allocator, (void **) &image->name, name_len)) != PLCRASH_ESUCCESS) {
+        PLCF_DEBUG("Failed to allocate buffer for image name: %d", ret);
+        return PLCRASH_ENOMEM;
+    }
+    plcrash_async_memcpy(image->name, name, name_len);
 
+    /* Retain a mach port reference */
     mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, 1);
     task_initialized = true;
 
@@ -196,7 +207,7 @@ error:
         plcrash_async_mobject_free(&image->load_cmds);
     
     if (image->name != NULL)
-        free(image->name);
+        plcrash_async_allocator_dealloc(image->_allocator, image->name);
     
     if (task_initialized)
         mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, -1);
@@ -302,6 +313,21 @@ void *plcrash_async_macho_next_command (plcrash_async_macho_t *image, void *prev
 
     /* Advance to the next command */
     uint32_t cmdsize = image->byteorder->swap32(cmd->cmdsize);
+    
+    /* Sanity check the cmdsize */
+    if (cmdsize < sizeof(struct load_command)) {
+        /* This was observed in iOS 9 betas, in which a zero-length LC_CMD triggered an infinite loop. This is absolutely invalid, and
+         * there's nothing we can do but give up trying to iterate over the image. */
+        PLCF_DEBUG("Found invalid 0-length cmdsize in LC_CMD at address %p in: %s (terminating further iteration)", cmd, image->name);
+        return NULL;
+    }
+    
+    /* Verify that the address won't overflow */
+    if (UINTPTR_MAX - cmdsize < (uintptr_t) previous) {
+        PLCF_DEBUG("Found invalid cmdsize in LC_CMD at address %p in: %s", cmd, image->name);
+        return NULL;
+    }
+    
     void *next = ((uint8_t *)previous) + cmdsize;
 
     /* Avoid walking off the end of the cmd buffer */
@@ -926,9 +952,9 @@ void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *s
  *
  * @warning This method is not async safe.
  */
-void plcrash_nasync_macho_free (plcrash_async_macho_t *image) {
+void plcrash_async_macho_free (plcrash_async_macho_t *image) {
     if (image->name != NULL)
-        free(image->name);
+        plcrash_async_allocator_dealloc(image->_allocator, image->name);
     
     plcrash_async_mobject_free(&image->load_cmds);
 

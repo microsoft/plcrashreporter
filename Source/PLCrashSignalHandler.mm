@@ -104,11 +104,11 @@ static struct {
  * to support executing process-wide POSIX signal handlers that were previously registered before being replaced by
  * PLCrashSignalHandler::registerHandlerForSignal:.
  */
-static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
+static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *nextHandler) {
     bool handled = false;
 
     /* Let any additional handler execute */
-    if (PLCrashSignalHandlerForward(next, signo, info, uap))
+    if (PLCrashSignalHandlerForward(nextHandler, signo, info, uap))
         return true;
 
     shared_handler_context.previous_actions.set_reading(true); {

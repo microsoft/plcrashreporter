@@ -28,13 +28,14 @@
 #define PLCRASH_ASYNC_DWARF_FDE_H 1
 
 #include "PLCrashAsync.h"
-#include "PLCrashAsyncImageList.h"
+#include "PLCrashAsyncDynamicLoader.h"
 #include "PLCrashAsyncThread.h"
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -88,7 +89,7 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  * @}
  */
 
-}}
+PLCR_CPP_END_ASYNC_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* !PLCRASH_ASYNC_DWARF_FDE_H */

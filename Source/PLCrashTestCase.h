@@ -27,7 +27,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "GTMSenTestCase.h"
+#import "SenTestCompat.h"
 
 @interface PLCrashTestCase : SenTestCase {
 }

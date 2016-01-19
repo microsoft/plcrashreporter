@@ -35,7 +35,7 @@
 #import "PLCrashCompatConstants.h"
 
 @interface PLCrashReportTextFormatter (PrivateAPI)
-NSInteger binaryImageSort(id binary1, id binary2, void *context);
+static NSInteger binaryImageSort(id binary1, id binary2, void *context);
 + (NSString *) formatStackFrame: (PLCrashReportStackFrameInfo *) frameInfo
                      frameIndex: (NSUInteger) frameIndex
                          report: (PLCrashReport *) report
@@ -455,10 +455,15 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
             parentProcessId = [[NSNumber numberWithUnsignedInteger: report.processInfo.parentProcessID] stringValue];
         }
         
+        NSString *versionString = report.applicationInfo.applicationVersion;
+        /* Marketing version is optional */
+        if (report.applicationInfo.applicationMarketingVersion != nil)
+            versionString = [NSString stringWithFormat: @"%@ (%@)", report.applicationInfo.applicationMarketingVersion, report.applicationInfo.applicationVersion];
+        
         [text appendFormat: @"Process:         %@ [%@]\n", processName, processId];
         [text appendFormat: @"Path:            %@\n", processPath];
         [text appendFormat: @"Identifier:      %@\n", report.applicationInfo.applicationIdentifier];
-        [text appendFormat: @"Version:         %@\n", report.applicationInfo.applicationVersion];
+        [text appendFormat: @"Version:         %@\n", versionString];
         [text appendFormat: @"Code Type:       %@\n", codeType];
         [text appendFormat: @"Parent Process:  %@ [%@]\n", parentProcessName, parentProcessId];
     }
@@ -770,7 +775,7 @@ NSInteger binaryImageSort(id binary1, id binary2, void *context);
 /**
  * Sort PLCrashReportBinaryImageInfo instances by their starting address.
  */
-NSInteger binaryImageSort(id binary1, id binary2, void *context) {
+static NSInteger binaryImageSort(id binary1, id binary2, void *context) {
     uint64_t addr1 = [binary1 imageBaseAddress];
     uint64_t addr2 = [binary2 imageBaseAddress];
     

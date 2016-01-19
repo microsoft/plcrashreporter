@@ -32,10 +32,11 @@
 #include "PLCrashAsyncDwarfPrimitives.hpp"
 
 #include "PLCrashFeatureConfig.h"
+#include "PLCrashMacros.h"
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-namespace plcrash { namespace async {
+PLCR_CPP_BEGIN_ASYNC_NS
 
 /**
  * @internal
@@ -178,7 +179,7 @@ void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
  * @}
  */
 
-}}
+PLCR_CPP_END_ASYNC_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_CIE_H */

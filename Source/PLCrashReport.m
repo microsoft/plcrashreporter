@@ -35,8 +35,6 @@ struct _PLCrashReportDecoder {
     Plcrash__CrashReport *crashReport;
 };
 
-#define IMAGE_UUID_DIGEST_LEN 16
-
 @interface PLCrashReport (PrivateMethods)
 
 - (Plcrash__CrashReport *) decodeCrashData: (NSData *) data error: (NSError **) outError;
@@ -494,6 +492,8 @@ error:
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo 
                                                     error: (NSError **) outError
 {    
+    NSString *marketingVersion = nil;
+    
     /* Validate */
     if (applicationInfo == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, 
@@ -518,12 +518,18 @@ error:
         return nil;
     }
     
+    /* Marketing Version available? */
+    if (applicationInfo->marketing_version != NULL) {
+        marketingVersion = [NSString stringWithUTF8String: applicationInfo->marketing_version];
+    }
+
     /* Done */
     NSString *identifier = [NSString stringWithUTF8String: applicationInfo->identifier];
     NSString *version = [NSString stringWithUTF8String: applicationInfo->version];
 
     return [[[PLCrashReportApplicationInfo alloc] initWithApplicationIdentifier: identifier
-                                                          applicationVersion: version] autorelease];
+                                                             applicationVersion: version
+                                                    applicationMarketingVersion:marketingVersion] autorelease];
 }
 
 

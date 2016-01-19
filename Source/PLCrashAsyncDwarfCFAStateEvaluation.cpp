@@ -290,15 +290,15 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
             }
 
             case DW_CFA_def_cfa_expression: {                
-                /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
-                uint64_t length = dw_expr_read_uleb128();
+                /* Fetch the DW_FORM_block length header; we need this to skip the over the DWARF expression. */
+                uint64_t blockLength = dw_expr_read_uleb128();
                 
                 /* Fetch the opstream position of the DWARF expression */
                 uintptr_t pos = opstream.get_position();
 
                 /* The returned sizes should always fit within the VM types in valid DWARF data; if they don't, how
                  * are we debugging the target? */
-                if (length > PL_VM_SIZE_MAX || length > PL_VM_OFF_MAX) {
+                if (blockLength > PL_VM_SIZE_MAX || blockLength > PL_VM_OFF_MAX) {
                     PLCF_DEBUG("DWARF expression length exceeds PL_VM_SIZE_MAX/PL_VM_OFF_MAX in DW_CFA_def_cfa_expression operand");
                     return PLCRASH_ENOTSUP;
                 }
@@ -324,10 +324,10 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 }
 
                 /* Save the position */
-                set_cfa_expression(abs_addr, length);
+                set_cfa_expression(abs_addr, blockLength);
                 
                 /* Skip the expression opcodes */
-                opstream.skip(length);
+                opstream.skip(blockLength);
                 break;
             }
                 
@@ -368,8 +368,8 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 dwarf_cfa_state_regnum_t regnum = dw_expr_read_uleb128_regnum();
                 uintptr_t pos = opstream.get_position();
                 
-                /* Fetch the DWARF_FORM_block length header; we need this to skip the over the DWARF expression. */
-                uint64_t length = dw_expr_read_uleb128();
+                /* Fetch the DW_FORM_BLOCK length header; we need this to skip the over the DWARF expression. */
+                uint64_t blockLength = dw_expr_read_uleb128();
 
                 /* Calculate the absolute address of the expression opcodes (including verifying that pos won't overflow when applying the offset). */
 #pragma clang diagnostic push
@@ -396,7 +396,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 }
 
                 /* Skip the expression opcodes */
-                opstream.skip(length);
+                opstream.skip(blockLength);
                 break;
             }
                 
