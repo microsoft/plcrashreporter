@@ -5103,8 +5103,6 @@
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
-					"-framework",
-					AppKit,
 				);
 				PRODUCT_NAME = CrashReporter;
 				SKIP_INSTALL = YES;
@@ -5127,8 +5125,6 @@
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
-					"-framework",
-					AppKit,
 				);
 				PRODUCT_NAME = CrashReporter;
 				SKIP_INSTALL = YES;
