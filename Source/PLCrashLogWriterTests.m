@@ -271,7 +271,10 @@
 
 - (Plcrash__CrashReport *) loadReport {
     /* Reading the report */
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wdeprecated"
     NSData *data = [NSData dataWithContentsOfMappedFile: _logPath];
+#pragma clang diagnostic pop
     STAssertNotNil(data, @"Could not map pages");
 
     

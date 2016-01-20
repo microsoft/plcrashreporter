@@ -146,7 +146,10 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_async_file_close(&file);
 
     /* Try to parse it */
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wdeprecated"
     PLCrashReport *crashLog = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
+#pragma clang diagnostic pop
     STAssertNotNil(crashLog, @"Could not decode crash log: %@", error);
 
     /* Report info */
