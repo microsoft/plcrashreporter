@@ -3386,7 +3386,7 @@
 			dependencies = (
 			);
 			name = "CrashReporter-tvOS-Device";
-			productName = "CrashReporter-iPhoneOS";
+			productName = "CrashReporter-AppleTVOS";
 			productReference = 8064D81B1C4D22D8005A8B4C /* libCrashReporter-appletvos.a */;
 			productType = "com.apple.product-type.library.static";
 		};
@@ -3404,7 +3404,7 @@
 			dependencies = (
 			);
 			name = "CrashReporter-tvOS-Simulator";
-			productName = "CrashReporter-iPhoneSimulator";
+			productName = "CrashReporter-AppleTVSimulator";
 			productReference = 8064D88A1C4D22DA005A8B4C /* libCrashReporter-appletvsimulator.a */;
 			productType = "com.apple.product-type.library.static";
 		};
@@ -3557,8 +3557,8 @@
 			targets = (
 				058812D410405908009128FB /* Disk Image */,
 				05CD31680EE939D0000FDE88 /* CrashReporter */,
-				05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */,
+				05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */,
 				058812B81040582D009128FB /* CrashReporter-iOS */,
 				05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */,
 				05CD31620EE93905000FDE88 /* CrashReporter-iOS-Simulator */,
@@ -5831,20 +5831,12 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Frameworks";
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-D$(PL_BUILD_CONFIG_FLAG)=1",
-					"-DPLCRASH_FEATURE_MACH_EXCEPTIONS=0",
-				);
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 				);
 				PRODUCT_NAME = CrashReporter;
-				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				TVOS_DEPLOYMENT_TARGET = "$(PL_APPLETVOS_DEPLOYMENT_TARGET)";
 			};
 			name = Debug;
 		};
@@ -5861,20 +5853,12 @@
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Frameworks";
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-D$(PL_BUILD_CONFIG_FLAG)=1",
-					"-DPLCRASH_FEATURE_MACH_EXCEPTIONS=0",
-				);
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 				);
 				PRODUCT_NAME = CrashReporter;
-				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				TVOS_DEPLOYMENT_TARGET = "$(PL_APPLETVOS_DEPLOYMENT_TARGET)";
 				ZERO_LINK = NO;
 			};
 			name = Release;
