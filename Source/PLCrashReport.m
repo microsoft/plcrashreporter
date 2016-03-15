@@ -28,7 +28,7 @@
 
 #import "PLCrashReport.h"
 #import "CrashReporter.h"
-
+#import <CommonCrypto/CommonDigest.h>
 #import "crash_report.pb-c.h"
 
 struct _PLCrashReportDecoder {
@@ -51,7 +51,7 @@ struct _PLCrashReportDecoder {
 - (PLCrashReportExceptionInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
 - (PLCrashReportSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
 - (PLCrashReportMachExceptionInfo *) extractMachExceptionInfo: (Plcrash__CrashReport__Signal__MachException *) machExceptionInfo error: (NSError **) outError;
-
++ (NSString *)SHA1HashStringWithPlainText:(NSString *)plainText;
 @end
 
 
@@ -236,6 +236,27 @@ error:
     if (_exceptionInfo != nil)
         return YES;
     return NO;
+}
+
+- (NSString *)fingerPrint
+{
+    return [self fingerPrintWithOption:PLCrashReportFingerPrintOptionDefault];
+}
+
+- (NSString *)fingerPrintWithOption:(PLCrashReportFingerPrintOption)option
+{
+    NSString *crashKeyString = [PLCrashReportTextFormatter
+                                keyStringForCrashReport:self
+                                withTextFormat:PLCrashReportTextFormatiOS
+                                option:option];
+    NSString *sha1String = [PLCrashReport SHA1HashStringWithPlainText:crashKeyString];
+    return sha1String;
+}
+
+- (NSString *)exportCrashReportString
+{
+    NSString *crashReportString = [PLCrashReportTextFormatter stringValueForCrashReport:self withTextFormat:PLCrashReportTextFormatiOS];
+    return crashReportString;
 }
 
 @synthesize systemInfo = _systemInfo;
@@ -834,6 +855,81 @@ error:
     
     /* Done */
     return [[[PLCrashReportMachExceptionInfo alloc] initWithType: machExceptionInfo->type codes: codes] autorelease];
+}
+
++ (NSString *)hexStringWithData:(NSData *)hashData
+{
+    unsigned char *buffer = (unsigned char *)malloc(sizeof(unsigned char) * hashData.length);
+    [hashData getBytes:buffer];
+    NSMutableString *hashString = [NSMutableString string];
+    for (int i =0 ; i < hashData.length; i++)
+    {
+        [hashString appendFormat:@"%.2hhx",buffer[i]];//autorelease
+    }
+    free(buffer);
+    
+    NSString *resultString = [NSString stringWithString:hashString];
+    return resultString;
+}
+
++ (NSString *)SHA1HashStringWithPlainText:(NSString *)plainText
+{
+    NSData *hashData = [self SHA1HashBytesWithPlainText:plainText];
+    if (!hashData)
+    {
+        return nil;
+    }
+    
+    NSString *resultString = [self hexStringWithData:hashData];
+    return resultString;
+}
+
++ (NSData *)SHA1HashBytesWithPlainText:(NSString *)plainText
+{
+    if (!plainText)
+    {
+        return nil;
+    }
+    NSData *plainBytes = [plainText dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *hashBytes = [self SHA1HashBytesWithPlainBytes:plainBytes];
+    return hashBytes;
+}
+
++ (NSString *)SHA1HashStringWithPlainBytes:(NSData *)plainBytes
+{
+    NSData *hashData = [self SHA1HashBytesWithPlainBytes:plainBytes];
+    if (!hashData)
+    {
+        return nil;
+    }
+    
+    NSString *resultString = [self hexStringWithData:hashData];
+    return resultString;
+}
+
++ (NSData *)SHA1HashBytesWithPlainBytes:(NSData *)plainBytes
+{
+    CC_SHA1_CTX ctx;
+    uint8_t * hashBytes = NULL;
+    NSData * hash = nil;
+    
+    // Malloc a buffer to hold hash.
+    hashBytes = malloc( CC_SHA1_DIGEST_LENGTH * sizeof(uint8_t) );
+    memset((void *)hashBytes, 0x0, CC_SHA1_DIGEST_LENGTH);
+    
+    // Initialize the context.
+    CC_SHA1_Init(&ctx);
+    // Perform the hash.
+    CC_SHA1_Update(&ctx, (void *)[plainBytes bytes], [plainBytes length]);
+    // Finalize the output.
+    CC_SHA1_Final(hashBytes, &ctx);
+    
+    // Build up the SHA1 blob.
+    hash = [NSData dataWithBytes:(const void *)hashBytes length:(NSUInteger)CC_SHA1_DIGEST_LENGTH];
+    
+    if (hashBytes) free(hashBytes);
+    
+    return hash;
 }
 
 @end
