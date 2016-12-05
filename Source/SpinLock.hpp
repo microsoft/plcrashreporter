@@ -76,6 +76,7 @@ public:
     /** Release the lock. */
     inline void unlock () {
         bool released = __sync_bool_compare_and_swap(&_mtx, 1, 0);
+        (void) released;
         
         /* If this isn't true, the lock wasn't actually held by the caller. */
         if (!released) {
