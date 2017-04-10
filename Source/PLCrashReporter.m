@@ -637,8 +637,10 @@ static PLCrashReporter *sharedReporter = nil;
     }
 
     /* Set the uncaught exception handler */
-    NSSetUncaughtExceptionHandler(&uncaught_exception_handler);
-
+    if(_config.shouldRegisterUncaughtExceptionHandler) {
+      NSSetUncaughtExceptionHandler(&uncaught_exception_handler);
+    }
+  
     /* Success */
     _enabled = YES;
     return YES;
