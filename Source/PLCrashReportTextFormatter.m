@@ -48,6 +48,216 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
  */
 @implementation PLCrashReportTextFormatter
 
++ (NSString *)keyStringForCrashReport:(PLCrashReport *)report
+                       withTextFormat:(PLCrashReportTextFormat)textFormat
+                               option:(PLCrashReportFormatterKeyStringOption)option
+{
+    NSMutableString* text = [NSMutableString string];
+    boolean_t lp64 = true; // quiesce GCC uninitialized value warning
+    
+    /* Header */
+    
+    /* Map to apple style OS nane */
+    NSString *osName;
+    switch (report.systemInfo.operatingSystem) {
+        case PLCrashReportOperatingSystemMacOSX:
+            osName = @"Mac OS X";
+            break;
+        case PLCrashReportOperatingSystemiPhoneOS:
+            osName = @"iPhone OS";
+            break;
+        case PLCrashReportOperatingSystemiPhoneSimulator:
+            osName = @"Mac OS X";
+            break;
+        default:
+            osName = [NSString stringWithFormat: @"Unknown (%d)", report.systemInfo.operatingSystem];
+            break;
+    }
+    
+    /* Map to Apple-style code type, and mark whether architecture is LP64 (64-bit) */
+    NSString *codeType = nil;
+    {
+        /* Attempt to derive the code type from the binary images */
+        for (PLCrashReportBinaryImageInfo *image in report.images) {
+            /* Skip images with no specified type */
+            if (image.codeType == nil)
+                continue;
+            
+            /* Skip unknown encodings */
+            if (image.codeType.typeEncoding != PLCrashReportProcessorTypeEncodingMach)
+                continue;
+            
+            switch (image.codeType.type) {
+                case CPU_TYPE_ARM:
+                    codeType = @"ARM";
+                    lp64 = false;
+                    break;
+                    
+                case CPU_TYPE_ARM64:
+                    codeType = @"ARM-64";
+                    lp64 = true;
+                    break;
+                    
+                case CPU_TYPE_X86:
+                    codeType = @"X86";
+                    lp64 = false;
+                    break;
+                    
+                case CPU_TYPE_X86_64:
+                    codeType = @"X86-64";
+                    lp64 = true;
+                    break;
+                    
+                case CPU_TYPE_POWERPC:
+                    codeType = @"PPC";
+                    lp64 = false;
+                    break;
+                    
+                default:
+                    // Do nothing, handled below.
+                    break;
+            }
+            
+            /* Stop immediately if code type was discovered */
+            if (codeType != nil)
+                break;
+        }
+        
+        /* If we were unable to determine the code type, fall back on the processor info's value. */
+        if (codeType == nil && report.systemInfo.processorInfo.typeEncoding == PLCrashReportProcessorTypeEncodingMach) {
+            switch (report.systemInfo.processorInfo.type) {
+                case CPU_TYPE_ARM:
+                    codeType = @"ARM";
+                    lp64 = false;
+                    break;
+                    
+                case CPU_TYPE_ARM64:
+                    codeType = @"ARM-64";
+                    lp64 = true;
+                    break;
+                    
+                case CPU_TYPE_X86:
+                    codeType = @"X86";
+                    lp64 = false;
+                    break;
+                    
+                case CPU_TYPE_X86_64:
+                    codeType = @"X86-64";
+                    lp64 = true;
+                    break;
+                    
+                case CPU_TYPE_POWERPC:
+                    codeType = @"PPC";
+                    lp64 = false;
+                    break;
+                    
+                default:
+                    codeType = [NSString stringWithFormat: @"Unknown (%llu)", report.systemInfo.processorInfo.type];
+                    lp64 = true;
+                    break;
+            }
+        }
+        
+        /* If we still haven't determined the code type, we're totally clueless. */
+        if (codeType == nil) {
+            codeType = @"Unknown";
+            lp64 = true;
+        }
+    }
+    
+    //Hardware model
+    if (!(option | PLCrashReportFormatterKeyStringOptionIgnoreDeviceInfo))
+    {
+        NSString *hardwareModel = @"???";
+        if (report.hasMachineInfo && report.machineInfo.modelName != nil)
+        {
+            hardwareModel = report.machineInfo.modelName;
+        }
+        [text appendFormat: @"Hardware Model:      %@\n", hardwareModel];
+    }
+    
+    /* Application and process info */
+    {
+        NSString *unknownString = @"???";
+        
+        NSString *processName = unknownString;
+        if (report.hasProcessInfo)
+        {
+            if (report.processInfo.processName != nil)
+            {
+                processName = report.processInfo.processName;
+            }
+        }
+        
+        [text appendFormat: @"Process:         %@\n", processName];
+        [text appendFormat: @"Identifier:      %@\n", report.applicationInfo.applicationIdentifier];
+        
+        if (!(option | PLCrashReportFormatterKeyStringOptionIgnoreAppVersion))
+        {
+            [text appendFormat: @"Version:         %@\n", report.applicationInfo.applicationVersion];
+        }
+        [text appendFormat: @"Code Type:       %@\n", codeType];
+    }
+    
+    [text appendString: @"\n"];
+    
+    /* System info */
+    {
+        NSString *osBuild = @"???";
+        if (report.systemInfo.operatingSystemBuild != nil)
+        {
+            osBuild = report.systemInfo.operatingSystemBuild;
+        }
+        if (!(option | PLCrashReportFormatterKeyStringOptionIgnoreOSVersion))
+        {
+            [text appendFormat: @"OS Version:      %@ %@ (%@)\n", osName, report.systemInfo.operatingSystemVersion, osBuild];
+        }
+        [text appendFormat: @"Report Version:  104\n"];
+    }
+    
+    [text appendString: @"\n"];
+    
+    /* Exception code */
+    [text appendFormat: @"Exception Type:  %@\n", report.signalInfo.name];
+    [text appendFormat: @"Exception Codes: %@\n", report.signalInfo.code];
+    
+    /* Threads */
+    PLCrashReportThreadInfo *crashed_thread = nil;
+    for (PLCrashReportThreadInfo *thread in report.threads)
+    {
+        if (thread.crashed)
+        {
+            [text appendString:@"Thread Crashed:\n"];
+            crashed_thread = thread;
+            
+            for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++)
+            {
+                PLCrashReportStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
+                [text appendString: [self formatStackFrame: frameInfo frameIndex: frame_idx report: report lp64:lp64]];
+            }
+            [text appendString: @"\n"];
+        }
+    }
+    
+    /* If an exception stack trace is available, output a pseudo-thread to provide the frame info */
+    if (report.exceptionInfo != nil && report.exceptionInfo.stackFrames != nil && [report.exceptionInfo.stackFrames count] > 0)
+    {
+        PLCrashReportExceptionInfo *exception = report.exceptionInfo;
+        
+        /* Create the pseudo-thread header. We use the named thread format to mark this thread */
+        [text appendString:@"Thread name:  Exception Backtrace\n"];
+        
+        /* Write out the frames */
+        for (NSUInteger frame_idx = 0; frame_idx < [exception.stackFrames count]; frame_idx++)
+        {
+            PLCrashReportStackFrameInfo *frameInfo = [exception.stackFrames objectAtIndex: frame_idx];
+            [text appendString: [self formatStackFrame: frameInfo frameIndex: frame_idx report: report lp64:lp64]];
+        }
+        [text appendString: @"\n"];
+    }
+    
+    return text;
+}
 
 /**
  * Formats the provided @a report as human-readable text in the given @a textFormat, and return

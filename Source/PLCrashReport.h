@@ -53,6 +53,13 @@
  * an entirely new crash log format. */
 #define PLCRASH_REPORT_FILE_VERSION 1
 
+typedef enum{
+    PLCrashReportFingerPrintOptionDefault = 0,
+    PLCrashReportFingerPrintOptionIgnoreDeviceInfo = 1,
+    PLCrashReportFingerPrintOptionIgnoreOSVersion = 1 << 1,
+    PLCrashReportFingerPrintOptionIgnoreAppVersion = 1 << 2,
+}PLCrashReportFingerPrintOption;
+
 /**
  * @ingroup types
  * Crash log file header format.
@@ -196,5 +203,17 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * will be NULL.
  */
 @property(nonatomic, readonly) CFUUIDRef uuidRef;
+
+/**
+ Calculate SHA1 string of crash key string to distinguish between different crash logs.
+ May use this as primary key to store crash log on server.
+ */
+- (NSString *)fingerPrint;
+- (NSString *)fingerPrintWithOption:(PLCrashReportFingerPrintOption)option;
+
+/*
+ Export crash report to text in apple crash log format.
+ */
+- (NSString *)exportCrashReportString;
 
 @end
