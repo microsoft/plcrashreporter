@@ -76,8 +76,8 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         case PLCrashReportOperatingSystemiPhoneSimulator:
             osName = @"Mac OS X";
             break;
-        case PLCrashReportOperatingSystemtvOS:
-            osName = @"Apple TVOS";
+        case PLCrashReportOperatingSystemAppleTVOS:
+            osName = @"Apple tvOS";
             break;
         default:
             osName = [NSString stringWithFormat: @"Unknown (%d)", report.systemInfo.operatingSystem];
@@ -498,7 +498,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
             switch (report.systemInfo.operatingSystem) {
                 case PLCrashReportOperatingSystemMacOSX:
                 case PLCrashReportOperatingSystemiPhoneOS:
-                case PLCrashReportOperatingSystemtvOS:
+                case PLCrashReportOperatingSystemAppleTVOS:
                 case PLCrashReportOperatingSystemiPhoneSimulator:
                     symbolName = [symbolName substringFromIndex: 1];
                     break;
