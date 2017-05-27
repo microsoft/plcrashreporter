@@ -3533,7 +3533,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = NO;
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0830;
 				TargetAttributes = {
 					05CD33230EE94439000FDE88 = {
 						TestTargetID = 052A45CE136353FB00987004;
@@ -4996,6 +4996,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 			};
@@ -5023,6 +5024,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				ZERO_LINK = NO;
@@ -5052,6 +5054,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphonesimulator;
 			};
@@ -5079,6 +5082,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphonesimulator;
 				ZERO_LINK = NO;
@@ -5104,6 +5108,7 @@
 					"-framework",
 					Foundation,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				SKIP_INSTALL = YES;
 			};
@@ -5126,6 +5131,7 @@
 					"-framework",
 					Foundation,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
@@ -5270,6 +5276,7 @@
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -5295,6 +5302,7 @@
 				INFOPLIST_FILE = "Resources/Tests-MacOSX-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests-MacOSX";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -5325,6 +5333,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
@@ -5353,6 +5362,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests-iOS-Simulator";
 				SDKROOT = iphonesimulator;
 				SKIP_INSTALL = YES;
@@ -5384,6 +5394,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests-iOS-Device";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -5414,6 +5425,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests-iOS-Device";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -5549,6 +5561,7 @@
 					"-framework",
 					AppKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
 				SKIP_INSTALL = YES;
@@ -5575,6 +5588,7 @@
 					"-framework",
 					AppKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
 				SKIP_INSTALL = YES;
@@ -5605,6 +5619,7 @@
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -5632,6 +5647,7 @@
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -5650,7 +5666,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = PLCR_PRIVATE;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -5685,7 +5701,7 @@
 					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
 					"\"$(SRCROOT)/Dependencies/protobuf-2.0.3/include\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-D$(PL_BUILD_CONFIG_FLAG)=1",
@@ -5835,6 +5851,7 @@
 					"-framework",
 					Foundation,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				SKIP_INSTALL = YES;
 			};
@@ -5857,6 +5874,7 @@
 					"-framework",
 					Foundation,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
@@ -5885,6 +5903,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvsimulator;
 				SKIP_INSTALL = YES;
@@ -5913,6 +5932,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvsimulator;
 				SKIP_INSTALL = YES;
@@ -5949,6 +5969,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -5979,6 +6000,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
@@ -6017,6 +6039,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 			};
@@ -6044,6 +6067,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				ZERO_LINK = NO;
@@ -6072,6 +6096,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvsimulator;
 			};
@@ -6098,6 +6123,7 @@
 					"-framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "coop.plausible.${PRODUCT_NAME:rfc822identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvsimulator;
 				ZERO_LINK = NO;

@@ -4,10 +4,12 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
+	<key>CFBundleDisplayName</key>
+	<string>Demo Crash</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>coop.plausible.${PRODUCT_NAME:rfc822identifier}</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -18,7 +20,5 @@
 	<string>1.0</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
-	<key>CFBundleDisplayName</key>
-	<string>Demo Crash</string>
 </dict>
 </plist>
