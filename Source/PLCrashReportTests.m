@@ -146,7 +146,10 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_async_file_close(&file);
 
     /* Try to parse it */
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wdeprecated"
     PLCrashReport *crashLog = [[[PLCrashReport alloc] initWithData: [NSData dataWithContentsOfMappedFile: _logPath] error: &error] autorelease];
+#pragma clang diagnostic pop
     STAssertNotNil(crashLog, @"Could not decode crash log: %@", error);
 
     /* Report info */
@@ -186,8 +189,11 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertTrue(startTimeInterval >= 0, @"Date occured in the future");
     STAssertTrue(startTimeInterval < 60, @"Date occured more than 60 second in the past");
 
-    /* This is expected to fail on iOS 9+ due to new sandbox constraints */
-  if ((PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS || PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemtvOS) && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
+    /* This is expected to fail on tvOS and iOS 9+ due to new sandbox constraints */
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS ||
+        (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS &&
+         PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9))
+    {
         STAssertNil(crashLog.processInfo.parentProcessName, @"Fetching the parent process name unexpectedly succeeded on iOS 9+");
     } else {
         STAssertNotNil(crashLog.processInfo.parentProcessName, @"No parent process name available");

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0710"
+   LastUpgradeVersion = "0830"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,8 +14,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "1E803EFF1BDE273F007F8794"
-               BuildableName = "libCrashReporter-tvOS-Device.a"
+               BlueprintIdentifier = "8064D7AD1C4D22D8005A8B4C"
+               BuildableName = "libCrashReporter-appletvos.a"
                BlueprintName = "CrashReporter-tvOS-Device"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
@@ -45,8 +45,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1E803EFF1BDE273F007F8794"
-            BuildableName = "libCrashReporter-tvOS-Device.a"
+            BlueprintIdentifier = "8064D7AD1C4D22D8005A8B4C"
+            BuildableName = "libCrashReporter-appletvos.a"
             BlueprintName = "CrashReporter-tvOS-Device"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
@@ -63,8 +63,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1E803EFF1BDE273F007F8794"
-            BuildableName = "libCrashReporter-tvOS-Device.a"
+            BlueprintIdentifier = "8064D7AD1C4D22D8005A8B4C"
+            BuildableName = "libCrashReporter-appletvos.a"
             BlueprintName = "CrashReporter-tvOS-Device"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>

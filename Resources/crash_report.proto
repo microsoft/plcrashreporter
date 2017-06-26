@@ -102,6 +102,9 @@ message CrashReport {
             /* iPhone Simulator (Mac OS X w/ simulator runtime environment) */
             IPHONE_SIMULATOR = 2;
             
+            /* Apple tvOS */
+            APPLE_TVOS = 4;
+
             /* Unknown operating system. */
             OS_UNKNOWN = 3;
         }
