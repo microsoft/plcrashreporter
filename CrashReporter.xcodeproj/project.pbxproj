@@ -5001,6 +5001,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -5014,6 +5015,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+				ZERO_LINK = "";
 			};
 			name = Debug;
 		};
@@ -5041,6 +5043,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -5054,6 +5057,7 @@
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
