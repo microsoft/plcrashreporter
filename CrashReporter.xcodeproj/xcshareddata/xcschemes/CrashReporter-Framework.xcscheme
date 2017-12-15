@@ -5,6 +5,24 @@
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "rsync -av &quot;${SRCROOT}/LICENSE&quot; &quot;${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}/LICENSE.txt&quot;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "780AEEB91FE21D660047F3E8"
+                     BuildableName = "CrashReporter.framework"
+                     BlueprintName = "CrashReporter-Framework"
+                     ReferencedContainer = "container:CrashReporter.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -78,23 +96,5 @@
    <ArchiveAction
       buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
-      <PostActions>
-         <ExecutionAction
-            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
-            <ActionContent
-               title = "Run Script"
-               scriptText = "rsync -av &quot;${SRCROOT}/LICENSE&quot; &quot;${SRCROOT}/Carthage/Build/iOS/CrashReporter.framework/LICENSE.txt&quot;">
-               <EnvironmentBuildable>
-                  <BuildableReference
-                     BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "780AEEB91FE21D660047F3E8"
-                     BuildableName = "CrashReporter.framework"
-                     BlueprintName = "CrashReporter-Framework"
-                     ReferencedContainer = "container:CrashReporter.xcodeproj">
-                  </BuildableReference>
-               </EnvironmentBuildable>
-            </ActionContent>
-         </ExecutionAction>
-      </PostActions>
    </ArchiveAction>
 </Scheme>
