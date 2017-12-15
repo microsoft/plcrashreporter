@@ -5022,7 +5022,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
-					"PLCRASH_DYNAMIC_FRMEWORK_SUPPORT=1",
+					"-DPLCRASH_DYNAMIC_FRMEWORK_SUPPORT=1",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
@@ -5065,7 +5065,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_CFLAGS = (
 					"$(inherited)",
-					"PLCRASH_DYNAMIC_FRMEWORK_SUPPORT=1",
+					"-DPLCRASH_DYNAMIC_FRMEWORK_SUPPORT=1",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
