@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "780AEEB91FE21D660047F3E8"
-               BuildableName = "CrashReporter_Framework.framework"
+               BuildableName = "CrashReporter.framework"
                BlueprintName = "CrashReporter-Framework"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
@@ -48,7 +48,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "780AEEB91FE21D660047F3E8"
-            BuildableName = "CrashReporter_Framework.framework"
+            BuildableName = "CrashReporter.framework"
             BlueprintName = "CrashReporter-Framework"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
@@ -66,7 +66,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "780AEEB91FE21D660047F3E8"
-            BuildableName = "CrashReporter_Framework.framework"
+            BuildableName = "CrashReporter.framework"
             BlueprintName = "CrashReporter-Framework"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
@@ -83,12 +83,12 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "rsync -av &quot;${SRCROOT}/LICENSE&quot; &quot;${SRCROOT}/LICENSE.txt&quot;">
+               scriptText = "rsync -av &quot;${SRCROOT}/LICENSE&quot; &quot;${SRCROOT}/Carthage/Build/iOS/CrashReporter.framework/LICENSE.txt&quot;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "780AEEB91FE21D660047F3E8"
-                     BuildableName = "CrashReporter_Framework.framework"
+                     BuildableName = "CrashReporter.framework"
                      BlueprintName = "CrashReporter-Framework"
                      ReferencedContainer = "container:CrashReporter.xcodeproj">
                   </BuildableReference>
