@@ -4874,6 +4874,7 @@
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "i386 x86_64";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -4901,6 +4902,7 @@
 				PRODUCT_NAME = CrashReporter;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "i386 x86_64";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
