@@ -93,9 +93,12 @@ pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
 
-MOVQ    (cs, 160);
-MOVQ    (fs, 168);
-MOVQ    (gs, 176);
+movq    $0, 160(%rsp);
+movw    %cs, 160(%rsp);
+movq    $0, 168(%rsp);
+movw    %fs, 168(%rsp);
+movq    $0, 176(%rsp);
+movw    %gs, 176(%rsp);
 
 /* Move mctx to 3rd argument of plcrash_log_writer_write_curthread_stub */
 movq    %rsp, %rdx
