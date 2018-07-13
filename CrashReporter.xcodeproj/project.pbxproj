@@ -975,6 +975,8 @@
 		780AEF361FE267360047F3E8 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		78544FAA20F89ED80002E2B5 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 78544FA920F89EA30002E2B5 /* LICENSE */; };
 		78544FAB20F89EDA0002E2B5 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 78544FA920F89EA30002E2B5 /* LICENSE */; };
+		78544FAD20F8A0A60002E2B5 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 78544FAC20F8A0A60002E2B5 /* CHANGELOG.md */; };
+		78544FAE20F8A0A60002E2B5 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 78544FAC20F8A0A60002E2B5 /* CHANGELOG.md */; };
 		787526771FE3976F008620CF /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		787526781FE397FB008620CF /* PLCrashFeatureConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A2B3FF1795BA4100934198 /* PLCrashFeatureConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		787526791FE39813008620CF /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1580,6 +1582,7 @@
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
 		780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78544FA920F89EA30002E2B5 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		78544FAC20F8A0A60002E2B5 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = SOURCE_ROOT; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
@@ -2402,6 +2405,7 @@
 		089C1665FE841158C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				78544FAC20F8A0A60002E2B5 /* CHANGELOG.md */,
 				78544FA920F89EA30002E2B5 /* LICENSE */,
 				057CD98516CD5D5C0067E670 /* Default-568h@2x.png */,
 				05F40CE90EF7AB80008050CF /* DemoCrash-Info.plist */,
@@ -3201,6 +3205,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				78544FAA20F89ED80002E2B5 /* LICENSE in Resources */,
+				78544FAE20F8A0A60002E2B5 /* CHANGELOG.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3209,6 +3214,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				78544FAB20F89EDA0002E2B5 /* LICENSE in Resources */,
+				78544FAD20F8A0A60002E2B5 /* CHANGELOG.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

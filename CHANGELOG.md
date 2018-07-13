@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2 (13/07/2018)
+### Fix
+- Fix unsealed contents present in directory
+
 ## 1.3 (18/12/2017)
 Add Support Carthage on forked repository
 
