@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3 (16/07/2018)
+### CHANGE
+- change location CHANGELOG.md LICENSE
+
 ## 1.3.2 (13/07/2018)
 ### Fix
 - Fix unsealed contents present in directory
