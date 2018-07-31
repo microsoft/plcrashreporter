@@ -93,7 +93,7 @@ pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
 
-/* The segment registers are 16 bit. Zeroing out the the other bits in case client code depends on it. */
+/* The segment registers are 16 bit. Zeroing out the other bits in case client code depends on it. */
 movq    $0, 160(%rsp);
 movw    %cs, 160(%rsp);
 movq    $0, 168(%rsp);
@@ -150,7 +150,7 @@ movl    %eax, 48+OFF(%esp)
 movl    0x4(%ebp), %eax
 movl    %eax, 52+OFF(%esp)
 
-/* The segment registers are 16 bit. Zeroing out the the other bits in case client code depends on it. */
+/* The segment registers are 16 bit. Zeroing out the other bits in case client code depends on it. */
 movl $0, OFF+56(%esp);
 movw %cs, OFF+56(%esp);
 movl $0, OFF+60(%esp);
