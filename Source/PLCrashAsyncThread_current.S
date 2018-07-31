@@ -93,6 +93,7 @@ pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
 
+/* The segment registers are 16 bit. Zeroing out the the other bits in case client code depends on it. */
 movq    $0, 160(%rsp);
 movw    %cs, 160(%rsp);
 movq    $0, 168(%rsp);
@@ -149,11 +150,17 @@ movl    %eax, 48+OFF(%esp)
 movl    0x4(%ebp), %eax
 movl    %eax, 52+OFF(%esp)
 
-MOVL    (cs, 56);
-MOVL    (ds, 60);
-MOVL    (es, 64);
-MOVL    (fs, 68);
-MOVL    (gs, 72);
+/* The segment registers are 16 bit. Zeroing out the the other bits in case client code depends on it. */
+movl $0, OFF+56(%esp);
+movw %cs, OFF+56(%esp);
+movl $0, OFF+60(%esp);
+movw %ds, OFF+60(%esp);
+movl $0, OFF+64(%esp);
+movw %es, OFF+64(%esp);
+movl $0, OFF+68(%esp);
+movw %fs, OFF+68(%esp);
+movl $0, OFF+72(%esp);
+movw %gs, OFF+72(%esp);
 #undef MOVL
 
 /* Set up our argument stack: writer (arg0), image_list, file, siginfo, mctx */
