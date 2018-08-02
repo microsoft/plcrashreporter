@@ -33,13 +33,10 @@
 // of providing overrides for the older SDKs so existing apps are less likely
 // to break.
 ARCHS[sdk=macosx*] = $(ARCHS_STANDARD_32_64_BIT)
-ARCHS[sdk=macosx10.4*] = i386 ppc
-ARCHS[sdk=macosx10.5*] = i386 x86_64 ppc ppc64
-ARCHS[sdk=macosx10.6*] = i386 x86_64
 
 // Build for arm for iPhone or Intel for the iPhone Simulator
-ARCHS[sdk=iphoneos*] = armv6
-ARCHS[sdk=iphonesimulator*] = i386
+ARCHS[sdk=iphoneos*] = armv7
+ARCHS[sdk=iphonesimulator*] = x86_64
 
 // Build only the active architecture on iphone device targets
 ONLY_ACTIVE_ARCH[sdk=iphoneos*] = YES
