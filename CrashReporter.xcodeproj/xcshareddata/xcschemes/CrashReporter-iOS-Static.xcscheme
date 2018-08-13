@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "788DC1F621216C8600AB0D28"
-               BuildableName = "CrashReporter-iOS-Static.framework"
+               BuildableName = "CrashReporter.framework"
                BlueprintName = "CrashReporter-iOS-Static"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
@@ -46,7 +46,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "788DC1F621216C8600AB0D28"
-            BuildableName = "CrashReporter-iOS-Static.framework"
+            BuildableName = "CrashReporter.framework"
             BlueprintName = "CrashReporter-iOS-Static"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
@@ -64,7 +64,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "788DC1F621216C8600AB0D28"
-            BuildableName = "CrashReporter-iOS-Static.framework"
+            BuildableName = "CrashReporter.framework"
             BlueprintName = "CrashReporter-iOS-Static"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
