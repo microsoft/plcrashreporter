@@ -4139,7 +4139,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7804F76E2125090F0022BDD5 /* dwarf_stack.cpp in Sources */,
 				780AEF021FE261320047F3E8 /* CrashReporter.m in Sources */,
 				780AEF011FE261250047F3E8 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				780AEF001FE261150047F3E8 /* PLCrashSignalHandler.mm in Sources */,
@@ -4191,6 +4190,7 @@
 				780AEED21FE25C0D0047F3E8 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
 				780AEED11FE25BEA0047F3E8 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
 				780AEED01FE25B870047F3E8 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
+				7804F76E2125090F0022BDD5 /* dwarf_stack.cpp in Sources */,
 				780AEECE1FE25B230047F3E8 /* dwarf_opstream.cpp in Sources */,
 				780AEECD1FE25AF00047F3E8 /* PLCrashAsyncDwarfCFAState.cpp in Sources */,
 				780AEECC1FE25ADA0047F3E8 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
