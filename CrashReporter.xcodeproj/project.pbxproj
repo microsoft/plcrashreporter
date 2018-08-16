@@ -1709,10 +1709,6 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		2D0E10441141F7DC00CE1BD6 /* PLCrashReportProcessInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashReportProcessInfo.h; sourceTree = "<group>"; };
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
-		7804F7392124F14C0022BDD5 /* CrashReporter_tvOS_Framework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashReporter_tvOS_Framework.h; sourceTree = "<group>"; };
-		7804F73A2124F14C0022BDD5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7804F7462124F1D30022BDD5 /* CrashReporter_watchOS_Framework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashReporter_watchOS_Framework.h; sourceTree = "<group>"; };
-		7804F7472124F1D30022BDD5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78544FAC20F8A0A60002E2B5 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = SOURCE_ROOT; };
 		788DC27821216C8600AB0D28 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2525,8 +2521,6 @@
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
-				7804F7382124F14C0022BDD5 /* CrashReporter-tvOS-Framework */,
-				7804F7452124F1D30022BDD5 /* CrashReporter-watchOS-Framework */,
 				034768DFFF38A50411DB9C8B /* Products */,
 				059670E30EEFADA6008A0601 /* Dependencies */,
 			);
@@ -2609,24 +2603,6 @@
 				05614E111A965A6100D62442 /* SenTestCompat.h */,
 			);
 			path = "Other Sources";
-			sourceTree = "<group>";
-		};
-		7804F7382124F14C0022BDD5 /* CrashReporter-tvOS-Framework */ = {
-			isa = PBXGroup;
-			children = (
-				7804F7392124F14C0022BDD5 /* CrashReporter_tvOS_Framework.h */,
-				7804F73A2124F14C0022BDD5 /* Info.plist */,
-			);
-			path = "CrashReporter-tvOS-Framework";
-			sourceTree = "<group>";
-		};
-		7804F7452124F1D30022BDD5 /* CrashReporter-watchOS-Framework */ = {
-			isa = PBXGroup;
-			children = (
-				7804F7462124F1D30022BDD5 /* CrashReporter_watchOS_Framework.h */,
-				7804F7472124F1D30022BDD5 /* Info.plist */,
-			);
-			path = "CrashReporter-watchOS-Framework";
 			sourceTree = "<group>";
 		};
 		FCE4576E42A51370AD81A734 /* Stack Frame Unwind */ = {
