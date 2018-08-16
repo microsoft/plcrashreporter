@@ -892,6 +892,8 @@
 		7804F76B2124F48A0022BDD5 /* PLCrashReportMachExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 0513E23217D15ED400727919 /* PLCrashReportMachExceptionInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7804F76C2124F4920022BDD5 /* PLCrashReportMachExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 0513E23317D15ED400727919 /* PLCrashReportMachExceptionInfo.m */; };
 		7804F76D2124F4930022BDD5 /* PLCrashReportMachExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 0513E23317D15ED400727919 /* PLCrashReportMachExceptionInfo.m */; };
+		7804F76E2125090F0022BDD5 /* dwarf_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E748A517616D30009B8745 /* dwarf_stack.cpp */; };
+		7804F76F2125091D0022BDD5 /* dwarf_stack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E748A517616D30009B8745 /* dwarf_stack.cpp */; };
 		780AEEC21FE221530047F3E8 /* PLCrashReportMachExceptionInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 0513E23317D15ED400727919 /* PLCrashReportMachExceptionInfo.m */; };
 		780AEEC31FE2215F0047F3E8 /* PLCrashUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B929E717C9336600B051E3 /* PLCrashUncaughtExceptionHandler.m */; };
 		780AEEC41FE221700047F3E8 /* PLCrashAsyncLinkedList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A5E28617C04188008A75E5 /* PLCrashAsyncLinkedList.cpp */; };
@@ -905,7 +907,6 @@
 		780AEECC1FE25ADA0047F3E8 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
 		780AEECD1FE25AF00047F3E8 /* PLCrashAsyncDwarfCFAState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.cpp */; };
 		780AEECE1FE25B230047F3E8 /* dwarf_opstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */; };
-		780AEECF1FE25B2F0047F3E8 /* dwarf_stack.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E748A617616D30009B8745 /* dwarf_stack.hpp */; };
 		780AEED01FE25B870047F3E8 /* PLCrashAsyncDwarfExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7488A176135CE009B8745 /* PLCrashAsyncDwarfExpression.cpp */; };
 		780AEED11FE25BEA0047F3E8 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7487A176118C1009B8745 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp */; };
 		780AEED21FE25C0D0047F3E8 /* PLCrashAsyncDwarfCIE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.cpp */; };
@@ -1064,7 +1065,6 @@
 		788DC22821216C8600AB0D28 /* PLCrashAsyncDwarfCIE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E748661760D890009B8745 /* PLCrashAsyncDwarfCIE.cpp */; };
 		788DC22921216C8600AB0D28 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7487A176118C1009B8745 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp */; };
 		788DC22A21216C8600AB0D28 /* PLCrashAsyncDwarfExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7488A176135CE009B8745 /* PLCrashAsyncDwarfExpression.cpp */; };
-		788DC22B21216C8600AB0D28 /* dwarf_stack.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E748A617616D30009B8745 /* dwarf_stack.hpp */; };
 		788DC22C21216C8600AB0D28 /* dwarf_opstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DA4176B8C7000E9B10D /* dwarf_opstream.cpp */; };
 		788DC22D21216C8600AB0D28 /* PLCrashAsyncDwarfCFAState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C76DC6176FBAF300E9B10D /* PLCrashAsyncDwarfCFAState.cpp */; };
 		788DC22E21216C8600AB0D28 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
@@ -4319,6 +4319,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7804F76E2125090F0022BDD5 /* dwarf_stack.cpp in Sources */,
 				780AEF021FE261320047F3E8 /* CrashReporter.m in Sources */,
 				780AEF011FE261250047F3E8 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				780AEF001FE261150047F3E8 /* PLCrashSignalHandler.mm in Sources */,
@@ -4370,7 +4371,6 @@
 				780AEED21FE25C0D0047F3E8 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
 				780AEED11FE25BEA0047F3E8 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
 				780AEED01FE25B870047F3E8 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
-				780AEECF1FE25B2F0047F3E8 /* dwarf_stack.hpp in Sources */,
 				780AEECE1FE25B230047F3E8 /* dwarf_opstream.cpp in Sources */,
 				780AEECD1FE25AF00047F3E8 /* PLCrashAsyncDwarfCFAState.cpp in Sources */,
 				780AEECC1FE25ADA0047F3E8 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
@@ -4391,6 +4391,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7804F76F2125091D0022BDD5 /* dwarf_stack.cpp in Sources */,
 				788DC1F821216C8600AB0D28 /* CrashReporter.m in Sources */,
 				788DC1F921216C8600AB0D28 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				788DC1FA21216C8600AB0D28 /* PLCrashSignalHandler.mm in Sources */,
@@ -4442,7 +4443,6 @@
 				788DC22821216C8600AB0D28 /* PLCrashAsyncDwarfCIE.cpp in Sources */,
 				788DC22921216C8600AB0D28 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp in Sources */,
 				788DC22A21216C8600AB0D28 /* PLCrashAsyncDwarfExpression.cpp in Sources */,
-				788DC22B21216C8600AB0D28 /* dwarf_stack.hpp in Sources */,
 				788DC22C21216C8600AB0D28 /* dwarf_opstream.cpp in Sources */,
 				788DC22D21216C8600AB0D28 /* PLCrashAsyncDwarfCFAState.cpp in Sources */,
 				788DC22E21216C8600AB0D28 /* PLCrashFrameDWARFUnwind.cpp in Sources */,
