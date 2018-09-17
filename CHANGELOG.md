@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.5] - 2018-09-17
+### Added
+- Static Framework.
+
 ## 1.3.3 (16/07/2018)
 ### CHANGE
 - change location CHANGELOG.md LICENSE
