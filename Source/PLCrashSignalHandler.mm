@@ -419,7 +419,7 @@ static PLCrashSignalHandler *sharedHandler;
         .callback = callback,
         .context = context
     };
-    shared_handler_context.callbacks.nasync_prepend(reg);
+    shared_handler_context.callbacks.nasync_append(reg);
     
     return YES;
 }
