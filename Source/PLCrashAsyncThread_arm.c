@@ -33,6 +33,26 @@
 #import <stdlib.h>
 #import <assert.h>
 
+// The code below does not work because it will try to redefine the reg. for non-arm64e archs...which does NOT make sense!
+//#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+//#ifndef __lp
+//#define __lp __opaque_lp
+//#endif
+//#ifndef __fp
+//#define __fp __opaque_fp
+//#endif
+//#ifndef __sp
+//#define __sp __opaque_sp
+//#endif
+//#ifndef __lr
+//#define __lr __opaque_lr
+//#endif
+//#ifndef __pc
+//#define __pc __opaque_pc
+//#endif
+//
+//#endif
+
 #if defined(__arm__) || defined(__arm64__)
 
 #define RETGEN(name, type, ts) {\
@@ -53,7 +73,6 @@ struct dwarf_register_table {
     /** DWARF register number. */
     uint64_t dwarf_value;
 };
-
 
 /*
  * ARM GP registers defined as callee-preserved, as per Apple's iOS ARM Function Call Guide
@@ -175,8 +194,6 @@ static const struct dwarf_register_table arm64_dwarf_table [] = {
     
     { PLCRASH_ARM64_SP,  31 },
 };
-
-
 
 // PLCrashAsyncThread API
 plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
@@ -326,20 +343,38 @@ plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_st
                 RETGEN(x[28], thread.ts_64, ts);
                 
             case PLCRASH_ARM64_FP:
-                RETGEN(fp, thread.ts_64, ts);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            RETGEN(opaque_fp, thread.ts_64, ts);
+#else
+            RETGEN(fp, thread.ts_64, ts);
+#endif
             case PLCRASH_ARM64_SP:
-                RETGEN(sp, thread.ts_64, ts);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            RETGEN(opaque_sp, thread.ts_64, ts);
+#else
+            RETGEN(sp, thread.ts_64, ts);
+#endif
+//                RETGEN(sp, thread.ts_64, ts);
+            
             case PLCRASH_ARM64_LR:
-                RETGEN(lr, thread.ts_64, ts);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            RETGEN(opaque_lr, thread.ts_64, ts);
+#else
+            RETGEN(lr, thread.ts_64, ts);
+#endif
+//                RETGEN(lr, thread.ts_64, ts);
+            
             case PLCRASH_ARM64_PC:
-                RETGEN(pc, thread.ts_64, ts);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            RETGEN(opaque_pc, thread.ts_64, ts);
+#else
+            RETGEN(pc, thread.ts_64, ts);
+#endif
+//                RETGEN(pc, thread.ts_64, ts);
+            
             case PLCRASH_ARM64_CPSR:
                 RETGEN(cpsr, thread.ts_64, ts);
-                
+
             default:
                 __builtin_trap();
         }
@@ -500,17 +535,33 @@ void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_st
                 SETGEN(x[28], thread.ts_64, ts, regnum, reg);
                 
             case PLCRASH_ARM64_FP:
-                SETGEN(fp, thread.ts_64, ts, regnum, reg);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            SETGEN(opaque_fp, thread.ts_64, ts, regnum, reg);
+#else
+            SETGEN(fp, thread.ts_64, ts, regnum, reg);
+#endif
+            
             case PLCRASH_ARM64_SP:
-                SETGEN(sp, thread.ts_64, ts, regnum, reg);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            SETGEN(opaque_sp, thread.ts_64, ts, regnum, reg);
+#else
+            SETGEN(sp, thread.ts_64, ts, regnum, reg);
+#endif
+            
             case PLCRASH_ARM64_LR:
-                SETGEN(lr, thread.ts_64, ts, regnum, reg);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            SETGEN(opaque_lr, thread.ts_64, ts, regnum, reg);
+#else
+            SETGEN(lr, thread.ts_64, ts, regnum, reg);
+#endif
+            
             case PLCRASH_ARM64_PC:
-                SETGEN(pc, thread.ts_64, ts, regnum, reg);
-                
+#if defined(__DARWIN_OPAQUE_ARM_THREAD_STATE64) && __DARWIN_OPAQUE_ARM_THREAD_STATE64 == 1
+            SETGEN(opaque_pc, thread.ts_64, ts, regnum, reg);
+#else
+            SETGEN(pc, thread.ts_64, ts, regnum, reg);
+#endif
+            
             case PLCRASH_ARM64_CPSR:
                 SETGEN(cpsr, thread.ts_64, ts, regnum, reg);
                 
