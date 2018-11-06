@@ -133,7 +133,7 @@ VOFF(ss, gs, 72);
 
 VOFF(es, trapno, 0);
 
-#elif defined(__arm64e__)
+#elif __DARWIN_OPAQUE_ARM_THREAD_STATE64
 
 /* There's a hard-coded dependency on this size in the trampoline assembly, so we explicitly validate it here. */
 PLCR_ASSERT_STATIC(MCONTEXT_SIZE, sizeof(pl_mcontext_t) == 816);
