@@ -7,19 +7,17 @@
 //
 
 import UIKit
+import CrashReporter
+import os.log
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        os_log("crash report create", log: OSLog.default, type: .debug)
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-
+    
 }
 

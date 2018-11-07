@@ -13,6 +13,8 @@
 		78E5510B2192834600BCDA5E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78E5510A2192834600BCDA5E /* Assets.xcassets */; };
 		78E5510E2192834600BCDA5E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 78E5510C2192834600BCDA5E /* LaunchScreen.storyboard */; };
 		78E551192192834600BCDA5E /* SampleAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E551182192834600BCDA5E /* SampleAppTests.swift */; };
+		78E551242192843300BCDA5E /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78E551232192843300BCDA5E /* CrashReporter.framework */; };
+		78E551252192843300BCDA5E /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 78E551232192843300BCDA5E /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +27,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		78E551262192843400BCDA5E /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				78E551252192843300BCDA5E /* CrashReporter.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		78E551002192834500BCDA5E /* SampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78E551032192834500BCDA5E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -36,6 +52,7 @@
 		78E551142192834600BCDA5E /* SampleAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SampleAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		78E551182192834600BCDA5E /* SampleAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleAppTests.swift; sourceTree = "<group>"; };
 		78E5511A2192834600BCDA5E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		78E551232192843300BCDA5E /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78E551242192843300BCDA5E /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +77,7 @@
 		78E550F72192834500BCDA5E = {
 			isa = PBXGroup;
 			children = (
+				78E551232192843300BCDA5E /* CrashReporter.framework */,
 				78E551022192834500BCDA5E /* SampleApp */,
 				78E551172192834600BCDA5E /* SampleAppTests */,
 				78E551012192834500BCDA5E /* Products */,
@@ -106,6 +125,7 @@
 				78E550FC2192834500BCDA5E /* Sources */,
 				78E550FD2192834500BCDA5E /* Frameworks */,
 				78E550FE2192834500BCDA5E /* Resources */,
+				78E551262192843400BCDA5E /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -359,6 +379,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2HPNK5R843;
 				INFOPLIST_FILE = SampleApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -376,6 +397,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2HPNK5R843;
 				INFOPLIST_FILE = SampleApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
