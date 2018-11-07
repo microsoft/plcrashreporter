@@ -108,7 +108,6 @@
 		052951F01696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */ = {isa = PBXBuildFile; fileRef = 052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */; };
 		052951F11696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */ = {isa = PBXBuildFile; fileRef = 052951EE1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto */; };
 		052A45DA1363542800987004 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40CF10EF7AC0E008050CF /* main.m */; };
-		052A46271363553A00987004 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter-iphoneos.a */; };
 		052A4649136355FD00987004 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 05F40CF10EF7AC0E008050CF /* main.m */; };
 		052A46561363561B00987004 /* libCrashReporter-iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31630EE93905000FDE88 /* libCrashReporter-iphonesimulator.a */; };
 		053347AA17E161CB00C52E50 /* unwind_test_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 053347A517E161CB00C52E50 /* unwind_test_arm64.S */; };
@@ -1098,6 +1097,8 @@
 		788DC27021216C8600AB0D28 /* PLCrashAsyncLinkedList.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28717C04188008A75E5 /* PLCrashAsyncLinkedList.hpp */; };
 		788DC27121216C8600AB0D28 /* shared_ptr.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0576DAD11B42F367000BCA73 /* shared_ptr.hpp */; };
 		788DC27221216C8600AB0D28 /* PLCrashUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B929E617C9336600B051E3 /* PLCrashUncaughtExceptionHandler.h */; };
+		78E550D421927FA700BCDA5E /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */; };
+		78E550D521927FA700BCDA5E /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C21688F916445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */; };
 		C21688FA16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */; };
 		C21688FB16445344000F90ED /* PLCrashAsyncMachOStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21688F816445344000F90ED /* PLCrashAsyncMachOStringTests.m */; };
@@ -1445,6 +1446,13 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
+		78E550D621927FA700BCDA5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 780AEEB91FE21D660047F3E8;
+			remoteInfo = "CrashReporter-Framework";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1468,6 +1476,17 @@
 				05F40CFA0EF7AC96008050CF /* CrashReporter.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		78E550D821927FA700BCDA5E /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				78E550D521927FA700BCDA5E /* CrashReporter.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -1740,7 +1759,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				052A46271363553A00987004 /* libCrashReporter-iphoneos.a in Frameworks */,
+				78E550D421927FA700BCDA5E /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3044,11 +3063,13 @@
 				052A45CB136353FB00987004 /* Resources */,
 				052A45CC136353FB00987004 /* Sources */,
 				052A45CD136353FB00987004 /* Frameworks */,
+				78E550D821927FA700BCDA5E /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				052A46251363553400987004 /* PBXTargetDependency */,
+				78E550D721927FA700BCDA5E /* PBXTargetDependency */,
 			);
 			name = "DemoCrash-iOS-Device";
 			productName = "DemoCrash-iOS";
@@ -3323,6 +3344,7 @@
 					};
 					780AEEB91FE21D660047F3E8 = {
 						CreatedOnToolsVersion = 9.1;
+						DevelopmentTeam = 2HPNK5R843;
 						ProvisioningStyle = Automatic;
 					};
 					788DC1F621216C8600AB0D28 = {
@@ -4449,6 +4471,11 @@
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */;
 		};
+		78E550D721927FA700BCDA5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 780AEEB91FE21D660047F3E8 /* CrashReporter-Framework */;
+			targetProxy = 78E550D621927FA700BCDA5E /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -4534,6 +4561,7 @@
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4560,6 +4588,7 @@
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -5327,6 +5356,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2HPNK5R843;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -5375,6 +5405,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2HPNK5R843;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_NS_ASSERTIONS = NO;
