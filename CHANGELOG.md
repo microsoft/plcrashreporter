@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.7] - 2018-11-7
+### Fixed
+- Same Thread Call Stack
+
 ## [1.3.6] - 2018-09-19
 ### Added
 - CLANG_ENABLE_MODULE_DEBUGGING = NO in iOS Static Framework .
