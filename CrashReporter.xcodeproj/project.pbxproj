@@ -3315,6 +3315,9 @@
 				BuildIndependentTargetsInParallel = NO;
 				LastUpgradeCheck = 0610;
 				TargetAttributes = {
+					052A45CE136353FB00987004 = {
+						DevelopmentTeam = 2HPNK5R843;
+					};
 					05CD33230EE94439000FDE88 = {
 						TestTargetID = 052A45CE136353FB00987004;
 					};
@@ -4522,6 +4525,7 @@
 				ARCHS = "$(PL_ARM_ARCHS)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 2HPNK5R843;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(BUILD_ROOT)",
@@ -4531,7 +4535,6 @@
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = "$(PL_IOS_DEPLOYMENT_TARGET)";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4551,6 +4554,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 2HPNK5R843;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(BUILD_ROOT)",
@@ -4558,7 +4562,6 @@
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
-				IPHONEOS_DEPLOYMENT_TARGET = "$(PL_IOS_DEPLOYMENT_TARGET)";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
