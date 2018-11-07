@@ -13,15 +13,34 @@
 void callbackSigHandler(siginfo_t *info, ucontext_t *uap, void *context);
 
 void callbackSigHandler(siginfo_t *info, ucontext_t *uap, void *context) {
-    os_log_debug(OS_LOG_DEFAULT, "[DEBUG][callbackSigHandler] callbackSigHandler start");
+    os_log_info(OS_LOG_DEFAULT, "post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
+    os_log_info(OS_LOG_DEFAULT, "[DEBUG][callbackSigHandler] callbackSigHandler start");
     
     dispatch_semaphore_t send_crash_callback_lock = dispatch_semaphore_create(0);
     
     dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        os_log_debug(OS_LOG_DEFAULT, "[DEBUG][dispatch_async] dispatch_get_main_queue Start");
+        os_log_info(OS_LOG_DEFAULT, "[DEBUG][dispatch_async] dispatch_get_main_queue Start");
         
+        PLCrashReporterSignalHandlerType signalHandlerType = PLCrashReporterSignalHandlerTypeBSD;
+        PLCrashReporterSymbolicationStrategy symbolicationStrategy = PLCrashReporterSymbolicationStrategyAll;
+        PLCrashReporterConfig *config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: signalHandlerType
+                                                                           symbolicationStrategy: symbolicationStrategy];
+        PLCrashReporter *crashReporter = [[PLCrashReporter alloc] initWithConfiguration: config];
         
-        os_log_debug(OS_LOG_DEFAULT, "[DEBUG][dispatch_async] dispatch_get_main_queue End");
+        if ([crashReporter hasPendingCrashReport]) {
+            os_log_info(OS_LOG_DEFAULT, "[INFO][sendCrashReport] crashReporter hasPendingCrashReport");
+            
+            NSError *error = NULL;
+            NSData *crashData = [[NSData alloc] initWithData:[crashReporter loadPendingCrashReportDataAndReturnError: &error]];
+            PLCrashReport *crashLog = [[PLCrashReport alloc] initWithData: crashData error: &error];
+            if (crashLog == nil)
+            {
+                [crashReporter purgePendingCrashReport];
+                return;
+            }
+        }
+        
+        os_log_info(OS_LOG_DEFAULT, "[DEBUG][dispatch_async] dispatch_get_main_queue End");
         dispatch_semaphore_signal(send_crash_callback_lock);
     });
     
