@@ -208,7 +208,11 @@ error:
  */
 - (PLCrashReportBinaryImageInfo *) imageForAddress: (uint64_t) address {
     for (PLCrashReportBinaryImageInfo *imageInfo in self.images) {
-        if (imageInfo.imageBaseAddress <= address && address < (imageInfo.imageBaseAddress + imageInfo.imageSize))
+      uint64_t normalizedBaseAddress = imageInfo.imageBaseAddress;
+#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
+      normalizedBaseAddress = normalizedBaseAddress & 0x0000000fffffffff;
+#endif
+        if (normalizedBaseAddress <= address && address < (normalizedBaseAddress + imageInfo.imageSize))
             return imageInfo;
     }
 
