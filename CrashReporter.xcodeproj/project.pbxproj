@@ -975,6 +975,7 @@
 		780AEF361FE267360047F3E8 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		785A68E721929E6D000BDE5E /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */; };
 		785A68E821929E6D000BDE5E /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		785A68EE2192A9DA000BDE5E /* Formatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 785A68ED2192A9DA000BDE5E /* Formatter.m */; };
 		787526771FE3976F008620CF /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		787526781FE397FB008620CF /* PLCrashFeatureConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A2B3FF1795BA4100934198 /* PLCrashFeatureConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		787526791FE39813008620CF /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1756,6 +1757,8 @@
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
 		780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78544FAC20F8A0A60002E2B5 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = SOURCE_ROOT; };
+		785A68EC2192A9DA000BDE5E /* Formatter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Formatter.h; sourceTree = "<group>"; };
+		785A68ED2192A9DA000BDE5E /* Formatter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Formatter.m; sourceTree = "<group>"; };
 		788DC27821216C8600AB0D28 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78BE7DCF21929E100035E6F7 /* SampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78BE7DD121929E100035E6F7 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -2682,6 +2685,8 @@
 				78BE7DDC21929E110035E6F7 /* LaunchScreen.storyboard */,
 				78BE7DDF21929E110035E6F7 /* Info.plist */,
 				78BE7DE021929E110035E6F7 /* main.m */,
+				785A68EC2192A9DA000BDE5E /* Formatter.h */,
+				785A68ED2192A9DA000BDE5E /* Formatter.m */,
 			);
 			path = SampleApp;
 			sourceTree = "<group>";
@@ -4384,6 +4389,7 @@
 			files = (
 				78BE7DD621929E100035E6F7 /* ViewController.m in Sources */,
 				78BE7DE121929E110035E6F7 /* main.m in Sources */,
+				785A68EE2192A9DA000BDE5E /* Formatter.m in Sources */,
 				78BE7DD321929E100035E6F7 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

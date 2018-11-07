@@ -9,8 +9,10 @@
 #import "ViewController.h"
 @import CrashReporter;
 @import os.log;
+#import "Formatter.h"
 
 void callbackSigHandler(siginfo_t *info, ucontext_t *uap, void *context);
+void report(PLCrashReport *report);
 
 void callbackSigHandler(siginfo_t *info, ucontext_t *uap, void *context) {
     os_log_info(OS_LOG_DEFAULT, "post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
@@ -33,11 +35,12 @@ void callbackSigHandler(siginfo_t *info, ucontext_t *uap, void *context) {
             NSError *error = NULL;
             NSData *crashData = [[NSData alloc] initWithData:[crashReporter loadPendingCrashReportDataAndReturnError: &error]];
             PLCrashReport *crashLog = [[PLCrashReport alloc] initWithData: crashData error: &error];
-            if (crashLog == nil)
-            {
+            if (crashLog == nil) {
                 [crashReporter purgePendingCrashReport];
                 return;
             }
+            
+            report(crashLog);
         }
         
         os_log_info(OS_LOG_DEFAULT, "[DEBUG][dispatch_async] dispatch_get_main_queue End");
@@ -47,6 +50,33 @@ void callbackSigHandler(siginfo_t *info, ucontext_t *uap, void *context) {
     dispatch_time_t callback_timeout = dispatch_time(DISPATCH_TIME_NOW, 3 * 1000000000ull);
     
     dispatch_semaphore_wait(send_crash_callback_lock, callback_timeout);
+}
+
+void report(PLCrashReport *report) {
+    NSMutableString* text = [NSMutableString string];
+    boolean_t lp64 = true;
+    
+    [text appendString:@"\n"];
+    PLCrashReportThreadInfo *crashed_thread = nil;
+    NSInteger maxThreadNum = 0;
+    for (PLCrashReportThreadInfo *thread in report.threads) {
+        if (thread.crashed) {
+            [text appendFormat: @"Thread %ld Crashed:\n", (long) thread.threadNumber];
+            crashed_thread = thread;
+        } else {
+            [text appendFormat: @"Thread %ld:\n", (long) thread.threadNumber];
+        }
+        for (NSUInteger frame_idx = 0; frame_idx < [thread.stackFrames count]; frame_idx++) {
+            PLCrashReportStackFrameInfo *frameInfo = [thread.stackFrames objectAtIndex: frame_idx];
+            [text appendString: [Formatter formatStackFrame: frameInfo frameIndex: frame_idx report: report lp64: lp64]];
+        }
+        [text appendString: @"\n"];
+        
+        /* Track the highest thread number */
+        maxThreadNum = MAX(maxThreadNum, thread.threadNumber);
+    }
+    
+    os_log_info(OS_LOG_DEFAULT, "%@", text);
 }
 
 @interface ViewController ()
