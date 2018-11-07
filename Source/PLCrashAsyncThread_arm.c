@@ -45,6 +45,33 @@
     break; \
 }
 
+/* Access thread status via macro when defined (will be for arch arm64 and arm64e on Xcode 10 and newer),
+ if macros are not available fall back to the old ones */
+#if defined(arm_thread_state64_get_pc)
+#define RETGENM(name, type, ts) {\
+    return arm_thread_state64_get_ ## name (((plcrash_async_thread_state_t *)ts)->arm_state. type );\
+}
+
+#define SETGENM(name, type, ts, regnum, value) {\
+    ts->valid_regs |= 1ULL<<regnum; \
+    arm_thread_state64_set_ ## name (ts->arm_state. type, value) ;\
+    break; \
+}
+
+#define SETGENMF(name, type, ts, regnum, value) {\
+    ts->valid_regs |= 1ULL<<regnum; \
+    arm_thread_state64_set_ ## name ## _fptr(ts->arm_state. type, (void *)value) ;\
+    break; \
+}
+
+#else /* defined(arm_thread_state64_get_pc) */
+#define RETGENM(name, type, ts) RETGEN(name, type, ts)
+#define SETGENM(name, type, ts, regnum, value) SETGEN(name, type, ts, regnum, value)
+#define SETGENMF(name, type, ts, regnum, value) SETGEN(name, type, ts, regnum, value)
+#endif /* defined(arm_thread_state64_get_pc) */
+
+
+
 /* Mapping of DWARF register numbers to PLCrashReporter register numbers. */
 struct dwarf_register_table {
     /** Standard register number. */
@@ -323,32 +350,16 @@ plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_st
                 RETGEN(x[28], thread.ts_64, ts);
                 
             case PLCRASH_ARM64_FP:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            RETGEN(opaque_fp, thread.ts_64, ts);
-#else
-            RETGEN(fp, thread.ts_64, ts);
-#endif
+                RETGENM(fp, thread.ts_64, ts);
 
             case PLCRASH_ARM64_SP:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            RETGEN(opaque_sp, thread.ts_64, ts);
-#else
-            RETGEN(sp, thread.ts_64, ts);
-#endif
+                RETGENM(sp, thread.ts_64, ts);
             
             case PLCRASH_ARM64_LR:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            RETGEN(opaque_lr, thread.ts_64, ts);
-#else
-            RETGEN(lr, thread.ts_64, ts);
-#endif
+                RETGENM(lr, thread.ts_64, ts);
             
             case PLCRASH_ARM64_PC:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            RETGEN(opaque_pc, thread.ts_64, ts);
-#else
-            RETGEN(pc, thread.ts_64, ts);
-#endif
+                RETGENM(pc, thread.ts_64, ts);
             
             case PLCRASH_ARM64_CPSR:
                 RETGEN(cpsr, thread.ts_64, ts);
@@ -357,7 +368,6 @@ plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_st
                 __builtin_trap();
         }
     }
-    
     /* Should not be reachable */
     return 0;
 }
@@ -513,32 +523,16 @@ void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_st
                 SETGEN(x[28], thread.ts_64, ts, regnum, reg);
                 
             case PLCRASH_ARM64_FP:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            SETGEN(opaque_fp, thread.ts_64, ts, regnum, reg);
-#else
-            SETGEN(fp, thread.ts_64, ts, regnum, reg);
-#endif
+                SETGENM(fp, thread.ts_64, ts, regnum, reg);
             
             case PLCRASH_ARM64_SP:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            SETGEN(opaque_sp, thread.ts_64, ts, regnum, reg);
-#else
-            SETGEN(sp, thread.ts_64, ts, regnum, reg);
-#endif
-            
+                SETGENM(sp, thread.ts_64, ts, regnum, reg);
+
             case PLCRASH_ARM64_LR:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            SETGEN(opaque_lr, thread.ts_64, ts, regnum, reg);
-#else
-            SETGEN(lr, thread.ts_64, ts, regnum, reg);
-#endif
+                SETGENMF(lr, thread.ts_64, ts, regnum, reg);
             
             case PLCRASH_ARM64_PC:
-#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
-            SETGEN(opaque_pc, thread.ts_64, ts, regnum, reg);
-#else
-            SETGEN(pc, thread.ts_64, ts, regnum, reg);
-#endif
+                SETGENMF(pc, thread.ts_64, ts, regnum, reg);
             
             case PLCRASH_ARM64_CPSR:
                 SETGEN(cpsr, thread.ts_64, ts, regnum, reg);
