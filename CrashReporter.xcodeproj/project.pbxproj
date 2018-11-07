@@ -4937,7 +4937,6 @@
 		05CD33270EE9443A000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(PL_ARM_ARCHS)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -4953,7 +4952,6 @@
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = "$(PL_IOS_DEPLOYMENT_TARGET)";
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -4974,7 +4972,6 @@
 		05CD33280EE9443A000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(PL_ARM_ARCHS)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -4989,7 +4986,6 @@
 				INFOPLIST_FILE = "Resources/Tests-iPhone-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = "$(PL_IOS_DEPLOYMENT_TARGET)";
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
