@@ -93,13 +93,14 @@ pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
 
-/* The segment registers are 16 bit. Zeroing out the other bits in case client code depends on it. */
-movq    $0, 160(%rsp);
-movw    %cs, 160(%rsp);
-movq    $0, 168(%rsp);
-movw    %fs, 168(%rsp);
-movq    $0, 176(%rsp);
-movw    %gs, 176(%rsp);
+/* The segment registers are 16 bit. Zero out the rest */
+xorl    %ecx,%ecx /* clears all 64 bit, since 32 bit operations will clear the upper 32 bits or 64 bit registers. takes up less space that xor %rcx, %rcx */
+movq    %cs, %rcx
+movq    %rcx, 160(%rsp)
+movq    %fs, %rcx
+movq   %rcx, 168(%rsp)
+movq    %gs, %rcx
+movq   %rcx, 176(%rsp)
 
 /* Move mctx to 3rd argument of plcrash_log_writer_write_curthread_stub */
 movq    %rsp, %rdx
@@ -150,17 +151,18 @@ movl    %eax, 48+OFF(%esp)
 movl    0x4(%ebp), %eax
 movl    %eax, 52+OFF(%esp)
 
-/* The segment registers are 16 bit. Zeroing out the other bits in case client code depends on it. */
-movl $0, OFF+56(%esp);
-movw %cs, OFF+56(%esp);
-movl $0, OFF+60(%esp);
-movw %ds, OFF+60(%esp);
-movl $0, OFF+64(%esp);
-movw %es, OFF+64(%esp);
-movl $0, OFF+68(%esp);
-movw %fs, OFF+68(%esp);
-movl $0, OFF+72(%esp);
-movw %gs, OFF+72(%esp);
+/* The segment registers are 16 bit. Zero out the rest */
+xorl %eax, %eax
+movl %cs, %eax
+movl %eax, OFF+56(%esp);
+movl %ds, %eax
+movl %eax, OFF+60(%esp);
+movl %es, %eax
+movl %eax, OFF+64(%esp);
+movl %fs, %eax
+movl %eax, OFF+68(%esp);
+movl %gs, %eax
+movl %eax, OFF+72(%esp);
 #undef MOVL
 
 /* Set up our argument stack: writer (arg0), image_list, file, siginfo, mctx */
