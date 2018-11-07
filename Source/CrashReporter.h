@@ -367,3 +367,4 @@ typedef enum {
  *
  * At the time of this writing, the radar remains open/unresolved.
  */
+#import "PLCrashAsyncSignalInfo.h"

@@ -973,6 +973,8 @@
 		780AEF341FE2671D0047F3E8 /* Reference.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 0576DACE1B42F367000BCA73 /* Reference.hpp */; };
 		780AEF351FE267290047F3E8 /* PLCrashSignalHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD339A0EE948EB000FDE88 /* PLCrashSignalHandler.h */; };
 		780AEF361FE267360047F3E8 /* CrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 05CD31890EE93A90000FDE88 /* CrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		785A68E721929E6D000BDE5E /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */; };
+		785A68E821929E6D000BDE5E /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 780AEEBA1FE21D660047F3E8 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		787526771FE3976F008620CF /* PLCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 054F51070EEC73C80034B184 /* PLCrashReporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		787526781FE397FB008620CF /* PLCrashFeatureConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A2B3FF1795BA4100934198 /* PLCrashFeatureConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		787526791FE39813008620CF /* PLCrashMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A5E28017A82751008A75E5 /* PLCrashMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1452,6 +1454,13 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter-MacOSX";
 		};
+		785A68E921929E6D000BDE5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 780AEEB91FE21D660047F3E8;
+			remoteInfo = "CrashReporter-Framework";
+		};
 		78E550D621927FA700BCDA5E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -1482,6 +1491,17 @@
 				05F40CFA0EF7AC96008050CF /* CrashReporter.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		785A68EB21929E6D000BDE5E /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				785A68E821929E6D000BDE5E /* CrashReporter.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		78E550D821927FA700BCDA5E /* Embed Frameworks */ = {
@@ -1875,6 +1895,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				785A68E721929E6D000BDE5E /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3354,10 +3375,12 @@
 				78BE7DCB21929E100035E6F7 /* Sources */,
 				78BE7DCC21929E100035E6F7 /* Frameworks */,
 				78BE7DCD21929E100035E6F7 /* Resources */,
+				785A68EB21929E6D000BDE5E /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				785A68EA21929E6D000BDE5E /* PBXTargetDependency */,
 			);
 			name = SampleApp;
 			productName = SampleApp;
@@ -4555,6 +4578,11 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */;
 			targetProxy = 05F40CFC0EF7AC9D008050CF /* PBXContainerItemProxy */;
+		};
+		785A68EA21929E6D000BDE5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 780AEEB91FE21D660047F3E8 /* CrashReporter-Framework */;
+			targetProxy = 785A68E921929E6D000BDE5E /* PBXContainerItemProxy */;
 		};
 		78E550D721927FA700BCDA5E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
