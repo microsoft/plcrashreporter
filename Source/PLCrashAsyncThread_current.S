@@ -94,7 +94,8 @@ popq    %rcx
 movq    %rcx, 152(%rsp)
 
 /* The segment registers are 16 bit. Zero out the rest */
-xorl    %ecx,%ecx /* clears all 64 bit, since 32 bit operations will clear the upper 32 bits or 64 bit registers. takes up less space that xor %rcx, %rcx */
+/* Do this by moving it to a 64 bit register and then to memory. */
+/* The move to via the 64 bit register will automatically clear out the bits */
 movq    %cs, %rcx
 movq    %rcx, 160(%rsp)
 movq    %fs, %rcx
