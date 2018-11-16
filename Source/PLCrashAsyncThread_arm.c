@@ -45,6 +45,33 @@
     break; \
 }
 
+/* Access thread status via macro when defined (will be for arch arm64 and arm64e on Xcode 10 and newer),
+ if macros are not available fall back to the old ones */
+#if defined(arm_thread_state64_get_pc)
+#define RETGENM(name, type, ts) {\
+    return arm_thread_state64_get_ ## name (((plcrash_async_thread_state_t *)ts)->arm_state. type );\
+}
+
+#define SETGENM(name, type, ts, regnum, value) {\
+    ts->valid_regs |= 1ULL<<regnum; \
+    arm_thread_state64_set_ ## name (ts->arm_state. type, value) ;\
+    break; \
+}
+
+#define SETGENMF(name, type, ts, regnum, value) {\
+    ts->valid_regs |= 1ULL<<regnum; \
+    arm_thread_state64_set_ ## name ## _fptr(ts->arm_state. type, (void *)value) ;\
+    break; \
+}
+
+#else /* defined(arm_thread_state64_get_pc) */
+#define RETGENM(name, type, ts) RETGEN(name, type, ts)
+#define SETGENM(name, type, ts, regnum, value) SETGEN(name, type, ts, regnum, value)
+#define SETGENMF(name, type, ts, regnum, value) SETGEN(name, type, ts, regnum, value)
+#endif /* defined(arm_thread_state64_get_pc) */
+
+
+
 /* Mapping of DWARF register numbers to PLCrashReporter register numbers. */
 struct dwarf_register_table {
     /** Standard register number. */
@@ -53,7 +80,6 @@ struct dwarf_register_table {
     /** DWARF register number. */
     uint64_t dwarf_value;
 };
-
 
 /*
  * ARM GP registers defined as callee-preserved, as per Apple's iOS ARM Function Call Guide
@@ -175,8 +201,6 @@ static const struct dwarf_register_table arm64_dwarf_table [] = {
     
     { PLCRASH_ARM64_SP,  31 },
 };
-
-
 
 // PLCrashAsyncThread API
 plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
@@ -326,25 +350,24 @@ plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_st
                 RETGEN(x[28], thread.ts_64, ts);
                 
             case PLCRASH_ARM64_FP:
-                RETGEN(fp, thread.ts_64, ts);
-                
+                RETGENM(fp, thread.ts_64, ts);
+
             case PLCRASH_ARM64_SP:
-                RETGEN(sp, thread.ts_64, ts);
-                
+                RETGENM(sp, thread.ts_64, ts);
+            
             case PLCRASH_ARM64_LR:
-                RETGEN(lr, thread.ts_64, ts);
-                
+                RETGENM(lr, thread.ts_64, ts);
+            
             case PLCRASH_ARM64_PC:
-                RETGEN(pc, thread.ts_64, ts);
-                
+                RETGENM(pc, thread.ts_64, ts);
+            
             case PLCRASH_ARM64_CPSR:
                 RETGEN(cpsr, thread.ts_64, ts);
-                
+
             default:
                 __builtin_trap();
         }
     }
-    
     /* Should not be reachable */
     return 0;
 }
@@ -500,17 +523,17 @@ void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_st
                 SETGEN(x[28], thread.ts_64, ts, regnum, reg);
                 
             case PLCRASH_ARM64_FP:
-                SETGEN(fp, thread.ts_64, ts, regnum, reg);
-                
+                SETGENM(fp, thread.ts_64, ts, regnum, reg);
+            
             case PLCRASH_ARM64_SP:
-                SETGEN(sp, thread.ts_64, ts, regnum, reg);
-                
+                SETGENM(sp, thread.ts_64, ts, regnum, reg);
+
             case PLCRASH_ARM64_LR:
-                SETGEN(lr, thread.ts_64, ts, regnum, reg);
-                
+                SETGENMF(lr, thread.ts_64, ts, regnum, reg);
+            
             case PLCRASH_ARM64_PC:
-                SETGEN(pc, thread.ts_64, ts, regnum, reg);
-                
+                SETGENMF(pc, thread.ts_64, ts, regnum, reg);
+            
             case PLCRASH_ARM64_CPSR:
                 SETGEN(cpsr, thread.ts_64, ts, regnum, reg);
                 

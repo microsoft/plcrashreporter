@@ -5680,12 +5680,12 @@
 					"-D$(PL_BUILD_CONFIG_FLAG)=1",
 				);
 				PL_APPLETVOS_DEPLOYMENT_TARGET = 9.0;
-				PL_ARM_ARCHS = "armv7 armv7s arm64";
+				PL_ARM_ARCHS = "armv7 armv7s arm64 arm64e";
 				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
 				PL_IOS_DEPLOYMENT_TARGET = 6.0;
 				PL_MIN_MACOSX_SDK = 1080;
 				SDKROOT = macosx;
-				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64";
+				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64 arm64e";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
@@ -5715,12 +5715,12 @@
 					"-D$(PL_BUILD_CONFIG_FLAG)=1",
 				);
 				PL_APPLETVOS_DEPLOYMENT_TARGET = 9.0;
-				PL_ARM_ARCHS = "armv7 armv7s arm64";
+				PL_ARM_ARCHS = "armv7 armv7s arm64 arm64e";
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
 				PL_IOS_DEPLOYMENT_TARGET = 6.0;
 				PL_MIN_MACOSX_SDK = 1080;
 				SDKROOT = macosx;
-				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64";
+				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64 arm64e";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
