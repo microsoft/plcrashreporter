@@ -3713,7 +3713,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "FRAMEWORK=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.framework\"\n\nlipo \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libCrashReporter-iPhoneOS.a\" \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/libCrashReporter-iPhoneSimulator.a\" \\\n\t-create -output \"${FRAMEWORK}/Versions/Current/${PRODUCT_NAME}\"\n\n# Strip debugging symbols\n#strip -S \"${FRAMEWORK}/Versions/Current/${PRODUCT_NAME}\"\n\ncd \"${FRAMEWORK}\" && ln -sf \"Versions/Current/${PRODUCT_NAME}\" ./";
+			shellScript = "FRAMEWORK=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.framework\"\n\nlipo \\\n\"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libCrashReporter-iPhoneOS.a\" \\\n\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/libCrashReporter-iPhoneSimulator.a\" \\\n-create -output \"${FRAMEWORK}/Versions/Current/${PRODUCT_NAME}\"\n\n# Strip debugging symbols\n#strip -S \"${FRAMEWORK}/Versions/Current/${PRODUCT_NAME}\"\n\n# Create a Bitcode backward compatible binary with older Xcode versions but still support architectures from newer Xcode versions\nif [ -z \"$PL_ARM64E_XCODE_PATH\" ]; then\necho \"Path to Xcode version supporting arm64e not provided; Bitcode compatibility and device architectures are limited to the running Xcode version.\"\nelse\n  LIB_IPHONEOS_TEMP=\"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libCrashReporter-iPhoneOS.a\"\n  LIB_IPHONEOS_FINALE=\"${FRAMEWORK}/Versions/Current/${PRODUCT_NAME}\"\n\n# Build with the Xcode version supporting arm64e\n  env DEVELOPER_DIR=\"$PL_ARM64E_XCODE_PATH\" /usr/bin/xcodebuild ARCHS=\"arm64e\" -configuration Release -target 'CrashReporter-iOS-Device'\n\n# Concatenate the architectures built from Xcode versions \n  lipo ${LIB_IPHONEOS_FINALE} ${LIB_IPHONEOS_TEMP} -create -output ${LIB_IPHONEOS_FINALE}\nfi\n\ncd \"${FRAMEWORK}\" && ln -sf \"Versions/Current/${PRODUCT_NAME}\" ./\n";
 		};
 		058812D310405908009128FB /* Create Disk Image */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -5665,7 +5665,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LIBRARY = "libc++";
-				CURRENT_PROJECT_VERSION = 1.2.1;
+				CURRENT_PROJECT_VERSION = 1.2.3;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -5680,10 +5680,18 @@
 					"-D$(PL_BUILD_CONFIG_FLAG)=1",
 				);
 				PL_APPLETVOS_DEPLOYMENT_TARGET = 9.0;
-				PL_ARM_ARCHS = "armv7 armv7s arm64 arm64e";
+				"PL_ARM_ARCHS[sdk=iphoneos*]" = "$(PL_PRE_XCODE_10_1_ARCHS) arm64e";
+				"PL_ARM_ARCHS[sdk=iphoneos10.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos11.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos12.0]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos6.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos7.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos8.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos9.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
 				PL_BUILD_CONFIG_FLAG = PLCF_DEBUG_BUILD;
 				PL_IOS_DEPLOYMENT_TARGET = 6.0;
 				PL_MIN_MACOSX_SDK = 1080;
+				PL_PRE_XCODE_10_1_ARCHS = "armv7 armv7s arm64";
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64 arm64e";
 				WARNING_CFLAGS = (
@@ -5698,7 +5706,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LIBRARY = "libc++";
-				CURRENT_PROJECT_VERSION = 1.2.1;
+				CURRENT_PROJECT_VERSION = 1.2.3;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
@@ -5715,10 +5723,18 @@
 					"-D$(PL_BUILD_CONFIG_FLAG)=1",
 				);
 				PL_APPLETVOS_DEPLOYMENT_TARGET = 9.0;
-				PL_ARM_ARCHS = "armv7 armv7s arm64 arm64e";
+				"PL_ARM_ARCHS[sdk=iphoneos*]" = "$(PL_PRE_XCODE_10_1_ARCHS) arm64e";
+				"PL_ARM_ARCHS[sdk=iphoneos10.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos11.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos12.0]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos6.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos7.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos8.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
+				"PL_ARM_ARCHS[sdk=iphoneos9.*]" = "$(PL_PRE_XCODE_10_1_ARCHS)";
 				PL_BUILD_CONFIG_FLAG = PLCF_RELEASE_BUILD;
 				PL_IOS_DEPLOYMENT_TARGET = 6.0;
 				PL_MIN_MACOSX_SDK = 1080;
+				PL_PRE_XCODE_10_1_ARCHS = "armv7 armv7s arm64";
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64 arm64e";
 				WARNING_CFLAGS = (
