@@ -1,4 +1,4 @@
-# PLCrashReporter - Reliable, open source crash reporter for iOS, macOS and tvOS
+# PLCrashReporter - A reliable, open source crash reporter for iOS, macOS and tvOS
 
 ## 1. Information about this fork
 
