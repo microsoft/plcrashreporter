@@ -2,7 +2,7 @@
 
 ## 1. Information about this fork
 
-This is a fork of the [official PLCrashReporter repository](https://github.com/plausiblelabs/plcrashreporter). It is based on PLCrashReporter 1.2.1 (commit [fda233062b5586f5d01cc527af643168665226c0](https://github.com/plausiblelabs/plcrashreporter/commit/42ce50ad93955eb2b29488fefd6f0a29329a6446)) with additional fixes and changes.
+This is a fork of the [official PLCrashReporter repository](https://github.com/plausiblelabs/plcrashreporter) that is maintained by the [App Center](https://appcenter.ms) team. It is based on PLCrashReporter 1.2.1 (commit fda233062b5586f5d01cc527af643168665226c0) with additional fixes and changes.
 It was created for use in the following SDKs:
 
 * [AppCenter-SDK-Apple for iOS and macOS](https://github.com/Microsoft/AppCenter-SDK-Apple)
@@ -39,7 +39,13 @@ To build PLCrashReporter, we recommend using the command line as the PLCrashRepo
 * Open `CrashReporter.xcodeproj` in Xcode 10.1.
 * Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
 * Open a new window for your Terminal.
-* Go to PlCrashReporter's root folder and run `xcodebuild PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'` to create binaries for all platforms.
+* Go to PlCrashReporter's root folder and run
+
+    ```bash
+    xcodebuild PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    ```
+
+    to create binaries for all platforms.
 * Verify that your iOS and tvOS binaries frameworks have a bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary if necessary). If you see output, it means the binary ships with bitcode enabled.
 
 ### 1.3.3 How to build PLCrashReporter if you care about Xcode backward compatibility
@@ -50,7 +56,7 @@ To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be bui
 #### 1.3.3.1 Additional prerequisites
 
 * Install the prerequisites as explained in 1.3.1 above.
-* Install Xcode 10.1 and the oldest Xcode version that you care about, i.e. Xcode 8.3.3 in parallel (information on how to do that can be found i.e. in [https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc](https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc).
+* Install Xcode 10.1 and the oldest Xcode version that you care about, i.e. Xcode 8.3.3 in parallel (information on how to do that can be found at [https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc](https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc).
 * Make sure you are using the old version of Xcode by running `xcode-select -p`. It should point to your oldest Xcode version. If it points to a newer version, e.g. Xcode 10.1, use `sudo xcode-select -s PATH_TO_OLD_XCODE` to switch to the old Xcode version.
 
 #### 1.3.3.2 Build PLCrashReporter in a way that is backwards compatible with older Xcode versions
@@ -58,7 +64,13 @@ To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be bui
 * Open `CrashReporter.xcodeproj` in Xcode 10.1.
 * Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
 * Open a new window for your Terminal.
-* Go to PlCrashReporter's root folder and run `xcodebuild PL_ARM64E_XCODE_PATH="Path to your Xcode 10.1 installation" PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'` to create binaries for all platforms and adds support for arm64e to PLCrashReporter-iOS. Note the environment variable `PL_ARM64E_XCODE_PATH`. Make sure to set it to your latest Xcode version that supports arm64e, currently Xcode 10.1.
+* Go to PlCrashReporter's root folder and run
+
+    ```bash
+    xcodebuild PL_ARM64E_XCODE_PATH="Path to your Xcode 10.1 installation" PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    ```
+
+    This will create binaries for all platforms and adds support for arm64e to PLCrashReporter-iOS. Note the environment variable `PL_ARM64E_XCODE_PATH`. Make sure to set it to your latest Xcode version that supports arm64e, currently Xcode 10.1.
 * Verify that we have a bitcode enabled framework by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM`.
 
 ## 2. Contributing
@@ -77,7 +89,7 @@ This fork of the [official PLCrashReporter repository](https://github.com/plausi
 
 ### 3.1 Intercom
 
-If you have further questions, want to provide feedback or you are running into issues, log in to the [App Center portal](https://appcenter.ms) and use the blue Intercom button on the bottom right to start a conversation with us.
+If you have further questions, want to provide feedback or you are running into issues, log in to the [App Center portal](https://appcenter.ms) and use the blue Intercom button on the bottom right to start a conversation with App Center team.
 
 ### 3.2 Twitter
 
