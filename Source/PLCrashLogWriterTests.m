@@ -271,12 +271,8 @@
 
 - (Plcrash__CrashReport *) loadReport {
     /* Reading the report */
-#pragma clang diagnostic push
-#pragma clang diagnostic warning "-Wdeprecated"
     NSData *data = [NSData dataWithContentsOfFile:_logPath options:NSDataReadingMappedAlways error:nil];
-#pragma clang diagnostic pop
     STAssertNotNil(data, @"Could not map pages");
-
     
     /* Check the file magic. The file must be large enough for the value + version + data */
     const struct PLCrashReportFileHeader *header = [data bytes];
