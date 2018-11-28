@@ -273,7 +273,7 @@
     /* Reading the report */
 #pragma clang diagnostic push
 #pragma clang diagnostic warning "-Wdeprecated"
-    NSData *data = [NSData dataWithContentsOfMappedFile: _logPath];
+    NSData *data = [NSData dataWithContentsOfFile:_logPath options:NSDataReadingMappedAlways error:nil];
 #pragma clang diagnostic pop
     STAssertNotNil(data, @"Could not map pages");
 
