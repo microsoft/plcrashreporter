@@ -2,42 +2,82 @@
 
 ## 1. Information about this fork
 
-This is a fork of the [official PLCrashReporter repository](https://github.com/plausiblelabs/plcrashreporter). It is based on [PLCrashReporter 1.2.0](https://github.com/plausiblelabs/plcrashreporter/releases/tag/1.2) (commit [42ce50ad93955eb2b29488fefd6f0a29329a6446](https://github.com/plausiblelabs/plcrashreporter/commit/42ce50ad93955eb2b29488fefd6f0a29329a6446)) with additional fixes and changes.
-It is used in the following SDKs:
+This is a fork of the [official PLCrashReporter repository](https://github.com/plausiblelabs/plcrashreporter) that is maintained by the [App Center](https://appcenter.ms) team. It is based on PLCrashReporter 1.2.1 (commit fda233062b5586f5d01cc527af643168665226c0) with additional fixes and changes.
+It was created for use in the following SDKs:
 
-* [AppCenter-SDK-Mac](https://github.com/Microsoft/AppCenter-SDK-Apple)
+* [AppCenter-SDK-Apple for iOS and macOS](https://github.com/Microsoft/AppCenter-SDK-Apple)
 * [HockeySDK-iOS](https://github.com/BitStadium/HockeySDK-iOS)
 * [HockeySDK-Mac](https://github.com/BitStadium/HockeySDK-Mac)
 * [HockeySDK-tvOS](https://github.com/BitStadium/HockeySDK-tvOS)
 
-> [Note!] Please note that this fork is based on 1.2.0 of PLCrashReporter and not 1.3.0 which is currently in `master` of the official repository.
+> **Please note that this fork is based on version 1.2.1 of PLCrashReporter and not 1.3 which is currently in `master` of the official repository.**
+
+The focus of this fork is to add new features to PLCrashReporter (e.g. support for tvOS or the new arm64e CPU architecture). To keep changes to a minimum, this fork deliberately does not address compile-time warnings. That said, the fork has been battle-tested in the SDKs mentioned above.
+At this time, we are hoping to contribute our changes to the official PLCrashReporter repository and are talking to the team at PlausibleLabs.  
 
 ## 1.1 Differences between this fork and the official repository
 
-* Added support for tvOS.
-* Added support for the arm64e CPU architecture.
-* Drop support for armv6 CPU architecture.
-* Improved namespacing to avoid symbol collisions when integrating PLCrashReporter.
-* Updated API to allow to not add an uncaught exception handler when configuring PLCrashReporter. This is important for scenarios where PLCrashReporter is used in a managed runtime, i.e. a Xamarin application.
+Please check out our [change log](CHANGELOG.md).
 
-## 1.2 Building PLCrashReporter locally
+## 1.2 Using PLCrashReporter
 
-To build PLCrashReporter, we recommend building from the command line.
+The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter.ms). However, if you want to use PLCrashReporter directly, grab the latest release at [https://github.com/Microsoft/PLCrashReporter/releases](https://github.com/Microsoft/PLCrashReporter/releases) and check out the [official PLCrashReporter documentation](https://www.plcrashreporter.org/documentation).
 
-* Open the Xcode project.
+## 1.3 Building PLCrashReporter
+
+To build PLCrashReporter, we recommend using the command line as the PLCrashReporter project has issues when compiling some of its targets in Xcode due to Xcode 10's new build system (check out the [Xcode 10 release notes](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes/build_system_release_notes_for_xcode_10) for more information about the new build system]).
+
+### 1.3.1 Prerequisites
+
+* A Mac
+* Xcode 10.1
+* Doxygen to generate the documentation. See [the official Doxygen repository](https://github.com/doxygen/doxygen) for more information about how to install it or use [Homebrew](https://brew.sh).
+* GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information about how to install it or use [Homebrew](https://brew.sh).
+
+### 1.3.2 How to build PLCrashReporter with Xcode 10.1
+
+* Open `CrashReporter.xcodeproj` in Xcode 10.1.
 * Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
-* Close Xcode and open a Terminal
-* Go to PlCrashReporter's root folder and run `xcodebuild PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'` to create binaries for all platforms
-* Verify that we have a bitcode enabled framework by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM`
+* Open a new window for your Terminal.
+* Go to PlCrashReporter's root folder and run
+
+    ```bash
+    xcodebuild PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    ```
+
+    to create binaries for all platforms.
+* Verify that your iOS and tvOS binaries frameworks have a bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary if necessary). If you see output, it means the binary ships with bitcode enabled.
+
+### 1.3.3 How to build PLCrashReporter if you care about Xcode backward compatibility
+
+As [BitCode](http://llvm.org/docs/BitCodeFormat.html) versions are not backwards compatible, it is required to build an SDK or component with the minimum Xcode version that the SDK needs to support. In the past, this meant that you would simply build PLCrashReporter with the oldest Xcode version that you care about for your project. With the introduction of the arm64e CPU architecture in Fall 2018, things got more complicated.
+To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be built using Xcode 8.3.3. At the same time, PLCrashReporter 1.2.3-rc1 and later support the arm64e CPU architecture. The arm64e architecture can only be built with Xcode 10.1 and later and is currently in preview (check out the [Xcode 10.1 release notes](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_1_release_notes)for more information). To reconcile both backward compatibility with Xcode 8 and support for arm64e CPUs, you need to build all architecture slices of PLCrashReporter-iOS using Xcode 8.3.3 and then merge them using the `lipo` tool with an arm64e slice that was build with Xcode 10 and up. To make this easier, we have updated the script to create the PLCrashReporter-iOS binary. 
+
+#### 1.3.3.1 Additional prerequisites
+
+* Install the prerequisites as explained in 1.3.1 above.
+* Install Xcode 10.1 and the oldest Xcode version that you care about, i.e. Xcode 8.3.3 in parallel (information on how to do that can be found at [https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc](https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc).
+* Make sure you are using the old version of Xcode by running `xcode-select -p`. It should point to your oldest Xcode version. If it points to a newer version, e.g. Xcode 10.1, use `sudo xcode-select -s PATH_TO_OLD_XCODE` to switch to the old Xcode version.
+
+#### 1.3.3.2 Build PLCrashReporter in a way that is backwards compatible with older Xcode versions
+
+* Open `CrashReporter.xcodeproj` in Xcode 10.1.
+* Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
+* Open a new window for your Terminal.
+* Go to PlCrashReporter's root folder and run
+
+    ```bash
+    xcodebuild PL_ARM64E_XCODE_PATH="Path to your Xcode 10.1 installation" PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    ```
+
+    This will create binaries for all platforms and adds support for arm64e to PLCrashReporter-iOS. Note the environment variable `PL_ARM64E_XCODE_PATH`. Make sure to set it to your latest Xcode version that supports arm64e, currently Xcode 10.1.
+* Verify that we have a bitcode enabled framework by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM`.
 
 ## 2. Contributing
 
 We are looking forward to your contributions via pull requests.
 
-To contribute to PLCrashReporter, you need:
-
-* A mac that is capable of running Xcode 8 and Xcode 10 (macOS Mojave cannot run Xcode 8 and is not recommended at this time).
-* Install Doxygen to create documentation. See [the official Doxygen repository](https://github.com/doxygen/doxygen) for more information how to install it or use [homebrew]().
+To contribute to PLCrashReporter, you need the tools required in 1.3.3.1 above.
 
 ### 2.1 Code of Conduct
 
@@ -49,7 +89,8 @@ This fork of the [official PLCrashReporter repository](https://github.com/plausi
 
 ### 3.1 Intercom
 
-If you have further questions, want to provide feedback or you are running into issues, log in to the [App Center portal](https://appcenter.ms) and use the blue Intercom button on the bottom right to start a conversation with us.
+If you have further questions, want to provide feedback or you are running into issues, log in to the [App Center portal](https://appcenter.ms) and use the blue Intercom button on the bottom right to start a conversation with App Center team.
 
 ### 3.2 Twitter
+
 We're on Twitter as [@vsappcenter](https://www.twitter.com/vsappcenter).
