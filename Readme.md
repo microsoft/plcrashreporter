@@ -1,4 +1,4 @@
-# PLCrashReporter - A reliable, open source crash reporter for iOS, macOS and tvOS
+# PLCrashReporter - A reliable, open source crash reporter for iOS, macOS, and tvOS
 
 ## 1. Information about this fork
 
@@ -46,12 +46,12 @@ To build PLCrashReporter, we recommend using the command line as the PLCrashRepo
     ```
 
     to create binaries for all platforms.
-* Verify that your iOS and tvOS binaries have bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary as necessary). If you see some output, it means the binary is bitcode enabled.
+* Verify that your iOS and tvOS binaries have Bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary as necessary). If you see some output, it means the binary is Bitcode enabled.
 
 ### 1.3.3 How to build PLCrashReporter if you care about Xcode backward compatibility
 
-As [Bitcode](http://llvm.org/docs/BitCodeFormat.html) versions are not backward compatible, it is required to build an SDK or component with the minimum Xcode version that the SDK needs to support. In the past, this meant that you would simply build PLCrashReporter with the oldest Xcode version that you care about for your project. With the introduction of the arm64e CPU architecture in Fall 2018, things got more complicated.
-To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be built using Xcode 8.3.3. At the same time, PLCrashReporter 1.2.3-rc1 and later support the arm64e CPU architecture. The arm64e architecture can only be built with Xcode 10.1 and later and is currently in preview (check out the [Xcode 10.1 release notes](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_1_release_notes) for more information). To reconcile both backward compatibility with Xcode 8 and support for arm64e CPUs, you need to build all architecture slices of PLCrashReporter-iOS using Xcode 8.3.3 and then merge them using the `lipo` tool with an arm64e slice that was built with Xcode 10.1 and up. To make this easier, we have updated the script that creates the CrashReporter-iOS binary.
+As [Bitcode](http://llvm.org/docs/BitCodeFormat.html) versions are not backward compatible, it is required to build an SDK or component with the minimum Xcode version that the SDK needs to support. In the past, this meant that you would simply build PLCrashReporter with the oldest Xcode version that you care about. With the introduction of the arm64e CPU architecture in Fall 2018, things got more complicated.
+To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be built using Xcode 8.3.3. At the same time, PLCrashReporter 1.2.3-rc1 and later support the arm64e CPU architecture. The arm64e architecture can only be built with Xcode 10.1 and later and is currently in preview (check out the [Xcode 10.1 release notes](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_1_release_notes) for more information). To reconcile both backward compatibility with Xcode 8 and support for arm64e CPUs, you need to build all architecture slices of PLCrashReporter-iOS using Xcode 8.3.3 and then merge them using the `lipo`-tool with an arm64e slice that was built with Xcode 10.1 and up. To make this easier, we have updated the script that creates the CrashReporter-iOS binary.
 
 #### 1.3.3.1 Additional prerequisites
 
@@ -63,15 +63,15 @@ To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be bui
 
 * Open `CrashReporter.xcodeproj` in Xcode 10.1.
 * Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
-* Open a new window for your Terminal.
-* Go to PlCrashReporter's root folder and run
+* Open your Terminal.
+* Go to PLCrashReporter's root folder and run
 
     ```bash
     xcodebuild PL_ARM64E_XCODE_PATH="Path to your Xcode 10.1 installation" PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
     ```
 
     This will create binaries for all platforms and adds support for arm64e to PLCrashReporter-iOS. Note the environment variable `PL_ARM64E_XCODE_PATH`. Make sure to set it to your latest Xcode version that supports arm64e, currently Xcode 10.1.
-* Verify that your iOS and tvOS binaries have bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary as necessary). If you see some output, it means the binary is bitcode enabled.
+* Verify that your iOS and tvOS binaries have Bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary as necessary). If you see some output, it means the binary is Bitcode enabled.
 
 ## 2. Contributing
 
@@ -87,10 +87,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 This fork of the [official PLCrashReporter repository](https://github.com/plausiblelabs/plcrashreporter) is maintained by the team of [Visual Studio App Center](https://appcenter.ms). For general information about PLCrashReporter, please visit [the official PLCrashReporter website](http://plcrashreporter.org).
 
-### 3.1 Intercom
-
-If you have further questions, want to provide feedback or you are running into issues, login to the [App Center portal](https://appcenter.ms) and use the blue Intercom button on the bottom right to start a conversation with App Center team.
-
-### 3.2 Twitter
+### 3.1 Twitter
 
 We're on Twitter as [@vsappcenter](https://www.twitter.com/vsappcenter).
