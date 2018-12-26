@@ -13,7 +13,7 @@ It was created for use in the following SDKs:
 > **Please note that this fork is based on version 1.2.1 of PLCrashReporter and not 1.3 which is currently in `master` of the official repository.**
 
 The focus of this fork is to add new features to PLCrashReporter (e.g. support for tvOS or the new arm64e CPU architecture). To keep changes to a minimum, this fork deliberately does not address compile-time warnings. That said, the fork has been battle-tested in the SDKs mentioned above.
-At this time, we are hoping to contribute our changes to the official PLCrashReporter repository and are talking to the team at PlausibleLabs.  
+At this time, we are hoping to contribute our changes to the official PLCrashReporter repository and are talking to the team at Plausible Labs.  
 
 ## 1.1 Differences between this fork and the official repository
 
