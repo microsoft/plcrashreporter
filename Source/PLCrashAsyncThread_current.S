@@ -93,9 +93,11 @@ pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
 
-MOVQ    (cs, 160);
-MOVQ    (fs, 168);
-MOVQ    (gs, 176);
+#define MOV(reg, offset) mov %##reg, offset(%rsp)
+
+MOV    (cs, 160);
+MOV    (fs, 168);
+MOV    (gs, 176);
 
 /* Move mctx to 3rd argument of plcrash_log_writer_write_curthread_stub */
 movq    %rsp, %rdx
