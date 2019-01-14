@@ -147,12 +147,12 @@ movl    %eax, 48+OFF(%esp)
 /* Use the return address for our RIP value */
 movl    0x4(%ebp), %eax
 movl    %eax, 52+OFF(%esp)
-
-MOVL    (cs, 56);
-MOVL    (ds, 60);
-MOVL    (es, 64);
-MOVL    (fs, 68);
-MOVL    (gs, 72);
+#define MOV(reg, offset) mov %##reg, offset(%esp)
+MOV    (cs, 56);
+MOV    (ds, 60);
+MOV    (es, 64);
+MOV    (fs, 68);
+MOV    (gs, 72);
 #undef MOVL
 
 /* Set up our argument stack: writer (arg0), image_list, file, siginfo, mctx */
