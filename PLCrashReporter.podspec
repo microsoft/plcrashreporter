@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "PLCrashReporter"
-  s.version      = "1.4.0.0"
+  s.version      = "1.4.0"
   s.summary      = "Reliable, open-source crash reporting for iOS and Mac OS X."
   s.description      = <<-DESC
                       Plausible CrashReporter provides an in-process crash reporting
@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "10.0"
   s.osx.deployment_target = "10.10"
 
-  s.source       = { :git => "https://github.com/backtrace-labs/plcrashreporter", :tag => "v#{s.version}" }
+  s.source       = { :git => "https://github.com/backtrace-labs/plcrashreporter", :tag => "#{s.version}" }
 
   s.source_files  = "Source/**/*.{h,hpp,c,cpp,m,mm,s}",
                     "Dependencies/protobuf-2.0.3/src/*.{h,c}"
