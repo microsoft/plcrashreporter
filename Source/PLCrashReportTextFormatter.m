@@ -390,6 +390,10 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
                         case CPU_SUBTYPE_ARM_V8:
                             archName = @"armv8";
                             break;
+                            
+                        case CPU_SUBTYPE_ARM64E:
+                            archName = @"arm64e";
+                            break;
 
                         default:
                             archName = @"arm64-unknown";
