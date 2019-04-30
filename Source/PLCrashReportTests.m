@@ -198,7 +198,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertTrue(startTimeInterval < 60, @"Date occured more than 60 second in the past");
 
     /* This is expected to fail on iOS 9+ due to new sandbox constraints */
-    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS || (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9)) {
         STAssertNil(crashLog.processInfo.parentProcessName, @"Fetching the parent process name unexpectedly succeeded on iOS 9+");
     } else {
         STAssertNotNil(crashLog.processInfo.parentProcessName, @"No parent process name available");

@@ -810,13 +810,11 @@ static void *exception_server_thread (void *arg) {
 
 /* We automatically stop the server on dealloc */
 - (void) dealloc {
-    mach_msg_return_t mr;
-    
     if (_serverContext == NULL) {
         [super dealloc];
         return;
     }
-
+    mach_msg_return_t mr;
     /* Mark the server for termination */
     OSAtomicCompareAndSwap32Barrier(0, 1, (int32_t *) &_serverContext->server_should_stop);
 

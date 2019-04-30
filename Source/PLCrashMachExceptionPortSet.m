@@ -27,6 +27,7 @@
  */
 
 #import "PLCrashMachExceptionPortSet.h"
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
 /**
  * @internal
@@ -121,3 +122,4 @@
 }
 
 @end
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */

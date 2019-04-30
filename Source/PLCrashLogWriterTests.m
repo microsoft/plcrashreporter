@@ -102,13 +102,13 @@
     if (systemInfo == NULL)
         return;
 
-    STAssertEquals(systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
+    STAssertEquals((int)systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
-    STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
+    STAssertEquals((int)systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
 #pragma clang diagnostic pop
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
@@ -181,9 +181,12 @@
     /* Parent process; fetching the process info is expected to fail on iOS 9+ due to new sandbox constraints */
     PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
 
-    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
-        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS");
-        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS");
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS ||
+        (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS &&
+         PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9))
+    {
+        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS-derived OS");
+        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS-derived OS");
         
     } else {
         STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");

@@ -67,7 +67,6 @@
  * Configuration Flags
  */
 
-
 #ifndef PLCRASH_FEATURE_MACH_EXCEPTIONS
 /**
  * If true, enable Mach exception support. On Mac OS X, the Mach exception implementation is fully supported,
@@ -83,7 +82,11 @@
  *
  * For more information on the potential issues with enabling mach exception support, @sa @ref mach_exceptions.
  */
-#    define PLCRASH_FEATURE_MACH_EXCEPTIONS 1
+#   if TARGET_OS_TV
+#       define PLCRASH_FEATURE_MACH_EXCEPTIONS 0
+#   else
+#       define PLCRASH_FEATURE_MACH_EXCEPTIONS 1
+#   endif
 #endif
 
 #ifndef PLCRASH_FEATURE_UNWIND_DWARF

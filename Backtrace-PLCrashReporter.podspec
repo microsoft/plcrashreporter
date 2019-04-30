@@ -2,13 +2,13 @@
 Pod::Spec.new do |s|
 
   s.name         = "Backtrace-PLCrashReporter"
-  s.version      = "1.4.0"
-  s.summary      = "Reliable, open-source crash reporting for iOS and Mac OS X."
+  s.version      = "1.5.0"
+  s.summary      = "Reliable, open-source crash reporting for iOS, tvOS and macOS."
   s.description      = <<-DESC
                       Plausible CrashReporter provides an in-process crash reporting
-                      framework for use on both iOS and Mac OS X, and powers many of
-                      the crash reporting services available for iOS, including
-                      HockeyApp, Flurry, Crittercism and FoglightAPM.
+                      framework for use on both iOS, tvOS and macOS, and powers many of
+                      the crash reporting services available for iOS, tvOS, macOS, including
+                      Backtrace, HockeyApp, Flurry, Crittercism and FoglightAPM.
                      DESC
 
   s.homepage     = "https://github.com/backtrace-labs/plcrashreporter"
@@ -17,9 +17,10 @@ Pod::Spec.new do |s|
   s.author           = { 'Plausible Labs Cooperative, Inc.' => 'contact@plausible.coop' }
 
   s.ios.deployment_target = "10.0"
+  s.tvos.deployment_target = "10.0"
   s.osx.deployment_target = "10.10"
 
-  s.source       = { :git => "https://github.com/backtrace-labs/plcrashreporter", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/backtrace-labs/plcrashreporter.git", :tag => "#{s.version}" }
 
   s.source_files  = "Source/**/*.{h,hpp,c,cpp,m,mm,s}",
                     "Dependencies/protobuf-2.0.3/src/*.{h,c}"
@@ -54,18 +55,21 @@ Pod::Spec.new do |s|
     SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
     mig -arch "i386" -header "Source/mach_exc_i386.h" -server /dev/null -user "Source/mach_exc_i386User.inc" "${SDKROOT}/usr/include/mach/mach_exc.defs"
     mig -arch "x86_64" -header "Source/mach_exc_x86_64.h" -server /dev/null -user "Source/mach_exc_x86_64User.inc" "${SDKROOT}/usr/include/mach/mach_exc.defs"
-    echo '#ifdef __LP64__'               > Source/mach_exc.h
-    echo '#include "mach_exc_x86_64.h"' >> Source/mach_exc.h
-    echo '#else'                        >> Source/mach_exc.h
-    echo '#include "mach_exc_i386.h"'   >> Source/mach_exc.h
-    echo '#endif'                       >> Source/mach_exc.h
+    echo '#ifdef __LP64__'                       > Source/mach_exc.h
+    echo '#include "mach_exc_x86_64.h"'         >> Source/mach_exc.h
+    echo '#else'                                >> Source/mach_exc.h
+    echo '#include "mach_exc_i386.h"'           >> Source/mach_exc.h
+    echo '#endif'                               >> Source/mach_exc.h
     FILE_86=$(cat Source/mach_exc_i386User.inc)
     FILE_64=$(cat Source/mach_exc_x86_64User.inc)
-    echo '#ifdef __LP64__'  > Source/mach_exc.c
-    echo "$FILE_64"        >> Source/mach_exc.c
-    echo '#else'           >> Source/mach_exc.c
-    echo "$FILE_86"        >> Source/mach_exc.c
-    echo '#endif'          >> Source/mach_exc.c
+    echo '#import "PLCrashFeatureConfig.h"'      > Source/mach_exc.c
+    echo '#if PLCRASH_FEATURE_MACH_EXCEPTIONS'  >> Source/mach_exc.c
+    echo '#ifdef __LP64__'                      >> Source/mach_exc.c
+    echo "$FILE_64"                             >> Source/mach_exc.c
+    echo '#else'                                >> Source/mach_exc.c
+    echo "$FILE_86"                             >> Source/mach_exc.c
+    echo '#endif'                               >> Source/mach_exc.c
+    echo '#endif'                               >> Source/mach_exc.c
 
   CMD
 end

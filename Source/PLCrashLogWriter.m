@@ -49,10 +49,6 @@
 #import "PLCrashSysctl.h"
 #import "PLCrashProcessInfo.h"
 
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h> // For UIDevice
-#endif
-
 /**
  * @internal
  * Maximum number of frames that will be written to the crash report for a single thread. Used as a safety measure
@@ -441,36 +437,8 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     if (writer->system_info.build == NULL) {
         PLCF_DEBUG("Could not retrive kern.osversion: %s", strerror(errno));
     }
-
-#if TARGET_OS_IPHONE
-    /* iPhone OS */
-    writer->system_info.version = strdup([[[UIDevice currentDevice] systemVersion] UTF8String]);
-#elif TARGET_OS_MAC
-    /* Mac OS X */
-    {
-        SInt32 major, minor, bugfix;
-
-        /* Fetch the major, minor, and bugfix versions.
-         * Fetching the OS version should not fail. */
-        if (Gestalt(gestaltSystemVersionMajor, &major) != noErr) {
-            PLCF_DEBUG("Could not retrieve system major version with Gestalt");
-            return PLCRASH_EINTERNAL;
-        }
-        if (Gestalt(gestaltSystemVersionMinor, &minor) != noErr) {
-            PLCF_DEBUG("Could not retrieve system minor version with Gestalt");
-            return PLCRASH_EINTERNAL;
-        }
-        if (Gestalt(gestaltSystemVersionBugFix, &bugfix) != noErr) {
-            PLCF_DEBUG("Could not retrieve system bugfix version with Gestalt");
-            return PLCRASH_EINTERNAL;
-        }
-
-        /* Compose the string */
-        asprintf(&writer->system_info.version, "%" PRId32 ".%" PRId32 ".%" PRId32, (int32_t)major, (int32_t)minor, (int32_t)bugfix);
-    }
-#else
-#error Unsupported Platform
-#endif
+    
+    writer->system_info.version = strdup([[NSProcessInfo processInfo].operatingSystemVersionString UTF8String]);
 
     /* Ensure that any signal handler has a consistent view of the above initialization. */
     OSMemoryBarrier();

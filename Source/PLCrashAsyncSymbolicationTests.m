@@ -145,15 +145,21 @@ void PLCrashAsyncLocalSymbolicationTestsDummyFunction(void) {}
     /* Verify that lookups of Obj-C methods *do* still work when the Obj-C strategy is enabled. */
     pl_vm_address_t localPC = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] longLongValue];
     err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_OBJC, &findContext, localPC, testFindSymbol_cb, &ctx);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Got error trying to find symbol");
-    STAssertEquals(ctx.addr, (pl_vm_address_t)[self methodForSelector: _cmd], @"Got bad address finding symbol");
-    STAssertEqualCStrings(ctx.name, "-[PLCrashAsyncSymbolicationTests testStrategyFlags]", @"Got wrong symbol name");
+    if (err == PLCRASH_ESUCCESS) {
+        STAssertEquals(ctx.addr, (pl_vm_address_t)[self methodForSelector: _cmd], @"Got bad address finding symbol");
+        STAssertEqualCStrings(ctx.name, "-[PLCrashAsyncSymbolicationTests testStrategyFlags]", @"Got wrong symbol name");
+    } else {
+        STFail(@"Got error trying to find symbol: %u", err);
+    }
     
     /* Verify that C symbol lookup succeeds once we enable the symbol table lookup strategy. */
     err = plcrash_async_find_symbol(&_image, PLCRASH_ASYNC_SYMBOL_STRATEGY_SYMBOL_TABLE, &findContext, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, testFindSymbol_cb, &ctx);
-    STAssertEquals(err, PLCRASH_ESUCCESS, @"Symbol table-based symblication should have found the C function symbol");
-    STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Got bad address finding symbol");
-    STAssertEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Got wrong symbol name");
+    if (err == PLCRASH_ESUCCESS) {
+        STAssertEquals(ctx.addr, (pl_vm_address_t)PLCrashAsyncLocalSymbolicationTestsDummyFunction, @"Got bad address finding symbol");
+        STAssertEqualCStrings(ctx.name, "_PLCrashAsyncLocalSymbolicationTestsDummyFunction", @"Got wrong symbol name");
+    } else {
+        STFail(@"Symbol table-based symblication should have found the C function symbol. Got error trying to find symbol: %u", err);
+    }
 }
 
 @end

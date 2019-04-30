@@ -317,6 +317,10 @@ static PLCrashSignalHandler *sharedHandler;
         /* Perform operations that only need to be done once per process.
          */
         if (!singleShotInitialization) {
+          /*
+           * The sigaltstack API is not available on tvOS
+           */
+#if !TARGET_OS_TV
             /*
              * Register our signal stack. Right now, we register our signal stack on the calling thread; this may,
              * in the future, be moved to an exposed instance method, as to allow registering a custom signal stack on any thread.
@@ -329,7 +333,7 @@ static PLCrashSignalHandler *sharedHandler;
                 plcrash_populate_posix_error(outError, errno, @"Could not initialize alternative signal stack");
                 return NO;
             }
-            
+#endif
             /*
              * Add the pass-through sigaction callback as the last element in the callback list.
              */
