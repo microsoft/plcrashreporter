@@ -2,8 +2,6 @@
 
 Reliable, open-source crash reporting for iOS and Mac OS X.
 
-Plausible CrashReporter provides an in-process crash reporting framework for use on both iOS and Mac OS X, and powers most of the crash reporting services available for iOS, including HockeyApp, Flurry, and Crittercism.
-
 ## Features
 
 - Uses only supported and public APIs/ABIs for crash reporting.
