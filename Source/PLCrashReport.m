@@ -190,7 +190,7 @@ error:
     /* Free the decoder state */
     if (_decoder != NULL) {
         if (_decoder->crashReport != NULL) {
-            protobuf_c_message_free_unpacked((ProtobufCMessage *) _decoder->crashReport, &protobuf_c_system_allocator);
+            protobuf_c_message_free_unpacked((ProtobufCMessage *) _decoder->crashReport, NULL);
         }
 
         free(_decoder);
@@ -295,7 +295,7 @@ error:
         return NULL;
     }
 
-    Plcrash__CrashReport *crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
+    Plcrash__CrashReport *crashReport = plcrash__crash_report__unpack(NULL, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
     if (crashReport == NULL) {
         populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, NSLocalizedString(@"An unknown error occured decoding the crash report", 
                                                                                              @"Crash log decoding error message"));

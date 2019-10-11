@@ -69,7 +69,7 @@
     if (data == nil) \
         return; \
 \
-    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], [data bytes]); \
+    EncoderTest *et = encoder_test__unpack(NULL, [data length], [data bytes]); \
     STAssertNotNULL(et, @"Failed to decode test data"); \
     if (et == NULL) \
         return; \
@@ -124,7 +124,7 @@ TEST_PACK(EncoderTest__Enum, enum_, enum, ENCODER_TEST__ENUM__Value2, 14, PLPROT
     if (data == nil)
         return;
 
-    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], [data bytes]);
+    EncoderTest *et = encoder_test__unpack(NULL, [data length], [data bytes]);
     STAssertNotNULL(et, @"Failed to decode test data");
     if (et == NULL)
         return;
@@ -144,7 +144,7 @@ TEST_PACK(EncoderTest__Enum, enum_, enum, ENCODER_TEST__ENUM__Value2, 14, PLPROT
     if (data == nil)
         return;
     
-    EncoderTest *et = encoder_test__unpack(&protobuf_c_system_allocator, [data length], [data bytes]);
+    EncoderTest *et = encoder_test__unpack(NULL, [data length], [data bytes]);
     STAssertNotNULL(et, @"Failed to decode test data");
     if (et == NULL)
         return;

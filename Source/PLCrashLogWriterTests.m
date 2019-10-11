@@ -283,7 +283,7 @@
     
     /* Try to read the crash report */
     Plcrash__CrashReport *crashReport;
-    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
+    crashReport = plcrash__crash_report__unpack(NULL, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
     
     /* If reading the report didn't fail, test the contents */
     STAssertNotNULL(crashReport, @"Could not decode crash report");
@@ -431,7 +431,7 @@
  
     /* Clean up */
     plframe_cursor_free(&cursor);
-    protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+    protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, NULL);
 }
 
 @end
