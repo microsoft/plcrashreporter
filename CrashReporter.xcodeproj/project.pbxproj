@@ -1214,19 +1214,11 @@
 		C26022901642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
 		C26022911642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
 		C26022921642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
-		DFA470E42350B76000DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470E52350B7BC00DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470E62350B7C600DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470E72350B7D000DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470E82350B7DE00DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470E92350B7E900DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470EA2350B7F400DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470EB2350B9C700DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470EC2350B9FE00DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470ED2350BA0A00DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470EE2350BA1600DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470EF2350BA1F00DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
-		DFA470F02350BA2100DC33D5 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = DFA470E22350B6D900DC33D5 /* protobuf-c.c */; };
+		C2C80E0D2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C2C80E0E2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C2C80E0F2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C2C80E102350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C2C80E112350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
 		FCE45210FDD184E397747BE3 /* PLCrashFrameStackUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */; };
 		FCE4550BA74D9DF923CFCD5A /* PLCrashFrameStackUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */; };
 		FCE4566DF9168DCC484928E1 /* PLCrashFrameStackUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */; };
@@ -1242,6 +1234,8 @@
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			fileType = sourcecode.mig;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
@@ -1254,6 +1248,8 @@
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			fileType = sourcecode.mig;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
@@ -1266,143 +1262,167 @@
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		0596747A0EF0BA2F008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		0596747B0EF0BA2F008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		05F411F10EF8DF79008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		05F411FE0EF8E070008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		05F411FF0EF8E070008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		6549BDE617E74C3E00605A2C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			fileType = sourcecode.mig;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
 				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
 			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
+			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"\n";
 		};
 		8064D8171C4D22D8005A8B4C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		8064D8861C4D22DA005A8B4C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		8064D9221C4D27DF005A8B4C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 		8064D9911C4D27E2005A8B4C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.proto";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && \"${SRCROOT}/Dependencies/protobuf-output/bin/protoc-c\" --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
 		};
 /* End PBXBuildRule section */
 
@@ -1898,16 +1918,8 @@
 		C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashAsyncSymbolication.c; sourceTree = "<group>"; };
 		C260228D1642FCAF007FC29F /* PLCrashAsyncSymbolication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLCrashAsyncSymbolication.h; sourceTree = "<group>"; };
 		C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncSymbolicationTests.m; sourceTree = "<group>"; };
-		DFA470D12350AE7100DC33D5 /* protoc-c */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "protoc-c"; sourceTree = "<group>"; };
-		DFA470D22350AE7100DC33D5 /* protoc-gen-c */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "protoc-gen-c"; sourceTree = "<group>"; };
-		DFA470D62350AE7100DC33D5 /* protobuf-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
-		DFA470D82350AE7100DC33D5 /* protobuf-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
-		DFA470DA2350AE7100DC33D5 /* libprotobuf-c.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libprotobuf-c.a"; sourceTree = "<group>"; };
-		DFA470DB2350AE7100DC33D5 /* libprotobuf-c.la */ = {isa = PBXFileReference; lastKnownFileType = text; path = "libprotobuf-c.la"; sourceTree = "<group>"; };
-		DFA470DD2350AE7100DC33D5 /* libprotobuf-c.pc */ = {isa = PBXFileReference; lastKnownFileType = text; path = "libprotobuf-c.pc"; sourceTree = "<group>"; };
-		DFA470DE2350AE7100DC33D5 /* libprotobuf-c.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libprotobuf-c.dylib"; sourceTree = "<group>"; };
-		DFA470DF2350AE7100DC33D5 /* libprotobuf-c.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libprotobuf-c.1.dylib"; sourceTree = "<group>"; };
-		DFA470E22350B6D900DC33D5 /* protobuf-c.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "protobuf-c.c"; sourceTree = "<group>"; };
+		C2C80E052350D23B0084D513 /* protobuf-c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
+		C2C80E072350D23B0084D513 /* protobuf-c.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "protobuf-c.c"; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -2241,7 +2253,7 @@
 		059670E30EEFADA6008A0601 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
-				DFA470CF2350AE7100DC33D5 /* protobuf-output */,
+				C2C80E032350D23B0084D513 /* protobuf-c */,
 			);
 			path = Dependencies;
 			sourceTree = "<group>";
@@ -2719,77 +2731,14 @@
 			path = "Other Sources";
 			sourceTree = "<group>";
 		};
-		DFA470CF2350AE7100DC33D5 /* protobuf-output */ = {
+		C2C80E032350D23B0084D513 /* protobuf-c */ = {
 			isa = PBXGroup;
 			children = (
-				DFA470E22350B6D900DC33D5 /* protobuf-c.c */,
-				DFA470D02350AE7100DC33D5 /* bin */,
-				DFA470D32350AE7100DC33D5 /* include */,
-				DFA470D92350AE7100DC33D5 /* lib */,
+				C2C80E052350D23B0084D513 /* protobuf-c.h */,
+				C2C80E072350D23B0084D513 /* protobuf-c.c */,
 			);
-			path = "protobuf-output";
-			sourceTree = "<group>";
-		};
-		DFA470D02350AE7100DC33D5 /* bin */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470D12350AE7100DC33D5 /* protoc-c */,
-				DFA470D22350AE7100DC33D5 /* protoc-gen-c */,
-			);
-			path = bin;
-			sourceTree = "<group>";
-		};
-		DFA470D32350AE7100DC33D5 /* include */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470D42350AE7100DC33D5 /* google */,
-				DFA470D72350AE7100DC33D5 /* protobuf-c */,
-			);
-			path = include;
-			sourceTree = "<group>";
-		};
-		DFA470D42350AE7100DC33D5 /* google */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470D52350AE7100DC33D5 /* protobuf-c */,
-			);
-			path = google;
-			sourceTree = "<group>";
-		};
-		DFA470D52350AE7100DC33D5 /* protobuf-c */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470D62350AE7100DC33D5 /* protobuf-c.h */,
-			);
-			path = "protobuf-c";
-			sourceTree = "<group>";
-		};
-		DFA470D72350AE7100DC33D5 /* protobuf-c */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470D82350AE7100DC33D5 /* protobuf-c.h */,
-			);
-			path = "protobuf-c";
-			sourceTree = "<group>";
-		};
-		DFA470D92350AE7100DC33D5 /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470DA2350AE7100DC33D5 /* libprotobuf-c.a */,
-				DFA470DB2350AE7100DC33D5 /* libprotobuf-c.la */,
-				DFA470DC2350AE7100DC33D5 /* pkgconfig */,
-				DFA470DE2350AE7100DC33D5 /* libprotobuf-c.dylib */,
-				DFA470DF2350AE7100DC33D5 /* libprotobuf-c.1.dylib */,
-			);
-			path = lib;
-			sourceTree = "<group>";
-		};
-		DFA470DC2350AE7100DC33D5 /* pkgconfig */ = {
-			isa = PBXGroup;
-			children = (
-				DFA470DD2350AE7100DC33D5 /* libprotobuf-c.pc */,
-			);
-			path = pkgconfig;
+			name = "protobuf-c";
+			path = "protobuf-c/protobuf-c";
 			sourceTree = "<group>";
 		};
 		FCE4576E42A51370AD81A734 /* Stack Frame Unwind */ = {
@@ -3825,7 +3774,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470E52350B7BC00DC33D5 /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3833,7 +3781,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470E62350B7C600DC33D5 /* protobuf-c.c in Sources */,
 				05CD318E0EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				053347AD17E16B0200C52E50 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				05CD339D0EE948EB000FDE88 /* PLCrashSignalHandler.mm in Sources */,
@@ -3872,6 +3819,7 @@
 				FCE45962BDFEEEFAF00DA7E4 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DC716D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DF316DBD0AD00888448 /* PLCrashAsyncThread_x86.c in Sources */,
+				C2C80E0E2350D23B0084D513 /* protobuf-c.c in Sources */,
 				05A17DF816DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */,
 				05F3CD6216DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7A16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
@@ -3900,7 +3848,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470E72350B7D000DC33D5 /* protobuf-c.c in Sources */,
 				05CD31900EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD339F0EE948EB000FDE88 /* PLCrashSignalHandler.mm in Sources */,
 				059666DF0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */,
@@ -3939,6 +3886,7 @@
 				05A17DC816D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DF416DBD0AD00888448 /* PLCrashAsyncThread_x86.c in Sources */,
 				05A17DF916DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */,
+				C2C80E0F2350D23B0084D513 /* protobuf-c.c in Sources */,
 				05F3CD6316DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7B16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				057DCA18179C613200BDC648 /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
@@ -3967,7 +3915,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470EC2350B9FE00DC33D5 /* protobuf-c.c in Sources */,
 				05CD33A30EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E30EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702E0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -4068,7 +4015,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470ED2350BA0A00DC33D5 /* protobuf-c.c in Sources */,
 				05CD33A40EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E50EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				0596702F0EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -4168,7 +4114,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470EE2350BA1600DC33D5 /* protobuf-c.c in Sources */,
 				05CD33A50EE94931000FDE88 /* PLCrashSignalHandlerTests.m in Sources */,
 				059666E40EEDDFCC008A0601 /* PLCrashFrameWalkerTests.m in Sources */,
 				059670300EEF6B51008A0601 /* PLCrashLogWriterTests.m in Sources */,
@@ -4277,7 +4222,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470E42350B76000DC33D5 /* protobuf-c.c in Sources */,
 				05E731F80EFA1AE3005EDFB7 /* CrashReporter.m in Sources */,
 				05E731F90EFA1AE3005EDFB7 /* PLCrashSignalHandler.mm in Sources */,
 				05E731FA0EFA1AE3005EDFB7 /* PLCrashFrameWalker.c in Sources */,
@@ -4307,6 +4251,7 @@
 				05DEE63F1636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.mm in Sources */,
 				C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
+				C2C80E0D2350D23B0084D513 /* protobuf-c.c in Sources */,
 				C2198E0616441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E5491676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55416765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
@@ -4353,7 +4298,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470E92350B7E900DC33D5 /* protobuf-c.c in Sources */,
 				8064D7DA1C4D22D8005A8B4C /* CrashReporter.m in Sources */,
 				8064D7DB1C4D22D8005A8B4C /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
 				8064D7DC1C4D22D8005A8B4C /* PLCrashSignalHandler.mm in Sources */,
@@ -4392,6 +4336,7 @@
 				8064D7FE1C4D22D8005A8B4C /* PLCrashFrameStackUnwind.c in Sources */,
 				8064D7FF1C4D22D8005A8B4C /* PLCrashAsyncThread.c in Sources */,
 				8064D8001C4D22D8005A8B4C /* PLCrashAsyncThread_x86.c in Sources */,
+				C2C80E102350D23B0084D513 /* protobuf-c.c in Sources */,
 				8064D8011C4D22D8005A8B4C /* PLCrashAsyncThread_arm.c in Sources */,
 				8064D8021C4D22D8005A8B4C /* PLCrashFrameCompactUnwind.c in Sources */,
 				8064D8031C4D22D8005A8B4C /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
@@ -4420,7 +4365,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470EA2350B7F400DC33D5 /* protobuf-c.c in Sources */,
 				8064D8491C4D22DA005A8B4C /* CrashReporter.m in Sources */,
 				8064D84A1C4D22DA005A8B4C /* PLCrashSignalHandler.mm in Sources */,
 				8064D84B1C4D22DA005A8B4C /* PLCrashFrameWalker.c in Sources */,
@@ -4459,6 +4403,7 @@
 				8064D86D1C4D22DA005A8B4C /* PLCrashAsyncThread.c in Sources */,
 				8064D86E1C4D22DA005A8B4C /* PLCrashAsyncThread_x86.c in Sources */,
 				8064D86F1C4D22DA005A8B4C /* PLCrashAsyncThread_arm.c in Sources */,
+				C2C80E112350D23B0084D513 /* protobuf-c.c in Sources */,
 				8064D8701C4D22DA005A8B4C /* PLCrashFrameCompactUnwind.c in Sources */,
 				8064D8711C4D22DA005A8B4C /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
 				8064D8721C4D22DA005A8B4C /* PLCrashAsyncDwarfEncoding.cpp in Sources */,
@@ -4487,7 +4432,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470E82350B7DE00DC33D5 /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4525,7 +4469,6 @@
 				8064D8DB1C4D27DF005A8B4C /* PLCrashAsyncMObject.c in Sources */,
 				8064D8DC1C4D27DF005A8B4C /* PLCrashAsyncMObjectTests.m in Sources */,
 				8064D8DD1C4D27DF005A8B4C /* PLCrashAsyncObjCSection.mm in Sources */,
-				DFA470EF2350BA1F00DC33D5 /* protobuf-c.c in Sources */,
 				8064D8DE1C4D27DF005A8B4C /* PLCrashAsyncObjCSectionTests.m in Sources */,
 				8064D8DF1C4D27DF005A8B4C /* PLCrashAsyncSymbolication.c in Sources */,
 				8064D8E01C4D27DF005A8B4C /* PLCrashAsyncSymbolicationTests.m in Sources */,
@@ -4611,7 +4554,6 @@
 				8064D93C1C4D27E2005A8B4C /* PLCrashReporterTests.m in Sources */,
 				8064D93E1C4D27E2005A8B4C /* PLCrashReportTests.m in Sources */,
 				8064D93F1C4D27E2005A8B4C /* PLCrashAsyncSignalInfo.c in Sources */,
-				DFA470F02350BA2100DC33D5 /* protobuf-c.c in Sources */,
 				8064D9401C4D27E2005A8B4C /* PLCrashAsyncSignalInfoTests.m in Sources */,
 				8064D9411C4D27E2005A8B4C /* PLCrashAsyncImageList.cpp in Sources */,
 				8064D9421C4D27E2005A8B4C /* PLCrashAsyncImageListTests.m in Sources */,
@@ -4710,7 +4652,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFA470EB2350B9C700DC33D5 /* protobuf-c.c in Sources */,
 				05CD318C0EE93A90000FDE88 /* CrashReporter.m in Sources */,
 				05CD33A10EE948EB000FDE88 /* PLCrashSignalHandler.mm in Sources */,
 				059666DD0EEDDFB8008A0601 /* PLCrashFrameWalker.c in Sources */,
@@ -5248,7 +5189,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				HEADER_SEARCH_PATHS = "$(inherited)";
 				IPHONEOS_DEPLOYMENT_TARGET = "$(PL_IOS_DEPLOYMENT_TARGET)";
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
@@ -5710,7 +5650,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashNamespace.h";
 				GCC_PREPROCESSOR_DEFINITIONS = PLCR_PRIVATE;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-output/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = (
@@ -5751,10 +5691,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/Source/PLCrashNamespace.h";
 				GCC_PREPROCESSOR_DEFINITIONS = PLCR_PRIVATE;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/$(DERIVED_FILES_DIR)\"",
-					"\"$(SRCROOT)/Dependencies/protobuf-output/include\"",
-				);
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -5851,7 +5788,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				HEADER_SEARCH_PATHS = "$(inherited)";
 				MACH_O_TYPE = staticlib;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				ONLY_ACTIVE_ARCH = NO;
