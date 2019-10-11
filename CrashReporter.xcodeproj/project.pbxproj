@@ -1214,6 +1214,14 @@
 		C26022901642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
 		C26022911642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
 		C26022921642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C260228F1642FE9B007FC29F /* PLCrashAsyncSymbolicationTests.m */; };
+		C27C9FC42350D6600046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FC52350D6600046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FC62350D6610046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FC72350D6620046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FC82350D6620046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FC92350D6720046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FCA2350D6730046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
+		C27C9FCB2350D6740046703E /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
 		C2C80E0D2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
 		C2C80E0E2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
 		C2C80E0F2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; };
@@ -3248,7 +3256,6 @@
 				05CD34410EEA60F8000FDE88 /* Copy Frameworks */,
 				05CD32650EE93DC3000FDE88 /* Sources */,
 				05CD32660EE93DC3000FDE88 /* Frameworks */,
-				05CD32670EE93DC3000FDE88 /* Run Tests */,
 			);
 			buildRules = (
 				0522F8F717F2B48000AECBAB /* PBXBuildRule */,
@@ -3714,21 +3721,6 @@
 			shellPath = /bin/sh;
 			shellScript = "# Attempt to verify that the code we're building matches the source archive we're generating\n# We only check for local modifications; in theory, we could assert the existence of a (local, not yet pushed)\n# release tag.\nif [ \"${PL_ALLOW_LOCAL_MODS}\" != 1 ] && [ \"${CONFIGURATION}\" = \"Release\" ]; then\n    if [ \"$(git status --porcelain | grep -v '??' | wc -l | awk '{print $1}')\" != \"0\" ]; then\n        echo \"\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"Local modifications are not permitted when generating a Release build.\" >/dev/stderr\n        echo \"Modifications:\" >/dev/stderr\n        git status --porcelain | grep -v '??' >/dev/stderr\n\n        echo \"\" >/dev/stderr\n        echo \"Set the PL_ALLOW_LOCAL_MODS=1 to bypass this check, or use a non-release build configuration:\" >/dev/stderr\n        echo \"  env PL_ALLOW_LOCAL_MODS=1 xcodebuild ...\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"\" >/dev/stderr\n\n        exit 1\n    fi\nfi\n\n# Set up the destroot\nOUTPUT_DEST=\"${BUILT_PRODUCTS_DIR}\"\nPRODUCT_DIR=\"${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nDESTROOT=\"${OUTPUT_DEST}/${PRODUCT_DIR}\"\n\nmkdir -p \"${DESTROOT}\"\n\n# Per-target installation destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nAPPLETV_DEST=\"${DESTROOT}/tvOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nSRC_DEST=\"${DESTROOT}/Source\"\nLICENSE_DEST=\"${DESTROOT}/LICENSE.txt\"\n\nDOC_SUBDIR=\"Documentation\"\nDOC_DEST=\"${DESTROOT}/${DOC_SUBDIR}\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\nAPPLETV_SRC=\"${BUILD_DIR}/${CONFIGURATION}-appletv\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\" || exit 1\nrsync -av \"${IPHONE_SRC}/CrashReporter.framework\" \"${IPHONE_DEST}\" || exit 1\n\nmkdir -p \"${APPLETV_DEST}\" || exit 1\nrsync -av \"${APPLETV_SRC}/CrashReporter.framework\" \"${APPLETV_DEST}\" || exit 1\n\nmkdir -p \"${MAC_DEST}\" || exit 1\nrsync -av \"${MAC_SRC}/CrashReporter.framework\" \"${MAC_SRC}/CrashReporter.framework.dSYM\" \"${MAC_DEST}\" || exit 1\n\nmkdir -p \"${TOOL_DEST}\" || exit 1\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\" || exit 1\n\nmkdir -p \"${SRC_DEST}\" || exit 1\ngit archive --format=tar --prefix=\"plcrashreporter-${CURRENT_PROJECT_VERSION}/\" HEAD | tar -C \"${SRC_DEST}\" -xf - || exit 1\n\nrsync -av \"${SRCROOT}/LICENSE\" \"${LICENSE_DEST}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n    # Generate the documentation\n\tpushd \"${SRCROOT}\" >/dev/null || exit 1\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n    # Populate the Documentation directory\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\n\n    # Add a top-level Documentation symlink\n    pushd \"${DESTROOT}\" >/dev/null\n    ln -sf \"${DOC_SUBDIR}/index.html\" \"API Documentation.html\"\n    popd >/dev/null\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\" || exit 1\n\n# Create the ZIP archive\nrm -f \"${DESTROOT}.zip\"\npushd \"${OUTPUT_DEST}\" >/dev/null\nzip --symlinks -r \"${PRODUCT_DIR}.zip\" \"${PRODUCT_DIR}\" || exit 1\npopd >/dev/null\n";
 		};
-		05CD32670EE93DC3000FDE88 /* Run Tests */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Tests";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SRCROOT}/Tools/google-toolbox-for-mac-trunk-r582/UnitTesting/RunMacOSUnitTests.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		8064D8B71C4D22E5005A8B4C /* Lipo Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3774,6 +3766,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C27C9FCA2350D6730046703E /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3949,6 +3942,7 @@
 				05FDFC84168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
 				052951EA1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */,
 				052951EF1696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */,
+				C27C9FC42350D6600046703E /* protobuf-c.c in Sources */,
 				05A533DE16D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */,
 				05A17DB816D7E36400888448 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DC916D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
@@ -4032,6 +4026,7 @@
 				05E734850EFAD83B005EDFB7 /* PLCrashAsyncSignalInfoTests.m in Sources */,
 				059C9D7D13AE46E40071956F /* PLCrashAsyncImageList.cpp in Sources */,
 				052A46F813637DE000987004 /* PLCrashAsyncImageListTests.m in Sources */,
+				C27C9FC52350D6600046703E /* protobuf-c.c in Sources */,
 				05BB84901364EE1500D53B84 /* PLCrashSysctlTests.m in Sources */,
 				059C9D7C13AE46E10071956F /* PLCrashSysctl.c in Sources */,
 				05EB2B1815B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
@@ -4148,6 +4143,7 @@
 				05FDFC86168950F600463E43 /* PLCrashMachExceptionServerTests.m in Sources */,
 				052951EC1696965E006EDA8A /* PLCrashLogWriterEncodingTests.m in Sources */,
 				052951F11696A461006EDA8A /* PLCrashLogWriterEncodingTests.proto in Sources */,
+				C27C9FC62350D6610046703E /* protobuf-c.c in Sources */,
 				058484AE1804841100A56049 /* unwind_test_arm64_frameless.S in Sources */,
 				05A533E016D6ACBF00C5E2B3 /* PLCrashFrameStackUnwindTests.m in Sources */,
 				05A17DBA16D7E37100888448 /* PLCrashFrameStackUnwind.c in Sources */,
@@ -4432,6 +4428,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C27C9FC92350D6720046703E /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4469,6 +4466,7 @@
 				8064D8DB1C4D27DF005A8B4C /* PLCrashAsyncMObject.c in Sources */,
 				8064D8DC1C4D27DF005A8B4C /* PLCrashAsyncMObjectTests.m in Sources */,
 				8064D8DD1C4D27DF005A8B4C /* PLCrashAsyncObjCSection.mm in Sources */,
+				C27C9FC82350D6620046703E /* protobuf-c.c in Sources */,
 				8064D8DE1C4D27DF005A8B4C /* PLCrashAsyncObjCSectionTests.m in Sources */,
 				8064D8DF1C4D27DF005A8B4C /* PLCrashAsyncSymbolication.c in Sources */,
 				8064D8E01C4D27DF005A8B4C /* PLCrashAsyncSymbolicationTests.m in Sources */,
@@ -4554,6 +4552,7 @@
 				8064D93C1C4D27E2005A8B4C /* PLCrashReporterTests.m in Sources */,
 				8064D93E1C4D27E2005A8B4C /* PLCrashReportTests.m in Sources */,
 				8064D93F1C4D27E2005A8B4C /* PLCrashAsyncSignalInfo.c in Sources */,
+				C27C9FC72350D6620046703E /* protobuf-c.c in Sources */,
 				8064D9401C4D27E2005A8B4C /* PLCrashAsyncSignalInfoTests.m in Sources */,
 				8064D9411C4D27E2005A8B4C /* PLCrashAsyncImageList.cpp in Sources */,
 				8064D9421C4D27E2005A8B4C /* PLCrashAsyncImageListTests.m in Sources */,
@@ -4681,6 +4680,7 @@
 				05DEE6401636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DDA1640188C006EB46A /* PLCrashAsyncObjCSection.mm in Sources */,
 				C26022871642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
+				C27C9FCB2350D6740046703E /* protobuf-c.c in Sources */,
 				C2198E0716441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E54A1676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55516765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
@@ -5673,7 +5673,7 @@
 				PL_MIN_MACOSX_SDK = 1080;
 				PL_PRE_XCODE_10_1_ARCHS = "armv7 armv7s arm64";
 				SDKROOT = macosx;
-				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64 arm64e";
+				VALID_ARCHS = "armv7 armv7s armv6 x86_64 arm64 arm64e";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
@@ -5713,7 +5713,7 @@
 				PL_MIN_MACOSX_SDK = 1080;
 				PL_PRE_XCODE_10_1_ARCHS = "armv7 armv7s arm64";
 				SDKROOT = macosx;
-				VALID_ARCHS = "i386 armv7 armv7s armv6 x86_64 arm64 arm64e";
+				VALID_ARCHS = "armv7 armv7s armv6 x86_64 arm64 arm64e";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Werror",
