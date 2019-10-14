@@ -1,5 +1,12 @@
 # PLCrashReporter Change Log
 
+## Version "next"
+
+* Update `protobuf-c` to version 1.3.2. `protoc-c` code generator binary has been removed from the repo, so it should be installed separately now (`brew install protobuf-c`).
+* Remove outdated "Google Toolbox for Mac" dependency.
+
+___
+
 ## Version 1.2.3-rc1
 
 * Add preview support for the arm64e CPU architecture.

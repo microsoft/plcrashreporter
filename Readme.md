@@ -33,6 +33,7 @@ To build PLCrashReporter, we recommend using the command line as the PLCrashRepo
 * Xcode 10.1
 * Doxygen to generate the documentation. See [the official Doxygen repository](https://github.com/doxygen/doxygen) for more information or use [Homebrew](https://brew.sh) to install it.
 * GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
+* `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
 
 ### 1.3.2 How to build PLCrashReporter with Xcode 10.1
 

@@ -1,0 +1,3 @@
+[submodule "Dependencies/protobuf-c"]
+	path = Dependencies/protobuf-c
+	url = https://github.com/protobuf-c/protobuf-c.git
