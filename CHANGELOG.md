@@ -4,6 +4,7 @@
 
 * Update `protobuf-c` to version 1.3.2. `protoc-c` code generator binary has been removed from the repo, so it should be installed separately now (`brew install protobuf-c`).
 * Remove outdated "Google Toolbox for Mac" dependency.
+* The sources aren't distributed in the release archive anymore. Please use GitHub snapshot instead.
 
 ___
 
