@@ -271,7 +271,12 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         
         STAssertNotNil(imageInfo.codeType, @"Image code type is nil");
         STAssertEquals(imageInfo.codeType.typeEncoding, PLCrashReportProcessorTypeEncodingMach, @"Incorrect type encoding");
-        
+
+        // FIXME: dyld_sim is problematic binary.
+        if ([imageInfo.imageName hasSuffix:@"/usr/lib/dyld_sim"]) {
+          continue;
+        }
+
         /*
          * Find the in-memory mach header for the image record. We'll compare this against the serialized data.
          *
@@ -281,10 +286,12 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          * to a larger, unsigned uint64_t value.
          */
         Dl_info info;
-        STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
+        STAssertNotEquals(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info), 0, @"dladdr() failed to find image of %@", imageInfo.imageName);
         struct mach_header *hdr = info.dli_fbase;
-        STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
-        STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
+        if (hdr != NULL) {
+            STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
+            STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
+        }
     }
 }
 

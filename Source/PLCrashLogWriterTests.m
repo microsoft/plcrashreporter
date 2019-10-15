@@ -93,11 +93,11 @@
     if (systemInfo == NULL)
         return;
 
-    STAssertEquals(systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
+    STAssertEquals((int) systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
-    STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
+    STAssertEquals((int) systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
 }
@@ -406,7 +406,11 @@
 #elif __arm__
     expectedPC = cursor.frame.thread_state.arm_state.thread.ts_32.__pc;
 #elif __arm64__
+#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
+    expectedPC = cursor.frame.thread_state.arm_state.thread.ts_64.__opaque_pc;
+#else
     expectedPC = cursor.frame.thread_state.arm_state.thread.ts_64.__pc;
+#endif
 #else
 #error Unsupported Platform
 #endif

@@ -91,17 +91,32 @@ const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_ob
 
 /**
  * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-runtime-new.h
  *
  * Class's rw data structure has been realized.
+ ** If set, data pointers to RW data instead of RO.
  */
 static const uint32_t RW_REALIZED = (1<<31);
 
 /**
  * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-runtime-new.h
  *
  * A realized class' data pointer is a heap-copied copy of class_ro_t.
  */
 static const uint32_t RW_COPIED_RO = (1<<27);
+
+/**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-runtime-new.h
+ *
+ * A class' data pointer mask.
+ */
+#if !__LP64__
+#define FAST_DATA_MASK 0xfffffffcUL
+#else
+#define FAST_DATA_MASK 0x00007ffffffffff8UL
+#endif
 
 struct pl_objc1_module {
     uint32_t version;
@@ -730,7 +745,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     /* Grab the class's data_rw pointer. This needs masking because it also
      * can contain flags. */
     pl_vm_address_t data_ptr = image->byteorder->swap(cls->data_rw);
-    data_ptr &= ~(pl_vm_address_t)3;
+    data_ptr &= FAST_DATA_MASK;
 
     /* Grab the data RO pointer from the cache. If unavailable, we'll fetch the data and populate the class. */
     pl_vm_address_t cached_data_ro_addr = cache_lookup(objc_cache, data_ptr);
@@ -955,9 +970,12 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         err = pl_async_objc_parse_objc2_class_methods<class_t, class_ro_t, class_rw_t>(image, objcContext, classPtr, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             /* Skip unrealized classes; they'll never appear in a live backtrace. */
-            if (err == PLCRASH_ENOTFOUND)
+            if (err == PLCRASH_ENOTFOUND) {
+                /* We should reset the error variable to avoid return it from the function. */
+                err = PLCRASH_ESUCCESS;
                 continue;
-            
+            }
+
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             return err;
         }
