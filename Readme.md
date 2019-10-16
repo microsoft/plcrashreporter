@@ -25,8 +25,6 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 
 ## 1.3 Building PLCrashReporter
 
-To build PLCrashReporter, we recommend using the command line as the PLCrashReporter project has issues when compiling some of its targets in Xcode due to Xcode 10's new build system (check out the [Xcode 10 release notes](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes/build_system_release_notes_for_xcode_10) for more information about the new build system]).
-
 ### 1.3.1 Prerequisites
 
 * A Mac
@@ -35,15 +33,13 @@ To build PLCrashReporter, we recommend using the command line as the PLCrashRepo
 * GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
 * `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
 
-### 1.3.2 How to build PLCrashReporter with Xcode 10.1
+### 1.3.2 How to build PLCrashReporter
 
-* Open `CrashReporter.xcodeproj` in Xcode 10.1.
-* Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
 * Open a new window for your Terminal.
 * Go to PlCrashReporter's root folder and run
 
     ```bash
-    xcodebuild PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    xcodebuild BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
     ```
 
     to create binaries for all platforms.
@@ -62,13 +58,11 @@ To ensure PLCrashReporter supports apps that use Xcode 8.3.3, it needs to be bui
 
 #### 1.3.3.2 Build PLCrashReporter in a way that is backward compatible with older Xcode versions
 
-* Open `CrashReporter.xcodeproj` in Xcode 10.1.
-* Open `PLCrashNamespace.h` and set  `#define PLCRASHREPORTER_PREFIX` to your class prefix (i.e. `MS`).
 * Open your Terminal.
 * Go to PLCrashReporter's root folder and run
 
     ```bash
-    xcodebuild PL_ARM64E_XCODE_PATH="Path to your Xcode 10.1 installation" PL_ALLOW_LOCAL_MODS=1 BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    xcodebuild PL_ARM64E_XCODE_PATH="Path to your Xcode 10.1 installation" BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
     ```
 
     This will create binaries for all platforms and adds support for arm64e to PLCrashReporter-iOS. Note the environment variable `PL_ARM64E_XCODE_PATH`. Make sure to set it to your latest Xcode version that supports arm64e, currently Xcode 10.1.
@@ -83,6 +77,18 @@ To contribute to PLCrashReporter, you need the tools mentioned in 1.3.3.1 above 
 ### 2.1 Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+### 2.3 Checking out the repository
+
+PLCrashReporter has a dependency on [Protocol Buffers implementation in C](https://github.com/protobuf-c/protobuf-c) as a git submodule. Use below command to clone PLCrashReporter repository or update the repository if you have already cloned it.
+
+```
+git clone --recursive https://github.com/microsoft/PLCrashReporter-Fork.git
+```
+
+```
+git submodule update --init --recursive
+```
 
 ## 3. Contact
 
