@@ -26,6 +26,7 @@
 			buildPhases = (
 				C25664D023571BC60088513E /* Verify Modifications */,
 				058812D310405908009128FB /* Create Disk Image */,
+				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 			);
 			dependencies = (
 				C25664E5235737560088513E /* PBXTargetDependency */,
@@ -3842,6 +3843,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DOC_SUBDIR=\"Documentation\"\nDOC_DEST=\"${BUILD_DIR}/${DOC_SUBDIR}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n  # Generate the documentation\n  pushd \"${SRCROOT}\" >/dev/null || exit 1\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n  popd >/dev/null\n  \n  # Populate the Documentation directory\n  rm -rf \"${DOC_DEST}\"\n  mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n";
+		};
+		C25664E62357487D0088513E /* Create Archive With Static Libraries */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Create Archive With Static Libraries";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Set up the destroot\nOUTPUT_DEST=\"${BUILT_PRODUCTS_DIR}\"\nPRODUCT_DIR=\"${PRODUCT_NAME}-Static-${CURRENT_PROJECT_VERSION}\"\nDESTROOT=\"${OUTPUT_DEST}/${PRODUCT_DIR}\"\nHEADERS_DEST=\"${DESTROOT}/include\"\n\nmkdir -p \"${DESTROOT}\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\nAPPLETV_SRC=\"${BUILD_DIR}/${CONFIGURATION}-appletv\"\n\n# Populate the destroot\nrsync -av \"${IPHONE_SRC}/libCrashReporter-iOS.a\" \"${DESTROOT}\" || exit 1\nrsync -av \"${APPLETV_SRC}/libCrashReporter-tvOS.a\" \"${DESTROOT}\" || exit 1\nrsync -av \"${MAC_SRC}/libCrashReporter-MacOSX-Static.a\" \"${DESTROOT}\" || exit 1\n\n# Copy headers\nmkdir -p \"${HEADERS_DEST}\" || exit 1\ncp -r \"${IPHONE_SRC}/CrashReporter.framework/Headers/.\" \"${HEADERS_DEST}/\" || exit 1\n\n# Create the ZIP archive\nrm -f \"${DESTROOT}.zip\"\npushd \"${OUTPUT_DEST}\" >/dev/null\nzip --symlinks -r \"${PRODUCT_DIR}.zip\" \"${PRODUCT_DIR}\" || exit 1\npopd >/dev/null\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
