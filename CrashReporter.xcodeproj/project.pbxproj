@@ -24,9 +24,11 @@
 			isa = PBXAggregateTarget;
 			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */;
 			buildPhases = (
+				C25664D023571BC60088513E /* Verify Modifications */,
 				058812D310405908009128FB /* Create Disk Image */,
 			);
 			dependencies = (
+				C25664E5235737560088513E /* PBXTargetDependency */,
 				058812F11040597D009128FB /* PBXTargetDependency */,
 				05EC525A10531C9300DB9D39 /* PBXTargetDependency */,
 			);
@@ -51,6 +53,17 @@
 			);
 			name = CrashReporter;
 			productName = CrashReporter;
+		};
+		C25664D123571D330088513E /* Documentation */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "Documentation" */;
+			buildPhases = (
+				C25664D523571D3D0088513E /* Generate Documentation */,
+			);
+			dependencies = (
+			);
+			name = Documentation;
+			productName = Documentation;
 		};
 /* End PBXAggregateTarget section */
 
@@ -1664,6 +1677,13 @@
 			remoteGlobalIDString = 8064D81C1C4D22DA005A8B4C;
 			remoteInfo = "CrashReporter-tvOS-Simulator";
 		};
+		C25664E4235737560088513E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C25664D123571D330088513E;
+			remoteInfo = Documentation;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -3198,6 +3218,7 @@
 				058812B61040582D009128FB /* Sources */,
 				058812B71040582D009128FB /* Frameworks */,
 				058812C6104058AB009128FB /* Lipo Binary */,
+				C25664CE235717880088513E /* Package Framework */,
 			);
 			buildRules = (
 			);
@@ -3407,6 +3428,7 @@
 				8064D8B51C4D22E5005A8B4C /* Sources */,
 				8064D8B61C4D22E5005A8B4C /* Frameworks */,
 				8064D8B71C4D22E5005A8B4C /* Lipo Binary */,
+				C25664CF23571A340088513E /* Package Framework */,
 			);
 			buildRules = (
 			);
@@ -3539,6 +3561,10 @@
 					8064D9971C4D27E9005A8B4C = {
 						DevelopmentTeam = 5Z97G9NZQ6;
 					};
+					C25664D123571D330088513E = {
+						CreatedOnToolsVersion = 11.1;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
@@ -3557,6 +3583,7 @@
 			projectRoot = "";
 			targets = (
 				058812D410405908009128FB /* Disk Image */,
+				C25664D123571D330088513E /* Documentation */,
 				05CD31680EE939D0000FDE88 /* CrashReporter */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter-MacOSX */,
 				05E731F20EFA1AAB005EDFB7 /* CrashReporter-MacOSX-Static */,
@@ -3714,7 +3741,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"${BUILT_PRODUCTS_DIR}\"\n\nlipo \\\n  \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libCrashReporter-iphoneos.a\" \\\n  \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/libCrashReporter-iphonesimulator.a\" \\\n  -create -output ${EXECUTABLE_PATH}\n\n# Create a Bitcode backward compatible binary with older Xcode versions but still support architectures from newer Xcode versions\nif [ -z \"$PL_ARM64E_XCODE_PATH\" ]; then\necho \"Path to Xcode version supporting arm64e not provided; Bitcode compatibility and device architectures are limited to the running Xcode version.\"\nelse\n\n# Build with the Xcode version supporting arm64e\nenv DEVELOPER_DIR=\"$PL_ARM64E_XCODE_PATH\" /usr/bin/xcodebuild ARCHS=\"arm64e\" OBJROOT=\"${OBJROOT}/DependentBuilds\" -configuration Release -target 'CrashReporter-iOS-Device'\n\n# Concatenate the architectures built from Xcode versions \nenv DEVELOPER_DIR=\"$PL_ARM64E_XCODE_PATH\" /usr/bin/lipo \\\n  ${EXECUTABLE_PATH} \\\n  \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libCrashReporter-iphoneos.a\" \\\n  -create -output ${EXECUTABLE_PATH}\n\nfi\n\nln -sfh Versions/${CURRENT_VERSION}/${PRODUCT_NAME} ${FULL_PRODUCT_NAME}/${PRODUCT_NAME}\n";
+			shellScript = "lipo \\\n  \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/lib${PRODUCT_NAME}-iphoneos.a\" \\\n  \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/lib${PRODUCT_NAME}-iphonesimulator.a\" \\\n  -create -output \"${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}-iOS.a\"\n  \n# Create a Bitcode backward compatible binary with older Xcode versions but still support architectures from newer Xcode versions\nif [ -z \"$PL_ARM64E_XCODE_PATH\" ]; then\necho \"Path to Xcode version supporting arm64e not provided; Bitcode compatibility and device architectures are limited to the running Xcode version.\"\nelse\n\n# Build with the Xcode version supporting arm64e\nenv -i PATH=\"$PATH\" DEVELOPER_DIR=\"$PL_ARM64E_XCODE_PATH\" /usr/bin/xcodebuild ARCHS=\"arm64e\" -configuration \"${CONFIGURATION}\" -target \"CrashReporter-iOS-Device\"\n\n# Concatenate the architectures built from Xcode versions \nenv -i PATH=\"$PATH\" DEVELOPER_DIR=\"$PL_ARM64E_XCODE_PATH\" /usr/bin/lipo \\\n  \"${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}-iOS.a\" \\\n  \"build/${CONFIGURATION}-iphoneos/lib${PRODUCT_NAME}-iphoneos.a\" \\\n  -create -output \"${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}-iOS.a\"\n\nfi\n";
 		};
 		058812D310405908009128FB /* Create Disk Image */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3728,7 +3755,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Attempt to verify that the code we're building matches the source archive we're generating\n# We only check for local modifications; in theory, we could assert the existence of a (local, not yet pushed)\n# release tag.\nif [ \"${PL_ALLOW_LOCAL_MODS}\" != 1 ] && [ \"${CONFIGURATION}\" = \"Release\" ]; then\n    if [ \"$(git status --porcelain | grep -v '??' | wc -l | awk '{print $1}')\" != \"0\" ]; then\n        echo \"\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"Local modifications are not permitted when generating a Release build.\" >/dev/stderr\n        echo \"Modifications:\" >/dev/stderr\n        git status --porcelain | grep -v '??' >/dev/stderr\n\n        echo \"\" >/dev/stderr\n        echo \"Set the PL_ALLOW_LOCAL_MODS=1 to bypass this check, or use a non-release build configuration:\" >/dev/stderr\n        echo \"  env PL_ALLOW_LOCAL_MODS=1 xcodebuild ...\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"\" >/dev/stderr\n\n        exit 1\n    fi\nfi\n\n# Set up the destroot\nOUTPUT_DEST=\"${BUILT_PRODUCTS_DIR}\"\nPRODUCT_DIR=\"${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nDESTROOT=\"${OUTPUT_DEST}/${PRODUCT_DIR}\"\n\nmkdir -p \"${DESTROOT}\"\n\n# Per-target installation destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nAPPLETV_DEST=\"${DESTROOT}/tvOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nLICENSE_DEST=\"${DESTROOT}/LICENSE.txt\"\n\nDOC_SUBDIR=\"Documentation\"\nDOC_DEST=\"${DESTROOT}/${DOC_SUBDIR}\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\nAPPLETV_SRC=\"${BUILD_DIR}/${CONFIGURATION}-appletv\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\" || exit 1\nrsync -av \"${IPHONE_SRC}/CrashReporter.framework\" \"${IPHONE_DEST}\" || exit 1\n\nmkdir -p \"${APPLETV_DEST}\" || exit 1\nrsync -av \"${APPLETV_SRC}/CrashReporter.framework\" \"${APPLETV_DEST}\" || exit 1\n\nmkdir -p \"${MAC_DEST}\" || exit 1\nrsync -av \"${MAC_SRC}/CrashReporter.framework\" \"${MAC_SRC}/CrashReporter.framework.dSYM\" \"${MAC_DEST}\" || exit 1\n\nmkdir -p \"${TOOL_DEST}\" || exit 1\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\" || exit 1\n\nrsync -av \"${SRCROOT}/LICENSE\" \"${LICENSE_DEST}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n    # Generate the documentation\n\tpushd \"${SRCROOT}\" >/dev/null || exit 1\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n\tpopd >/dev/null\n\n    # Populate the Documentation directory\n\trm -rf \"${DOC_DEST}\"\n    mv Documentation/API \"${DOC_DEST}\"\n\n    # Add a top-level Documentation symlink\n    pushd \"${DESTROOT}\" >/dev/null\n    ln -sf \"${DOC_SUBDIR}/index.html\" \"API Documentation.html\"\n    popd >/dev/null\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\" || exit 1\n\n# Create the ZIP archive\nrm -f \"${DESTROOT}.zip\"\npushd \"${OUTPUT_DEST}\" >/dev/null\nzip --symlinks -r \"${PRODUCT_DIR}.zip\" \"${PRODUCT_DIR}\" || exit 1\npopd >/dev/null\n";
+			shellScript = "# Set up the destroot\nOUTPUT_DEST=\"${BUILT_PRODUCTS_DIR}\"\nPRODUCT_DIR=\"${PRODUCT_NAME}-${CURRENT_PROJECT_VERSION}\"\nDESTROOT=\"${OUTPUT_DEST}/${PRODUCT_DIR}\"\n\nmkdir -p \"${DESTROOT}\"\n\n# Per-target installation destinations\nIPHONE_DEST=\"${DESTROOT}/iOS Framework\"\nAPPLETV_DEST=\"${DESTROOT}/tvOS Framework\"\nMAC_DEST=\"${DESTROOT}/Mac OS X Framework\"\nTOOL_DEST=\"${DESTROOT}/Tools\"\nLICENSE_DEST=\"${DESTROOT}/LICENSE.txt\"\n\nDOC_SUBDIR=\"Documentation\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\nAPPLETV_SRC=\"${BUILD_DIR}/${CONFIGURATION}-appletv\"\n\n# Populate the destroot\nmkdir -p \"${IPHONE_DEST}\" || exit 1\nrsync -av \"${IPHONE_SRC}/CrashReporter.framework\" \"${IPHONE_DEST}\" || exit 1\n\nmkdir -p \"${APPLETV_DEST}\" || exit 1\nrsync -av \"${APPLETV_SRC}/CrashReporter.framework\" \"${APPLETV_DEST}\" || exit 1\n\nmkdir -p \"${MAC_DEST}\" || exit 1\nrsync -av \"${MAC_SRC}/CrashReporter.framework\" \"${MAC_SRC}/CrashReporter.framework.dSYM\" \"${MAC_DEST}\" || exit 1\n\nmkdir -p \"${TOOL_DEST}\" || exit 1\ninstall -m 755 \"${BUILD_DIR}/${CONFIGURATION}-MacOSX/plcrashutil\" \"${TOOL_DEST}\" || exit 1\n\nrsync -av \"${SRCROOT}/LICENSE\" \"${LICENSE_DEST}\"\n\n# Copy Documentation\nrm -rf \"${DESTROOT}/${DOC_SUBDIR}\"\nrsync -av \"${BUILD_DIR}/${DOC_SUBDIR}\" \"${DESTROOT}\"\n\n# Add a top-level Documentation symlink\npushd \"${DESTROOT}\" >/dev/null\nln -sf \"${DOC_SUBDIR}/index.html\" \"API Documentation.html\"\npopd >/dev/null\n\n# Create the disk image\nrm -f \"${DESTROOT}.dmg\"\nhdiutil create -srcfolder \"${DESTROOT}\" \"${DESTROOT}.dmg\" || exit 1\n\n# Create the ZIP archive\nrm -f \"${DESTROOT}.zip\"\npushd \"${OUTPUT_DEST}\" >/dev/null\nzip --symlinks -r \"${PRODUCT_DIR}.zip\" \"${PRODUCT_DIR}\" || exit 1\npopd >/dev/null\n";
 		};
 		8064D8B71C4D22E5005A8B4C /* Lipo Binary */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3742,7 +3769,79 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"${BUILT_PRODUCTS_DIR}\"\n\nlipo \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-appletvos/libCrashReporter-AppleTVOS.a\" \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-appletvsimulator/libCrashReporter-AppleTVSimulator.a\" \\\n  -create -output ${EXECUTABLE_PATH}\n\nln -sfh Versions/${CURRENT_VERSION}/${PRODUCT_NAME} ${FULL_PRODUCT_NAME}/${PRODUCT_NAME}\n";
+			shellScript = "lipo \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-appletvos/lib${PRODUCT_NAME}-appletvos.a\" \\\n\t\"${BUILD_DIR}/${CONFIGURATION}-appletvsimulator/lib${PRODUCT_NAME}-appletvsimulator.a\" \\\n  -create -output \"${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}-tvOS.a\"\n";
+		};
+		C25664CE235717880088513E /* Package Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Package Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"${BUILT_PRODUCTS_DIR}\"\n\ncp \"lib${PRODUCT_NAME}-iOS.a\" \"${EXECUTABLE_PATH}\"\nln -sfh Versions/${CURRENT_VERSION}/${PRODUCT_NAME} ${FULL_PRODUCT_NAME}/${PRODUCT_NAME}\n";
+		};
+		C25664CF23571A340088513E /* Package Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Package Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"${BUILT_PRODUCTS_DIR}\"\n\ncp \"lib${PRODUCT_NAME}-tvOS.a\" \"${EXECUTABLE_PATH}\"\nln -sfh Versions/${CURRENT_VERSION}/${PRODUCT_NAME} ${FULL_PRODUCT_NAME}/${PRODUCT_NAME}\n";
+		};
+		C25664D023571BC60088513E /* Verify Modifications */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Verify Modifications";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Attempt to verify that the code we're building matches the source archive we're generating\n# We only check for local modifications; in theory, we could assert the existence of a (local, not yet pushed)\n# release tag.\nif [ \"${PL_ALLOW_LOCAL_MODS}\" != 1 ] && [ \"${CONFIGURATION}\" = \"Release\" ]; then\n    if [ \"$(git status --porcelain | grep -v '??' | wc -l | awk '{print $1}')\" != \"0\" ]; then\n        echo \"\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"Local modifications are not permitted when generating a Release build.\" >/dev/stderr\n        echo \"Modifications:\" >/dev/stderr\n        git status --porcelain | grep -v '??' >/dev/stderr\n\n        echo \"\" >/dev/stderr\n        echo \"Set the PL_ALLOW_LOCAL_MODS=1 to bypass this check, or use a non-release build configuration:\" >/dev/stderr\n        echo \"  env PL_ALLOW_LOCAL_MODS=1 xcodebuild ...\" >/dev/stderr\n        echo \"=== RELEASE BUILD ERROR ===\" >/dev/stderr\n        echo \"\" >/dev/stderr\n\n        exit 1\n    fi\nfi\n";
+		};
+		C25664D523571D3D0088513E /* Generate Documentation */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Documentation";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DOC_SUBDIR=\"Documentation\"\nDOC_DEST=\"${BUILD_DIR}/${DOC_SUBDIR}\"\n\n# Doxygen could be in /usr/local/bin (Homebrew) or /opt/local/bin (MacPorts)\n# and those don't seem to be in PATH\nexport PATH=$PATH:/usr/local/bin:/opt/local/bin\n\nif [ ! -z `which doxygen` ]; then\n  # Generate the documentation\n  pushd \"${SRCROOT}\" >/dev/null || exit 1\n    doxygen\n    if [ $? != 0 ]; then\n        echo \"ERROR: Documentation generation failed\" >/dev/stderr\n        exit 1\n    fi\n  popd >/dev/null\n  \n  # Populate the Documentation directory\n  rm -rf \"${DOC_DEST}\"\n  mv Documentation/API \"${DOC_DEST}\"\nelse\n    echo \"WARNING: Doxygen not available, skipping documentation generation\" >/dev/stderr\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -4889,6 +4988,11 @@
 			isa = PBXTargetDependency;
 			target = 8064D81C1C4D22DA005A8B4C /* CrashReporter-tvOS-Simulator */;
 			targetProxy = 80A63BDB1C4D384A0073B7A3 /* PBXContainerItemProxy */;
+		};
+		C25664E5235737560088513E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C25664D123571D330088513E /* Documentation */;
+			targetProxy = C25664E4235737560088513E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -6143,6 +6247,22 @@
 			};
 			name = Release;
 		};
+		C25664D323571D340088513E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C25664D423571D340088513E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -6358,6 +6478,15 @@
 			buildConfigurations = (
 				8064D9AE1C4D27EB005A8B4C /* Debug */,
 				8064D9AF1C4D27EB005A8B4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "Documentation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C25664D323571D340088513E /* Debug */,
+				C25664D423571D340088513E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
