@@ -5,6 +5,7 @@
 ## Build generated
 build/
 DerivedData/
+Documentation/API/
 
 ## Various settings
 *.pbxuser
@@ -27,7 +28,6 @@ xcuserdata/
 *.ipa
 *.dSYM.zip
 *.dSYM
-
 
 # Mac
 .DS_Store
