@@ -3,7 +3,7 @@
 ## Version "next"
 
 * Support macOS 10.15 and XCode 11.
-* Update `protobuf-c` to version 1.3.2. `protoc-c` code generator binary has been removed from the repo, so it should be installed separately now (`brew install protobuf-c`). `protoc-c` C library is included as git submodule, please make sure that it's initialized after update (`git submodule update --init`).
+* Update `protobuf-c` to version 1.3.2. `protoc-c` code generator binary has been removed from the repo, so it should be installed separately now (`brew install protobuf-c`). `protoc-c` C library is included as a git submodule, please make sure that it's initialized after update (`git submodule update --init`).
 * Remove outdated "Google Toolbox for Mac" dependency.
 
 ___
