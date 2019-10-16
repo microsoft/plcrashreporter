@@ -28,26 +28,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8064D8BD1C4D27DF005A8B4C"
-               BuildableName = "Tests-tvOS-Simulator.xctest"
-               BlueprintName = "Tests-tvOS-Simulator"
-               ReferencedContainer = "container:CrashReporter.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8064D9281C4D27E2005A8B4C"
-               BuildableName = "Tests-tvOS-Device.xctest"
-               BlueprintName = "Tests-tvOS-Device"
-               ReferencedContainer = "container:CrashReporter.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
