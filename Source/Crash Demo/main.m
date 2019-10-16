@@ -50,6 +50,7 @@
 /* A custom post-crash callback */
 void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
     // this is not async-safe, but this is a test implementation
+   
     NSLog(@"post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
 }
 
@@ -64,7 +65,6 @@ static void save_crash_report (PLCrashReporter *reporter) {
     if (![reporter hasPendingCrashReport]) 
         return;
 
-#if TARGET_OS_IPHONE
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *error;
     
@@ -88,7 +88,6 @@ static void save_crash_report (PLCrashReporter *reporter) {
     }
     
     NSLog(@"Saved crash report to: %@", outputPath);
-#endif
 }
 
 
