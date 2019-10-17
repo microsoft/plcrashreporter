@@ -1250,33 +1250,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
-		0522F8F617F2B31600AECBAB /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			fileType = sourcecode.mig;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
-				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
-				"",
-			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
-		};
-		0522F8F717F2B48000AECBAB /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			fileType = sourcecode.mig;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
-				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
-			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"";
-		};
 		059670E20EEFAD8C008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
@@ -1289,7 +1262,7 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		0596747A0EF0BA2F008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -1303,7 +1276,7 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		0596747B0EF0BA2F008A0601 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -1317,7 +1290,7 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -1345,7 +1318,7 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		05F411FE0EF8E070008050CF /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -1374,19 +1347,6 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/$(INPUT_FILE_BASE).pb-c.h",
 			);
 			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
-		};
-		6549BDE617E74C3E00605A2C /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			fileType = sourcecode.mig;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE)User.c",
-				"$(DERIVED_FILE_DIR)/$(CURRENT_ARCH)/$(INPUT_FILE_BASE).h",
-			);
-			script = "# Work-around for Xcode 4 handling of spaces in paths passed to mig(1) target. This issue was fixed in Xcode 5,\n# and this custom rule may be deleted once Xcode 5 is required by the project.\nmig -arch \"${CURRENT_ARCH}\" -header \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.h\" -server /dev/null -user \"${DERIVED_FILE_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}User.c\" \"${INPUT_FILE_PATH}\"\n";
 		};
 		8064D8171C4D22D8005A8B4C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -1428,7 +1388,7 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 		8064D9911C4D27E2005A8B4C /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -1442,7 +1402,7 @@
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.c",
 				"${DERIVED_FILES_DIR}/${CURRENT_ARCH}/${INPUT_FILE_BASE}.pb-c.h",
 			);
-			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"";
+			script = "cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=\"${DERIVED_FILES_DIR}/${CURRENT_ARCH}\" \"${INPUT_FILE_NAME}\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -1495,20 +1455,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
 			remoteInfo = "CrashReporter-iPhoneOS";
-		};
-		05614E221A966B7700D62442 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05F40CE60EF7AB80008050CF;
-			remoteInfo = DemoCrash;
-		};
-		05614E261A966C3C00D62442 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 052A45CE136353FB00987004;
-			remoteInfo = "DemoCrash-iOS-Device";
 		};
 		058812C9104058DA009128FB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1656,13 +1602,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8064D7AD1C4D22D8005A8B4C;
 			remoteInfo = "CrashReporter-tvOS-Device";
-		};
-		80A63BC21C4D2C040073B7A3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8064D9971C4D27E9005A8B4C;
-			remoteInfo = "DemoCrash-tvOS-Device";
 		};
 		80A63BD91C4D384A0073B7A3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3278,12 +3217,10 @@
 				05CD32660EE93DC3000FDE88 /* Frameworks */,
 			);
 			buildRules = (
-				0522F8F717F2B48000AECBAB /* PBXBuildRule */,
 				059670E20EEFAD8C008A0601 /* PBXBuildRule */,
 			);
 			dependencies = (
 				05CD342A0EEA5FFA000FDE88 /* PBXTargetDependency */,
-				05614E231A966B7700D62442 /* PBXTargetDependency */,
 			);
 			name = "Tests-MacOSX";
 			productName = "$(TARGET_NAME)";
@@ -3322,7 +3259,6 @@
 			);
 			dependencies = (
 				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
-				05614E271A966C3C00D62442 /* PBXTargetDependency */,
 			);
 			name = "Tests-iOS-Device";
 			productName = "$(TARGET_NAME)";
@@ -3355,7 +3291,6 @@
 				05E731F10EFA1AAB005EDFB7 /* Frameworks */,
 			);
 			buildRules = (
-				6549BDE617E74C3E00605A2C /* PBXBuildRule */,
 				05E7320E0EFA1B60005EDFB7 /* PBXBuildRule */,
 			);
 			dependencies = (
@@ -3474,7 +3409,6 @@
 			);
 			dependencies = (
 				80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */,
-				80A63BC31C4D2C040073B7A3 /* PBXTargetDependency */,
 			);
 			name = "Tests-tvOS-Device";
 			productName = "$(TARGET_NAME)";
@@ -3528,7 +3462,6 @@
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
 			buildRules = (
-				0522F8F617F2B31600AECBAB /* PBXBuildRule */,
 				05F411F10EF8DF79008050CF /* PBXBuildRule */,
 			);
 			dependencies = (
@@ -4878,16 +4811,6 @@
 			target = 05CD31510EE936A9000FDE88 /* CrashReporter-iOS-Device */;
 			targetProxy = 054F50E80EEC50B30034B184 /* PBXContainerItemProxy */;
 		};
-		05614E231A966B7700D62442 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05F40CE60EF7AB80008050CF /* DemoCrash */;
-			targetProxy = 05614E221A966B7700D62442 /* PBXContainerItemProxy */;
-		};
-		05614E271A966C3C00D62442 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 052A45CE136353FB00987004 /* DemoCrash-iOS-Device */;
-			targetProxy = 05614E261A966C3C00D62442 /* PBXContainerItemProxy */;
-		};
 		058812CA104058DA009128FB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 058812B81040582D009128FB /* CrashReporter-iOS */;
@@ -4992,11 +4915,6 @@
 			isa = PBXTargetDependency;
 			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter-tvOS-Device */;
 			targetProxy = 80A63BC01C4D2BE20073B7A3 /* PBXContainerItemProxy */;
-		};
-		80A63BC31C4D2C040073B7A3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8064D9971C4D27E9005A8B4C /* DemoCrash-tvOS-Device */;
-			targetProxy = 80A63BC21C4D2C040073B7A3 /* PBXContainerItemProxy */;
 		};
 		80A63BDA1C4D384A0073B7A3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
