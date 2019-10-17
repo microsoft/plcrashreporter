@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8064D88B1C4D22E5005A8B4C"
-               BuildableName = "CrashReporter.framework"
-               BlueprintName = "CrashReporter-tvOS"
+               BlueprintIdentifier = "058812D410405908009128FB"
+               BuildableName = "Disk Image"
+               BlueprintName = "Disk Image"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8064D88B1C4D22E5005A8B4C"
-            BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter-tvOS"
+            BlueprintIdentifier = "058812D410405908009128FB"
+            BuildableName = "Disk Image"
+            BlueprintName = "Disk Image"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
