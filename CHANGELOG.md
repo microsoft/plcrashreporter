@@ -6,6 +6,8 @@
 * Update `protobuf-c` to version 1.3.2. `protoc-c` code generator binary has been removed from the repo, so it should be installed separately now (`brew install protobuf-c`). `protoc-c` C library is included as a git submodule, please make sure that it's initialized after update (`git submodule update --init`).
 * Remove outdated "Google Toolbox for Mac" dependency.
 * The sources aren't distributed in the release archive anymore. Please use GitHub snapshot instead.
+* Distribute static libraries in a second archive aside an archive with frameworks.
+* Fixed minor bugs in runtime symbolication: use correct bit-mask for the data pointer and correctly reset error code for the case if there are no categories for currently symbolicating class.
 
 ___
 
