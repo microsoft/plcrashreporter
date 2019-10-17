@@ -7,7 +7,7 @@
 * Remove outdated "Google Toolbox for Mac" dependency.
 * The sources aren't distributed in the release archive anymore. Please use GitHub snapshot instead.
 * Distribute static libraries in a second archive aside the frameworks archive.
-* Fixed minor bugs in runtime symbolication: use correct bit-mask for the data pointer and correctly reset error code if no categories for currently symbolicating class.
+* Fix minor bugs in runtime symbolication: use correct bit-mask for the data pointer and correctly reset error code if no categories for currently symbolicating class.
 
 ___
 
