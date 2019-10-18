@@ -49,17 +49,15 @@
  * Initialize a new Mach-O binary image parser.
  *
  * @param image The image structure to be initialized.
- * @param allocator A borrowed reference to the allocator to be used for any allocations.
  * @param name The file name or path for the Mach-O image.
  * @param header The task-local address of the image's Mach-O header.
  *
  * @return PLCRASH_ESUCCESS on success. PLCRASH_EINVAL will be returned in the Mach-O file can not be parsed,
- * PLCRASH_EINTERNAL if an error occurs reading from the target task, or PLCRASH_ENOMEM if memory allocation
- * fails.
+ * or PLCRASH_EINTERNAL if an error occurs reading from the target task.
  *
  * @warning This method is not async safe.
  */
-plcrash_error_t plcrash_async_macho_init (plcrash_async_macho_t *image, plcrash_async_allocator_t *allocator, mach_port_t task, const char *name, pl_vm_address_t header) {
+plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_port_t task, const char *name, pl_vm_address_t header) {
     plcrash_error_t ret;
 
     /* Defaults checked in the  error cleanup handler */
@@ -68,19 +66,10 @@ plcrash_error_t plcrash_async_macho_init (plcrash_async_macho_t *image, plcrash_
     image->name = NULL;
 
     /* Basic initialization */
-    image->_allocator = allocator;
     image->task = task;
     image->header_addr = header;
-    
-    /* Allocate memory and copy in the image name */
-    size_t name_len = strlen(name) + 1;
-    if ((ret = plcrash_async_allocator_alloc(allocator, (void **) &image->name, name_len)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Failed to allocate buffer for image name: %d", ret);
-        return PLCRASH_ENOMEM;
-    }
-    plcrash_async_memcpy(image->name, name, name_len);
+    image->name = strdup(name);
 
-    /* Retain a mach port reference */
     mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, 1);
     task_initialized = true;
 
@@ -207,7 +196,7 @@ error:
         plcrash_async_mobject_free(&image->load_cmds);
     
     if (image->name != NULL)
-        plcrash_async_allocator_dealloc(image->_allocator, image->name);
+        free(image->name);
     
     if (task_initialized)
         mach_port_mod_refs(mach_task_self(), image->task, MACH_PORT_RIGHT_SEND, -1);
@@ -952,9 +941,9 @@ void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *s
  *
  * @warning This method is not async safe.
  */
-void plcrash_async_macho_free (plcrash_async_macho_t *image) {
+void plcrash_nasync_macho_free (plcrash_async_macho_t *image) {
     if (image->name != NULL)
-        plcrash_async_allocator_dealloc(image->_allocator, image->name);
+        free(image->name);
     
     plcrash_async_mobject_free(&image->load_cmds);
 

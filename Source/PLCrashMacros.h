@@ -52,12 +52,6 @@
 #   define PLCR_CPP_BEGIN_NS namespace plcrash {
 #   define PLCR_CPP_END_NS }
 #  endif
-#
-    /** @internal Define the plcrash::async namespace, automatically inserting an inline namespace containing the configured PLCRASHREPORTER_PREFIX, if any. */
-#  define PLCR_CPP_BEGIN_ASYNC_NS PLCR_CPP_BEGIN_NS namespace async {
-
-    /** @internal Close the definition of the `plcrash::async` namespace (and the PLCRASHREPORTER_PREFIX inline namespace, if any). */
-#  define PLCR_CPP_END_ASYNC_NS PLCR_CPP_END_NS }
 #endif
 
 #ifdef __clang__
