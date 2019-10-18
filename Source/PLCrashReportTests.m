@@ -289,9 +289,9 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          * The (uint64_t)(uint32_t) casting is prevent improper sign extension when casting the signed cpusubtype integer_t
          * to a larger, unsigned uint64_t value.
          */
-        Dl_info info;
-        STAssertNotEquals(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info), 0, @"dladdr() failed to find image of %@", imageInfo.imageName);
-        struct mach_header *hdr = info.dli_fbase;
+        Dl_info dlInfo;
+        STAssertNotEquals(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &dlInfo), 0, @"dladdr() failed to find image of %@", imageInfo.imageName);
+        struct mach_header *hdr = dlInfo.dli_fbase;
         if (hdr != NULL) {
             STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
             STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
