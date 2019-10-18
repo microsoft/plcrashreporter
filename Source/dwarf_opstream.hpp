@@ -44,7 +44,8 @@
  * @{
  */
 
-PLCR_CPP_BEGIN_ASYNC_NS
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -276,7 +277,8 @@ inline uintptr_t dwarf_opstream::get_position (void) {
     return ((uintptr_t)_p) - ((uintptr_t) _instr);
 }
     
-PLCR_CPP_END_ASYNC_NS
+PLCR_CPP_END_NS
+}
     
 /**
  * @}

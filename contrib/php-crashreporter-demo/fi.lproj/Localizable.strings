@@ -1,0 +1,45 @@
+﻿/* 
+   Localizable.strings
+   CrashReporterDemo
+
+   Created by Andreas Linde on 04.03.09.
+   Copyright 2009 Andreas Linde. All rights reserved.
+ */
+
+/* Global strings */
+
+/* For dialogs yes buttons */
+"Yes" = "Kyllä";
+
+/* For dialogs no buttons */
+"No" = "Ei";
+
+/* For dialogs ok buttons */
+"Ok" = "OK";
+
+
+/* Crash dialog */
+
+/* Title showing in the alert box when crash report data has been found */
+"CrashDataFoundTitle" = "Kaatumistietoja löytyi";
+
+/* Description explaining that crash data has been found and ask the user if the data might be uplaoded to the developers server */
+"CrashDataFoundDescription" = "Ohjelma kaatui äsken. Haluatko antaa kehittäjälle anonyymit kaatumistiedot, jotta ongelma voidaan korjata?";
+
+/* Alert box button if the users wants to send crash data always automatically */
+"Always" = "Aina";
+
+/* Text showing in a processing box that the crash data is being uploaded to the server */
+"Sending" = "Lähetetään ...";
+
+/* Title for the alertview giving feedback about the crash */
+"CrashResponseTitle" = "Virheilmoituksen tila";
+
+/* Full text telling the bug is fixed and will be available in the next release */
+"CrashResponseNextRelease" = "Virhe, joka aiheutti kaatumisen, on jo ratkaistu ja korjaus sisältyy seuraavaan versioon YOURAPPNAMEillä.";
+
+/* Full text telling the bug is fixed and the new release is waiting at Apple */
+"CrashResponseWaitingApple" = "Virhe, joka aiheutti kaatumisen, on jo ratkaistu ja seuraava versio YOURAPPNAMEillä odottaa Applen hyväksyntää.";
+
+/* Full text telling the bug is fixed and an update is available in the AppStore */
+"CrashResponseAvailable" = "Virhe, joka aiheutti kaatumisen, on jo ratkaistu, ja uudempi versio YOURAPPNAMEillä on saatavilla. Päivitäthän siihen!";

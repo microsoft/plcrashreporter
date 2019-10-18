@@ -21,9 +21,9 @@
  * -landonf dec 12, 2008
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
+#import <stdint.h>
+#import <string.h>
+#import <stdlib.h>
 
 #include "PLCrashLogWriterEncoding.h"
 

@@ -49,8 +49,8 @@ static bool plcrash_async_image_objc_has_ios9_abi () {
     static dispatch_once_t onceToken;
     static bool is_ios9;
     dispatch_once(&onceToken, ^{
-        NSProcessInfo *procinfo = [NSProcessInfo processInfo];
-        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [procinfo respondsToSelector: @selector(operatingSystemVersion)] && procinfo.operatingSystemVersion.majorVersion >= 9) {
+        NSProcessInfo *pi = [NSProcessInfo processInfo];
+        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [pi respondsToSelector: @selector(operatingSystemVersion)] && pi.operatingSystemVersion.majorVersion >= 9) {
             is_ios9 = true;
         } else {
             is_ios9 = false;
@@ -94,7 +94,7 @@ const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_ob
  *
  * Class's rw data structure has been realized.
  */
-static const uint32_t RW_REALIZED = (1U<<31);
+static const uint32_t RW_REALIZED = (1<<31);
 
 /**
  * @internal
@@ -243,7 +243,7 @@ struct pl_objc2_list_header {
  * if the cache size has been set.
  *
  * @param context The context.
- * @param key The key.
+ * @param The key.
  * @return The index.
  */
 static size_t cache_index (plcrash_async_objc_cache_t *context, pl_vm_address_t key) {
@@ -412,7 +412,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
     pl_vm_address_t namePtr = image->byteorder->swap32(cls->name);
     bool classNameInitialized = false;
     plcrash_async_macho_string_t className;
-    err = plcrash_async_macho_string_init(&className, image->task, namePtr);
+    err = plcrash_async_macho_string_init(&className, image, namePtr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)namePtr, err);
         return err;
@@ -487,7 +487,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             /* Load the method name from the .name field pointer. */
             pl_vm_address_t methodNamePtr = image->byteorder->swap32(method.name);
             plcrash_async_macho_string_t methodName;
-            err = plcrash_async_macho_string_init(&methodName, image->task, methodNamePtr);
+            err = plcrash_async_macho_string_init(&methodName, image, methodNamePtr);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
                 goto cleanup;
@@ -682,7 +682,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
         
         /* Read the method name. */
         plcrash_async_macho_string_t method_name;
-        if ((err = plcrash_async_macho_string_init(&method_name, image->task, methodNamePtr)) != PLCRASH_ESUCCESS) {
+        if ((err = plcrash_async_macho_string_init(&method_name, image, methodNamePtr)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
             return err;
         }
@@ -791,7 +791,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     
     /* Fetch the pointer to the class name, and make the string. */
     pl_vm_address_t class_name_ptr = image->byteorder->swap(cls_data_ro->name);
-    err = plcrash_async_macho_string_init(class_name, image->task, class_name_ptr);
+    err = plcrash_async_macho_string_init(class_name, image, class_name_ptr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)class_name_ptr, err);
         return PLCRASH_EINVALID_DATA;

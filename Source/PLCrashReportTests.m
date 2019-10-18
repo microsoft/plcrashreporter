@@ -31,7 +31,7 @@
 #import "PLCrashReporter.h"
 #import "PLCrashFrameWalker.h"
 #import "PLCrashLogWriter.h"
-#import "PLCrashAsyncDynamicLoader.h"
+#import "PLCrashAsyncImageList.h"
 #import "PLCrashTestThread.h"
 
 #import "PLCrashHostInfo.h"
@@ -48,9 +48,6 @@
 @private
     /* Path to crash log */
     NSString *_logPath;
-    
-    /** Allocator to use with async-safe APIs. */
-    plcrash_async_allocator_t *_allocator;
 }
 
 @end
@@ -58,9 +55,6 @@
 @implementation PLCrashReportTests
 
 - (void) setUp {
-    /* Set up our allocator */
-    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
-    
     /* Create a temporary log path */
     _logPath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
 }
@@ -71,26 +65,23 @@
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
     [_logPath release];
-    
-    /* Clean up our allocator */
-    plcrash_async_allocator_free(_allocator);
 }
 
 struct plcr_live_report_context {
     plcrash_log_writer_t *writer;
     plcrash_async_file_t *file;
-    plcrash_async_dynloader_t *dynamic_loader;
+    plcrash_async_image_list_t *images;
     plcrash_log_signal_info_t *info;
 };
 static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *state, void *ctx) {
     struct plcr_live_report_context *plcr_ctx = ctx;
-    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), plcr_ctx->dynamic_loader, plcr_ctx->file, plcr_ctx->info, state);
+    return plcrash_log_writer_write(plcr_ctx->writer, pl_mach_thread_self(), plcr_ctx->images, plcr_ctx->file, plcr_ctx->info, state);
 }
 
 - (void) testWriteReport {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
-    plcrash_async_dynloader_t *loader = NULL;
+    plcrash_async_image_list_t image_list;
     NSError *error = nil;
     
     /* Initialze faux crash data */
@@ -130,23 +121,26 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     }
     plcrash_log_writer_set_exception(&writer, exception);
 
-    /* Provide access to our dynamic loader */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_nasync_dynloader_new(&loader, _allocator, mach_task_self()), @"Failed to create loader reference");
-    
+    /* Provide binary image info */
+    plcrash_nasync_image_list_init(&image_list, mach_task_self());
+    uint32_t image_count = _dyld_image_count();
+    for (uint32_t i = 0; i < image_count; i++) {
+        plcrash_nasync_image_list_append(&image_list, (uintptr_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
+    }
+
     /* Write the crash report */
     struct plcr_live_report_context ctx = {
         .writer = &writer,
         .file = &file,
-        .dynamic_loader = loader,
+        .images = &image_list,
         .info = &info
     };
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_thread_state_current(plcr_live_report_callback, &ctx), @"Writing crash log failed");
 
-    /* Close it and clean up */
-    plcrash_async_dynloader_free(loader);
-    
+    /* Close it */
     plcrash_log_writer_close(&writer);
     plcrash_log_writer_free(&writer);
+    plcrash_nasync_image_list_free(&image_list);
 
     plcrash_async_file_flush(&file);
     plcrash_async_file_close(&file);
@@ -165,11 +159,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertNotNil(crashLog.systemInfo.operatingSystemBuild, @"OS build is nil");
     STAssertNotNil(crashLog.systemInfo.timestamp, @"Timestamp is nil");
     STAssertEquals(crashLog.systemInfo.operatingSystem, PLCrashReportHostOperatingSystem, @"Operating system incorrect");
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals(crashLog.systemInfo.architecture, PLCrashReportHostArchitecture, @"Architecture incorrect");
-#pragma clang diagnostic pop
-    STAssertNotNil(crashLog.systemInfo.processorInfo, @"Processor info is nil");
     
     /* Machine info */
     const NXArchInfo *archInfo = NXGetLocalArchInfo();
@@ -287,9 +277,9 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          * The (uint64_t)(uint32_t) casting is prevent improper sign extension when casting the signed cpusubtype integer_t
          * to a larger, unsigned uint64_t value.
          */
-        Dl_info dlInfo;
-        STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &dlInfo) != 0, @"dladdr() failed to find image");
-        struct mach_header *hdr = dlInfo.dli_fbase;
+        Dl_info info;
+        STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &info) != 0, @"dladdr() failed to find image");
+        struct mach_header *hdr = info.dli_fbase;
         STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
         STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
     }

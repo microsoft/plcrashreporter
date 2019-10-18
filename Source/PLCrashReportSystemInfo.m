@@ -27,7 +27,6 @@
  */
 
 #import "PLCrashReportSystemInfo.h"
-#import "PLCrashReportProcessorInfo.h"
 
 /**
  * @ingroup constants
@@ -96,7 +95,6 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
                   operatingSystemVersion: operatingSystemVersion
                     operatingSystemBuild: nil
                             architecture: architecture
-                           processorInfo: nil
                                timestamp: timestamp];
 }
 
@@ -115,31 +113,6 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
                   architecture: (PLCrashReportArchitecture) architecture
                      timestamp: (NSDate *) timestamp
 {
-    return [self initWithOperatingSystem: operatingSystem
-                  operatingSystemVersion: operatingSystemVersion
-                    operatingSystemBuild: operatingSystemBuild
-                            architecture: architecture
-                           processorInfo: nil
-                               timestamp: timestamp];
-}
-
-/**
- * Initialize the system info data object.
- *
- * @param operatingSystem Operating System
- * @param operatingSystemVersion OS version
- * @param operatingSystemBuild OS build (may be nil).
- * @param architecture Architecture
- * @param processorInfo The processor info
- * @param timestamp Timestamp (may be nil).
- */
-- (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem
-        operatingSystemVersion: (NSString *) operatingSystemVersion
-          operatingSystemBuild: (NSString *) operatingSystemBuild
-                  architecture: (PLCrashReportArchitecture) architecture
-                 processorInfo: (PLCrashReportProcessorInfo *) processorInfo
-                     timestamp: (NSDate *) timestamp
-{
     if ((self = [super init]) == nil)
         return nil;
     
@@ -147,7 +120,6 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
     _osVersion = [operatingSystemVersion retain];
     _osBuild = [operatingSystemBuild retain];
     _architecture = architecture;
-    _processorInfo = [processorInfo retain];
     _timestamp = [timestamp retain];
     
     return self;
@@ -157,7 +129,6 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
     [_osVersion release];
     [_osBuild release];
     [_timestamp release];
-    [_processorInfo release];
     [super dealloc];
 }
 
@@ -166,6 +137,5 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
 @synthesize operatingSystemBuild = _osBuild;
 @synthesize architecture = _architecture;
 @synthesize timestamp = _timestamp;
-@synthesize processorInfo = _processorInfo;
 
 @end

@@ -133,7 +133,7 @@ enum {
     /** CrashReport.thread.register.name */
     PLCRASH_PROTO_THREAD_REGISTER_NAME_ID = 1,
 
-    /** CrashReport.thread.register.value */
+    /** CrashReport.thread.register.name */
     PLCRASH_PROTO_THREAD_REGISTER_VALUE_ID = 2,
 
 
@@ -279,20 +279,6 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 {
     /* Default to 0 */
     memset(writer, 0, sizeof(*writer));
-    
-    /*
-     * Try to create our allocator. We've somewhat arbitrarily selected an initial size of 64KB; the heap will grow
-     * if we need it to, and physical pages should not actually be allocated until we use the RAM.
-     *
-     * Debug log messages will be emitted if heap growth is necessary during runtime execution, in which case we
-     * should update this sizing.
-     */
-    plcrash_error_t err = plcrash_async_allocator_create(&writer->allocator, 64 * 1024 /* 64KB intial sizing */);
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Could not initialize our crash-time allocator: %d", err);
-        return err;
-    }
-    
 
     /* Initialize configuration */
     writer->symbol_strategy = symbol_strategy;
@@ -453,15 +439,15 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         /* Fetch the major, minor, and bugfix versions.
          * Fetching the OS version should not fail. */
         if (Gestalt(gestaltSystemVersionMajor, &major) != noErr) {
-            PLCF_DEBUG("Could not retrieve system major version with Gestalt");
+            PLCF_DEBUG("Could not retreive system major version with Gestalt");
             return PLCRASH_EINTERNAL;
         }
         if (Gestalt(gestaltSystemVersionMinor, &minor) != noErr) {
-            PLCF_DEBUG("Could not retrieve system minor version with Gestalt");
+            PLCF_DEBUG("Could not retreive system minor version with Gestalt");
             return PLCRASH_EINTERNAL;
         }
         if (Gestalt(gestaltSystemVersionBugFix, &bugfix) != noErr) {
-            PLCF_DEBUG("Could not retrieve system bugfix version with Gestalt");
+            PLCF_DEBUG("Could not retreive system bugfix version with Gestalt");
             return PLCRASH_EINTERNAL;
         }
 
@@ -605,7 +591,7 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
  *
  * @param file Output file
  * @param cpu_type The Mach CPU type.
- * @param cpu_subtype The Mach CPU subtype
+ * @param cpu_subtype_t The Mach CPU subtype
  */
 static size_t plcrash_writer_write_processor_info (plcrash_async_file_t *file, uint64_t cpu_type, uint64_t cpu_subtype) {
     size_t rv = 0;
@@ -752,11 +738,10 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 /**
  * @internal
  *
- * Write a single register.
+ * Write a thread backtrace register
  *
  * @param file Output file
- * @param regname The register to write's name.
- * @param regval The register to write's value.
+ * @param cursor The cursor from which to acquire frame data.
  */
 static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, const char *regname, plcrash_greg_t regval) {
     uint64_t uint64val;
@@ -870,7 +855,9 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plc
 
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_PC_ID, PLPROTOBUF_C_TYPE_UINT64, &pcval);
     
-    plcrash_async_macho_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pcval);
+    plcrash_async_image_list_set_reading(image_list, true);
+    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pcval);
+    
     if (image != NULL && writer->symbol_strategy != PLCRASH_ASYNC_SYMBOL_STRATEGY_NONE) {
         struct pl_symbol_cb_ctx ctx;
         plcrash_error_t ret;
@@ -879,13 +866,13 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plc
          * our callback is called and PLCRASH_ESUCCESS is returned. */
         ctx.file = NULL;
         ctx.msgsize = 0x0;
-        ret = plcrash_async_find_symbol(image, writer->symbol_strategy, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+        ret = plcrash_async_find_symbol(&image->macho_image, writer->symbol_strategy, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
         if (ret == PLCRASH_ESUCCESS) {
             /* Write the header and message */
             rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_FRAME_SYMBOL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &ctx.msgsize);
 
             ctx.file = file;
-            ret = plcrash_async_find_symbol(image, writer->symbol_strategy, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
+            ret = plcrash_async_find_symbol(&image->macho_image, writer->symbol_strategy, findContext, (pl_vm_address_t) pcval, plcrash_writer_write_thread_frame_symbol_cb, &ctx);
             if (ret == PLCRASH_ESUCCESS) {
                 rv += ctx.msgsize;
             } else {
@@ -894,6 +881,9 @@ static size_t plcrash_writer_write_thread_frame (plcrash_async_file_t *file, plc
             }
         }
     }
+
+    plcrash_async_image_list_set_reading(image_list, false);
+
 
     return rv;
 }
@@ -1006,7 +996,8 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
  * Write a binary image frame
  *
  * @param file Output file
- * @param image Mach-O image.
+ * @param name binary image path (or name).
+ * @param image_base Mach-O image base.
  */
 static size_t plcrash_writer_write_binary_image (plcrash_async_file_t *file, plcrash_async_macho_t *image) {
     size_t rv = 0;
@@ -1197,7 +1188,7 @@ static size_t plcrash_writer_write_report_info (plcrash_async_file_t *file, plcr
  *
  * @param writer The writer context.
  * @param crashed_thread The crashed thread. 
- * @param dynamic_loader A borrowed reference to the target's dynamic loader.
+ * @param image_list The current list of loaded binary images.
  * @param file The output file.
  * @param siginfo Signal information.
  * @param current_state If non-NULL, the given thread state will be used when walking the current thread. The state must remain
@@ -1208,34 +1199,17 @@ static size_t plcrash_writer_write_report_info (plcrash_async_file_t *file, plcr
  */
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
-                                          plcrash_async_dynloader_t *dynamic_loader,
+                                          plcrash_async_image_list_t *image_list,
                                           plcrash_async_file_t *file,
                                           plcrash_log_signal_info_t *siginfo,
                                           plcrash_async_thread_state_t *current_state)
 {
     thread_act_array_t threads;
     mach_msg_type_number_t thread_count;
-    plcrash_error_t err;
 
     /* A context must be supplied if the current thread is marked as the crashed thread; otherwise,
      * the thread's stack can not be safely walked. */
     PLCF_ASSERT(pl_mach_thread_self() != crashed_thread || current_state != NULL);
-    
-    /* Get a list of all images. If this fails (and it shouldn't), we log the error and instead operate on an empty
-     * image list. This will greatly reduce the utility of the report, but it's better than producing no report
-     * at all. */
-    plcrash_async_image_list_t *image_list;
-    if ((err = plcrash_async_dynloader_read_image_list(dynamic_loader, writer->allocator, &image_list)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Fetching image list failed, proceeding with an empty image list: %d", err);
-        
-        
-        /* Allocate an empty image list; outside of a compile-time configuration error, this should never fail. If it does
-         * fail, our environment is messed up enough that terminating without writing a report is likely justified */
-        if ((image_list = plcrash_async_image_list_new_empty(writer->allocator)) == NULL) {
-            PLCF_DEBUG("Allocation of our empty image list failed unexpectedly");
-            return PLCRASH_ENOMEM;
-        }
-    }
 
     /* Get a list of all threads */
     if (task_threads(mach_task_self(), &threads, &thread_count) != KERN_SUCCESS) {
@@ -1251,7 +1225,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 
     /* Set up a symbol-finding context. */
     plcrash_async_symbol_cache_t findContext;
-    err = plcrash_async_symbol_cache_init(&findContext);
+    plcrash_error_t err = plcrash_async_symbol_cache_init(&findContext);
     /* Abort if it failed, although that should never actually happen, ever. */
     if (err != PLCRASH_ESUCCESS)
         return err;
@@ -1372,15 +1346,19 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     }
 
     /* Binary Images */
-    for (size_t i = 0; i < plcrash_async_image_list_count(image_list); i++) {
-        plcrash_async_macho_t *image = plcrash_async_image_list_get_image(image_list, i);
+    plcrash_async_image_list_set_reading(image_list, true);
+
+    plcrash_async_image_t *image = NULL;
+    while ((image = plcrash_async_image_list_next(image_list, image)) != NULL) {
         uint32_t size;
 
         /* Calculate the message size */
-        size = plcrash_writer_write_binary_image(NULL, image);
+        size = plcrash_writer_write_binary_image(NULL, &image->macho_image);
         plcrash_writer_pack(file, PLCRASH_PROTO_BINARY_IMAGES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_binary_image(file, image);
+        plcrash_writer_write_binary_image(file, &image->macho_image);
     }
+
+    plcrash_async_image_list_set_reading(image_list, false);
 
     /* Exception */
     if (writer->uncaught_exception.has_exception) {

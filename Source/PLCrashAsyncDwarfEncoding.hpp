@@ -28,7 +28,7 @@
 #define PLCRASH_ASYNC_DWARF_ENCODING_H 1
 
 #include "PLCrashAsync.h"
-#include "PLCrashAsyncDynamicLoader.h"
+#include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
 
 #include "PLCrashAsyncDwarfPrimitives.hpp"
@@ -39,7 +39,8 @@
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-PLCR_CPP_BEGIN_ASYNC_NS
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -51,6 +52,9 @@ PLCR_CPP_BEGIN_ASYNC_NS
  * @internal
  *
  * A DWARF frame reader. Performs DWARF eh_frame/debug_frame parsing from a backing memory object.
+ *
+ * @tparam machine_ptr The target machine's unsigned native pointer type.
+ * @tparam machine_ptr_s The target machine's signed native pointer type.
  */
 class dwarf_frame_reader {
 public:
@@ -77,7 +81,8 @@ private:
     bool _debug_frame;
 };
     
-PLCR_CPP_END_ASYNC_NS
+PLCR_CPP_END_NS
+}
 
 /**
  * @}
