@@ -49,8 +49,8 @@ static bool plcrash_async_image_objc_has_ios9_abi () {
     static dispatch_once_t onceToken;
     static bool is_ios9;
     dispatch_once(&onceToken, ^{
-        NSProcessInfo *pi = [NSProcessInfo processInfo];
-        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [pi respondsToSelector: @selector(operatingSystemVersion)] && pi.operatingSystemVersion.majorVersion >= 9) {
+        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [processInfo respondsToSelector: @selector(operatingSystemVersion)] && processInfo.operatingSystemVersion.majorVersion >= 9) {
             is_ios9 = true;
         } else {
             is_ios9 = false;
