@@ -26,12 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashAsync.h"
+#include "PLCrashAsync.h"
 
-#import <stdint.h>
-#import <errno.h>
-#import <string.h>
-#import <inttypes.h>
+#include <stdint.h>
+#include <errno.h>
+#include <string.h>
+#include <inttypes.h>
 
 /**
  * @internal
@@ -145,31 +145,6 @@ const char *plcrash_async_strerror (plcrash_error_t error) {
 }
 
 /**
- * (Safely) read len bytes from @a source, storing in @a dest.
- *
- * @param task The task from which data from address @a source will be read.
- * @param source The address within @a task from which the data will be read.
- * @param dest The destination address to which copied data will be written.
- * @param len The number of bytes to be read.
- *
- * @return On success, returns KERN_SUCCESS. If the pages containing @a source + len are unmapped, KERN_INVALID_ADDRESS
- * will be returned. If the pages can not be read due to access restrictions, KERN_PROTECTION_FAILURE will be returned.
- *
- * @warning Unlike all other plcrash_* functions, plcrash_async_read_addr returns a kern_return_t value.
- * @deprecated New code should make use of plcrash_async_task_memcpy().
- */
-kern_return_t plcrash_async_read_addr (mach_port_t task, pl_vm_address_t source, void *dest, pl_vm_size_t len) {
-#ifdef PL_HAVE_MACH_VM
-    pl_vm_size_t read_size = len;
-    return mach_vm_read_overwrite(task, source, len, (pointer_t) dest, &read_size);
-#else
-    vm_size_t read_size = len;
-    return vm_read_overwrite(task, source, len, (pointer_t) dest, &read_size);
-#endif
-}
-
-
-/**
  * Safely add @a offset to @a base_address, returning the result in @a result. If an overflow would occur, false is returned.
  *
  * @param base_address The base address from which @a result will be computed.
@@ -242,16 +217,13 @@ plcrash_error_t plcrash_async_task_memcpy (mach_port_t task, pl_vm_address_t add
 
         case KERN_INVALID_ADDRESS:
             return PLCRASH_ENOTFOUND;
-            break;
             
         case KERN_PROTECTION_FAILURE:
             return PLCRASH_EACCESS;
-            break;
 
         default:
             PLCF_DEBUG("Unexpected error from vm_read_overwrite: %d", kt);
             return PLCRASH_EUNKNOWN;
-            break;
     }
 }
 
@@ -407,7 +379,7 @@ void *plcrash_async_memcpy (void *dest, const void *source, size_t n) {
  * though in reality, it is.
  *
  * @param dest Destination.
- * @param int Value to write to @a dest.
+ * @param value Value to write to @a dest.
  * @param n Number of bytes to copy.
  */
 void *plcrash_async_memset(void *dest, uint8_t value, size_t n) {
@@ -433,12 +405,12 @@ void *plcrash_async_memset(void *dest, uint8_t value, size_t n) {
  * should be necessary
  */
 ssize_t plcrash_async_writen (int fd, const void *data, size_t len) {
-    const void *p;
+    const uint8_t *p;
     size_t left;
     ssize_t written = 0;
     
     /* Loop until all bytes are written */
-    p = data;
+    p = (const uint8_t *) data;
     left = len;
     while (left > 0) {
         if ((written = write(fd, p, left)) <= 0) {

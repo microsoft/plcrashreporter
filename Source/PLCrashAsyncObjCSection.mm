@@ -96,7 +96,7 @@ const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_ob
  * Class's rw data structure has been realized.
  ** If set, data pointers to RW data instead of RO.
  */
-static const uint32_t RW_REALIZED = (1<<31);
+static const uint32_t RW_REALIZED = (1U<<31);
 
 /**
  * @internal
@@ -258,7 +258,7 @@ struct pl_objc2_list_header {
  * if the cache size has been set.
  *
  * @param context The context.
- * @param The key.
+ * @param key The key.
  * @return The index.
  */
 static size_t cache_index (plcrash_async_objc_cache_t *context, pl_vm_address_t key) {

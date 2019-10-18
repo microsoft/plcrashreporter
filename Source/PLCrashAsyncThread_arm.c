@@ -26,12 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashAsyncThread.h"
-#import "PLCrashAsync.h"
+#include "PLCrashAsyncThread.h"
+#include "PLCrashAsync.h"
 
-#import <signal.h>
-#import <stdlib.h>
-#import <assert.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #if defined(__arm__) || defined(__arm64__)
 

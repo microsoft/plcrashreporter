@@ -182,7 +182,7 @@ typedef struct plcrash_async_macho_symtab_reader {
  * @param address The symbol address.
  * @param name The symbol name. The callback is responsible for copying this value, as its backing storage is not gauranteed to exist
  * after the callback returns.
- * @param context The API client's supplied context value.
+ * @param ctx The API client's supplied context value.
  */
 typedef void (*pl_async_macho_found_symbol_cb)(pl_vm_address_t address, const char *name, void *ctx);
 

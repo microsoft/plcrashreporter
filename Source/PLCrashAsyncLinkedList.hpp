@@ -67,10 +67,10 @@ public:
             void *ptr = malloc(size);
             PLCF_ASSERT(ptr != NULL);
             return ptr;
-        };
+        }
         void operator delete (void *ptr) {
             free(ptr);
-        };
+        }
         
         /**
          * Return the list item value.
@@ -127,8 +127,8 @@ public:
         void *ptr = malloc(size);
         PLCF_ASSERT(ptr != NULL);
         return ptr;
-    };
-    void operator delete (void *ptr) { free(ptr); };
+    }
+    void operator delete (void *ptr) { free(ptr); }
     
     /**
      * Sanity check list validity. Intended to be used from the unit tests; will fire
