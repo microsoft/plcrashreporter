@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.5 (Under development)
+## Version 1.4 (Under development)
 
 * Support macOS 10.15 and XCode 11 and drop support for macOS 10.6.
 * Add support for tvOS apps.
