@@ -31,16 +31,13 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
-#import <objc/runtime.h>
 
 #include "PLCrashAsyncObjCSection.h"
+
 
 @interface PLCrashAsyncObjCSectionTests : SenTestCase {
     /** The image containing our class. */
     plcrash_async_macho_t _image;
-    
-    /** Allocator used by our _image. */
-    plcrash_async_allocator_t *_allocator;
 }
 
 @end
@@ -76,13 +73,9 @@
 }
 
 - (void) setUp {
-    /* Set up our allocator */
-    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
-
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    IMP localIMP = class_getMethodImplementation([self class], _cmd);
-    STAssertTrue(dladdr((void *) localIMP, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;
@@ -96,7 +89,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
     
-    plcrash_async_macho_init(&_image, _allocator, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
+    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
     
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -109,11 +102,7 @@
 }
 
 - (void) tearDown {
-    plcrash_async_macho_free(&_image);
-    
-    /* Clean up our allocator (must be done *after* cleaning up the _image allocated from this allocator) */
-    plcrash_async_allocator_free(_allocator);
-
+    plcrash_nasync_macho_free(&_image);
 }
 
 static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
@@ -142,7 +131,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
 }
 
 - (void) testParse {
-    __block plcrash_error_t err;
+    plcrash_error_t err;
     
     plcrash_async_objc_cache_t objCContext;
     err = plcrash_async_objc_cache_init(&objCContext);
@@ -152,6 +141,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
     err = plcrash_async_objc_find_method(&_image, &objCContext, pc, ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
+        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;
@@ -181,6 +171,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     didCall = NO;
     err = plcrash_async_objc_find_method(&_image, &objCContext, [self addressInCategory], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
+        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;
@@ -211,6 +202,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     didCall = NO;
     err = plcrash_async_objc_find_method(&_image, &objCContext, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
+        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;
@@ -240,6 +232,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     didCall = NO;
     err = plcrash_async_objc_find_method(&_image, &objCContext, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
+        plcrash_error_t err;
         
         pl_vm_size_t classNameLength;
         const char *classNamePtr;

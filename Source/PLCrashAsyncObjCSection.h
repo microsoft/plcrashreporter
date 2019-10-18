@@ -29,12 +29,12 @@
 #ifndef PLCRASH_ASYNC_OBJC_SECTION_H
 #define PLCRASH_ASYNC_OBJC_SECTION_H
 
-#include "PLCrashAsyncMachOImage.h"
-#include "PLCrashAsyncMachOString.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "PLCrashAsyncMachOImage.h"
+#include "PLCrashAsyncMachOString.h"
     
 /**
  * @internal

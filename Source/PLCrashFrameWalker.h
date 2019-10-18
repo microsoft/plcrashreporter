@@ -29,17 +29,17 @@
 #ifndef PLCRASH_FRAMEWALKER_H
 #define PLCRASH_FRAMEWALKER_H
 
-#include <sys/ucontext.h>
-#include <pthread.h>
+#import <sys/ucontext.h>
+#import <pthread.h>
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <unistd.h>
+#import <stdint.h>
+#import <stdbool.h>
+#import <unistd.h>
 
-#include <mach/mach.h>
+#import <mach/mach.h>
 
 #include "PLCrashAsyncThread.h"
-#include "PLCrashAsyncDynamicLoader.h"
+#include "PLCrashAsyncImageList.h"
 
 /* Configure supported targets based on the host build architecture. There's currently
  * no deployed architecture on which simultaneous support for different processor families

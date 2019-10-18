@@ -101,7 +101,7 @@ plcrash_error_t plcrash_async_thread_state_init (plcrash_async_thread_state_t *t
  * Initialize the @a thread_state using the provided context.
  *
  * @param thread_state The thread state to be initialized.
- * @param mctx The context to use for cursor initialization.
+ * @param uap The context to use for cursor initialization.
  *
  * All registers will be marked as available.
  */

@@ -48,13 +48,13 @@
 #endif /* TARGET_OS_IPHONE */
 
 /* A custom post-crash callback */
-static void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
+void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
     // this is not async-safe, but this is a test implementation
     NSLog(@"post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
 }
 
 
-__attribute__((noinline)) static void stackFrame (void) {
+void stackFrame (void) {
     /* Trigger a crash */
     ((char *)NULL)[1] = 0;
 }
@@ -76,7 +76,7 @@ static void save_crash_report (PLCrashReporter *reporter) {
     }
 
 
-    NSData *data = [reporter loadPendingCrashReportDataAndReturnError: &error];
+    NSData *data = [[PLCrashReporter sharedReporter] loadPendingCrashReportDataAndReturnError: &error];
     if (data == nil) {
         NSLog(@"Failed to load crash report data: %@", error);
         return;

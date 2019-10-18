@@ -43,10 +43,7 @@ struct stack_frame {
  */
 @interface PLCrashFrameStackUnwindTests : SenTestCase {
 @private
-    plcrash_async_image_list_t *_image_list;
-    
-    /** The allocator used to initialize our _image_list */
-    plcrash_async_allocator_t *_allocator;
+    plcrash_async_image_list_t _image_list;
 }
 
 @end
@@ -54,18 +51,11 @@ struct stack_frame {
 @implementation PLCrashFrameStackUnwindTests
 
 - (void) setUp {
-    /* Set up our allocator */
-    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
-
-    /* Read our image list */
-    STAssertEquals(plcrash_nasync_image_list_new(&_image_list, _allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to create image list");
+    plcrash_nasync_image_list_init(&_image_list, mach_task_self());
 }
 
 - (void) tearDown {
-    plcrash_async_image_list_free(_image_list);
-    
-    /* Clean up our allocator (must be done *after* deallocating the _image_list allocated from this allocator) */
-    plcrash_async_allocator_free(_allocator);
+    plcrash_nasync_image_list_free(&_image_list);
 }
 
 /**
@@ -88,7 +78,7 @@ struct stack_frame {
 
     /* Let the plframe cursor API initialize our first frame */
     plframe_cursor_t cursor;
-    plframe_cursor_init(&cursor, mach_task_self(), &state, _image_list);
+    plframe_cursor_init(&cursor, mach_task_self(), &state, &_image_list);
     
     /* Try walking the stack */
     plframe_stackframe_t new_frame;
@@ -101,7 +91,7 @@ struct stack_frame {
                 has_prev_frame = &prev_frame;
 
             /* Fetch the next frame */
-            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, _image_list, &frame, has_prev_frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
+            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &_image_list, &frame, has_prev_frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
             prev_frame = frame;
             frame = new_frame;
         }
@@ -113,7 +103,7 @@ struct stack_frame {
     }
 
     /* Ensure that the final frame's NULL fp triggers an ENOFRAME */
-    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, _image_list, &frame, &prev_frame, &new_frame), PLFRAME_ENOFRAME, @"Expected to hit end of frames");
+    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &_image_list, &frame, &prev_frame, &new_frame), PLFRAME_ENOFRAME, @"Expected to hit end of frames");
 }
 
 /**
@@ -136,7 +126,7 @@ struct stack_frame {
     
     /* Let the plframe cursor API initialize our first frame */
     plframe_cursor_t cursor;
-    plframe_cursor_init(&cursor, mach_task_self(), &state, _image_list);
+    plframe_cursor_init(&cursor, mach_task_self(), &state, &_image_list);
     
     /* Try walking the stack */
     plframe_stackframe_t new_frame;
@@ -150,7 +140,7 @@ struct stack_frame {
                 has_prev_frame = &prev_frame;
             
             /* Fetch the next frame */
-            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, _image_list, &frame, has_prev_frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
+            STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &_image_list, &frame, has_prev_frame, &new_frame), PLFRAME_ESUCCESS, @"Failed to read next frame");
             prev_frame = frame;
             frame = new_frame;
         }
@@ -162,7 +152,7 @@ struct stack_frame {
     }
 
     /* Ensure that the final frame's bad fp triggers an EBADFRAME */
-    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, _image_list, &frame, &prev_frame, &new_frame), PLFRAME_EBADFRAME, @"Expected to hit end of frames");
+    STAssertEquals(plframe_cursor_read_frame_ptr(cursor.task, &_image_list, &frame, &prev_frame, &new_frame), PLFRAME_EBADFRAME, @"Expected to hit end of frames");
 }
 
 @end

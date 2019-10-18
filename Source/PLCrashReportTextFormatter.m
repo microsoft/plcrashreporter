@@ -130,45 +130,31 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
                 break;
         }
 
-        /* If we were unable to determine the code type, fall back on the processor info's value. */
-        if (codeType == nil && report.systemInfo.processorInfo.typeEncoding == PLCrashReportProcessorTypeEncodingMach) {
-            switch (report.systemInfo.processorInfo.type) {
-                case CPU_TYPE_ARM:
+        /* If we were unable to determine the code type, fall back on the legacy architecture value. */
+        if (codeType == nil) {
+            switch (report.systemInfo.architecture) {
+                case PLCrashReportArchitectureARMv6:
+                case PLCrashReportArchitectureARMv7:
                     codeType = @"ARM";
                     lp64 = false;
                     break;
-
-                case CPU_TYPE_ARM64:
-                    codeType = @"ARM-64";
-                    lp64 = true;
-                    break;
-
-                case CPU_TYPE_X86:
+                case PLCrashReportArchitectureX86_32:
                     codeType = @"X86";
                     lp64 = false;
                     break;
-
-                case CPU_TYPE_X86_64:
+                case PLCrashReportArchitectureX86_64:
                     codeType = @"X86-64";
                     lp64 = true;
                     break;
-
-                case CPU_TYPE_POWERPC:
+                case PLCrashReportArchitecturePPC:
                     codeType = @"PPC";
                     lp64 = false;
                     break;
-
                 default:
-                    codeType = [NSString stringWithFormat: @"Unknown (%llu)", report.systemInfo.processorInfo.type];
+                    codeType = [NSString stringWithFormat: @"Unknown (%d)", report.systemInfo.architecture];
                     lp64 = true;
                     break;
             }
-        }
-        
-        /* If we still haven't determined the code type, we're totally clueless. */
-        if (codeType == nil) {
-            codeType = @"Unknown";
-            lp64 = true;
         }
     }
 
@@ -219,15 +205,10 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
             parentProcessId = [[NSNumber numberWithUnsignedInteger: report.processInfo.parentProcessID] stringValue];
         }
         
-        NSString *versionString = report.applicationInfo.applicationVersion;
-        /* Marketing version is optional */
-        if (report.applicationInfo.applicationMarketingVersion != nil)
-            versionString = [NSString stringWithFormat: @"%@ (%@)", report.applicationInfo.applicationMarketingVersion, report.applicationInfo.applicationVersion];
-        
         [text appendFormat: @"Process:         %@ [%@]\n", processName, processId];
         [text appendFormat: @"Path:            %@\n", processPath];
         [text appendFormat: @"Identifier:      %@\n", report.applicationInfo.applicationIdentifier];
-        [text appendFormat: @"Version:         %@\n", versionString];
+        [text appendFormat: @"Version:         %@\n", report.applicationInfo.applicationVersion];
         [text appendFormat: @"Code Type:       %@\n", codeType];
         [text appendFormat: @"Parent Process:  %@ [%@]\n", parentProcessName, parentProcessId];
     }

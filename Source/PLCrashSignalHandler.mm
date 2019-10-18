@@ -104,11 +104,11 @@ static struct {
  * to support executing process-wide POSIX signal handlers that were previously registered before being replaced by
  * PLCrashSignalHandler::registerHandlerForSignal:.
  */
-static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *nextHandler) {
+static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *uap, void *context, PLCrashSignalHandlerCallback *next) {
     bool handled = false;
 
     /* Let any additional handler execute */
-    if (PLCrashSignalHandlerForward(nextHandler, signo, info, uap))
+    if (PLCrashSignalHandlerForward(next, signo, info, uap))
         return true;
 
     shared_handler_context.previous_actions.set_reading(true); {
@@ -125,20 +125,23 @@ static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *ua
                 next->value().action.sa_sigaction(signo, info, (void *) uap);
                 handled = true;
             } else {
-                void (*next_handler)(int) = next->value().action.sa_handler;
-                if (next_handler == SIG_IGN) {
-                    /* Ignored */
-                    handled = true;
-
-                } else if (next_handler == SIG_DFL) {
-                    /* Default handler should be run, be we have no mechanism to pass through to
-                     * the default handler; mark the signal as unhandled. */
-                    handled = false;
-
-                } else {
-                    /* Handler registered, execute it */
-                    next_handler(signo);
-                    handled = true;
+                switch ((uintptr_t) (next->value().action.sa_handler)) {
+                    case ((uintptr_t) SIG_IGN):
+                        /* Ignored */
+                        handled = true;
+                        break;
+                        
+                    case ((uintptr_t) SIG_DFL):
+                        /* Default handler should be run, be we have no mechanism to pass through to
+                         * the default handler; mark the signal as unhandled. */
+                        handled = false;
+                        break;
+                        
+                    default:
+                        /* Handler registered, execute it */
+                        next->value().action.sa_handler(signo);
+                        handled = true;
+                        break;
                 }
             }
             

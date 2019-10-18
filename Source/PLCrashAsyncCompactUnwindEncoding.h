@@ -28,9 +28,8 @@
 #define PLCRASH_ASYNC_COMPACT_UNWIND_ENCODING_H 1
 
 #include "PLCrashAsync.h"
-#include "PLCrashAsyncDynamicLoader.h"
+#include "PLCrashAsyncImageList.h"
 #include "PLCrashAsyncThread.h"
-#include "PLCrashAsyncMObject.h"
 
 #include "PLCrashFeatureConfig.h"
 

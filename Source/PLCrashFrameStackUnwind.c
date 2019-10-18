@@ -91,11 +91,13 @@ plframe_error_t plframe_cursor_read_frame_ptr (task_t task,
     /* Read the registers off the stack via the frame pointer */
     plcrash_greg_t new_fp;
     plcrash_greg_t new_pc;
-    plcrash_error_t err;
+    kern_return_t kr;
     
-    err = plcrash_async_task_memcpy(task, (pl_vm_address_t) fp, 0, dest, len);
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Failed to read frame: %d", err);
+
+
+    kr = plcrash_async_read_addr(task, (pl_vm_address_t) fp, dest, len);
+    if (kr != KERN_SUCCESS) {
+        PLCF_DEBUG("Failed to read frame: %d", kr);
         return PLFRAME_EBADFRAME;
     }
 

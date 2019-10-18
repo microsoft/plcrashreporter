@@ -1,0 +1,92 @@
+/*
+-- Author: Andreas Linde <mail@andreaslinde.de>
+-- 
+-- Copyright (c) 2009 Andreas Linde. All rights reserved.
+-- All rights reserved.
+-- 
+-- Permission is hereby granted, free of charge, to any person
+-- obtaining a copy of this software and associated documentation
+-- files (the "Software"), to deal in the Software without
+-- restriction, including without limitation the rights to use,
+-- copy, modify, merge, publish, distribute, sublicense, and/or sell
+-- copies of the Software, and to permit persons to whom the
+-- Software is furnished to do so, subject to the following
+-- conditions:
+-- 
+-- The above copyright notice and this permission notice shall be
+-- included in all copies or substantial portions of the Software.
+-- 
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+-- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+-- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+-- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+-- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+-- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+-- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+-- OTHER DEALINGS IN THE SOFTWARE.
+
+ 
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+
+-- contains known issues, the developer can add simple patterns in here
+-- affected: contains a version number string of a single app version that is affected by this bug
+-- fix: contains the version number which will solve the fix (should appear in app_versions table) or empty if nothing has been decided yet
+-- pattern: a simple string that is used to search this bug in the crash log data via text search
+-- amount: will be increased automatically showing how many times this known bug has occured
+CREATE TABLE IF NOT EXISTS `app_crash_analyzed` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `affected` varchar(20) collate utf8_unicode_ci default NULL,
+  `fix` varchar(20) collate utf8_unicode_ci default NULL,
+  `pattern` varchar(250) collate utf8_unicode_ci NOT NULL default '',
+  `amount` bigint(20) default '0',
+  PRIMARY KEY  (`id`),
+  KEY `affected` (`affected`,`fix`),
+  KEY `amount` (`amount`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+
+-- contains each submitted crash log 
+-- contact: contains the email address if the user added this
+-- version: the currently installed version
+-- crashappversion: the app version that caused the bug (may differ from version!)
+-- startmemory: the amount of free memory at startup
+-- endmemory: the amount of free memory at shutdown
+-- log: the crash log data
+-- done: a flag if the bug has to be looked at by the developer (0) or not (1)
+-- analyzed: if the bug has been associated to a known bug, this contains the id to the apps_crash_analyzed table
+CREATE TABLE IF NOT EXISTS `app_crash` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `contact` varchar(255) collate utf8_unicode_ci default NULL,
+  `version` varchar(15) collate utf8_unicode_ci NOT NULL default '',
+  `crashappversion` varchar(15) collate utf8_unicode_ci default NULL,
+  `startmemory` bigint(20) unsigned default '0',
+  `endmemory` bigint(20) unsigned default '0',
+  `log` text collate utf8_unicode_ci NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `done` tinyint(1) default '0',
+  `analyzed` bigint(20) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  KEY `timestamp` (`timestamp`),
+  KEY `startmemory` (`startmemory`,`endmemory`),
+  KEY `crashappversion` (`crashappversion`),
+  KEY `done` (`done`),
+  KEY `analyzed` (`analyzed`),
+  FULLTEXT KEY `device` (`device`),
+  FULLTEXT KEY `log` (`log`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- Contains the version numbers of your app with the current status
+-- status 0: not clear what to do with this version
+-- status 1: not clear what to do with this version
+-- status 2: upcoming version
+-- status 3: version will be availble soon, is in approval process by apple
+-- status 4: the version is available for download in iTunes AppStore
+
+CREATE TABLE IF NOT EXISTS `app_versions` (
+  `id` bigint(20) unsigned NOT NULL auto_increment,
+  `version` varchar(20) collate utf8_unicode_ci default NULL,
+  `status` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `version_2` (`version`),
+  KEY `version` (`version`,`status`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
