@@ -93,7 +93,7 @@
     if (systemInfo == NULL)
         return;
 
-    STAssertEquals(systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
+    STAssertEquals((int) systemInfo->operating_system, PLCrashReportHostOperatingSystem, @"Unexpected OS value");
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
@@ -169,12 +169,16 @@
         free(process_path);
     }
     
-    /* Parent process; fetching the process info is expected to fail on iOS 9+ due to new sandbox constraints */
+    /* Parent process; fetching the process info is expected to fail on non-OSX systems (e.g. iOS 9+ and tvOS) due to
+     * new sandbox constraints */
     PLCrashProcessInfo *parentProcessInfo = [[[PLCrashProcessInfo alloc] initWithProcessID: getppid()] autorelease];
 
-    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
-        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS");
-        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS");
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS ||
+        (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS &&
+         PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9))
+    {
+        STAssertNil(parentProcessInfo, @"Fetching parent process info unexpectedly succeeded on iOS-derived OS");
+        STAssertNULL(procInfo->parent_process_name, @"Fetching parent process info unexpectedly succeeded on iOS-derived OS");
         
     } else {
         STAssertNotNil(parentProcessInfo, @"Could not retrieve parent process info");
@@ -272,7 +276,6 @@
     /* Reading the report */
     NSData *data = [NSData dataWithContentsOfFile:_logPath options:NSDataReadingMappedAlways error:nil];
     STAssertNotNil(data, @"Could not map pages");
-
     
     /* Check the file magic. The file must be large enough for the value + version + data */
     const struct PLCrashReportFileHeader *header = [data bytes];
@@ -283,7 +286,7 @@
     
     /* Try to read the crash report */
     Plcrash__CrashReport *crashReport;
-    crashReport = plcrash__crash_report__unpack(&protobuf_c_system_allocator, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
+    crashReport = plcrash__crash_report__unpack(NULL, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
     
     /* If reading the report didn't fail, test the contents */
     STAssertNotNULL(crashReport, @"Could not decode crash report");
@@ -406,7 +409,11 @@
 #elif __arm__
     expectedPC = cursor.frame.thread_state.arm_state.thread.ts_32.__pc;
 #elif __arm64__
+#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
+    expectedPC = cursor.frame.thread_state.arm_state.thread.ts_64.__opaque_pc;
+#else
     expectedPC = cursor.frame.thread_state.arm_state.thread.ts_64.__pc;
+#endif
 #else
 #error Unsupported Platform
 #endif
@@ -431,7 +438,7 @@
  
     /* Clean up */
     plframe_cursor_free(&cursor);
-    protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, &protobuf_c_system_allocator);
+    protobuf_c_message_free_unpacked((ProtobufCMessage *) crashReport, NULL);
 }
 
 @end

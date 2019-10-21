@@ -191,8 +191,11 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     STAssertTrue(startTimeInterval >= 0, @"Date occured in the future");
     STAssertTrue(startTimeInterval < 60, @"Date occured more than 60 second in the past");
 
-    /* This is expected to fail on iOS 9+ due to new sandbox constraints */
-    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS && PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9) {
+    /* This is expected to fail on tvOS and iOS 9+ due to new sandbox constraints */
+    if (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemAppleTVOS ||
+        (PLCrashReportHostOperatingSystem == PLCrashReportOperatingSystemiPhoneOS &&
+         PLCrashHostInfo.currentHostInfo.darwinVersion.major >= PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9))
+    {
         STAssertNil(crashLog.processInfo.parentProcessName, @"Fetching the parent process name unexpectedly succeeded on iOS 9+");
     } else {
         STAssertNotNil(crashLog.processInfo.parentProcessName, @"No parent process name available");
@@ -272,7 +275,12 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         
         STAssertNotNil(imageInfo.codeType, @"Image code type is nil");
         STAssertEquals(imageInfo.codeType.typeEncoding, PLCrashReportProcessorTypeEncodingMach, @"Incorrect type encoding");
-        
+
+        // FIXME: dyld_sim is problematic binary.
+        if ([imageInfo.imageName hasSuffix:@"/usr/lib/dyld_sim"]) {
+          continue;
+        }
+
         /*
          * Find the in-memory mach header for the image record. We'll compare this against the serialized data.
          *
@@ -282,10 +290,12 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
          * to a larger, unsigned uint64_t value.
          */
         Dl_info dlInfo;
-        STAssertTrue(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &dlInfo) != 0, @"dladdr() failed to find image");
+        STAssertNotEquals(dladdr((void *)(uintptr_t)imageInfo.imageBaseAddress, &dlInfo), 0, @"dladdr() failed to find image of %@", imageInfo.imageName);
         struct mach_header *hdr = dlInfo.dli_fbase;
-        STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
-        STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
+        if (hdr != NULL) {
+            STAssertEquals(imageInfo.codeType.type, (uint64_t)(uint32_t)hdr->cputype, @"Incorrect CPU type");
+            STAssertEquals(imageInfo.codeType.subtype, (uint64_t)(uint32_t)hdr->cpusubtype, @"Incorrect CPU subtype");
+        }
     }
 }
 

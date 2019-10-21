@@ -60,6 +60,13 @@
 
 @implementation PLCrashAsyncObjCSectionTestsSimpleClass : NSObject
 
++ (void)load {
+  /*
+   * Force Objective-C runtime to realize this class.
+   * Also, this can be done via explicit objc_getClass call.
+   */
+}
+
 - (pl_vm_address_t) addressInSimpleClass {
     return [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
 }

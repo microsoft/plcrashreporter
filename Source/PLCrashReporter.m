@@ -29,6 +29,8 @@
 #import "PLCrashReporter.h"
 #import "CrashReporter.h"
 
+#import "PLCrashFeatureConfig.h"
+
 #import "PLCrashHostInfo.h"
 
 #import "PLCrashSignalHandler.h"
@@ -353,11 +355,17 @@ static void image_remove_callback (const struct mach_header *mh, intptr_t vmaddr
  * Uncaught exception handler. Sets the plcrash_log_writer_t's uncaught exception
  * field, and then triggers a SIGTRAP (synchronous exception) to cause a normal
  * exception dump.
- *
- * XXX: It is possible that another crash may occur between setting the uncaught 
- * exception field, and triggering the signal handler.
  */
 static void uncaught_exception_handler (NSException *exception) {
+    /**
+     * It is possible that another crash may occur between setting the uncaught
+     * exception field, and triggering the signal handler.
+     */
+    static int32_t exception_is_handled = 0;
+    if (!OSAtomicCompareAndSwap32(0, 1, &exception_is_handled)) {
+        return;
+    }
+    
     /* Set the uncaught exception */
     plcrash_log_writer_set_exception(&signal_handler_context.writer, exception);
 
@@ -371,11 +379,12 @@ static void uncaught_exception_handler (NSException *exception) {
 - (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration;
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration;
 
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
 - (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
                                                                         error: (NSError **) outError;
-
+#endif
 - (plcrash_async_symbol_strategy_t) mapToAsyncSymbolicationStrategy: (PLCrashReporterSymbolicationStrategy) strategy;
 
 - (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
@@ -634,8 +643,10 @@ static PLCrashReporter *sharedReporter = nil;
     }
 
     /* Set the uncaught exception handler */
-    NSSetUncaughtExceptionHandler(&uncaught_exception_handler);
-
+    if(_config.shouldRegisterUncaughtExceptionHandler) {
+      NSSetUncaughtExceptionHandler(&uncaught_exception_handler);
+    }
+  
     /* Success */
     _enabled = YES;
     return YES;

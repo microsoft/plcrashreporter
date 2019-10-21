@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-               BuildableName = "CrashReporter.framework"
-               BlueprintName = "CrashReporter-MacOSX"
+               BlueprintIdentifier = "8064D7AD1C4D22D8005A8B4C"
+               BuildableName = "libCrashReporter-appletvos.a"
+               BlueprintName = "CrashReporter-tvOS-Device"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,23 +27,14 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-            BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter-MacOSX"
-            ReferencedContainer = "container:CrashReporter.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "05CD32680EE93DC3000FDE88"
-               BuildableName = "Tests-MacOSX.xctest"
-               BlueprintName = "Tests-MacOSX"
+               BlueprintIdentifier = "8064D9281C4D27E2005A8B4C"
+               BuildableName = "Tests-tvOS-Device.xctest"
+               BlueprintName = "Tests-tvOS-Device"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -62,9 +53,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-            BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter-MacOSX"
+            BlueprintIdentifier = "8064D7AD1C4D22D8005A8B4C"
+            BuildableName = "libCrashReporter-appletvos.a"
+            BlueprintName = "CrashReporter-tvOS-Device"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -78,9 +69,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-            BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter-MacOSX"
+            BlueprintIdentifier = "8064D7AD1C4D22D8005A8B4C"
+            BuildableName = "libCrashReporter-appletvos.a"
+            BlueprintName = "CrashReporter-tvOS-Device"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

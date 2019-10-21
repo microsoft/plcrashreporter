@@ -50,8 +50,14 @@ typedef enum {
     
     /** Unknown operating system */
     PLCrashReportOperatingSystemUnknown = 3,
+  
+    /** Apple tvOS */
+    PLCrashReportOperatingSystemAppleTVOS = 4,
+  
 } PLCrashReportOperatingSystem;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation-deprecated-sync"
 /**
  * @ingroup constants
  *
@@ -93,7 +99,7 @@ typedef enum {
     /** Unknown */
     PLCrashReportArchitectureUnknown = 6
 } PLCrashReportArchitecture;
-
+#pragma clang diagnostic pop
 
 extern PLCrashReportOperatingSystem PLCrashReportHostOperatingSystem;
 PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
@@ -148,6 +154,8 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
 /** The operating system's build identifier (eg, 10J869). This may be unavailable, and this property will be nil. */
 @property(nonatomic, readonly) NSString *operatingSystemBuild;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation-deprecated-sync"
 /** Architecture. @deprecated The architecture value has been deprecated in v1.1 and later crash reports. All new reports
  * include the CPU type as part of the crash report's machine info structure, using the PLCrashReportProcessorInfo
  * extensible encoding. */

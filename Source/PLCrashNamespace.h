@@ -310,5 +310,4 @@
 #  define protobuf_c_service_descriptor_get_method_by_name  PLNS(protobuf_c_service_descriptor_get_method_by_name)
 #  define protobuf_c_service_destroy                        PLNS(protobuf_c_service_destroy)
 #  define protobuf_c_service_generated_init                 PLNS(protobuf_c_service_generated_init)
-#  define protobuf_c_system_allocator                       PLNS(protobuf_c_system_allocator)
 #endif /* PLCR_PRIVATE */
