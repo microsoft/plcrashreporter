@@ -14,4 +14,4 @@
 * Remove support for armv6 CPU architecture as it is no longer supported.
 * Improve namespacing to avoid symbol collisions when integrating PLCrashReporter.
 * Fix a crash that occurred on macOS where PLCrashReporter would be caught in an endless loop handling signals. 
-* Make it possible to not add an uncaught exception handler, a scenario that is important when using PLCrashReporter inside managed runtimes, i.e. for a Xamarin app. This not a breaking change and behavior will not change if you use PLCrashReporter. 
+* Make it possible to not add an uncaught exception handler via `shouldRegisterUncaughtExceptionHandler` property on `PLCrashReporterConfig`. This scenario is important when using PLCrashReporter inside managed runtimes, i.e. for a Xamarin app. This is not a breaking change and behavior will not change if you use PLCrashReporter. 
