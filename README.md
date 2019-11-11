@@ -60,7 +60,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 PLCrashReporter has a dependency on [Protocol Buffers implementation in C](https://github.com/protobuf-c/protobuf-c) as a git submodule. Use below command to clone PLCrashReporter repository or update the repository if you have already cloned it.
 
 ```
-git clone --recursive https://github.com/microsoft/PLCrashReporter-Fork.git
+git clone --recursive https://github.com/microsoft/plcrashreporter.git
 ```
 
 ```
