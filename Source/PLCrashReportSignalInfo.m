@@ -37,13 +37,17 @@
 /**
  * Initialize with the given signal name and reason.
  */
-- (id) initWithSignalName: (NSString *) name code: (NSString *) code address: (uint64_t) address {
+- (id) initWithSignalName: (NSString *) name
+                     code: (NSString *) code
+                  address: (uint64_t) address
+        annotationMessage: (NSString *) annotationMessage {
     if ((self = [super init]) == nil)
         return nil;
     
     _name = [name retain];
     _code = [code retain];
     _address = address;
+    _annotationMessage = [annotationMessage retain];
     
     return self;
 }
@@ -51,11 +55,13 @@
 - (void) dealloc {
     [_name release];
     [_code release];
+    [_annotationMessage release];
     [super dealloc];
 }
 
 @synthesize name = _name;
 @synthesize code = _code;
 @synthesize address = _address;
+@synthesize annotationMessage = _annotationMessage;
 
 @end

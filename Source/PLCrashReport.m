@@ -804,8 +804,12 @@ error:
     /* Done */
     NSString *name = [NSString stringWithUTF8String: signalInfo->name];
     NSString *code = [NSString stringWithUTF8String: signalInfo->code];
+    NSString *annotation_message = signalInfo->annotation_message ? [NSString stringWithUTF8String: signalInfo->annotation_message] : nil;
     
-    return [[[PLCrashReportSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address] autorelease];
+    return [[[PLCrashReportSignalInfo alloc] initWithSignalName: name
+                                                           code: code
+                                                        address: signalInfo->address
+                                              annotationMessage: annotation_message] autorelease];
 }
 
 /**

@@ -38,9 +38,15 @@
 
     /** Fauling instruction or address */
     uint64_t _address;
+
+    /** Message from crash reporter annotations */
+    NSString *_annotationMessage;
 }
 
-- (id) initWithSignalName: (NSString *) name code: (NSString *) code address: (uint64_t) address;
+- (id) initWithSignalName: (NSString *) name
+                     code: (NSString *) code
+                  address: (uint64_t) address
+        annotationMessage: (NSString *) annotationMessage;
 
 /**
  * The signal name.
@@ -56,5 +62,10 @@
  * The faulting instruction or address.
  */
 @property(nonatomic, readonly) uint64_t address;
+
+/**
+ * Message from crash reporter annotations.
+ */
+@property(nonatomic, readonly) NSString *annotationMessage;
 
 @end

@@ -284,6 +284,9 @@ message CrashReport {
          * mappings implemented in xnu. As such, when Mach exception data is available, its use should be preferred.
          */
         optional MachException mach_exception = 4;
+
+        /* Message from crash reporter annotations */
+        optional string annotation_message = 5;
     }
 
     /* The signal that triggered the crash */
