@@ -119,6 +119,9 @@ enum {
     /** CrashReport.thread.crashed */
     PLCRASH_PROTO_THREAD_CRASHED_ID = 3,
 
+    /** CrashReport.thread.name */
+    PLCRASH_PROTO_THREAD_NAME_ID = 5,
+
 
     /** CrashReport.thread.frame.pc */
     PLCRASH_PROTO_THREAD_FRAME_PC_ID = 3,
@@ -909,6 +912,7 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
                                            task_t task,
                                            thread_t thread,
                                            uint32_t thread_number,
+                                           const char *thread_name,
                                            plcrash_async_thread_state_t *thread_ctx,
                                            plcrash_async_image_list_t *image_list,
                                            plcrash_async_symbol_cache_t *findContext,
@@ -929,6 +933,11 @@ static size_t plcrash_writer_write_thread (plcrash_async_file_t *file,
 
         /* Note crashed status */
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_CRASHED_ID, PLPROTOBUF_C_TYPE_BOOL, &crashed);
+
+        /* Name */
+        if (thread_name) {
+            rv += plcrash_writer_pack(file, PLCRASH_PROTO_THREAD_NAME_ID, PLPROTOBUF_C_TYPE_STRING, thread_name);
+        }
     }
 
 
@@ -1317,8 +1326,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     uint32_t thread_number = 0;
     for (mach_msg_type_number_t i = 0; i < thread_count; i++) {
         thread_t thread = threads[i];
+        pthread_t pthread;
         plcrash_async_thread_state_t *thr_ctx = NULL;
         bool crashed = false;
+        char buffer[256] = { 0 };
+        const char *thread_name = NULL;
         uint32_t size;
 
         /* If executing on the target thread, we need to a valid context to walk */
@@ -1335,12 +1347,21 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
             crashed = true;
         }
 
+        /* Get the thread name if avaliable. */
+        pthread = pthread_from_mach_thread_np(thread);
+        if (pthread) {
+            int result = pthread_getname_np(pthread, buffer, sizeof buffer);
+            if (result == 0 && buffer[0] != 0) {
+                thread_name = buffer;
+            }
+        }
+
         /* Determine the size */
-        size = plcrash_writer_write_thread(NULL, writer, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
+        size = plcrash_writer_write_thread(NULL, writer, mach_task_self(), thread, thread_number, thread_name, thr_ctx, image_list, &findContext, crashed);
 
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_THREADS_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_thread(file, writer, mach_task_self(), thread, thread_number, thr_ctx, image_list, &findContext, crashed);
+        plcrash_writer_write_thread(file, writer, mach_task_self(), thread, thread_number, thread_name, thr_ctx, image_list, &findContext, crashed);
 
         thread_number++;
     }

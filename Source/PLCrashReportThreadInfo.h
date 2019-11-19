@@ -44,12 +44,15 @@
 
     /** List of PLCrashReportRegister instances. Will be empty if _crashed is NO. */
     NSArray *_registers;
+
+    NSString *_name;
 }
 
 - (id) initWithThreadNumber: (NSInteger) threadNumber
                 stackFrames: (NSArray *) stackFrames
                     crashed: (BOOL) crashed
-                  registers: (NSArray *) registers;
+                  registers: (NSArray *) registers
+                       name: (NSString *) name;
 
 /**
  * Application thread number.
@@ -73,5 +76,7 @@
  * this list will be empty.
  */
 @property(nonatomic, readonly) NSArray *registers;
+
+@property(nonatomic, readonly) NSString *name;
 
 @end

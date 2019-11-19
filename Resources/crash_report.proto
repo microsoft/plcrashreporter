@@ -205,6 +205,9 @@ message CrashReport {
         /* Thread registers (required if this is the crashed thread, optional otherwise). Note that if an error occurs
          * during crash report generation, the register values may be missing for the crashed thread. */
         repeated RegisterValue registers = 4;
+
+        /* Name of the thread */
+        optional string name = 5;
     }
 
     /* All backtraces */

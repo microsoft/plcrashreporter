@@ -42,6 +42,7 @@
                 stackFrames: (NSArray *) stackFrames
                     crashed: (BOOL) crashed
                   registers: (NSArray *) registers
+                       name: (NSString *) name
 {
     if ((self = [super init]) == nil)
         return nil;
@@ -50,6 +51,7 @@
     _stackFrames = [stackFrames retain];
     _crashed = crashed;
     _registers = [registers retain];
+    _name = [name retain];
 
     return self;
 }
@@ -57,6 +59,7 @@
 - (void) dealloc {
     [_stackFrames release];
     [_registers release];
+    [_name release];
     [super dealloc];
 }
 
@@ -64,7 +67,7 @@
 @synthesize stackFrames = _stackFrames;
 @synthesize crashed = _crashed;
 @synthesize registers = _registers;
-
+@synthesize name = _name;
 
 @end
 

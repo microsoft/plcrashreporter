@@ -650,10 +650,12 @@ error:
         }
 
         /* Create the thread info instance */
+        NSString *threadName = thread->name ? [NSString stringWithUTF8String: thread->name] : nil;
         PLCrashReportThreadInfo *threadInfo = [[[PLCrashReportThreadInfo alloc] initWithThreadNumber: thread->thread_number
                                                                                    stackFrames: frames 
                                                                                        crashed: thread->crashed 
-                                                                                     registers: registers] autorelease];
+                                                                                     registers: registers
+                                                                                          name: threadName] autorelease];
         [threadResult addObject: threadInfo];
     }
     
