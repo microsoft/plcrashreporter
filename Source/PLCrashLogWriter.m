@@ -62,6 +62,7 @@
 
 /**
  * @internal
+ * See https://github.com/apple/swift/blob/master/include/swift/Runtime/Debug.h
  */
 #define CRASHREPORTER_ANNOTATIONS_VERSION 5
 #define CRASHREPORTER_ANNOTATIONS_SECTION "__crash_info"
@@ -1132,7 +1133,7 @@ static size_t plcrash_writer_write_mach_signal (plcrash_async_file_t *file, plcr
  * @param file Output file
  * @param siginfo The signal information
  */
-static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, plcrash_log_signal_info_t *siginfo, struct crashreporter_annotations_t *annotatiions) {
+static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, plcrash_log_signal_info_t *siginfo, struct crashreporter_annotations_t *annotations) {
     size_t rv = 0;
     
     /* BSD signal info is always required in the current report format; this restriction will be lifted
@@ -1178,8 +1179,8 @@ static size_t plcrash_writer_write_signal (plcrash_async_file_t *file, plcrash_l
     }
 
     /* Message from crash reporter annotations */
-    if (annotatiions != NULL && annotatiions->message != NULL) {
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ANNOTATION_MESSAGE_ID, PLPROTOBUF_C_TYPE_STRING, annotatiions->message);
+    if (annotations != NULL && annotations->message != NULL) {
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ANNOTATION_MESSAGE_ID, PLPROTOBUF_C_TYPE_STRING, annotations->message);
     }
 
     return rv;
@@ -1387,8 +1388,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     /* Try to read crash reporter annotations */
     struct crashreporter_annotations_t *annotations = NULL;
     image = plcrash_async_image_containing_address(image_list, siginfo->bsd_info->address);
-    if (image != NULL)
-    {
+    if (image != NULL) {
         plcrash_async_mobject_t mobj;
         err = plcrash_async_macho_map_section(&image->macho_image, "__DATA", CRASHREPORTER_ANNOTATIONS_SECTION, &mobj);
         if (err == PLCRASH_ESUCCESS) {
