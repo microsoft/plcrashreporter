@@ -26,6 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+syntax = "proto2";
 package plcrash;
 option java_package = "coop.plausible.crashreporter";
 option java_outer_classname = "CrashReport_pb";
