@@ -355,7 +355,15 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     
     /* Images. The iPhone crash report format sorts these in ascending order, by the base address */
     [text appendString: @"Binary Images:\n"];
+    uint64_t lastImageBaseAddress = 0;
     for (PLCrashReportBinaryImageInfo *imageInfo in [report.images sortedArrayUsingFunction: binaryImageSort context: nil]) {
+        /* Remove duplicates */
+        uint64_t imageBaseAddress = [imageInfo imageBaseAddress];
+        if (lastImageBaseAddress == imageBaseAddress) {
+            continue;
+        }
+        lastImageBaseAddress = imageBaseAddress;
+
         NSString *uuid;
         /* Fetch the UUID if it exists */
         if (imageInfo.hasImageUUID)
