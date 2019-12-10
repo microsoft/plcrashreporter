@@ -1,6 +1,12 @@
 # PLCrashReporter Change Log
 
-## Version 1.4
+## Version 1.4.1 (Under development)
+
+* Fix arm64e crash report text formatting.
+
+___
+
+## Version 1.4.0
 
 * Support macOS 10.15 and XCode 11 and drop support for macOS 10.6.
 * Add support for tvOS apps.
