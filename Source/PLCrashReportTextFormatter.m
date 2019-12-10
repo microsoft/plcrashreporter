@@ -510,12 +510,17 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     uint64_t pcOffset = 0x0;
     NSString *imageName = @"\?\?\?";
     NSString *symbolString = nil;
-    
-    PLCrashReportBinaryImageInfo *imageInfo = [report imageForAddress: frameInfo.instructionPointer];
+
+    uint64_t normalizedInstructionPointer = frameInfo.instructionPointer;
+#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
+    normalizedInstructionPointer &= 0x0000000fffffffff;
+#endif
+
+    PLCrashReportBinaryImageInfo *imageInfo = [report imageForAddress: normalizedInstructionPointer];
     if (imageInfo != nil) {
         imageName = [imageInfo.imageName lastPathComponent];
         baseAddress = imageInfo.imageBaseAddress;
-        pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
+        pcOffset = normalizedInstructionPointer - imageInfo.imageBaseAddress;
     }
 
     /* If symbol info is available, the format used in Apple's reports is Sym + OffsetFromSym. Otherwise,
@@ -541,7 +546,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         }
         
         
-        uint64_t symOffset = frameInfo.instructionPointer - frameInfo.symbolInfo.startAddress;
+        uint64_t symOffset = normalizedInstructionPointer - frameInfo.symbolInfo.startAddress;
         symbolString = [NSString stringWithFormat: @"%@ + %" PRId64, symbolName, symOffset];
     } else {
         symbolString = [NSString stringWithFormat: @"0x%" PRIx64 " + %" PRId64, baseAddress, pcOffset];
@@ -553,7 +558,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     return [NSString stringWithFormat: @"%-4ld%-35S 0x%0*" PRIx64 " %@\n",
             (long) frameIndex,
             (const uint16_t *)[imageName cStringUsingEncoding: NSUTF16StringEncoding],
-            lp64 ? 16 : 8, frameInfo.instructionPointer,
+            lp64 ? 16 : 8, normalizedInstructionPointer,
             symbolString];
 }
 
