@@ -2,7 +2,7 @@
 
 ## Version 1.4.1 (Under development)
 
-* Removed UIKit dependency from PCLCrashReporter.
+* Remove `UIKit` dependency.
 
 ___
 
