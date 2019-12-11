@@ -2,7 +2,9 @@
 
 ## Version 1.4.1 (Under development)
 
-* Fix possible crash `plcrash_log_writer_set_exception` method when NSException instances have a nil reason
+* Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
+
+___
 
 ## Version 1.4.0
 
