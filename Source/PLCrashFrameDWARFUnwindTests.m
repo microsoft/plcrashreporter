@@ -40,10 +40,7 @@
  */
 @interface PLCrashFrameDWARFUnwindTests : SenTestCase {
 @private
-    plcrash_async_image_list_t *_image_list;
-    
-    /** The allocator used to initialize for our _image_list */
-    plcrash_async_allocator_t *_allocator;
+    plcrash_async_image_list_t _image_list;
 }
 
 @end
@@ -51,18 +48,11 @@
 @implementation PLCrashFrameDWARFUnwindTests
 
 - (void) setUp {
-    /* Set up our allocator */
-    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
-
-    /* Read our image list */
-    STAssertEquals(plcrash_nasync_image_list_new(&_image_list, _allocator, mach_task_self()), PLCRASH_ESUCCESS, @"Failed to create image list");
+    plcrash_nasync_image_list_init(&_image_list, mach_task_self());
 }
 
 - (void) tearDown {
-    plcrash_async_image_list_free(_image_list);
-    
-    /* Clean up our allocator (must be done *after* deallocating the _image_list allocated from this allocator) */
-    plcrash_async_allocator_free(_allocator);
+    plcrash_nasync_image_list_free(&_image_list);
 }
 
 - (void) testMissingIP {
@@ -71,7 +61,7 @@
     plframe_error_t err;
     
     plcrash_async_thread_state_clear_all_regs(&frame.thread_state);
-    err = plframe_cursor_read_dwarf_unwind(mach_task_self(), _image_list, &frame, NULL, &next);
+    err = plframe_cursor_read_dwarf_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);
     STAssertEquals(err, PLFRAME_EBADFRAME, @"Unexpected result for a frame missing a valid PC");
 }
 
@@ -83,7 +73,7 @@
     plcrash_async_thread_state_clear_all_regs(&frame.thread_state);
     plcrash_async_thread_state_set_reg(&frame.thread_state, PLCRASH_REG_IP, NULL);
     
-    err = plframe_cursor_read_dwarf_unwind(mach_task_self(), _image_list, &frame, NULL, &next);
+    err = plframe_cursor_read_dwarf_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);
     STAssertEquals(err, PLFRAME_ENOTSUP, @"Unexpected result for a frame missing a valid image");
 }
 

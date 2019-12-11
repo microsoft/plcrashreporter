@@ -247,8 +247,8 @@
 #define plcrash_nasync_image_list_free PLNS(plcrash_nasync_image_list_free)
 #define plcrash_nasync_image_list_init PLNS(plcrash_nasync_image_list_init)
 #define plcrash_nasync_image_list_remove PLNS(plcrash_nasync_image_list_remove)
-#define plcrash_async_macho_free PLNS(plcrash_async_macho_free)
-#define plcrash_async_macho_init PLNS(plcrash_async_macho_init)
+#define plcrash_nasync_macho_free PLNS(plcrash_nasync_macho_free)
+#define plcrash_nasync_macho_init PLNS(plcrash_nasync_macho_init)
 #define plcrash_populate_error PLNS(plcrash_populate_error)
 #define plcrash_populate_mach_error PLNS(plcrash_populate_mach_error)
 #define plcrash_populate_posix_error PLNS(plcrash_populate_posix_error)
@@ -310,5 +310,4 @@
 #  define protobuf_c_service_descriptor_get_method_by_name  PLNS(protobuf_c_service_descriptor_get_method_by_name)
 #  define protobuf_c_service_destroy                        PLNS(protobuf_c_service_destroy)
 #  define protobuf_c_service_generated_init                 PLNS(protobuf_c_service_generated_init)
-#  define protobuf_c_system_allocator                       PLNS(protobuf_c_system_allocator)
 #endif /* PLCR_PRIVATE */

@@ -49,8 +49,8 @@ static bool plcrash_async_image_objc_has_ios9_abi () {
     static dispatch_once_t onceToken;
     static bool is_ios9;
     dispatch_once(&onceToken, ^{
-        NSProcessInfo *procinfo = [NSProcessInfo processInfo];
-        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [procinfo respondsToSelector: @selector(operatingSystemVersion)] && procinfo.operatingSystemVersion.majorVersion >= 9) {
+        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+        if (TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && [processInfo respondsToSelector: @selector(operatingSystemVersion)] && processInfo.operatingSystemVersion.majorVersion >= 9) {
             is_ios9 = true;
         } else {
             is_ios9 = false;
@@ -91,17 +91,32 @@ const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_ob
 
 /**
  * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-runtime-new.h
  *
  * Class's rw data structure has been realized.
+ ** If set, data pointers to RW data instead of RO.
  */
 static const uint32_t RW_REALIZED = (1U<<31);
 
 /**
  * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-runtime-new.h
  *
  * A realized class' data pointer is a heap-copied copy of class_ro_t.
  */
 static const uint32_t RW_COPIED_RO = (1<<27);
+
+/**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-runtime-new.h
+ *
+ * A class' data pointer mask.
+ */
+#if !__LP64__
+#define FAST_DATA_MASK 0xfffffffcUL
+#else
+#define FAST_DATA_MASK 0x00007ffffffffff8UL
+#endif
 
 struct pl_objc1_module {
     uint32_t version;
@@ -412,7 +427,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
     pl_vm_address_t namePtr = image->byteorder->swap32(cls->name);
     bool classNameInitialized = false;
     plcrash_async_macho_string_t className;
-    err = plcrash_async_macho_string_init(&className, image->task, namePtr);
+    err = plcrash_async_macho_string_init(&className, image, namePtr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)namePtr, err);
         return err;
@@ -487,7 +502,7 @@ static plcrash_error_t pl_async_parse_obj1_class(plcrash_async_macho_t *image, s
             /* Load the method name from the .name field pointer. */
             pl_vm_address_t methodNamePtr = image->byteorder->swap32(method.name);
             plcrash_async_macho_string_t methodName;
-            err = plcrash_async_macho_string_init(&methodName, image->task, methodNamePtr);
+            err = plcrash_async_macho_string_init(&methodName, image, methodNamePtr);
             if (err != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
                 goto cleanup;
@@ -682,7 +697,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
         
         /* Read the method name. */
         plcrash_async_macho_string_t method_name;
-        if ((err = plcrash_async_macho_string_init(&method_name, image->task, methodNamePtr)) != PLCRASH_ESUCCESS) {
+        if ((err = plcrash_async_macho_string_init(&method_name, image, methodNamePtr)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)methodNamePtr, err);
             return err;
         }
@@ -730,7 +745,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     /* Grab the class's data_rw pointer. This needs masking because it also
      * can contain flags. */
     pl_vm_address_t data_ptr = image->byteorder->swap(cls->data_rw);
-    data_ptr &= ~(pl_vm_address_t)3;
+    data_ptr &= FAST_DATA_MASK;
 
     /* Grab the data RO pointer from the cache. If unavailable, we'll fetch the data and populate the class. */
     pl_vm_address_t cached_data_ro_addr = cache_lookup(objc_cache, data_ptr);
@@ -791,7 +806,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     
     /* Fetch the pointer to the class name, and make the string. */
     pl_vm_address_t class_name_ptr = image->byteorder->swap(cls_data_ro->name);
-    err = plcrash_async_macho_string_init(class_name, image->task, class_name_ptr);
+    err = plcrash_async_macho_string_init(class_name, image, class_name_ptr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)class_name_ptr, err);
         return PLCRASH_EINVALID_DATA;
@@ -955,9 +970,12 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         err = pl_async_objc_parse_objc2_class_methods<class_t, class_ro_t, class_rw_t>(image, objcContext, classPtr, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             /* Skip unrealized classes; they'll never appear in a live backtrace. */
-            if (err == PLCRASH_ENOTFOUND)
+            if (err == PLCRASH_ENOTFOUND) {
+                /* We should reset the error variable to avoid return it from the function. */
+                err = PLCRASH_ESUCCESS;
                 continue;
-            
+            }
+
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             return err;
         }
