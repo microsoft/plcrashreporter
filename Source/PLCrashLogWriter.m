@@ -476,7 +476,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
     /* Save the exception data */
     writer->uncaught_exception.has_exception = true;
     writer->uncaught_exception.name = strdup([[exception name] UTF8String]);
-    writer->uncaught_exception.reason = strdup([[exception reason] UTF8String]);
+    writer->uncaught_exception.reason = strdup([exception reason] != nil ? [[exception reason] UTF8String] : "");
 
     /* Save the call stack, if available */
     NSArray *callStackArray = [exception callStackReturnAddresses];
