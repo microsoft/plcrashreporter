@@ -28,7 +28,7 @@ Future library releases may include built-in re-usable formatters, for outputtin
 ### Prerequisites
 
 * A Mac
-* Xcode 10.1
+* Xcode 10 or above
 * Doxygen to generate the documentation. See [the official Doxygen repository](https://github.com/doxygen/doxygen) for more information or use [Homebrew](https://brew.sh) to install it.
 * GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
 * `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
@@ -36,7 +36,7 @@ Future library releases may include built-in re-usable formatters, for outputtin
 ### To build
 
 * Open a new window for your Terminal.
-* Go to PlCrashReporter's root folder and run
+* Go to PLCrashReporter's root folder and run
 
     ```bash
     xcodebuild BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
