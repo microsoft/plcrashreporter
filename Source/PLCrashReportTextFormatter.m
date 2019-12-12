@@ -34,11 +34,6 @@
 #import "PLCrashReportTextFormatter.h"
 #import "PLCrashCompatConstants.h"
 
-// Fix for old XCodes
-#ifndef CPU_SUBTYPE_ARM64E
-#define CPU_SUBTYPE_ARM64E 2
-#endif
-
 @interface PLCrashReportTextFormatter (PrivateAPI)
 static NSInteger binaryImageSort(id binary1, id binary2, void *context);
 + (NSString *) formatStackFrame: (PLCrashReportStackFrameInfo *) frameInfo
