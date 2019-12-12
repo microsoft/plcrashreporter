@@ -1,6 +1,12 @@
 # PLCrashReporter Change Log
 
-## Version 1.4
+## Version 1.4.1 (Under development)
+
+* Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
+
+___
+
+## Version 1.4.0
 
 * Support macOS 10.15 and XCode 11 and drop support for macOS 10.6.
 * Add support for tvOS apps.
