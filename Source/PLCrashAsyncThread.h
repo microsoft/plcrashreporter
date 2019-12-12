@@ -84,17 +84,6 @@ typedef _STRUCT_MCONTEXT pl_mcontext_t;
 /** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
 #define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
 
-#if defined(__arm64__) || __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
-    /** ARM unified thread state support was not available until iOS 7.0, and iOS 7.0 is the minimum
-     * release that will run on an ARM64 device. */
-    #define PLCRASH_ASYNC_THREAD_ARM_UNIFIED_SUPPORT 1
-#endif
-    
-/* Note that we can remove the non-unified thread state support once we target iOS >= 7.0 */
-#if !defined(__arm64__) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
-#warning Support for non-unified thread state should be removed if targeting only iOS >= 7.0.
-#endif
-
 #endif
 
 /**
