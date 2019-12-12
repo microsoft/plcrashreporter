@@ -1,7 +1,8 @@
 # PLCrashReporter Change Log
 
-## Version 1.4.1 (Under development)
+## Version 1.5.0 (Under development)
 
+* Drop support old versions of XCode and iOS. The minimal versions are XCode 10 and iOS 8 now.
 * Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
 
 ___
@@ -16,8 +17,8 @@ ___
 * Distribute static libraries in a second archive aside the frameworks archive.
 * Fix minor bugs in runtime symbolication: use correct bit-mask for the data pointer and correctly reset error code if no categories for currently symbolicating class.
 * Add preview support for the arm64e CPU architecture.
-* Support for arm64e devices that run an arm64 slice (which is the default for apps that were compiled with Xcode 10 or earlier).
+* Support for arm64e devices that run an arm64 slice (which is the default for apps that were compiled with XCode 10 or earlier).
 * Remove support for armv6 CPU architecture as it is no longer supported.
 * Improve namespacing to avoid symbol collisions when integrating PLCrashReporter.
 * Fix a crash that occurred on macOS where PLCrashReporter would be caught in an endless loop handling signals. 
-* Make it possible to not add an uncaught exception handler via `shouldRegisterUncaughtExceptionHandler` property on `PLCrashReporterConfig`. This scenario is important when using PLCrashReporter inside managed runtimes, i.e. for a Xamarin app. This is not a breaking change and behavior will not change if you use PLCrashReporter. 
+* Make it possible to not add an uncaught exception handler via `shouldRegisterUncaughtExceptionHandler` property on `PLCrashReporterConfig`. This scenario is important when using PLCrashReporter inside managed runtimes, i.e. for a Xamarin app. This is not a breaking change and behavior will not change if you use PLCrashReporter.
