@@ -38,7 +38,7 @@
  * on Mac OS X (and the Simulator). This header provides compatibility defines (and #warnings that will
  * fire when the SDKs are updated to include the required constants.
  */
-#define PLCF_COMPAT_HAS_UPDATED_OSX_SDK(sdk_version) (TARGET_OS_MAC && !TARGET_OS_IPHONE) && ((PLCF_MIN_MACOSX_SDK > sdk_version) || (MAC_OS_X_VERSION_MAX_ALLOWED <= sdk_version))
+#define PLCF_COMPAT_HAS_UPDATED_OSX_SDK(sdk_version) (TARGET_OS_MAC && !TARGET_OS_IPHONE) && (PLCF_MIN_MACOSX_SDK >= sdk_version)
 
 
 /*
@@ -85,5 +85,10 @@
 # warning CPU_SUBTYPE_ARM_V8 is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
+#ifndef CPU_SUBTYPE_ARM64E
+# define CPU_SUBTYPE_ARM64E 2
+#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_14_1)
+# warning CPU_SUBTYPE_ARM64E is now defined by the minimum supported Mac SDK. Please remove this define.
+#endif
 
 #endif /* PLCRASH_COMPAT_CONSTANTS_H */

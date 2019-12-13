@@ -75,12 +75,15 @@ static void save_crash_report (PLCrashReporter *reporter) {
         return;
     }
 
-
     NSData *data = [reporter loadPendingCrashReportDataAndReturnError: &error];
     if (data == nil) {
         NSLog(@"Failed to load crash report data: %@", error);
         return;
     }
+
+    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: data error: &error] autorelease];
+    NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport: report withTextFormat: PLCrashReportTextFormatiOS];
+    NSLog(@"%@", text);
 
     NSString *outputPath = [documentsDirectory stringByAppendingPathComponent: @"demo.plcrash"];
     if (![data writeToFile: outputPath atomically: YES]) {
@@ -149,11 +152,6 @@ int main (int argc, char *argv[]) {
     }
 #endif /* TARGET_IPHONE_OS */
 
-    if (debugger_should_exit()) {
-        NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");
-        return 0;
-    }
-    
     /* Configure our reporter */
     PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
                                                                         symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll] autorelease];
@@ -161,7 +159,12 @@ int main (int argc, char *argv[]) {
 
     /* Save any existing crash report. */
     save_crash_report(reporter);
-    
+
+    if (debugger_should_exit()) {
+        NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");
+        return 0;
+    }
+
     /* Set up post-crash callbacks */
     PLCrashReporterCallbacks cb = {
         .version = 0,
