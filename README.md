@@ -14,11 +14,10 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 - Backtraces for all active threads are provided.
 - Provides full register state for the crashed thread.
 
-## Supported platforms
+## Prerequisites
 
-- iOS 8.0 and above
-- macOS 10.7 and above
-- tvOS 9.0 and above
+- Xcode 10 or above.
+- Minimum supported platforms: iOS 8, macOS 10.7, tvOS 9.
 
 ## Decoding Crash Reports
 
@@ -34,7 +33,7 @@ Future library releases may include built-in re-usable formatters, for outputtin
 ### Prerequisites
 
 - A Mac running macOS compliant with Xcode requirements
-- Xcode 10 or above
+- Xcode 10.1 or above
 - Doxygen to generate the documentation. See [the official Doxygen repository](https://github.com/doxygen/doxygen) for more information or use [Homebrew](https://brew.sh) to install it.
 - GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
 - `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
