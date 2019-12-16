@@ -71,5 +71,10 @@
 # warning CPU_SUBTYPE_ARM64E is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
+#ifndef CPU_SUBTYPE_ARM64E
+# define CPU_SUBTYPE_ARM64E 2
+#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_14_1)
+# warning CPU_SUBTYPE_ARM64E is now defined by the minimum supported Mac SDK. Please remove this define.
+#endif
 
 #endif /* PLCRASH_COMPAT_CONSTANTS_H */

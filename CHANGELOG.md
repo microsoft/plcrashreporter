@@ -3,6 +3,8 @@
 ## Version 1.5.0 (Under development)
 
 * Drop support old versions of Xcode and iOS. The minimal versions are Xcode 10 and iOS 8 now.
+* Remove `UIKit` dependency on iOS.
+* Fix arm64e crash report text formatting.
 * Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
 
 ___
