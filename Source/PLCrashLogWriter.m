@@ -49,10 +49,6 @@
 #import "PLCrashSysctl.h"
 #import "PLCrashProcessInfo.h"
 
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h> // For UIDevice
-#endif
-
 /**
  * @internal
  * Maximum number of frames that will be written to the crash report for a single thread. Used as a safety measure
@@ -430,7 +426,15 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 
 #if TARGET_OS_IPHONE
     /* iPhone OS */
-    writer->system_info.version = strdup([[[UIDevice currentDevice] systemVersion] UTF8String]);
+    {
+        NSOperatingSystemVersion systemVersion = [NSProcessInfo processInfo].operatingSystemVersion;
+        NSString *systemVersionString = [NSString stringWithFormat:@"%ld.%ld", (long)systemVersion.majorVersion, (long)systemVersion.minorVersion];
+        if (systemVersion.patchVersion > 0) {
+            systemVersionString = [systemVersionString stringByAppendingFormat:@".%ld", (long)systemVersion.patchVersion];
+        }
+
+        writer->system_info.version = strdup([systemVersionString UTF8String]);
+    }
 #elif TARGET_OS_MAC
     /* Mac OS X */
     {

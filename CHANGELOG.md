@@ -2,6 +2,7 @@
 
 ## Version 1.4.1 (Under development)
 
+* Remove `UIKit` dependency on iOS.
 * Fix arm64e crash report text formatting.
 * Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
 
