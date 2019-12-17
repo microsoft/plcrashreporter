@@ -67,8 +67,10 @@
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
 
     /* Sanity check the signal info */
-    STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
-    STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
 }
 
 /**

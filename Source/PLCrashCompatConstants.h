@@ -62,27 +62,13 @@
 #define UNWIND_ARM64_FRAME_X27_X28_PAIR         0x00000010
 #define UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK  0x00FFF000
 #define UNWIND_ARM64_DWARF_SECTION_OFFSET       0x00FFFFFF
-#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_8)
-# warning UNWIND_ARM64_* constants are now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
 /* CPU type/subtype constants */
-#ifndef CPU_SUBTYPE_ARM_V7S
-# define CPU_SUBTYPE_ARM_V7S 11
-#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_8)
-# warning CPU_SUBTYPE_ARM_V7S is now defined by the minimum supported Mac SDK. Please remove this define.
-#endif
-
-#ifndef CPU_TYPE_ARM64
-# define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
-#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_8)
-# warning CPU_TYPE_ARM64 is now defined by the minimum supported Mac SDK. Please remove this define.
-#endif
-
-#ifndef CPU_SUBTYPE_ARM_V8
-# define CPU_SUBTYPE_ARM_V8 13
-#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_8)
-# warning CPU_SUBTYPE_ARM_V8 is now defined by the minimum supported Mac SDK. Please remove this define.
+#ifndef CPU_SUBTYPE_ARM64E
+# define CPU_SUBTYPE_ARM64E 2
+#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_14_1)
+# warning CPU_SUBTYPE_ARM64E is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
 #ifndef CPU_SUBTYPE_ARM64E
