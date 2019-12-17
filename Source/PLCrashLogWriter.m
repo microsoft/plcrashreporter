@@ -425,9 +425,10 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     }
 
 #if TARGET_OS_IPHONE
-    /* iPhone OS */
+    /* iOS and tvOS */
     {
-        NSOperatingSystemVersion systemVersion = [NSProcessInfo processInfo].operatingSystemVersion;
+        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+        NSOperatingSystemVersion systemVersion = processInfo.operatingSystemVersion;
         NSString *systemVersionString = [NSString stringWithFormat:@"%ld.%ld", (long)systemVersion.majorVersion, (long)systemVersion.minorVersion];
         if (systemVersion.patchVersion > 0) {
             systemVersionString = [systemVersionString stringByAppendingFormat:@".%ld", (long)systemVersion.patchVersion];
