@@ -41,15 +41,6 @@
  * @{
  */
 
-/**
- * @internal
- * Executed in static initializers to determine whether the host uses the iOS 9+ ABI.
- */
-static bool plcrash_async_image_objc_has_ios9_abi () {
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    return TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR && processInfo.operatingSystemVersion.majorVersion >= 9;
-};
-
 static const char * const kObjCSegmentName = "__OBJC";
 static const char * const kDataSegmentName = "__DATA";
 
@@ -64,20 +55,51 @@ static uint32_t END_OF_METHODS_LIST = -1;
 
 /**
  * @internal
+ * Flag set for non-ptr ISAs. This flag is not ABI stable, and may change.
+ */
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG 0x1
+
+/**
+ * Return true if the given CPU uses non-pointer isa values.
+ *
+ * On x64 architectures, isa pointers are masked to
+ * allow for refcounting and maintaining bit flags when the LSB is 0x1.
+ *
+ * @warning  ISA tagging is handled entirely in libobjc, and could be changed in any future release. There
+ * are variables vended from libobjc that return the isa pointer mask; we validate these in our
+ * tests, but we can't validate the meaning of bitfield checked here.
+ *
+ * The tagged isa pointers seem to be used even within the writable class data; as such, we must
+ * perform masking here, as well. This is another reason we should migrate the code to
+ * work directly on the backing unmodified pages, as that provides us with a stable ABI. In
+ * the worst case scenario, we'll simply fail to symbolicate a class should the ABI
+ * change incompatibly.
+ *
+ * @sa http://www.sealiesoftware.com/blog/archive/2013/09/24/objc_explain_Non-pointer_isa.html
+ * @sa https://github.com/opensource-apple/objc4/blob/master/runtime/objc-config.h
+ */
+#if !__LP64__ || TARGET_IPHONE_SIMULATOR
+#define PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA 0
+#else
+#define PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA 1
+#endif
+
+/**
+ * @internal
  * The pointer mask for non-pointer ISAs. This flag is not ABI stable, and may change; it is validated
  * at development time via our unit tests. As per our API invariants, if this flag becomes out-of-sync
  * with the host OS, our symbolication implementation will either fail to find some symbols, or will
  * return incorrect symbols, but it will not crash.
+ *
+ * @sa https://github.com/opensource-apple/objc4/blob/master/runtime/objc-private.h
  */
-const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK = plcrash_async_image_objc_has_ios9_abi() ? 0xffffffff8ULL : 0x1fffffff8ULL;
-
-/* TAGGED_ISA() returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
- * used to designate a non-pointer isa; see the plcrash_async_objc_supports_nonptr_isa documentation for more details */
-#define TAGGED_ISA(img, isa) (\
-    plcrash_async_objc_supports_nonptr_isa(plcrash_async_macho_cpu_type(img)) && \
-    (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG) ? \
-        (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK) : \
-        (isa))
+#if defined(__arm64__)
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x0000000ffffffff8ULL
+#elif defined(__x86_64__)
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x00007ffffffffff8ULL
+#else
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK ~1UL
+#endif
 
 /**
  * @internal
@@ -602,7 +624,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
             }
             
             /* Read a class structure for the metaclass. */
-            pl_vm_address_t isa = image->byteorder->swap32(cls.isa);
+            pl_vm_address_t isa = plcrash_async_objc_isa_pointer(image->byteorder->swap(cls.isa));
             struct pl_objc1_class metaclass;
             err = plcrash_async_task_memcpy(image->task, isa, 0, &metaclass, sizeof(metaclass));
             if (err != PLCRASH_ESUCCESS) {
@@ -971,7 +993,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         }
         
         /* Read an architecture-appropriate class structure for the metaclass. */
-        pl_vm_address_t isa = TAGGED_ISA(image, image->byteorder->swap(classPtr->isa));
+        pl_vm_address_t isa = plcrash_async_objc_isa_pointer(image->byteorder->swap(classPtr->isa));
         class_t *metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, 0, sizeof(*metaclass));
         if (metaclass == NULL) {
             PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)isa);
@@ -1025,36 +1047,22 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
 }
 
 /**
- * Return true if the given CPU @a type uses non-pointer isa values.
- *
- * On ARM64 (and possibly future architectures), isa pointers are masked to
- * allow for refcounting and maintaining bit flags when the LSB is 0x1.
- *
- * @param type A Mach-O CPU type, eg, the CPU type from a Mach-O image's header.
- *
- * @warning  ISA tagging is handled entirely in libobjc, and could be changed in any future release. There
- * are variables vended from libobjc that return the isa pointer mask; we validate these in our
- * tests, but we can't validate the meaning of bitfield checked here.
- *
- * The tagged isa pointers seem to be used even within the writable class data; as such, we must
- * perform masking here, as well. This is another reason we should migrate the code to
- * work directly on the backing unmodified pages, as that provides us with a stable ABI. In
- * the worst case scenario, we'll simply fail to symbolicate a class should the ABI
- * change incompatibly.
- *
- * @sa http://www.sealiesoftware.com/blog/archive/2013/09/24/objc_explain_Non-pointer_isa.html
+ * Returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
+ * used to designate a non-pointer isa; see the PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA documentation for more details.
  */
-bool plcrash_async_objc_supports_nonptr_isa (cpu_type_t type) {
-/* Handle known architectures; we use a whilelist here to force implementors to evaluate new architectures
- * during porting. */
-#if defined(__i386__) || defined(__x86_64__) || defined(__arm__) || defined(__arm64__)
-    if (type == CPU_TYPE_ARM64)
-        return true;
-    
-    return false;
-#else
-#error Add architecture definition.
+pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa) {
+#if PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA
+    if (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG) {
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+        if (processInfo.operatingSystemVersion.majorVersion < 9) {
+            return isa & 0x00000001fffffff8UL;
+        }
 #endif
+        return isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK;
+    }
+#endif
+    return isa;
 }
 
 /**
