@@ -1054,6 +1054,7 @@ pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa) {
 #if PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA
     if (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG) {
 #if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+        /* Before iOS 9 other bit-mask was used. */
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
         if (processInfo.operatingSystemVersion.majorVersion < 9) {
             return isa & 0x00000001fffffff8UL;
