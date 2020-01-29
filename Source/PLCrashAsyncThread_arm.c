@@ -45,22 +45,51 @@
 
 #if defined(__LP64__)
 
-#define THREAD_STATE_GET_PTR(name, type, ts) arm_thread_state64_get_ ## name (ts->arm_state. type )
+/*
+ * Pointer authentication codes (on arm64e for example) must be stripped out.
+ * See https://developer.apple.com/documentation/security/preparing_your_app_to_work_with_pointer_authentication
+ */
+#if __has_feature(ptrauth_calls)
+
+#include <ptrauth.h>
+
+#define THREAD_STATE_GET_PTR(name, type, ts) ({ \
+    plcrash_greg_t ptr = arm_thread_state64_get_ ## name (ts->arm_state. type); \
+    ptrauth_strip((void *) ptr, ptrauth_key_frame_pointer); \
+})
+#define THREAD_STATE_GET_FPTR(name, type, ts)  ({ \
+    plcrash_greg_t ptr = arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
+    ptrauth_strip((void *) ptr, ptrauth_key_function_pointer); \
+})
+
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
     ts->valid_regs |= 1ULL << regnum; \
     arm_thread_state64_set_ ## name (ts->arm_state. type, value); \
 }
-#define THREAD_STATE_GET_FPTR(name, type, ts) THREAD_STATE_GET_PTR(name ## _fptr, type, ts)
 #define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) THREAD_STATE_SET_PTR(name ## _fptr, type, ts, regnum, value)
 
-#else
+#else // __has_feature(ptrauth_calls)
+
+#define THREAD_STATE_GET_PTR(name, type, ts) arm_thread_state64_get_ ## name (ts->arm_state. type)
+#define THREAD_STATE_GET_FPTR(name, type, ts) THREAD_STATE_GET_PTR(name ## _fptr, type, ts)
+
+#define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
+    ts->valid_regs |= 1ULL << regnum; \
+    arm_thread_state64_set_ ## name (ts->arm_state. type, value); \
+}
+#define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) THREAD_STATE_SET_PTR(name ## _fptr, type, ts, regnum, value)
+
+#endif // __has_feature(ptrauth_calls)
+
+#else // __LP64__
 
 #define THREAD_STATE_GET_PTR THREAD_STATE_GET
-#define THREAD_STATE_SET_PTR THREAD_STATE_SET
 #define THREAD_STATE_GET_FPTR THREAD_STATE_GET
+
+#define THREAD_STATE_SET_PTR THREAD_STATE_SET
 #define THREAD_STATE_SET_FPTR THREAD_STATE_SET
 
-#endif
+#endif // __LP64__
 
 /* Mapping of DWARF register numbers to PLCrashReporter register numbers. */
 struct dwarf_register_table {
@@ -246,12 +275,10 @@ static inline plcrash_greg_t plcrash_async_thread_state_get_reg_64 (const plcras
         case PLCRASH_ARM64_X26: return THREAD_STATE_GET(x[26], thread.ts_64, ts);
         case PLCRASH_ARM64_X27: return THREAD_STATE_GET(x[27], thread.ts_64, ts);
         case PLCRASH_ARM64_X28: return THREAD_STATE_GET(x[28], thread.ts_64, ts);
-
         case PLCRASH_ARM64_FP: return THREAD_STATE_GET_PTR(fp, thread.ts_64, ts);
         case PLCRASH_ARM64_SP: return THREAD_STATE_GET_PTR(sp, thread.ts_64, ts);
         case PLCRASH_ARM64_LR: return THREAD_STATE_GET_FPTR(lr, thread.ts_64, ts);
         case PLCRASH_ARM64_PC: return THREAD_STATE_GET_FPTR(pc, thread.ts_64, ts);
-
         case PLCRASH_ARM64_CPSR: return THREAD_STATE_GET(cpsr, thread.ts_64, ts);
         default: __builtin_trap();
     }
@@ -320,12 +347,10 @@ static inline void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_s
         case PLCRASH_ARM64_X26: THREAD_STATE_SET(x[26], thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_X27: THREAD_STATE_SET(x[27], thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_X28: THREAD_STATE_SET(x[28], thread.ts_64, ts, regnum, reg); break;
-
         case PLCRASH_ARM64_FP: THREAD_STATE_SET_PTR(fp, thread.ts_64, ts, regnum, (void *)reg); break;
         case PLCRASH_ARM64_SP: THREAD_STATE_SET_PTR(sp, thread.ts_64, ts, regnum, (void *)reg); break;
         case PLCRASH_ARM64_LR: THREAD_STATE_SET_FPTR(lr, thread.ts_64, ts, regnum, (void *)reg); break;
         case PLCRASH_ARM64_PC: THREAD_STATE_SET_FPTR(pc, thread.ts_64, ts, regnum, (void *)reg); break;
-
         case PLCRASH_ARM64_CPSR: THREAD_STATE_SET(cpsr, thread.ts_64, ts, regnum, reg); break;
         default: __builtin_trap();
     }
