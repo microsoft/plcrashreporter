@@ -202,344 +202,147 @@ static const struct dwarf_register_table arm64_dwarf_table [] = {
     { PLCRASH_ARM64_SP,  31 },
 };
 
+static inline plcrash_greg_t plcrash_async_thread_state_get_reg_32 (const plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
+    switch (regnum) {
+        case PLCRASH_ARM_R0: RETGEN(r[0], thread.ts_32, ts);
+        case PLCRASH_ARM_R1: RETGEN(r[1], thread.ts_32, ts);
+        case PLCRASH_ARM_R2: RETGEN(r[2], thread.ts_32, ts);
+        case PLCRASH_ARM_R3: RETGEN(r[3], thread.ts_32, ts);
+        case PLCRASH_ARM_R4: RETGEN(r[4], thread.ts_32, ts);
+        case PLCRASH_ARM_R5: RETGEN(r[5], thread.ts_32, ts);
+        case PLCRASH_ARM_R6: RETGEN(r[6], thread.ts_32, ts);
+        case PLCRASH_ARM_R7: RETGEN(r[7], thread.ts_32, ts);
+        case PLCRASH_ARM_R8: RETGEN(r[8], thread.ts_32, ts);
+        case PLCRASH_ARM_R9: RETGEN(r[9], thread.ts_32, ts);
+        case PLCRASH_ARM_R10: RETGEN(r[10], thread.ts_32, ts);
+        case PLCRASH_ARM_R11: RETGEN(r[11], thread.ts_32, ts);
+        case PLCRASH_ARM_R12: RETGEN(r[12], thread.ts_32, ts);
+        case PLCRASH_ARM_SP: RETGEN(sp, thread.ts_32, ts);
+        case PLCRASH_ARM_LR: RETGEN(lr, thread.ts_32, ts);
+        case PLCRASH_ARM_PC: RETGEN(pc, thread.ts_32, ts);
+        case PLCRASH_ARM_CPSR: RETGEN(cpsr, thread.ts_32, ts);
+        default: __builtin_trap();
+    }
+}
+
+static inline plcrash_greg_t plcrash_async_thread_state_get_reg_64 (const plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
+    switch (regnum) {
+        case PLCRASH_ARM64_X0: RETGEN(x[0], thread.ts_64, ts);
+        case PLCRASH_ARM64_X1: RETGEN(x[1], thread.ts_64, ts);
+        case PLCRASH_ARM64_X2: RETGEN(x[2], thread.ts_64, ts);
+        case PLCRASH_ARM64_X3: RETGEN(x[3], thread.ts_64, ts);
+        case PLCRASH_ARM64_X4: RETGEN(x[4], thread.ts_64, ts);
+        case PLCRASH_ARM64_X5: RETGEN(x[5], thread.ts_64, ts);
+        case PLCRASH_ARM64_X6: RETGEN(x[6], thread.ts_64, ts);
+        case PLCRASH_ARM64_X7: RETGEN(x[7], thread.ts_64, ts);
+        case PLCRASH_ARM64_X8: RETGEN(x[8], thread.ts_64, ts);
+        case PLCRASH_ARM64_X9: RETGEN(x[9], thread.ts_64, ts);
+        case PLCRASH_ARM64_X10: RETGEN(x[10], thread.ts_64, ts);
+        case PLCRASH_ARM64_X11: RETGEN(x[11], thread.ts_64, ts);
+        case PLCRASH_ARM64_X12: RETGEN(x[12], thread.ts_64, ts);
+        case PLCRASH_ARM64_X13: RETGEN(x[13], thread.ts_64, ts);
+        case PLCRASH_ARM64_X14: RETGEN(x[14], thread.ts_64, ts);
+        case PLCRASH_ARM64_X15: RETGEN(x[15], thread.ts_64, ts);
+        case PLCRASH_ARM64_X16: RETGEN(x[16], thread.ts_64, ts);
+        case PLCRASH_ARM64_X17: RETGEN(x[17], thread.ts_64, ts);
+        case PLCRASH_ARM64_X18: RETGEN(x[18], thread.ts_64, ts);
+        case PLCRASH_ARM64_X19: RETGEN(x[19], thread.ts_64, ts);
+        case PLCRASH_ARM64_X20: RETGEN(x[20], thread.ts_64, ts);
+        case PLCRASH_ARM64_X21: RETGEN(x[21], thread.ts_64, ts);
+        case PLCRASH_ARM64_X22: RETGEN(x[22], thread.ts_64, ts);
+        case PLCRASH_ARM64_X23: RETGEN(x[23], thread.ts_64, ts);
+        case PLCRASH_ARM64_X24: RETGEN(x[24], thread.ts_64, ts);
+        case PLCRASH_ARM64_X25: RETGEN(x[25], thread.ts_64, ts);
+        case PLCRASH_ARM64_X26: RETGEN(x[26], thread.ts_64, ts);
+        case PLCRASH_ARM64_X27: RETGEN(x[27], thread.ts_64, ts);
+        case PLCRASH_ARM64_X28: RETGEN(x[28], thread.ts_64, ts);
+        case PLCRASH_ARM64_FP: RETGENM(fp, thread.ts_64, ts);
+        case PLCRASH_ARM64_SP: RETGENM(sp, thread.ts_64, ts);
+        case PLCRASH_ARM64_LR: RETGENM(lr, thread.ts_64, ts);
+        case PLCRASH_ARM64_PC: RETGENM(pc, thread.ts_64, ts);
+        case PLCRASH_ARM64_CPSR: RETGEN(cpsr, thread.ts_64, ts);
+        default: __builtin_trap();
+    }
+}
+
 // PLCrashAsyncThread API
 plcrash_greg_t plcrash_async_thread_state_get_reg (const plcrash_async_thread_state_t *ts, plcrash_regnum_t regnum) {
     if (ts->arm_state.thread.ash.flavor == ARM_THREAD_STATE32) {
-        switch (regnum) {
-            case PLCRASH_ARM_R0:
-                RETGEN(r[0], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R1:
-                RETGEN(r[1], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R2:
-                RETGEN(r[2], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R3:
-                RETGEN(r[3], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R4:
-                RETGEN(r[4], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R5:
-                RETGEN(r[5], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R6:
-                RETGEN(r[6], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R7:
-                RETGEN(r[7], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R8:
-                RETGEN(r[8], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R9:
-                RETGEN(r[9], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R10:
-                RETGEN(r[10], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R11:
-                RETGEN(r[11], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_R12:
-                RETGEN(r[12], thread.ts_32, ts);
-                
-            case PLCRASH_ARM_SP:
-                RETGEN(sp, thread.ts_32, ts);
-                
-            case PLCRASH_ARM_LR:
-                RETGEN(lr, thread.ts_32, ts);
-                
-            case PLCRASH_ARM_PC:
-                RETGEN(pc, thread.ts_32, ts);
-                
-            case PLCRASH_ARM_CPSR:
-                RETGEN(cpsr, thread.ts_32, ts);
-                
-            default:
-                __builtin_trap();
-        }
+        return plcrash_async_thread_state_get_reg_32(ts, regnum);
     } else {
-        switch (regnum) {
-            case PLCRASH_ARM64_X0:
-                RETGEN(x[0], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X1:
-                RETGEN(x[1], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X2:
-                RETGEN(x[2], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X3:
-                RETGEN(x[3], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X4:
-                RETGEN(x[4], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X5:
-                RETGEN(x[5], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X6:
-                RETGEN(x[6], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X7:
-                RETGEN(x[7], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X8:
-                RETGEN(x[8], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X9:
-                RETGEN(x[9], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X10:
-                RETGEN(x[10], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X11:
-                RETGEN(x[11], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X12:
-                RETGEN(x[12], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X13:
-                RETGEN(x[13], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X14:
-                RETGEN(x[14], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X15:
-                RETGEN(x[15], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X16:
-                RETGEN(x[16], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X17:
-                RETGEN(x[17], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X18:
-                RETGEN(x[18], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X19:
-                RETGEN(x[19], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X20:
-                RETGEN(x[20], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X21:
-                RETGEN(x[21], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X22:
-                RETGEN(x[22], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X23:
-                RETGEN(x[23], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X24:
-                RETGEN(x[24], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X25:
-                RETGEN(x[25], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X26:
-                RETGEN(x[26], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X27:
-                RETGEN(x[27], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_X28:
-                RETGEN(x[28], thread.ts_64, ts);
-                
-            case PLCRASH_ARM64_FP:
-                RETGENM(fp, thread.ts_64, ts);
-
-            case PLCRASH_ARM64_SP:
-                RETGENM(sp, thread.ts_64, ts);
-            
-            case PLCRASH_ARM64_LR:
-                RETGENM(lr, thread.ts_64, ts);
-            
-            case PLCRASH_ARM64_PC:
-                RETGENM(pc, thread.ts_64, ts);
-            
-            case PLCRASH_ARM64_CPSR:
-                RETGEN(cpsr, thread.ts_64, ts);
-
-            default:
-                __builtin_trap();
-        }
+        return plcrash_async_thread_state_get_reg_64(ts, regnum);
     }
-    /* Should not be reachable */
-    return 0;
+}
+
+static inline void plcrash_async_thread_state_set_reg_32 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
+    switch (regnum) {
+        case PLCRASH_ARM_R0: SETGEN(r[0], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R1: SETGEN(r[1], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R2: SETGEN(r[2], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R3: SETGEN(r[3], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R4: SETGEN(r[4], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R5: SETGEN(r[5], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R6: SETGEN(r[6], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R7: SETGEN(r[7], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R8: SETGEN(r[8], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R9: SETGEN(r[9], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R10: SETGEN(r[10], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R11: SETGEN(r[11], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_R12: SETGEN(r[12], thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_SP: SETGEN(sp, thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_LR: SETGEN(lr, thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_PC: SETGEN(pc, thread.ts_32, ts, regnum, reg);
+        case PLCRASH_ARM_CPSR: SETGEN(cpsr, thread.ts_32, ts, regnum, reg);
+        default: __builtin_trap(); // Unsupported register
+    }
+}
+
+static inline void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
+    switch (regnum) {
+        case PLCRASH_ARM64_X0: SETGEN(x[0], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X1: SETGEN(x[1], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X2: SETGEN(x[2], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X3: SETGEN(x[3], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X4: SETGEN(x[4], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X5: SETGEN(x[5], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X6: SETGEN(x[6], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X7: SETGEN(x[7], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X8: SETGEN(x[8], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X9: SETGEN(x[9], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X10: SETGEN(x[10], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X11: SETGEN(x[11], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X12: SETGEN(x[12], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X13: SETGEN(x[13], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X14: SETGEN(x[14], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X15: SETGEN(x[15], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X16: SETGEN(x[16], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X17: SETGEN(x[17], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X18: SETGEN(x[18], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X19: SETGEN(x[19], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X20: SETGEN(x[20], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X21: SETGEN(x[21], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X22: SETGEN(x[22], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X23: SETGEN(x[23], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X24: SETGEN(x[24], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X25: SETGEN(x[25], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X26: SETGEN(x[26], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X27: SETGEN(x[27], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_X28: SETGEN(x[28], thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_FP: SETGENM(fp, thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_SP: SETGENM(sp, thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_LR: SETGENMF(lr, thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_PC: SETGENMF(pc, thread.ts_64, ts, regnum, reg);
+        case PLCRASH_ARM64_CPSR: SETGEN(cpsr, thread.ts_64, ts, regnum, reg);
+        default: __builtin_trap();
+    }
 }
 
 // PLCrashAsyncThread API
 void plcrash_async_thread_state_set_reg (plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum, plcrash_greg_t reg) {
-    plcrash_async_thread_state_t *ts = thread_state;
-
-    if (ts->arm_state.thread.ash.flavor == ARM_THREAD_STATE32) {
-        switch (regnum) {
-            case PLCRASH_ARM_R0:
-                SETGEN(r[0], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R1:
-                SETGEN(r[1], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R2:
-                SETGEN(r[2], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R3:
-                SETGEN(r[3], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R4:
-                SETGEN(r[4], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R5:
-                SETGEN(r[5], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R6:
-                SETGEN(r[6], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R7:
-                SETGEN(r[7], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R8:
-                SETGEN(r[8], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R9:
-                SETGEN(r[9], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R10:
-                SETGEN(r[10], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R11:
-                SETGEN(r[11], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_R12:
-                SETGEN(r[12], thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_SP:
-                SETGEN(sp, thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_LR:
-                SETGEN(lr, thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_PC:
-                SETGEN(pc, thread.ts_32, ts, regnum, reg);
-                
-            case PLCRASH_ARM_CPSR:
-                SETGEN(cpsr, thread.ts_32, ts, regnum, reg);
-                
-            default:
-                // Unsupported register
-                __builtin_trap();
-        }
+    if (thread_state->arm_state.thread.ash.flavor == ARM_THREAD_STATE32) {
+        plcrash_async_thread_state_set_reg_32(thread_state, regnum, reg);
     } else {
-        switch (regnum) {
-            case PLCRASH_ARM64_X0:
-                SETGEN(x[0], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X1:
-                SETGEN(x[1], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X2:
-                SETGEN(x[2], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X3:
-                SETGEN(x[3], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X4:
-                SETGEN(x[4], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X5:
-                SETGEN(x[5], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X6:
-                SETGEN(x[6], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X7:
-                SETGEN(x[7], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X8:
-                SETGEN(x[8], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X9:
-                SETGEN(x[9], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X10:
-                SETGEN(x[10], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X11:
-                SETGEN(x[11], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X12:
-                SETGEN(x[12], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X13:
-                SETGEN(x[13], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X14:
-                SETGEN(x[14], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X15:
-                SETGEN(x[15], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X16:
-                SETGEN(x[16], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X17:
-                SETGEN(x[17], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X18:
-                SETGEN(x[18], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X19:
-                SETGEN(x[19], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X20:
-                SETGEN(x[20], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X21:
-                SETGEN(x[21], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X22:
-                SETGEN(x[22], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X23:
-                SETGEN(x[23], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X24:
-                SETGEN(x[24], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X25:
-                SETGEN(x[25], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X26:
-                SETGEN(x[26], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X27:
-                SETGEN(x[27], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_X28:
-                SETGEN(x[28], thread.ts_64, ts, regnum, reg);
-                
-            case PLCRASH_ARM64_FP:
-                SETGENM(fp, thread.ts_64, ts, regnum, reg);
-            
-            case PLCRASH_ARM64_SP:
-                SETGENM(sp, thread.ts_64, ts, regnum, reg);
-
-            case PLCRASH_ARM64_LR:
-                SETGENMF(lr, thread.ts_64, ts, regnum, reg);
-            
-            case PLCRASH_ARM64_PC:
-                SETGENMF(pc, thread.ts_64, ts, regnum, reg);
-            
-            case PLCRASH_ARM64_CPSR:
-                SETGEN(cpsr, thread.ts_64, ts, regnum, reg);
-                
-            default:
-                __builtin_trap();
-        }
+        plcrash_async_thread_state_set_reg_64(thread_state, regnum, reg);
     }
 }
 
@@ -553,158 +356,82 @@ size_t plcrash_async_thread_state_get_reg_count (const plcrash_async_thread_stat
     }
 }
 
-// PLCrashAsyncThread API
-char const *plcrash_async_thread_state_get_reg_name (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
-    if (thread_state->arm_state.thread.ash.flavor == ARM_THREAD_STATE32) {
-        switch ((plcrash_arm_regnum_t) regnum) {
-            case PLCRASH_ARM_R0:
-                return "r0";
-            case PLCRASH_ARM_R1:
-                return "r1";
-            case PLCRASH_ARM_R2:
-                return "r2";
-            case PLCRASH_ARM_R3:
-                return "r3";
-            case PLCRASH_ARM_R4:
-                return "r4";
-            case PLCRASH_ARM_R5:
-                return "r5";
-            case PLCRASH_ARM_R6:
-                return "r6";
-            case PLCRASH_ARM_R7:
-                return "r7";
-            case PLCRASH_ARM_R8:
-                return "r8";
-            case PLCRASH_ARM_R9:
-                return "r9";
-            case PLCRASH_ARM_R10:
-                return "r10";
-            case PLCRASH_ARM_R11:
-                return "r11";
-            case PLCRASH_ARM_R12:
-                return "r12";
-                
-            case PLCRASH_ARM_SP:
-                return "sp";
-                
-            case PLCRASH_ARM_LR:
-                return "lr";
-                
-            case PLCRASH_ARM_PC:
-                return "pc";
-                
-            case PLCRASH_ARM_CPSR:
-                return "cpsr";
-        }
-    } else {
-        switch ((plcrash_arm64_regnum_t) regnum) {
-            case PLCRASH_ARM64_X0:
-                return "x0";
-                
-            case PLCRASH_ARM64_X1:
-                return "x1";
-                
-            case PLCRASH_ARM64_X2:
-                return "x2";
-                
-            case PLCRASH_ARM64_X3:
-                return "x3";
-                
-            case PLCRASH_ARM64_X4:
-                return "x4";
-                
-            case PLCRASH_ARM64_X5:
-                return "x5";
-                
-            case PLCRASH_ARM64_X6:
-                return "x6";
-                
-            case PLCRASH_ARM64_X7:
-                return "x7";
-                
-            case PLCRASH_ARM64_X8:
-                return "x8";
-                
-            case PLCRASH_ARM64_X9:
-                return "x9";
-                
-            case PLCRASH_ARM64_X10:
-                return "x10";
-                
-            case PLCRASH_ARM64_X11:
-                return "x11";
-                
-            case PLCRASH_ARM64_X12:
-                return "x12";
-                
-            case PLCRASH_ARM64_X13:
-                return "x13";
-                
-            case PLCRASH_ARM64_X14:
-                return "x14";
-                
-            case PLCRASH_ARM64_X15:
-                return "x15";
-                
-            case PLCRASH_ARM64_X16:
-                return "x16";
-                
-            case PLCRASH_ARM64_X17:
-                return "x17";
-                
-            case PLCRASH_ARM64_X18:
-                return "x18";
-                
-            case PLCRASH_ARM64_X19:
-                return "x19";
-                
-            case PLCRASH_ARM64_X20:
-                return "x20";
-                
-            case PLCRASH_ARM64_X21:
-                return "x21";
-                
-            case PLCRASH_ARM64_X22:
-                return "x22";
-                
-            case PLCRASH_ARM64_X23:
-                return "x23";
-                
-            case PLCRASH_ARM64_X24:
-                return "x24";
-                
-            case PLCRASH_ARM64_X25:
-                return "x25";
-                
-            case PLCRASH_ARM64_X26:
-                return "x26";
-                
-            case PLCRASH_ARM64_X27:
-                return "x27";
-                
-            case PLCRASH_ARM64_X28:
-                return "x28";
-                
-            case PLCRASH_ARM64_FP:
-                return "fp";
-                
-            case PLCRASH_ARM64_SP:
-                return "sp";
-                
-            case PLCRASH_ARM64_LR:
-                return "lr";
-                
-            case PLCRASH_ARM64_PC:
-                return "pc";
-                
-            case PLCRASH_ARM64_CPSR:
-                return "cpsr";
-        }
+static inline char const *plcrash_async_thread_state_get_reg_name_32 (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
+    switch ((plcrash_arm_regnum_t) regnum) {
+        case PLCRASH_ARM_R0: return "r0";
+        case PLCRASH_ARM_R1: return "r1";
+        case PLCRASH_ARM_R2: return "r2";
+        case PLCRASH_ARM_R3: return "r3";
+        case PLCRASH_ARM_R4: return "r4";
+        case PLCRASH_ARM_R5: return "r5";
+        case PLCRASH_ARM_R6: return "r6";
+        case PLCRASH_ARM_R7: return "r7";
+        case PLCRASH_ARM_R8: return "r8";
+        case PLCRASH_ARM_R9: return "r9";
+        case PLCRASH_ARM_R10: return "r10";
+        case PLCRASH_ARM_R11: return "r11";
+        case PLCRASH_ARM_R12: return "r12";
+        case PLCRASH_ARM_SP: return "sp";
+        case PLCRASH_ARM_LR: return "lr";
+        case PLCRASH_ARM_PC: return "pc";
+        case PLCRASH_ARM_CPSR: return "cpsr";
     }
-    
+
     /* Unsupported register is an implementation error (checked in unit tests) */
     PLCF_DEBUG("Missing register name for register id: %d", regnum);
     abort();
+}
+
+static inline char const *plcrash_async_thread_state_get_reg_name_64 (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
+    switch ((plcrash_arm64_regnum_t) regnum) {
+        case PLCRASH_ARM64_X0: return "x0";
+        case PLCRASH_ARM64_X1: return "x1";
+        case PLCRASH_ARM64_X2: return "x2";
+        case PLCRASH_ARM64_X3: return "x3";
+        case PLCRASH_ARM64_X4: return "x4";
+        case PLCRASH_ARM64_X5: return "x5";
+        case PLCRASH_ARM64_X6: return "x6";
+        case PLCRASH_ARM64_X7: return "x7";
+        case PLCRASH_ARM64_X8: return "x8";
+        case PLCRASH_ARM64_X9: return "x9";
+        case PLCRASH_ARM64_X10: return "x10";
+        case PLCRASH_ARM64_X11: return "x11";
+        case PLCRASH_ARM64_X12: return "x12";
+        case PLCRASH_ARM64_X13: return "x13";
+        case PLCRASH_ARM64_X14: return "x14";
+        case PLCRASH_ARM64_X15: return "x15";
+        case PLCRASH_ARM64_X16: return "x16";
+        case PLCRASH_ARM64_X17: return "x17";
+        case PLCRASH_ARM64_X18: return "x18";
+        case PLCRASH_ARM64_X19: return "x19";
+        case PLCRASH_ARM64_X20: return "x20";
+        case PLCRASH_ARM64_X21: return "x21";
+        case PLCRASH_ARM64_X22: return "x22";
+        case PLCRASH_ARM64_X23: return "x23";
+        case PLCRASH_ARM64_X24: return "x24";
+        case PLCRASH_ARM64_X25: return "x25";
+        case PLCRASH_ARM64_X26: return "x26";
+        case PLCRASH_ARM64_X27: return "x27";
+        case PLCRASH_ARM64_X28: return "x28";
+        case PLCRASH_ARM64_FP: return "fp";
+        case PLCRASH_ARM64_SP: return "sp";
+        case PLCRASH_ARM64_LR: return "lr";
+        case PLCRASH_ARM64_PC: return "pc";
+        case PLCRASH_ARM64_CPSR: return "cpsr";
+    }
+
+    /* Unsupported register is an implementation error (checked in unit tests) */
+    PLCF_DEBUG("Missing register name for register id: %d", regnum);
+    abort();
+}
+
+// PLCrashAsyncThread API
+char const *plcrash_async_thread_state_get_reg_name (const plcrash_async_thread_state_t *thread_state, plcrash_regnum_t regnum) {
+    if (thread_state->arm_state.thread.ash.flavor == ARM_THREAD_STATE32) {
+        return plcrash_async_thread_state_get_reg_name_32(thread_state, regnum);
+    } else {
+        return plcrash_async_thread_state_get_reg_name_64(thread_state, regnum);
+    }
 }
 
 // PLCrashAsyncThread API
