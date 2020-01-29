@@ -63,10 +63,17 @@
 })
 
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
+    void *ptr = ptrauth_strip((void *)value, ptrauth_key_frame_pointer); \
+    ptr = ptrauth_sign_unauthenticated(ptr, ptrauth_key_frame_pointer, 0); \
     ts->valid_regs |= 1ULL << regnum; \
-    arm_thread_state64_set_ ## name (ts->arm_state. type, value); \
+    arm_thread_state64_set_ ## name (ts->arm_state. type, ptr); \
 }
-#define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) THREAD_STATE_SET_PTR(name ## _fptr, type, ts, regnum, value)
+#define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) { \
+    void *ptr = ptrauth_strip((void *)value, ptrauth_key_function_pointer); \
+    ptr = ptrauth_sign_unauthenticated(ptr, ptrauth_key_function_pointer, 0); \
+    ts->valid_regs |= 1ULL << regnum; \
+    arm_thread_state64_set_ ## name ## _fptr (ts->arm_state. type, ptr); \
+}
 
 #else // __has_feature(ptrauth_calls)
 
@@ -75,7 +82,7 @@
 
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
     ts->valid_regs |= 1ULL << regnum; \
-    arm_thread_state64_set_ ## name (ts->arm_state. type, value); \
+    arm_thread_state64_set_ ## name (ts->arm_state. type, (void *)value); \
 }
 #define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) THREAD_STATE_SET_PTR(name ## _fptr, type, ts, regnum, value)
 
@@ -347,10 +354,10 @@ static inline void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_s
         case PLCRASH_ARM64_X26: THREAD_STATE_SET(x[26], thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_X27: THREAD_STATE_SET(x[27], thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_X28: THREAD_STATE_SET(x[28], thread.ts_64, ts, regnum, reg); break;
-        case PLCRASH_ARM64_FP: THREAD_STATE_SET_PTR(fp, thread.ts_64, ts, regnum, (void *)reg); break;
-        case PLCRASH_ARM64_SP: THREAD_STATE_SET_PTR(sp, thread.ts_64, ts, regnum, (void *)reg); break;
-        case PLCRASH_ARM64_LR: THREAD_STATE_SET_FPTR(lr, thread.ts_64, ts, regnum, (void *)reg); break;
-        case PLCRASH_ARM64_PC: THREAD_STATE_SET_FPTR(pc, thread.ts_64, ts, regnum, (void *)reg); break;
+        case PLCRASH_ARM64_FP: THREAD_STATE_SET_PTR(fp, thread.ts_64, ts, regnum, reg); break;
+        case PLCRASH_ARM64_SP: THREAD_STATE_SET_PTR(sp, thread.ts_64, ts, regnum, reg); break;
+        case PLCRASH_ARM64_LR: THREAD_STATE_SET_FPTR(lr, thread.ts_64, ts, regnum, reg); break;
+        case PLCRASH_ARM64_PC: THREAD_STATE_SET_FPTR(pc, thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_CPSR: THREAD_STATE_SET(cpsr, thread.ts_64, ts, regnum, reg); break;
         default: __builtin_trap();
     }
