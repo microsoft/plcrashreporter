@@ -29,26 +29,18 @@
 #ifndef PLCRASH_ASYNC_OBJC_SECTION_H
 #define PLCRASH_ASYNC_OBJC_SECTION_H
 
-#include "PLCrashAsyncMachOImage.h"
-#include "PLCrashAsyncMachOString.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "PLCrashAsyncMachOImage.h"
+#include "PLCrashAsyncMachOString.h"
     
 /**
  * @internal
  * @ingroup plcrash_async_image_objc
  * @{
  */
-
-/**
- * @internal
- * Flag set for non-ptr ISAs. This flag is not ABI stable, and may change.
- */
-#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG 0x1
-
-extern const uint64_t PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK;
 
 /**
  * @internal
@@ -107,8 +99,7 @@ typedef struct plcrash_async_objc_cache {
 
 plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *context);
 void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *context);
-    
-bool plcrash_async_objc_supports_nonptr_isa (cpu_type_t type);
+pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa);
 
 /**
  * A callback to invoke when an Objective-C method is found.

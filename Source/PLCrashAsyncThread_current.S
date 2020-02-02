@@ -93,11 +93,15 @@ pushfq
 popq    %rcx
 movq    %rcx, 152(%rsp)
 
-#define MOV(reg, offset) mov %##reg, offset(%rsp)
-
-MOV    (cs, 160);
-MOV    (fs, 168);
-MOV    (gs, 176);
+/* The segment registers are 16 bit. Zero out the rest */
+/* Do this by moving it to a 64 bit register and then to memory. */
+/* The move to via the 64 bit register will automatically clear out the bits */
+movq    %cs, %rcx
+movq    %rcx, 160(%rsp)
+movq    %fs, %rcx
+movq   %rcx, 168(%rsp)
+movq    %gs, %rcx
+movq   %rcx, 176(%rsp)
 
 /* Move mctx to 3rd argument of plcrash_log_writer_write_curthread_stub */
 movq    %rsp, %rdx
@@ -147,12 +151,19 @@ movl    %eax, 48+OFF(%esp)
 /* Use the return address for our RIP value */
 movl    0x4(%ebp), %eax
 movl    %eax, 52+OFF(%esp)
-#define MOV(reg, offset) mov %##reg, offset(%esp)
-MOV    (cs, 56);
-MOV    (ds, 60);
-MOV    (es, 64);
-MOV    (fs, 68);
-MOV    (gs, 72);
+
+/* The segment registers are 16 bit. Zero out the rest */
+xorl %eax, %eax
+movl %cs, %eax
+movl %eax, OFF+56(%esp);
+movl %ds, %eax
+movl %eax, OFF+60(%esp);
+movl %es, %eax
+movl %eax, OFF+64(%esp);
+movl %fs, %eax
+movl %eax, OFF+68(%esp);
+movl %gs, %eax
+movl %eax, OFF+72(%esp);
 #undef MOVL
 
 /* Set up our argument stack: writer (arg0), image_list, file, siginfo, mctx */

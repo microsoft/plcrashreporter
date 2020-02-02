@@ -133,6 +133,19 @@ VOFF(ss, gs, 72);
 
 VOFF(es, trapno, 0);
 
+#elif __DARWIN_OPAQUE_ARM_THREAD_STATE64
+
+/* There's a hard-coded dependency on this size in the trampoline assembly, so we explicitly validate it here. */
+PLCR_ASSERT_STATIC(MCONTEXT_SIZE, sizeof(pl_mcontext_t) == 816);
+
+/* Verify the expected offsets */
+VOFF(ss, x, 16);
+VOFF(ss, opaque_fp, 248);
+VOFF(ss, opaque_lr, 256);
+VOFF(ss, opaque_sp, 264);
+VOFF(ss, opaque_pc, 272);
+VOFF(ss, cpsr, 280);
+
 #elif defined(__arm64__)
 
 /* There's a hard-coded dependency on this size in the trampoline assembly, so we explicitly validate it here. */

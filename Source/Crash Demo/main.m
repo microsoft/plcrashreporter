@@ -50,6 +50,7 @@
 /* A custom post-crash callback */
 static void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
     // this is not async-safe, but this is a test implementation
+   
     NSLog(@"post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
 }
 
@@ -64,7 +65,6 @@ static void save_crash_report (PLCrashReporter *reporter) {
     if (![reporter hasPendingCrashReport]) 
         return;
 
-#if TARGET_OS_IPHONE
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *error;
     
@@ -75,12 +75,15 @@ static void save_crash_report (PLCrashReporter *reporter) {
         return;
     }
 
-
     NSData *data = [reporter loadPendingCrashReportDataAndReturnError: &error];
     if (data == nil) {
         NSLog(@"Failed to load crash report data: %@", error);
         return;
     }
+
+    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: data error: &error] autorelease];
+    NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport: report withTextFormat: PLCrashReportTextFormatiOS];
+    NSLog(@"%@", text);
 
     NSString *outputPath = [documentsDirectory stringByAppendingPathComponent: @"demo.plcrash"];
     if (![data writeToFile: outputPath atomically: YES]) {
@@ -88,7 +91,6 @@ static void save_crash_report (PLCrashReporter *reporter) {
     }
     
     NSLog(@"Saved crash report to: %@", outputPath);
-#endif
 }
 
 
@@ -150,11 +152,6 @@ int main (int argc, char *argv[]) {
     }
 #endif /* TARGET_IPHONE_OS */
 
-    if (debugger_should_exit()) {
-        NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");
-        return 0;
-    }
-    
     /* Configure our reporter */
     PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
                                                                         symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll] autorelease];
@@ -162,7 +159,12 @@ int main (int argc, char *argv[]) {
 
     /* Save any existing crash report. */
     save_crash_report(reporter);
-    
+
+    if (debugger_should_exit()) {
+        NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");
+        return 0;
+    }
+
     /* Set up post-crash callbacks */
     PLCrashReporterCallbacks cb = {
         .version = 0,

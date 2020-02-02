@@ -36,7 +36,8 @@
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-PLCR_CPP_BEGIN_ASYNC_NS
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -179,7 +180,8 @@ void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
  * @}
  */
 
-PLCR_CPP_END_ASYNC_NS
+PLCR_CPP_END_NS
+}
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_CIE_H */
