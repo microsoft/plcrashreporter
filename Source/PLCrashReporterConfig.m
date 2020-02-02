@@ -37,6 +37,7 @@
 
 @synthesize signalHandlerType = _signalHandlerType;
 @synthesize symbolicationStrategy = _symbolicationStrategy;
+@synthesize shouldRegisterUncaughtExceptionHandler = _shouldRegisterUncaughtExceptionHandler;
 
 /**
  * Return the default local configuration.
@@ -62,13 +63,28 @@
 - (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
                      symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
 {
-    if ((self = [super init]) == nil)
-        return nil;
+  return [self initWithSignalHandlerType:signalHandlerType symbolicationStrategy:symbolicationStrategy shouldRegisterUncaughtExceptionHandler:YES];
+}
 
-    _signalHandlerType = signalHandlerType;
-    _symbolicationStrategy = symbolicationStrategy;
-
-    return self;
+/**
+ * Initialize a new PLCrashReporterConfig instance.
+ *
+ * @param signalHandlerType The requested signal handler type.
+ * @param symbolicationStrategy A local symbolication strategy.
+ * @param shouldRegisterUncaughtExceptionHandler Flag indicating if an uncaught exception handler should be set.
+ */
+- (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+               shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler
+{
+  if ((self = [super init]) == nil)
+    return nil;
+  
+  _signalHandlerType = signalHandlerType;
+  _symbolicationStrategy = symbolicationStrategy;
+  _shouldRegisterUncaughtExceptionHandler = shouldRegisterUncaughtExceptionHandler;
+  
+  return self;
 }
 
 @end

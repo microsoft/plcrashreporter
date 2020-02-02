@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+#include <dlfcn.h>
 #include <mach-o/dyld.h>
 
 #include "PLCrashFrameWalker.h"
@@ -128,7 +129,11 @@ static struct unwind_test_case unwind_test_cases[] = {
     /* frame-based unwinding */
     { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame,    2 },
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact,  2 },
+#if !TARGET_OS_SIMULATOR
+    /* This doesn't work on iOS and tvOS simulators - failed to find DWARF's FDE section.
+     * It happens because compiler overwrites __eh_frame to __unwind_info (compact unwind). */
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf,    2 },
+#endif
     { unwind_tester_list_x86_64_frame,      true,   NULL,                   2 },
     
     /* frameless unwinding */
@@ -230,18 +235,10 @@ bool unwind_test_harness (void) {
 
 static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state, void *context) {
     plframe_cursor_t cursor;
-    plcrash_async_image_list_t *image_list;
+    plcrash_async_image_list_t image_list;
     plframe_cursor_frame_reader_t **readers = global_harness_state.test_case->frame_readers_dwarf;
     size_t reader_count = 0;
     plframe_error_t err;
-    
-    /* Instantiate an allocator */
-    plcrash_async_allocator_t *allocator;
-    if ((err = plcrash_async_allocator_create(&allocator, 1 * 1024 * 1024 /* 1M */)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("plcrash_async_allocator_create() failed: %d", err);
-        return err;
-    }
-
 
     /* Determine the number of frame readers */
     if (readers != NULL) {
@@ -251,22 +248,17 @@ static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state
     }
 
     /* Initialize the image list */
-    err = plcrash_nasync_image_list_new(&image_list, allocator, mach_task_self());
-    if (err != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Failed to fetch the image list: %d", err);
-        return PLCRASH_EINTERNAL;
-    }
+    plcrash_nasync_image_list_init(&image_list, mach_task_self());
+    for (uint32_t i = 0; i < _dyld_image_count(); i++)
+        plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
 
     /* Initialie our cursor */
-    plframe_cursor_init(&cursor, mach_task_self(), state, image_list);
+    plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
 
     /* Walk the frames until we hit the test function */
     for (uint32_t i = 0; i < global_harness_state.test_case->intermediate_frames; i++) {
         if ((err = plframe_cursor_next(&cursor)) != PLFRAME_ESUCCESS) {
             PLCF_DEBUG("Step failed: %d", err);
-            
-            plcrash_async_image_list_free(image_list);
-            plcrash_async_allocator_free(allocator);
             return PLCRASH_EINVAL;
         }
     }
@@ -281,16 +273,9 @@ static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state
     }
     
     if (err != PLFRAME_ESUCCESS) {
-        PLCF_DEBUG("Step within test function failed: %d", err);
-        
-        plcrash_async_image_list_free(image_list);
-        plcrash_async_allocator_free(allocator);
+        PLCF_DEBUG("Step within test function failed: %d (%s)", err, plframe_strerror(err));
         return PLFRAME_EINVAL;
     }
-    
-    /* Clean up */
-    plcrash_async_image_list_free(image_list);
-    plcrash_async_allocator_free(allocator); /* Must occur AFTER deallocating the image_list */
 
     /* Now in unwind_tester; verify that we unwound to the correct IP */
     plcrash_greg_t ip;
@@ -345,6 +330,11 @@ void uwind_to_main (void) {
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */
     if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
+
+        /* Get caller function name. */
+        Dl_info info;
+        dladdr(__builtin_return_address(0), &info);
+        PLCF_DEBUG("Failed to unwind: %s", info.dli_sname);
         __builtin_trap();
     }
 

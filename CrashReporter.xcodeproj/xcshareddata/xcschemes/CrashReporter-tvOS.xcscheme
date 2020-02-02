@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0940"
+   LastUpgradeVersion = "1110"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "NO">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F2F04667226239F900FA7A3F"
+               BlueprintIdentifier = "8064D88B1C4D22E5005A8B4C"
                BuildableName = "CrashReporter.framework"
                BlueprintName = "CrashReporter-tvOS"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
@@ -28,28 +28,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F213F04B2265B4FD005758A5"
-               BuildableName = "Tests-tvOS.xctest"
-               BlueprintName = "Tests-tvOS"
-               ReferencedContainer = "container:CrashReporter.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F2F04667226239F900FA7A3F"
-            BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter-tvOS"
-            ReferencedContainer = "container:CrashReporter.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -61,17 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F2F04667226239F900FA7A3F"
-            BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter-tvOS"
-            ReferencedContainer = "container:CrashReporter.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -82,7 +50,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F2F04667226239F900FA7A3F"
+            BlueprintIdentifier = "8064D88B1C4D22E5005A8B4C"
             BuildableName = "CrashReporter.framework"
             BlueprintName = "CrashReporter-tvOS"
             ReferencedContainer = "container:CrashReporter.xcodeproj">

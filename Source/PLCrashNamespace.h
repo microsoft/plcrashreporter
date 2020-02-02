@@ -104,7 +104,6 @@
  * building the library, and executing the following:
  * nm -g -U <static library> | grep '^[0-9]' | c++filt | grep -v AcmeCo | grep -E '_pl|_PL' | awk '{print $3}' | cut -c 2- | sort | uniq | awk '{print "#define",$1,"PLNS("$1")"}'
  */
-#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK PLNS(PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK)
 #define pl_mach_thread_self PLNS(pl_mach_thread_self)
 #define plcrash__architecture__descriptor PLNS(plcrash__architecture__descriptor)
 #define plcrash__architecture__enum_values_by_name PLNS(plcrash__architecture__enum_values_by_name)
@@ -205,7 +204,7 @@
 #define plcrash_async_objc_cache_free PLNS(plcrash_async_objc_cache_free)
 #define plcrash_async_objc_cache_init PLNS(plcrash_async_objc_cache_init)
 #define plcrash_async_objc_find_method PLNS(plcrash_async_objc_find_method)
-#define plcrash_async_objc_supports_nonptr_isa PLNS(plcrash_async_objc_supports_nonptr_isa)
+#define plcrash_async_objc_isa_pointer PLNS(plcrash_async_objc_isa_pointer)
 #define plcrash_async_read_addr PLNS(plcrash_async_read_addr)
 #define plcrash_async_signal_sigcode PLNS(plcrash_async_signal_sigcode)
 #define plcrash_async_signal_signame PLNS(plcrash_async_signal_signame)
@@ -247,8 +246,8 @@
 #define plcrash_nasync_image_list_free PLNS(plcrash_nasync_image_list_free)
 #define plcrash_nasync_image_list_init PLNS(plcrash_nasync_image_list_init)
 #define plcrash_nasync_image_list_remove PLNS(plcrash_nasync_image_list_remove)
-#define plcrash_async_macho_free PLNS(plcrash_async_macho_free)
-#define plcrash_async_macho_init PLNS(plcrash_async_macho_init)
+#define plcrash_nasync_macho_free PLNS(plcrash_nasync_macho_free)
+#define plcrash_nasync_macho_init PLNS(plcrash_nasync_macho_init)
 #define plcrash_populate_error PLNS(plcrash_populate_error)
 #define plcrash_populate_mach_error PLNS(plcrash_populate_mach_error)
 #define plcrash_populate_posix_error PLNS(plcrash_populate_posix_error)
@@ -310,5 +309,4 @@
 #  define protobuf_c_service_descriptor_get_method_by_name  PLNS(protobuf_c_service_descriptor_get_method_by_name)
 #  define protobuf_c_service_destroy                        PLNS(protobuf_c_service_destroy)
 #  define protobuf_c_service_generated_init                 PLNS(protobuf_c_service_generated_init)
-#  define protobuf_c_system_allocator                       PLNS(protobuf_c_system_allocator)
 #endif /* PLCR_PRIVATE */

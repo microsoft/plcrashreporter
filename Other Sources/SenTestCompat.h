@@ -62,7 +62,7 @@
 #define STAssertGreaterThan(a1, a2, description, ...)                                   XCTAssertGreaterThan(a1, a2, description, ##__VA_ARGS__)
 
 #define STAssertEqualCStrings(a1, a2, description, ...) do { \
-    if (strcmp(a1, a2) != 0) { \
+    if (!a1 || !a2 || strcmp(a1, a2) != 0) { \
         NSString *msg = [NSString stringWithFormat: description, ##__VA_ARGS__]; \
         XCTFail(@"%s == %s: %@", "" #a1, "" #a2, msg); \
     } \

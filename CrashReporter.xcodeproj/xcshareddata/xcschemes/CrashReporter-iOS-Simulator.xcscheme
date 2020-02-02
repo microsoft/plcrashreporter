@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0610"
+   LastUpgradeVersion = "0830"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "NO">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "05CD31620EE93905000FDE88"
-               BuildableName = "libCrashReporter-iphoneos.a"
+               BuildableName = "libCrashReporter-iphonesimulator.a"
                BlueprintName = "CrashReporter-iOS-Simulator"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
@@ -27,6 +27,15 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "05CD31620EE93905000FDE88"
+            BuildableName = "libCrashReporter-iphonesimulator.a"
+            BlueprintName = "CrashReporter-iOS-Simulator"
+            ReferencedContainer = "container:CrashReporter.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -39,17 +48,6 @@
             </BuildableReference>
          </TestableReference>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "05CD31620EE93905000FDE88"
-            BuildableName = "libCrashReporter-iphoneos.a"
-            BlueprintName = "CrashReporter-iOS-Simulator"
-            ReferencedContainer = "container:CrashReporter.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -65,13 +63,11 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "05CD31620EE93905000FDE88"
-            BuildableName = "libCrashReporter-iphoneos.a"
+            BuildableName = "libCrashReporter-iphonesimulator.a"
             BlueprintName = "CrashReporter-iOS-Simulator"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -83,7 +79,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "05CD31620EE93905000FDE88"
-            BuildableName = "libCrashReporter-iphoneos.a"
+            BuildableName = "libCrashReporter-iphonesimulator.a"
             BlueprintName = "CrashReporter-iOS-Simulator"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>

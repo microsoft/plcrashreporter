@@ -31,30 +31,23 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
-#import <objc/runtime.h>
 
 #import "PLCrashAsyncMachOImage.h"
 #import "PLCrashAsyncMachOString.h"
 
+
 @interface PLCrashAsyncMachOStringTests : SenTestCase {
     /** The image containing our class. */
     plcrash_async_macho_t _image;
-    
-    /** The allocator used to initialize our Mach-O image */
-    plcrash_async_allocator_t *_allocator;
 }
 @end
 
 @implementation PLCrashAsyncMachOStringTests
 
 - (void) setUp {
-    /* Set up our allocator */
-    STAssertEquals(plcrash_async_allocator_create(&_allocator, PAGE_SIZE*2), PLCRASH_ESUCCESS, @"Failed to create allocator");
-    
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    IMP localIMP = class_getMethodImplementation([self class], _cmd);
-    STAssertTrue(dladdr((void *) localIMP, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;
@@ -68,7 +61,7 @@
     }
     STAssertTrue(found_image, @"Could not find dyld image record");
     
-    plcrash_async_macho_init(&_image, _allocator, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
+    plcrash_nasync_macho_init(&_image, mach_task_self(), info.dli_fname, (pl_vm_address_t) info.dli_fbase);
     
     /* Basic test of the initializer */
     STAssertEqualCStrings(_image.name, info.dli_fname, @"Incorrect name");
@@ -81,10 +74,7 @@
 }
 
 - (void) tearDown {
-    plcrash_async_macho_free(&_image);
-    
-    /* Clean up our allocator (must be done *after* deallocating the _image allocated from this allocator) */
-    plcrash_async_allocator_free(_allocator);
+    plcrash_nasync_macho_free(&_image);
 }
 
 - (void) testStringReading {
@@ -93,7 +83,7 @@
     plcrash_error_t err;
     
     plcrash_async_macho_string_t strObj;
-    err = plcrash_async_macho_string_init(&strObj, _image.task, (pl_vm_address_t)str);
+    err = plcrash_async_macho_string_init(&strObj, &_image, (pl_vm_address_t)str);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Error initializing string object. (How did you even manage to pull that off?)");
     
     pl_vm_size_t len;
