@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "Backtrace-PLCrashReporter"
-  s.version      = "1.5.1"
+  s.version      = "1.5.2"
   s.summary      = "Reliable, open-source crash reporting for iOS, tvOS and macOS."
   s.description      = <<-DESC
                       Plausible CrashReporter provides an in-process crash reporting
@@ -40,7 +40,7 @@ Pod::Spec.new do |s|
 
   s.resources = "Resources/*.proto"
   s.pod_target_xcconfig = {
-    "GCC_PREPROCESSOR_DEFINITIONS" => "PLCR_PRIVATE"
+    "GCC_PREPROCESSOR_DEFINITIONS" => "PLCR_PRIVATE PLCF_RELEASE_BUILD"
   }
   s.libraries = "c++"
   s.requires_arc = false
