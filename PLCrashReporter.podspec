@@ -5,8 +5,7 @@ Pod::Spec.new do |spec|
 
   spec.homepage   = 'https://github.com/microsoft/plcrashreporter'
   spec.license    = { :type => 'MIT', :file => 'LICENSE.txt' }
-  spec.authors    = { 'Plausible Labs Cooperative, Inc.'  => 'contact@plausible.coop',
-                      'Microsoft'                         => 'appcentersdk@microsoft.com' }
+  spec.authors    = { 'Microsoft' => 'appcentersdk@microsoft.com' }
 
   spec.source     = { :http     => "https://github.com/microsoft/plcrashreporter/releases/download/#{spec.version}/PLCrashReporter-#{spec.version}.zip",
                       :flatten  => true }
