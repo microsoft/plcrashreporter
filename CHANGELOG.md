@@ -7,6 +7,7 @@
 * Fix arm64e crash report text formatting.
 * Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
 * Apply bit mask for non-pointer isa values on macOS x64 (used in runtime symbolication).
+* Strip pointer authentication codes on arm64e.
 
 ___
 
