@@ -1,3 +1,5 @@
+[![CocoaPods](https://img.shields.io/cocoapods/v/PLCrashReporter.svg)](https://cocoapods.org/pods/PLCrashReporter)
+
 # PLCrashReporter
 
 PLCrashReporter is a reliable open source library that provides an in-process live crash reporting framework for use on iOS, macOS and tvOS. The library detects crashes and generates reports to help your investigation and troubleshooting with the information of application, system, process, thread, etc. as well as stack traces.
