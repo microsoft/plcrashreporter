@@ -1,8 +1,8 @@
 # PLCrashReporter
 
-Reliable, open-source crash reporting for iOS, Mac OS X and tvOS.
+PLCrashReporter is a reliable open source library that provides an in-process live crash reporting framework for use on iOS, macOS and tvOS. The library detects crashes and generates reports to help your investigation and troubleshooting with the information of application, system, process, thread, etc. as well as stack traces.
 
-The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter.ms). However, if you want to use PLCrashReporter directly, grab the latest release at [https://github.com/Microsoft/PLCrashReporter/releases](https://github.com/Microsoft/PLCrashReporter/releases) and check out the [official PLCrashReporter documentation](https://www.plcrashreporter.org/documentation).
+The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter.ms). However, if you want to use PLCrashReporter directly, grab the latest release at [https://github.com/Microsoft/PLCrashReporter/releases](https://github.com/Microsoft/PLCrashReporter/releases).
 
 ## Features
 
