@@ -99,7 +99,7 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
-    STAssertEquals(systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
+    STAssertEquals((int) systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");
 #pragma clang diagnostic pop
 
     STAssertTrue(systemInfo->timestamp != 0, @"Timestamp uninitialized");
@@ -294,6 +294,29 @@
     return crashReport;
 }
 
+- (void) testDeviceVersionWriter {
+    plcrash_log_writer_t writer;
+
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", @"2.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
+    char *version = writer.system_info.version;
+
+    STAssertTrue(version && version[0], @"Device version not saved");
+}
+
+- (void) testWriteLogWithNilReason {
+    plcrash_log_writer_t writer;
+
+    /* Initialize a writer */
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", @"2.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
+
+    /* Set an exception without reason */
+    NSException *e = [NSException exceptionWithName:@"Exception without reason"
+                                             reason:nil
+                                           userInfo:nil];
+
+    /* Check that the log entry does not initialize the exception */
+    STAssertNoThrow(plcrash_log_writer_set_exception(&writer, e), "Setting an exception failed");
+}
 
 - (void) testWriteReport {
     plframe_cursor_t cursor;

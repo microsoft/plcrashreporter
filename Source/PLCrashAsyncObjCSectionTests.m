@@ -117,26 +117,6 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     block(isClassMethod, className, methodName, imp);
 }
 
-/**
- * Verify our fixed ISA mask against the non-stable objc_debug_isa_class_mask.
- * Refer to plcrash_async_objc_supports_nonptr_isa and http://www.sealiesoftware.com/blog/archive/2013/09/24/objc_explain_Non-pointer_isa.html
- * for more details.
- */
-- (void) testVerifyISAClassMask {
-#ifdef __arm64__
-    extern uint64_t objc_debug_isa_class_mask WEAK_IMPORT_ATTRIBUTE;
-
-    /* Skip hosts where non-ptr isas are not supported */
-    if (!plcrash_async_objc_supports_nonptr_isa(plcrash_async_macho_cpu_type(&_image)))
-        return;
-
-    STAssertNotNULL(objc_debug_isa_class_mask, @"The objc_debug_isa_class_mask variable is no longer vended");
-    STAssertEquals(objc_debug_isa_class_mask, PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK, @"Incorrect class mask");
-#else
-    STAssertFalse(plcrash_async_objc_supports_nonptr_isa(plcrash_async_macho_cpu_type(&_image)), @"This platform is declared to support non-ptr ISAs; the above tests should be enabled");
-#endif
-}
-
 - (void) testParse {
     __block plcrash_error_t err;
     
