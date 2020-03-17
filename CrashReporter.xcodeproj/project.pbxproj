@@ -3148,7 +3148,7 @@
 				058812B71040582D009128FB /* Frameworks */,
 				058812C6104058AB009128FB /* Lipo Binary */,
 				C25664CE235717880088513E /* Package Framework */,
-				F843AAED241FBBEB00D92C8B /* ShellScript */,
+				F843AAED241FBBEB00D92C8B /* Setup Build Version */,
 			);
 			buildRules = (
 			);
@@ -3355,7 +3355,7 @@
 				8064D8B61C4D22E5005A8B4C /* Frameworks */,
 				8064D8B71C4D22E5005A8B4C /* Lipo Binary */,
 				C25664CF23571A340088513E /* Package Framework */,
-				F843AAEE241FBD9C00D92C8B /* ShellScript */,
+				F843AAEE241FBD9C00D92C8B /* Setup Build Version */,
 			);
 			buildRules = (
 			);
@@ -3451,7 +3451,7 @@
 				8DC2EF520486A6940098B216 /* Resources */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
-				F843AAEC241FBA5400D92C8B /* ShellScript */,
+				F843AAEC241FBA5400D92C8B /* Setup Build Version */,
 			);
 			buildRules = (
 				05F411F10EF8DF79008050CF /* PBXBuildRule */,
@@ -3787,7 +3787,7 @@
 			shellPath = /bin/sh;
 			shellScript = "# Set up the destroot\nOUTPUT_DEST=\"${BUILT_PRODUCTS_DIR}\"\nPRODUCT_DIR=\"${PRODUCT_NAME}-Static-${CURRENT_PROJECT_VERSION}\"\nDESTROOT=\"${OUTPUT_DEST}/${PRODUCT_DIR}\"\n\nmkdir -p \"${DESTROOT}\"\n\nHEADERS_DEST=\"${DESTROOT}/include\"\nLICENSE_DEST=\"${DESTROOT}/LICENSE.txt\"\n\nDOC_SUBDIR=\"Documentation\"\n\n# Per-platform framework sources\nMAC_SRC=\"${BUILD_DIR}/${CONFIGURATION}-MacOSX\"\nIPHONE_SRC=\"${BUILD_DIR}/${CONFIGURATION}-iphone\"\nAPPLETV_SRC=\"${BUILD_DIR}/${CONFIGURATION}-appletv\"\n\n# Populate the destroot\nrsync -av \"${IPHONE_SRC}/libCrashReporter-iOS.a\" \"${DESTROOT}\" || exit 1\nrsync -av \"${APPLETV_SRC}/libCrashReporter-tvOS.a\" \"${DESTROOT}\" || exit 1\nrsync -av \"${MAC_SRC}/libCrashReporter-MacOSX-Static.a\" \"${DESTROOT}\" || exit 1\n\nrsync -av \"${SRCROOT}/LICENSE\" \"${LICENSE_DEST}\"\n\n# Copy Documentation\nrm -rf \"${DESTROOT}/${DOC_SUBDIR}\"\nrsync -av \"${BUILD_DIR}/${DOC_SUBDIR}\" \"${DESTROOT}\"\n\n# Add a top-level Documentation symlink\npushd \"${DESTROOT}\" >/dev/null\nln -sf \"${DOC_SUBDIR}/index.html\" \"API Documentation.html\"\npopd >/dev/null\n\n# Copy headers\nmkdir -p \"${HEADERS_DEST}\" || exit 1\ncp -r \"${IPHONE_SRC}/CrashReporter.framework/Headers/.\" \"${HEADERS_DEST}/\" || exit 1\n\n# Create the ZIP archive\nrm -f \"${DESTROOT}.zip\"\npushd \"${OUTPUT_DEST}\" >/dev/null\nzip --symlinks -r \"${PRODUCT_DIR}.zip\" \"${PRODUCT_DIR}\" || exit 1\npopd >/dev/null\n";
 		};
-		F843AAEC241FBA5400D92C8B /* ShellScript */ = {
+		F843AAEC241FBA5400D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3796,6 +3796,7 @@
 			);
 			inputPaths = (
 			);
+			name = "Setup Build Version";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -3804,7 +3805,7 @@
 			shellPath = /bin/sh;
 			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        echo \"test echo\"\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
 		};
-		F843AAED241FBBEB00D92C8B /* ShellScript */ = {
+		F843AAED241FBBEB00D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3813,6 +3814,7 @@
 			);
 			inputPaths = (
 			);
+			name = "Setup Build Version";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -3821,7 +3823,7 @@
 			shellPath = /bin/sh;
 			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        echo \"test echo\"\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
 		};
-		F843AAEE241FBD9C00D92C8B /* ShellScript */ = {
+		F843AAEE241FBD9C00D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3830,6 +3832,7 @@
 			);
 			inputPaths = (
 			);
+			name = "Setup Build Version";
 			outputFileListPaths = (
 			);
 			outputPaths = (
