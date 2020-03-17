@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.5.1
+
+* Fix support for Xcode 10.
+
+___
+
 ## Version 1.5.0
 
 * Drop support old versions of Xcode and iOS. The minimal versions are Xcode 10 and iOS 8 now.
