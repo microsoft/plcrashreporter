@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.5.0 (Under development)
+## Version 1.5.0
 
 * Drop support old versions of Xcode and iOS. The minimal versions are Xcode 10 and iOS 8 now.
 * Remove `UIKit` dependency on iOS.
