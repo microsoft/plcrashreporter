@@ -3803,7 +3803,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        echo \"test echo\"\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
+			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
 		};
 		F843AAED241FBBEB00D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3821,7 +3821,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        echo \"test echo\"\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
+			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
 		};
 		F843AAEE241FBD9C00D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3839,7 +3839,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        echo \"test echo\"\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
+			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
