@@ -40,7 +40,7 @@ using namespace plcrash::async;
 
 #if TARGET_OS_MAC && (!TARGET_OS_IPHONE)
 #  define TEST_BINARY @"test.macosx"
-#elif TARGET_IPHONE_SIMULATOR
+#elif TARGET_OS_SIMULATOR
 #  define TEST_BINARY @"test.sim"
 #elif TARGET_OS_IPHONE
 #  define TEST_BINARY @"test.ios"

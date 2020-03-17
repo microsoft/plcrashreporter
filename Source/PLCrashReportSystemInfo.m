@@ -35,6 +35,7 @@
  * The current host's operating system.
  */
 PLCrashReportOperatingSystem PLCrashReportHostOperatingSystem =
+// FIXME: Deprecated, use TARGET_OS_SIMULATOR
 #if TARGET_IPHONE_SIMULATOR
     PLCrashReportOperatingSystemiPhoneSimulator;
 #elif TARGET_OS_TV

@@ -350,7 +350,15 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     
     /* Images. The iPhone crash report format sorts these in ascending order, by the base address */
     [text appendString: @"Binary Images:\n"];
+    uint64_t lastImageBaseAddress = 0;
     for (PLCrashReportBinaryImageInfo *imageInfo in [report.images sortedArrayUsingFunction: binaryImageSort context: nil]) {
+        /* Remove duplicates */
+        uint64_t imageBaseAddress = [imageInfo imageBaseAddress];
+        if (lastImageBaseAddress == imageBaseAddress) {
+            continue;
+        }
+        lastImageBaseAddress = imageBaseAddress;
+
         NSString *uuid;
         /* Fetch the UUID if it exists */
         if (imageInfo.hasImageUUID)
@@ -386,12 +394,16 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
                 case CPU_TYPE_ARM64:
                     /* Apple includes subtype for ARM64 binaries. */
                     switch (imageInfo.codeType.subtype) {
-                        case CPU_SUBTYPE_ARM_ALL:
+                        case CPU_SUBTYPE_ARM64_ALL:
                             archName = @"arm64";
                             break;
 
-                        case CPU_SUBTYPE_ARM_V8:
+                        case CPU_SUBTYPE_ARM64_V8:
                             archName = @"armv8";
+                            break;
+
+                        case CPU_SUBTYPE_ARM64E:
+                            archName = @"arm64e";
                             break;
 
                         default:
@@ -493,12 +505,17 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     uint64_t pcOffset = 0x0;
     NSString *imageName = @"\?\?\?";
     NSString *symbolString = nil;
-    
-    PLCrashReportBinaryImageInfo *imageInfo = [report imageForAddress: frameInfo.instructionPointer];
+
+    uint64_t normalizedInstructionPointer = frameInfo.instructionPointer;
+#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
+    normalizedInstructionPointer &= 0x0000000fffffffff;
+#endif
+
+    PLCrashReportBinaryImageInfo *imageInfo = [report imageForAddress: normalizedInstructionPointer];
     if (imageInfo != nil) {
         imageName = [imageInfo.imageName lastPathComponent];
         baseAddress = imageInfo.imageBaseAddress;
-        pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
+        pcOffset = normalizedInstructionPointer - imageInfo.imageBaseAddress;
     }
 
     /* If symbol info is available, the format used in Apple's reports is Sym + OffsetFromSym. Otherwise,
@@ -524,7 +541,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         }
         
         
-        uint64_t symOffset = frameInfo.instructionPointer - frameInfo.symbolInfo.startAddress;
+        uint64_t symOffset = normalizedInstructionPointer - frameInfo.symbolInfo.startAddress;
         symbolString = [NSString stringWithFormat: @"%@ + %" PRId64, symbolName, symOffset];
     } else {
         symbolString = [NSString stringWithFormat: @"0x%" PRIx64 " + %" PRId64, baseAddress, pcOffset];
@@ -536,7 +553,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     return [NSString stringWithFormat: @"%-4ld%-35S 0x%0*" PRIx64 " %@\n",
             (long) frameIndex,
             (const uint16_t *)[imageName cStringUsingEncoding: NSUTF16StringEncoding],
-            lp64 ? 16 : 8, frameInfo.instructionPointer,
+            lp64 ? 16 : 8, normalizedInstructionPointer,
             symbolString];
 }
 

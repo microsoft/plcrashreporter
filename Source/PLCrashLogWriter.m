@@ -49,10 +49,6 @@
 #import "PLCrashSysctl.h"
 #import "PLCrashProcessInfo.h"
 
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h> // For UIDevice
-#endif
-
 /**
  * @internal
  * Maximum number of frames that will be written to the crash report for a single thread. Used as a safety measure
@@ -429,8 +425,17 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     }
 
 #if TARGET_OS_IPHONE
-    /* iPhone OS */
-    writer->system_info.version = strdup([[[UIDevice currentDevice] systemVersion] UTF8String]);
+    /* iOS and tvOS */
+    {
+        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+        NSOperatingSystemVersion systemVersion = processInfo.operatingSystemVersion;
+        NSString *systemVersionString = [NSString stringWithFormat:@"%ld.%ld", (long)systemVersion.majorVersion, (long)systemVersion.minorVersion];
+        if (systemVersion.patchVersion > 0) {
+            systemVersionString = [systemVersionString stringByAppendingFormat:@".%ld", (long)systemVersion.patchVersion];
+        }
+
+        writer->system_info.version = strdup([systemVersionString UTF8String]);
+    }
 #elif TARGET_OS_MAC
     /* Mac OS X */
     {
@@ -476,7 +481,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
     /* Save the exception data */
     writer->uncaught_exception.has_exception = true;
     writer->uncaught_exception.name = strdup([[exception name] UTF8String]);
-    writer->uncaught_exception.reason = strdup([[exception reason] UTF8String]);
+    writer->uncaught_exception.reason = strdup([exception reason] != nil ? [[exception reason] UTF8String] : "");
 
     /* Save the call stack, if available */
     NSArray *callStackArray = [exception callStackReturnAddresses];

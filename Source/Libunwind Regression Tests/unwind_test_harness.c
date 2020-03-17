@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+#include <dlfcn.h>
 #include <mach-o/dyld.h>
 
 #include "PLCrashFrameWalker.h"
@@ -128,7 +129,11 @@ static struct unwind_test_case unwind_test_cases[] = {
     /* frame-based unwinding */
     { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame,    2 },
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact,  2 },
+#if !TARGET_OS_SIMULATOR
+    /* This doesn't work on iOS and tvOS simulators - failed to find DWARF's FDE section.
+     * It happens because compiler overwrites __eh_frame to __unwind_info (compact unwind). */
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf,    2 },
+#endif
     { unwind_tester_list_x86_64_frame,      true,   NULL,                   2 },
     
     /* frameless unwinding */
@@ -268,7 +273,7 @@ static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state
     }
     
     if (err != PLFRAME_ESUCCESS) {
-        PLCF_DEBUG("Step within test function failed: %d", err);
+        PLCF_DEBUG("Step within test function failed: %d (%s)", err, plframe_strerror(err));
         return PLFRAME_EINVAL;
     }
 
@@ -325,6 +330,11 @@ void uwind_to_main (void) {
     /* Invoke our handler with our current thread state; we use this state to try to roll back the tests
      * and verify that the expected registers are restored. */
     if (plcrash_async_thread_state_current(unwind_current_state, NULL) != PLCRASH_ESUCCESS) {
+
+        /* Get caller function name. */
+        Dl_info info;
+        dladdr(__builtin_return_address(0), &info);
+        PLCF_DEBUG("Failed to unwind: %s", info.dli_sname);
         __builtin_trap();
     }
 
