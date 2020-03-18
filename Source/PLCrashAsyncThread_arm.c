@@ -291,10 +291,14 @@ static inline plcrash_greg_t plcrash_async_thread_state_get_reg_64 (const plcras
         case PLCRASH_ARM64_X26: return THREAD_STATE_GET(x[26], thread.ts_64, ts);
         case PLCRASH_ARM64_X27: return THREAD_STATE_GET(x[27], thread.ts_64, ts);
         case PLCRASH_ARM64_X28: return THREAD_STATE_GET(x[28], thread.ts_64, ts);
+#pragma clang diagnostic push
+// XCode 10 wants non-const pointer for arm_thread_state64_get_* (fixed in XCode 11).
+#pragma clang diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
         case PLCRASH_ARM64_FP: return THREAD_STATE_GET_PTR(fp, thread.ts_64, ts);
         case PLCRASH_ARM64_SP: return THREAD_STATE_GET_PTR(sp, thread.ts_64, ts);
         case PLCRASH_ARM64_LR: return THREAD_STATE_GET_FPTR(lr, thread.ts_64, ts);
         case PLCRASH_ARM64_PC: return THREAD_STATE_GET_FPTR(pc, thread.ts_64, ts);
+#pragma clang diagnostic pop
         case PLCRASH_ARM64_CPSR: return THREAD_STATE_GET(cpsr, thread.ts_64, ts);
         default: __builtin_trap();
     }
