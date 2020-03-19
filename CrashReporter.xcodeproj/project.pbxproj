@@ -3803,7 +3803,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
+			shellScript = "maxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\n\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\nthen\n    exit\nelse\n    echo \"Xcode 11 version integration.\"\n    shortVersion=\"$CURRENT_PROJECT_VERSION\"\n\n    # Setup build settings.\n    xcrun agvtool new-marketing-version $shortVersion\n    \n    #Update Info.plist.\n    versionToPlist='$(CURRENT_PROJECT_VERSION)'\n    $PLB -c \"Set :CFBundleVersion $versionToPlist\" \"$PLIST\"\n    $PLB -c \"Set :CFBundleShortVersionString $versionToPlist\" \"$PLIST\"\nfi\n";
 		};
 		F843AAED241FBBEB00D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3821,7 +3821,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
+			shellScript = "maxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\n\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\nthen\n    exit\nelse\n    echo \"Xcode 11 version integration.\"\n    shortVersion=\"$CURRENT_PROJECT_VERSION\"\n\n    # Setup build settings.\n    xcrun agvtool new-marketing-version $shortVersion\n    \n    #Update Info.plist.\n    versionToPlist='$(CURRENT_PROJECT_VERSION)'\n    $PLB -c \"Set :CFBundleVersion $versionToPlist\" \"$PLIST\"\n    $PLB -c \"Set :CFBundleShortVersionString $versionToPlist\" \"$PLIST\"\nfi\n\n";
 		};
 		F843AAEE241FBD9C00D92C8B /* Setup Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3839,7 +3839,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "versionNumber=\"$MARKETING_VERSION\"\nmaxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\n    then\n    if [ -n \"${versionNumber}\" ]\n        then\n        xcrun agvtool new-version $versionNumber\n        name='$(CURRENT_PROJECT_VERSION)'\n        $PLB -c \"Set :CFBundleShortVersionString $name\" \"$PLIST\"\n    fi\nfi\n";
+			shellScript = "maxXcodeVersion=\"1100\"\nPLIST=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nPLB=/usr/libexec/PlistBuddy\n\nif [ ${XCODE_VERSION_ACTUAL} -lt ${maxXcodeVersion} ]\nthen\n    exit\nelse\n    echo \"Xcode 11 version integration.\"\n    shortVersion=\"$CURRENT_PROJECT_VERSION\"\n\n    # Setup build settings.\n    xcrun agvtool new-marketing-version $shortVersion\n    \n    #Update Info.plist.\n    versionToPlist='$(CURRENT_PROJECT_VERSION)'\n    $PLB -c \"Set :CFBundleVersion $versionToPlist\" \"$PLIST\"\n    $PLB -c \"Set :CFBundleShortVersionString $versionToPlist\" \"$PLIST\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
