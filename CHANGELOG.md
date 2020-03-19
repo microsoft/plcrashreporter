@@ -1,12 +1,19 @@
 # PLCrashReporter Change Log
 
-## Version 1.5.0 (Under development)
+## Version 1.5.1
+
+* Fix support for Xcode 10.
+
+___
+
+## Version 1.5.0
 
 * Drop support old versions of Xcode and iOS. The minimal versions are Xcode 10 and iOS 8 now.
 * Remove `UIKit` dependency on iOS.
 * Fix arm64e crash report text formatting.
 * Fix possible crash `plcrash_log_writer_set_exception` method when `NSException` instances have a `nil` reason.
 * Apply bit mask for non-pointer isa values on macOS x64 (used in runtime symbolication).
+* Strip pointer authentication codes on arm64e.
 
 ___
 
