@@ -153,7 +153,13 @@ int main (int argc, char *argv[]) {
 #endif /* TARGET_IPHONE_OS */
 
     /* Configure our reporter */
-    PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
+    PLCrashReporterSignalHandlerType signalHandlerType =
+#if !TARGET_OS_TV
+        PLCrashReporterSignalHandlerTypeMach;
+#else
+        PLCrashReporterSignalHandlerTypeBSD;
+#endif
+    PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: signalHandlerType
                                                                         symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll] autorelease];
     PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: config] autorelease];
 
