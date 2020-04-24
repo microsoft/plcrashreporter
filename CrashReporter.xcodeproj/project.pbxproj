@@ -406,9 +406,9 @@
 		C26C52A12451B3E500D20162 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter.a */; };
 		C26C52A22451B3F900D20162 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C26C52A32451B41800D20162 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */; };
-		C2C80E0D2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
-		C2C80E0E2350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
-		C2C80E102350D23B0084D513 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2C80E072350D23B0084D513 /* protobuf-c.c */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
+		C2AF376C245341BE00308853 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2AF376B245341B600308853 /* protobuf-c.c */; };
+		C2AF376D245341BF00308853 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2AF376B245341B600308853 /* protobuf-c.c */; };
+		C2AF376E245341C000308853 /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = C2AF376B245341B600308853 /* protobuf-c.c */; };
 		C2F7F1662451E9BD002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		C2F7F1672451EA71002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		C2F7F1682451EA72002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -1112,8 +1112,8 @@
 		C2620D432451CF8B00B11E68 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		C2620D452451CF9400B11E68 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		C2620D482451D28B00B11E68 /* CrashReporter.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = CrashReporter.modulemap; sourceTree = "<group>"; };
-		C2C80E052350D23B0084D513 /* protobuf-c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
-		C2C80E072350D23B0084D513 /* protobuf-c.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "protobuf-c.c"; sourceTree = "<group>"; };
+		C2AF376A245341B600308853 /* protobuf-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
+		C2AF376B245341B600308853 /* protobuf-c.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "protobuf-c.c"; sourceTree = "<group>"; };
 		C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-tvOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
@@ -1855,11 +1855,10 @@
 		C2C80E032350D23B0084D513 /* protobuf-c */ = {
 			isa = PBXGroup;
 			children = (
-				C2C80E052350D23B0084D513 /* protobuf-c.h */,
-				C2C80E072350D23B0084D513 /* protobuf-c.c */,
+				C2AF376B245341B600308853 /* protobuf-c.c */,
+				C2AF376A245341B600308853 /* protobuf-c.h */,
 			);
-			name = "protobuf-c";
-			path = "protobuf-c/protobuf-c";
+			path = "protobuf-c";
 			sourceTree = "<group>";
 		};
 		F81CF5EE235A0AE20007FA54 /* Frameworks */ = {
@@ -2699,7 +2698,6 @@
 				FCE45962BDFEEEFAF00DA7E4 /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DC716D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DF316DBD0AD00888448 /* PLCrashAsyncThread_x86.c in Sources */,
-				C2C80E0E2350D23B0084D513 /* protobuf-c.c in Sources */,
 				05A17DF816DBD0C200888448 /* PLCrashAsyncThread_arm.c in Sources */,
 				05F3CD6216DD6A3B007911FB /* PLCrashFrameCompactUnwind.c in Sources */,
 				05F3CD7A16DFC744007911FB /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
@@ -2714,6 +2712,7 @@
 				05102E1A17B0151000B5D925 /* PLCrashProcessInfo.m in Sources */,
 				05102E2A17B2B80A00B5D925 /* PLCrashHostInfo.m in Sources */,
 				051F067F17B6B0D4006D0EFA /* PLCrashMachExceptionPort.m in Sources */,
+				C2AF376D245341BF00308853 /* protobuf-c.c in Sources */,
 				05BEC41D17BAF92A0082CBFB /* PLCrashMachExceptionPortSet.m in Sources */,
 				05BEC42817BD4F290082CBFB /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				05BEC43C17BF1CB10082CBFB /* PLCrashReporterConfig.m in Sources */,
@@ -2890,6 +2889,7 @@
 				05BB83D41364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */,
 				05BB83F81364AD3E00D53B84 /* PLCrashReportMachineInfo.m in Sources */,
 				05BB848D1364EDF200D53B84 /* PLCrashSysctl.c in Sources */,
+				C2AF376E245341C000308853 /* protobuf-c.c in Sources */,
 				05EB2AF715B454DD0066EB4D /* PLCrashAsyncThread_current.S in Sources */,
 				05EB2AFD15B456750066EB4D /* PLCrashAsyncThread_current.c in Sources */,
 				05EB2B1315B6FDA80066EB4D /* PLCrashReporterNSError.m in Sources */,
@@ -2897,7 +2897,6 @@
 				05DEE63F1636E62B007E99DC /* PLCrashAsyncMObject.c in Sources */,
 				C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.mm in Sources */,
 				C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */,
-				C2C80E0D2350D23B0084D513 /* protobuf-c.c in Sources */,
 				C2198E0616441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */,
 				05D9E5491676598200B39833 /* PLCrashReportStackFrameInfo.m in Sources */,
 				05D9E55416765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
@@ -2980,7 +2979,6 @@
 				8064D7FE1C4D22D8005A8B4C /* PLCrashFrameStackUnwind.c in Sources */,
 				8064D7FF1C4D22D8005A8B4C /* PLCrashAsyncThread.c in Sources */,
 				8064D8001C4D22D8005A8B4C /* PLCrashAsyncThread_x86.c in Sources */,
-				C2C80E102350D23B0084D513 /* protobuf-c.c in Sources */,
 				8064D8011C4D22D8005A8B4C /* PLCrashAsyncThread_arm.c in Sources */,
 				8064D8021C4D22D8005A8B4C /* PLCrashFrameCompactUnwind.c in Sources */,
 				8064D8031C4D22D8005A8B4C /* PLCrashAsyncCompactUnwindEncoding.c in Sources */,
@@ -2995,6 +2993,7 @@
 				8064D80D1C4D22D8005A8B4C /* PLCrashProcessInfo.m in Sources */,
 				8064D80E1C4D22D8005A8B4C /* PLCrashHostInfo.m in Sources */,
 				8064D80F1C4D22D8005A8B4C /* PLCrashMachExceptionPort.m in Sources */,
+				C2AF376C245341BE00308853 /* protobuf-c.c in Sources */,
 				8064D8101C4D22D8005A8B4C /* PLCrashMachExceptionPortSet.m in Sources */,
 				8064D8111C4D22D8005A8B4C /* PLCrashAsyncMachExceptionInfo.c in Sources */,
 				8064D8121C4D22D8005A8B4C /* PLCrashReporterConfig.m in Sources */,
