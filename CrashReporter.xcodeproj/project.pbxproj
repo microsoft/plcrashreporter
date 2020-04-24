@@ -1788,7 +1788,6 @@
 			isa = PBXGroup;
 			children = (
 				05CD33520EE9457D000FDE88 /* CrashReporter.exp */,
-				C2620D482451D28B00B11E68 /* CrashReporter.modulemap */,
 				C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */,
 				C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */,
 				05F40CE90EF7AB80008050CF /* DemoCrash-macOS-Info.plist */,
@@ -1806,6 +1805,7 @@
 			children = (
 				05CD31890EE93A90000FDE88 /* CrashReporter.h */,
 				05CD318A0EE93A90000FDE88 /* CrashReporter.m */,
+				C2620D482451D28B00B11E68 /* CrashReporter.modulemap */,
 				054F51070EEC73C80034B184 /* PLCrashReporter.h */,
 				05F40ACA0EF7379F008050CF /* PLCrashReporter.m */,
 				05BEC43417BF1CB10082CBFB /* PLCrashReporterConfig.h */,
@@ -3377,7 +3377,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				MODULEMAP_FILE = Source/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
@@ -3397,7 +3397,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				MODULEMAP_FILE = Source/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
@@ -3588,7 +3588,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				MODULEMAP_FILE = Source/CrashReporter.modulemap;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
@@ -3607,7 +3607,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				MODULEMAP_FILE = Source/CrashReporter.modulemap;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
@@ -3724,7 +3724,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				MODULEMAP_FILE = Source/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = appletvos;
 			};
@@ -3741,7 +3741,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				MODULEMAP_FILE = Source/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = appletvos;
 			};
