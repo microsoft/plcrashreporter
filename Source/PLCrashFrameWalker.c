@@ -28,7 +28,6 @@
 
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsync.h"
-#include "PLCrashTestThread.h"
 
 #include "PLCrashFrameStackUnwind.h"
 #include "PLCrashFrameCompactUnwind.h"
