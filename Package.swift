@@ -18,6 +18,7 @@ let package = Package(
             cSettings: [
                 .define("PLCR_PRIVATE"),
                 .define("PLCF_RELEASE_BUILD"),
+                .define("PLCRASHREPORTER_PREFIX", to: ""),
                 .headerSearchPath("Dependencies/protobuf-c")
             ],
             linkerSettings: [
