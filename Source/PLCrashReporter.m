@@ -54,6 +54,12 @@
     NSLog(@"[PLCrashReporter] " msg, ## args); \
 }
 
+/**
+ * Static fields to prevent ARC from freeing resuources. */
+static PLCrashMachExceptionServer *mach_server;
+static PLCrashMachExceptionPortSet *port_set;
+static PLCrashReporter *pl_crash_reporter;
+
 /** @internal
  * CrashReporter cache directory name. */
 static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
@@ -608,7 +614,8 @@ static PLCrashReporter *sharedReporter = nil;
                 return NO;
             
             /* Enable the server. */
-            id prevMacPorts = [_previousMachPorts copy];
+            /* TODO review prevMacPorts usage */
+            PLCrashMachExceptionPortSet *prevMacPorts = _previousMachPorts;
             _machServer = [self enableMachExceptionServerWithPreviousPortSet: &prevMacPorts
                                                                     callback: &mach_exception_callback
                                                                      context: &signal_handler_context
@@ -617,9 +624,9 @@ static PLCrashReporter *sharedReporter = nil;
             if (_machServer == nil)
                 return NO;
             
-            /* Acquire references to the autoreleased values */
-            __strong id machServer = _machServer;
-            __strong id prevMacPortsStrong = _previousMachPorts;
+            /* Keep references to the values to prevent ARC from freeing them */
+            mach_server = _machServer;
+            port_set = _previousMachPorts;
             
             /*
              * MEMORY WARNING: To ensure that our instance survives for the lifetime of the callback registration,
@@ -627,7 +634,7 @@ static PLCrashReporter *sharedReporter = nil;
              * survive for the lifetime of the callback. Since there's currently no support for *deregistering* a crash reporter,
              * this simply results in the reporter living forever.
              */
-            __strong id strong_self = self;
+            pl_crash_reporter = self;
             
             /*
              * Save the previous ports. There's a race condition here, in that an exception that is delivered before (or during)
