@@ -11,14 +11,14 @@ let package = Package(
         .target(
             name: "CrashReporter",
             path: "",
-            exclude: ["*Tests.m*"],
             sources: [
                 "Source",
                 "Dependencies"
             ],
             cSettings: [
                 .define("PLCR_PRIVATE"),
-                .define("PLCF_RELEASE_BUILD")
+                .define("PLCF_RELEASE_BUILD"),
+                .headerSearchPath("Dependencies/protobuf-c")
             ],
             linkerSettings: [
                 .linkedFramework("Foundation")
