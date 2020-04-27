@@ -114,53 +114,53 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
 
     /* Machine info */
     if (_decoder->crashReport->machine_info != NULL) {
-        _machineInfo = [[self extractMachineInfo: _decoder->crashReport->machine_info error: outError] retain];
+        _machineInfo = [self extractMachineInfo: _decoder->crashReport->machine_info error: outError];
         if (!_machineInfo)
             goto error;
     }
 
     /* System info */
-    _systemInfo = [[self extractSystemInfo: _decoder->crashReport->system_info processorInfo: _machineInfo.processorInfo error: outError] retain];
+    _systemInfo = [self extractSystemInfo: _decoder->crashReport->system_info processorInfo: _machineInfo.processorInfo error: outError];
     if (!_systemInfo)
         goto error;
 
     /* Application info */
-    _applicationInfo = [[self extractApplicationInfo: _decoder->crashReport->application_info error: outError] retain];
+    _applicationInfo = [self extractApplicationInfo: _decoder->crashReport->application_info error: outError];
     if (!_applicationInfo)
         goto error;
     
     /* Process info. Handle missing info gracefully -- it is only included in v1.1+ crash reports. */
     if (_decoder->crashReport->process_info != NULL) {
-        _processInfo = [[self extractProcessInfo: _decoder->crashReport->process_info error:outError] retain];
+        _processInfo = [self extractProcessInfo: _decoder->crashReport->process_info error:outError];
         if (!_processInfo)
             goto error;
     }
 
     /* Signal info */
-    _signalInfo = [[self extractSignalInfo: _decoder->crashReport->signal error: outError] retain];
+    _signalInfo = [self extractSignalInfo: _decoder->crashReport->signal error: outError];
     if (!_signalInfo)
         goto error;
 
     /* Mach exception info */
     if (_decoder->crashReport->signal != NULL && _decoder->crashReport->signal->mach_exception != NULL) {
-        _machExceptionInfo = [[self extractMachExceptionInfo: _decoder->crashReport->signal->mach_exception error: outError] retain];
+        _machExceptionInfo = [self extractMachExceptionInfo: _decoder->crashReport->signal->mach_exception error: outError];
         if (!_machExceptionInfo)
             goto error;
     }
 
     /* Thread info */
-    _threads = [[self extractThreadInfo: _decoder->crashReport error: outError] retain];
+    _threads = [self extractThreadInfo: _decoder->crashReport error: outError];
     if (!_threads)
         goto error;
 
     /* Image info */
-    _images = [[self extractImageInfo: _decoder->crashReport error: outError] retain];
+    _images = [self extractImageInfo: _decoder->crashReport error: outError];
     if (!_images)
         goto error;
 
     /* Exception info, if it is available */
     if (_decoder->crashReport->exception != NULL) {
-        _exceptionInfo = [[self extractExceptionInfo: _decoder->crashReport->exception error: outError] retain];
+        _exceptionInfo = [self extractExceptionInfo: _decoder->crashReport->exception error: outError];
         if (!_exceptionInfo)
             goto error;
     }
@@ -168,21 +168,20 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     return self;
 
 error:
-    [self release];
     return nil;
 }
 
 - (void) dealloc {
     /* Free the data objects */
-    [_systemInfo release];
-    [_machineInfo release];
-    [_applicationInfo release];
-    [_processInfo release];
-    [_signalInfo release];
-    [_machExceptionInfo release];
-    [_threads release];
-    [_images release];
-    [_exceptionInfo release];
+    _systemInfo = NULL;
+    _machineInfo = NULL;
+    _applicationInfo = NULL;
+    _processInfo = NULL;
+    _signalInfo = NULL;
+    _machExceptionInfo = NULL;
+    _threads = NULL;
+    _images = NULL;
+    _exceptionInfo = NULL;
     
     if (_uuid != NULL)
         CFRelease(_uuid);
@@ -196,8 +195,6 @@ error:
         free(_decoder);
         _decoder = NULL;
     }
-
-    [super dealloc];
 }
 
 /**
@@ -359,12 +356,12 @@ error:
     }
     
     /* Done */
-    return [[[PLCrashReportSystemInfo alloc] initWithOperatingSystem: (PLCrashReportOperatingSystem) systemInfo->operating_system
+    return [[PLCrashReportSystemInfo alloc] initWithOperatingSystem: (PLCrashReportOperatingSystem) systemInfo->operating_system
                                               operatingSystemVersion: [NSString stringWithUTF8String: systemInfo->os_version]
                                                 operatingSystemBuild: osBuild
                                                         architecture: (PLCrashReportArchitecture) systemInfo->architecture
                                                        processorInfo: processorInfo
-                                                           timestamp: timestamp] autorelease];
+                                                           timestamp: timestamp];
 }
 
 /**
@@ -379,9 +376,9 @@ error:
         return nil;
     }
 
-    return [[[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) processorInfo->encoding
+    return [[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) processorInfo->encoding
                                                                 type: processorInfo->type
-                                                             subtype: processorInfo->subtype] autorelease];
+                                                             subtype: processorInfo->subtype];
 }
 
 /**
@@ -428,9 +425,9 @@ error:
 			return nil;
 	}
 
-    return [[[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: PLCrashReportProcessorTypeEncodingMach
+    return [[PLCrashReportProcessorInfo alloc] initWithTypeEncoding: PLCrashReportProcessorTypeEncodingMach
                                                                 type: processorType
-                                                             subtype: processorSubtype] autorelease];
+                                                             subtype: processorSubtype];
 }
 
 /**
@@ -460,10 +457,10 @@ error:
     }
 
     /* Done */
-    return [[[PLCrashReportMachineInfo alloc] initWithModelName: model
+    return [[PLCrashReportMachineInfo alloc] initWithModelName: model
                                                   processorInfo: processorInfo
                                                  processorCount: machineInfo->processor_count
-                                          logicalProcessorCount: machineInfo->logical_processor_count] autorelease];
+                                          logicalProcessorCount: machineInfo->logical_processor_count];
 }
 
 /**
@@ -507,9 +504,9 @@ error:
     NSString *identifier = [NSString stringWithUTF8String: applicationInfo->identifier];
     NSString *version = [NSString stringWithUTF8String: applicationInfo->version];
 
-    return [[[PLCrashReportApplicationInfo alloc] initWithApplicationIdentifier: identifier
+    return [[PLCrashReportApplicationInfo alloc] initWithApplicationIdentifier: identifier
                                                              applicationVersion: version
-                                                    applicationMarketingVersion:marketingVersion] autorelease];
+                                                    applicationMarketingVersion:marketingVersion];
 }
 
 
@@ -552,13 +549,13 @@ error:
     NSUInteger parentProcessID = processInfo->parent_process_id;
 
     /* Done */
-    return [[[PLCrashReportProcessInfo alloc] initWithProcessName: processName
+    return [[PLCrashReportProcessInfo alloc] initWithProcessName: processName
                                                         processID: processID
                                                       processPath: processPath
                                                  processStartTime: startTime
                                                 parentProcessName: parentProcessName
                                                   parentProcessID: parentProcessID
-                                                           native: processInfo->native] autorelease];
+                                                           native: processInfo->native];
 }
 
 /**
@@ -574,9 +571,9 @@ error:
     }
     
     NSString *name = [NSString stringWithUTF8String: symbol->name];
-    return [[[PLCrashReportSymbolInfo alloc] initWithSymbolName: name
+    return [[PLCrashReportSymbolInfo alloc] initWithSymbolName: name
                                                    startAddress: symbol->start_address
-                                                     endAddress: symbol->has_end_address ? symbol->end_address : 0] autorelease];
+                                                     endAddress: symbol->has_end_address ? symbol->end_address : 0];
 }
 
 /**
@@ -598,8 +595,8 @@ error:
             return NULL;
     }
 
-    return [[[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: stackFrame->pc
-                                                                 symbolInfo: symbolInfo] autorelease];
+    return [[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: stackFrame->pc
+                                                                 symbolInfo: symbolInfo];
 }
 
 /**
@@ -643,16 +640,16 @@ error:
                 return nil;
             }
 
-            regInfo = [[[PLCrashReportRegisterInfo alloc] initWithRegisterName: [NSString stringWithUTF8String: reg->name]
-                                                              registerValue: reg->value] autorelease];
+            regInfo = [[PLCrashReportRegisterInfo alloc] initWithRegisterName: [NSString stringWithUTF8String: reg->name]
+                                                              registerValue: reg->value];
             [registers addObject: regInfo];
         }
 
         /* Create the thread info instance */
-        PLCrashReportThreadInfo *threadInfo = [[[PLCrashReportThreadInfo alloc] initWithThreadNumber: thread->thread_number
+        PLCrashReportThreadInfo *threadInfo = [[PLCrashReportThreadInfo alloc] initWithThreadNumber: thread->thread_number
                                                                                    stackFrames: frames 
                                                                                        crashed: thread->crashed 
-                                                                                     registers: registers] autorelease];
+                                                                                     registers: registers];
         [threadResult addObject: threadInfo];
     }
     
@@ -702,11 +699,11 @@ error:
         }
 
 
-        imageInfo = [[[PLCrashReportBinaryImageInfo alloc] initWithCodeType: codeType
+        imageInfo = [[PLCrashReportBinaryImageInfo alloc] initWithCodeType: codeType
                                                                 baseAddress: image->base_address
                                                                        size: image->size
                                                                        name: [NSString stringWithUTF8String: image->name]
-                                                                       uuid: uuid] autorelease];
+                                                                       uuid: uuid];
         [images addObject: imageInfo];
     }
 
@@ -762,11 +759,11 @@ error:
     }
 
     if (frames == nil) {
-        return [[[PLCrashReportExceptionInfo alloc] initWithExceptionName: name reason: reason] autorelease];
+        return [[PLCrashReportExceptionInfo alloc] initWithExceptionName: name reason: reason];
     } else {
-        return [[[PLCrashReportExceptionInfo alloc] initWithExceptionName: name
+        return [[PLCrashReportExceptionInfo alloc] initWithExceptionName: name
                                                                    reason: reason 
-                                                              stackFrames: frames] autorelease];
+                                                              stackFrames: frames];
     }
 }
 
@@ -804,7 +801,7 @@ error:
     NSString *name = [NSString stringWithUTF8String: signalInfo->name];
     NSString *code = [NSString stringWithUTF8String: signalInfo->code];
     
-    return [[[PLCrashReportSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address] autorelease];
+    return [[PLCrashReportSignalInfo alloc] initWithSignalName: name code: code address: signalInfo->address];
 }
 
 /**
@@ -836,7 +833,7 @@ error:
     }
     
     /* Done */
-    return [[[PLCrashReportMachExceptionInfo alloc] initWithType: machExceptionInfo->type codes: codes] autorelease];
+    return [[PLCrashReportMachExceptionInfo alloc] initWithType: machExceptionInfo->type codes: codes];
 }
 
 @end

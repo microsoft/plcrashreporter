@@ -27,7 +27,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "CrashReporter.h"
+#import "../../Source/CrashReporter.h"
 
 #import <sys/types.h>
 #import <sys/sysctl.h>
@@ -81,7 +81,7 @@ static void save_crash_report (PLCrashReporter *reporter) {
         return;
     }
 
-    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: data error: &error] autorelease];
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: data error: &error];
     NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport: report withTextFormat: PLCrashReportTextFormatiOS];
     NSLog(@"%@", text);
 
@@ -136,7 +136,6 @@ static bool debugger_should_exit (void) {
 }
 
 int main (int argc, char *argv[]) {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSError *error = nil;
 
     /*
@@ -159,9 +158,9 @@ int main (int argc, char *argv[]) {
 #else
         PLCrashReporterSignalHandlerTypeBSD;
 #endif
-    PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc] initWithSignalHandlerType: signalHandlerType
-                                                                        symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll] autorelease];
-    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: config] autorelease];
+    PLCrashReporterConfig *config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: signalHandlerType
+                                                                        symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll];
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: config];
 
     /* Save any existing crash report. */
     save_crash_report(reporter);
@@ -183,9 +182,6 @@ int main (int argc, char *argv[]) {
     if (![reporter enableCrashReporterAndReturnError: &error]) {
         NSLog(@"Could not enable crash reporter: %@", error);
     }
-
     /* Add another stack frame */
     stackFrame();
-
-    [pool release];
 }

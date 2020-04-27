@@ -182,8 +182,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
 
         NSString *incidentIdentifier = @"???";
         if (report.uuidRef != NULL) {
-            incidentIdentifier = (NSString *) CFUUIDCreateString(NULL, report.uuidRef);
-            [incidentIdentifier autorelease];
+            incidentIdentifier = (NSString *) CFBridgingRelease(CFUUIDCreateString(NULL, report.uuidRef));
         }
     
         [text appendFormat: @"Incident Identifier: %@\n", incidentIdentifier];

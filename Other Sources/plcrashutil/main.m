@@ -117,7 +117,6 @@ static int convert_command (int argc, char *argv[]) {
 }
 
 int main (int argc, char *argv[]) {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     int ret = 0;
 
     if (argc < 2) {
@@ -132,7 +131,5 @@ int main (int argc, char *argv[]) {
         print_usage();
         ret = 1;
     }
-
-    [pool release];
     exit(ret);
 }

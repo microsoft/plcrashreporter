@@ -76,7 +76,7 @@
         return nil;
     }
     
-    return [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
+    return [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states];
 }
 
 /**
@@ -110,7 +110,7 @@
         return nil;
     }
     
-    return [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
+    return [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states];
 }
 
 /**
@@ -151,8 +151,6 @@
     if (MACH_PORT_VALID(_port) && (kt = mach_port_mod_refs(mach_task_self(), _port, MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
         NSLog(@"Unexpected error incrementing mach port reference: %d", kt);
     }
-
-    [super dealloc];
 }
 
 /**
@@ -189,8 +187,7 @@
     }
 
     if (ports != NULL)
-        *ports = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
-
+        *ports = [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev];
     return YES;
 }
 
@@ -228,7 +225,7 @@
     }
     
     if (ports != NULL)
-        *ports = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
+        *ports = [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev];
     
     return YES;
 }

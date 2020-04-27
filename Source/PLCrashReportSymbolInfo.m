@@ -52,17 +52,11 @@
     if ((self = [super init]) == nil)
         return nil;
 
-    _symbolName = [symbolName retain];
+    _symbolName = symbolName;
     _startAddress = startAddress;
     _endAddress = endAddress;
 
     return self;
-}
-
-- (void) dealloc {
-    [_symbolName release];
-
-    [super dealloc];
 }
 
 @end

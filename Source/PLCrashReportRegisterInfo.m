@@ -41,15 +41,10 @@
     if ((self = [super init]) == nil)
         return nil;
     
-    _registerName = [registerName retain];
+    _registerName = registerName;
     _registerValue = registerValue;
     
     return self;
-}
-
-- (void) dealloc {
-    [_registerName release];
-    [super dealloc];
 }
 
 @synthesize registerName = _registerName;

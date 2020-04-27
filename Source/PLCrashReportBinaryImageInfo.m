@@ -61,8 +61,8 @@
 
     _baseAddress = baseAddress;
     _imageSize = size;
-    _imageName = [name retain];
-    _processorInfo = [processorInfo retain];
+    _imageName = name;
+    _processorInfo = processorInfo;
 
     if (uuid != nil) {
         _hasImageUUID = YES;
@@ -87,14 +87,6 @@
     }
 
     return self;
-}
-
-- (void) dealloc {
-    [_processorInfo release];
-    [_imageName release];
-    [_imageUUID release];
-
-    [super dealloc];
 }
 
 @end
