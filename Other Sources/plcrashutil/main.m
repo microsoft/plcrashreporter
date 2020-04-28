@@ -117,19 +117,21 @@ static int convert_command (int argc, char *argv[]) {
 }
 
 int main (int argc, char *argv[]) {
-    int ret = 0;
+    @autoreleasepool {
+        int ret = 0;
 
-    if (argc < 2) {
-        print_usage();
-        exit(1);
-    }
+        if (argc < 2) {
+            print_usage();
+            exit(1);
+        }
 
-    /* Convert command */
-    if (strcmp(argv[1], "convert") == 0) {
-        ret = convert_command(argc - 2, argv + 2);
-    } else {
-        print_usage();
-        ret = 1;
+        /* Convert command */
+        if (strcmp(argv[1], "convert") == 0) {
+            ret = convert_command(argc - 2, argv + 2);
+        } else {
+            print_usage();
+            ret = 1;
+        }
     }
     exit(ret);
 }
