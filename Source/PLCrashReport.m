@@ -172,17 +172,6 @@ error:
 }
 
 - (void) dealloc {
-    /* Free the data objects */
-    _systemInfo = NULL;
-    _machineInfo = NULL;
-    _applicationInfo = NULL;
-    _processInfo = NULL;
-    _signalInfo = NULL;
-    _machExceptionInfo = NULL;
-    _threads = NULL;
-    _images = NULL;
-    _exceptionInfo = NULL;
-    
     if (_uuid != NULL)
         CFRelease(_uuid);
 
