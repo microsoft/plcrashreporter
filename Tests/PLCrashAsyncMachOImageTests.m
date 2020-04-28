@@ -48,7 +48,7 @@
 - (void) setUp {
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    STAssertTrue(dladdr((__bridge const void *)([self class]), &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    STAssertTrue(dladdr((__bridge_retained void *)([self class]), &info) > 0, @"Could not fetch dyld info for %p", [self class]);
 
     /* Look up the vmaddr and slide for our image */
     uintptr_t text_vmaddr;

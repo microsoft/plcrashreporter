@@ -34,6 +34,12 @@
 
 #include "PLCrashAsyncObjCSection.h"
 
+typedef void (^plcrash_async_objc_found_method_cb_block)(bool, plcrash_async_macho_string_t *, plcrash_async_macho_string_t *, pl_vm_address_t);
+
+static void parse_callback_trampoline(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    plcrash_async_objc_found_method_cb_block block = (__bridge_transfer plcrash_async_objc_found_method_cb_block)ctx;
+    block(isClassMethod, className, methodName, imp);
+}
 
 @interface PLCrashAsyncObjCSectionTests : SenTestCase {
     /** The image containing our class. */
@@ -82,7 +88,7 @@
 - (void) setUp {
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    STAssertTrue(dladdr((__bridge CFTypeRef _Nullable)([self class]), &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    STAssertTrue(dladdr((__bridge_retained void *)([self class]), &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;
@@ -112,11 +118,6 @@
     plcrash_nasync_macho_free(&_image);
 }
 
-static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
-    void (^block)(bool, plcrash_async_macho_string_t *, plcrash_async_macho_string_t *, pl_vm_address_t) = CFBridgingRelease(ctx);
-    block(isClassMethod, className, methodName, imp);
-}
-
 - (void) testParse {
     __block plcrash_error_t err;
     
@@ -126,7 +127,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     
     __block BOOL didCall = NO;
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
-    err = plcrash_async_objc_find_method(&_image, &objCContext, pc, ParseCallbackTrampoline, (__bridge CFTypeRef _Nullable)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, pc, parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -155,7 +156,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = plcrash_async_objc_find_method(&_image, &objCContext, [self addressInCategory], ParseCallbackTrampoline, (__bridge CFTypeRef _Nullable)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, [self addressInCategory], parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -185,7 +186,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     
     PLCrashAsyncObjCSectionTestsSimpleClass *obj = [[PLCrashAsyncObjCSectionTestsSimpleClass alloc] init];
     didCall = NO;
-    err = plcrash_async_objc_find_method(&_image, &objCContext, [obj addressInSimpleClass], ParseCallbackTrampoline, (__bridge CFTypeRef _Nullable)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, [obj addressInSimpleClass], parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -214,7 +215,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = plcrash_async_objc_find_method(&_image, &objCContext, [[self class] addressInClassMethod], ParseCallbackTrampoline, (__bridge CFTypeRef _Nullable)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, [[self class] addressInClassMethod], parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
