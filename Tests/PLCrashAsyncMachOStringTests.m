@@ -47,7 +47,7 @@
 - (void) setUp {
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    void *classRef = (__bridge_retained void *)([self class]);
+    void *classRef = (__bridge void *)([self class]);
     STAssertTrue(dladdr(classRef, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     CFBridgingRelease(classRef);
     

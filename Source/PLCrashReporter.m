@@ -625,11 +625,9 @@ static PLCrashReporter *sharedReporter = nil;
              * we keep a reference on self. This is necessary to ensure that the Mach exception server instance and previous port set
              * survive for the lifetime of the callback. Since there's currently no support for *deregistering* a crash reporter,
              * this simply results in the reporter living forever.
+             * We do not check pl_crash_reporter nullability here, because we already ensured
+             * that this is a single instance.
              */
-            if (pl_crash_reporter != NULL) {
-                plcrash_populate_error(outError, PLCrashReporterErrorResourceBusy, @"A PLCrashReporter instance has already been enabled", nil);
-                return NO;
-            }
             pl_crash_reporter = self;
             
             /*

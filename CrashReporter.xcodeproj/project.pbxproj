@@ -881,13 +881,6 @@
 			remoteGlobalIDString = 8064D7AD1C4D22D8005A8B4C;
 			remoteInfo = "CrashReporter tvOS";
 		};
-		C26C529F2451B3B300D20162 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
-			remoteInfo = "CrashReporter macOS";
-		};
 		C26C52A42451B45D00D20162 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -3289,11 +3282,6 @@
 			isa = PBXTargetDependency;
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = C26C529F2451B3B300D20162 /* PBXContainerItemProxy */;
-		};
-		C26C52A52451B45D00D20162 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
-			targetProxy = C26C52A42451B45D00D20162 /* PBXContainerItemProxy */;
 		};
 		C26C52AB2451B4D400D20162 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
