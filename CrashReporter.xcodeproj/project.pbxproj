@@ -3327,6 +3327,11 @@
 		052A45D2136353FB00987004 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64e,
+				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
@@ -3341,6 +3346,11 @@
 		052A45D3136353FB00987004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64e,
+				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
@@ -3355,6 +3365,11 @@
 		058812BC1040582E009128FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64e,
+				);
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
@@ -3370,6 +3385,11 @@
 		058812BD1040582E009128FB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64e,
+				);
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
@@ -3401,6 +3421,7 @@
 			buildSettings = {
 				ARCHS = (
 					"$(ARCHS_STANDARD)",
+					armv7s,
 					arm64e,
 				);
 				MACH_O_TYPE = staticlib;
@@ -3415,6 +3436,7 @@
 			buildSettings = {
 				ARCHS = (
 					"$(ARCHS_STANDARD)",
+					armv7s,
 					arm64e,
 				);
 				MACH_O_TYPE = staticlib;
