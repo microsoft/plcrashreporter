@@ -132,6 +132,6 @@ int main (int argc, char *argv[]) {
             print_usage();
             ret = 1;
         }
+        exit(ret);
     }
-    exit(ret);
 }
