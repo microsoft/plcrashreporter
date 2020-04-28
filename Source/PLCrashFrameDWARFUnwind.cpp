@@ -244,12 +244,12 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         /* Could only happen due to programmer error; eg, an image that doesn't actually match our thread state */
         PLCF_ASSERT(pc <= UINT64_MAX);
 
-        ferr = plframe_cursor_read_dwarf_unwind_int<plcrash_greg_t, int64_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
+        ferr = plframe_cursor_read_dwarf_unwind_int<uint64_t, int64_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
     } else {
         /* Could only happen due to programmer error; eg, an image that doesn't actually match our thread state */
         PLCF_ASSERT(pc <= UINT32_MAX);
 
-        ferr = plframe_cursor_read_dwarf_unwind_int<plcrash_greg_t, int32_t>(task, pc, &image->macho_image, current_frame, previous_frame, next_frame);
+        ferr = plframe_cursor_read_dwarf_unwind_int<uint32_t, int32_t>(task, (uint32_t)pc, &image->macho_image, current_frame, previous_frame, next_frame);
     }
     
     plcrash_async_image_list_set_reading(image_list, false);
