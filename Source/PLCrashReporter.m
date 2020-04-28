@@ -55,7 +55,8 @@
 }
 
 /**
- * Static field to prevent ARC from freeing resuources. */
+ * Static field to prevent ARC from freeing resources.
+ */
 static PLCrashReporter *pl_crash_reporter;
 
 /** @internal
