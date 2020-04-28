@@ -31,7 +31,7 @@
 @interface PLCrashReportSymbolInfo : NSObject {
 @private
     /** The symbol name. */
-    NSString *_symbolName;
+    __strong NSString *_symbolName;
     
     /** The symbol start address. */
     uint64_t _startAddress;

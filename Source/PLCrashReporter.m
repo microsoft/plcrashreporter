@@ -55,7 +55,7 @@
 }
 
 /**
- * Static field to prevent ARC from freeing resources.
+ * Static field (file visibility without symbol created) to prevent ARC from freeing resources.
  */
 static PLCrashReporter *pl_crash_reporter;
 

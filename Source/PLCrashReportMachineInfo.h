@@ -36,7 +36,7 @@
     NSString *_modelName;
     
     /** The processor type. */
-    PLCrashReportProcessorInfo *_processorInfo;
+    __strong PLCrashReportProcessorInfo *_processorInfo;
     
     /* The number of actual physical processor cores. */
     NSUInteger _processorCount;

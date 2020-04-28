@@ -32,7 +32,7 @@
 @interface PLCrashReportBinaryImageInfo : NSObject {
 @private
     /** Code type */
-    PLCrashReportProcessorInfo *_processorInfo;
+    __strong PLCrashReportProcessorInfo *_processorInfo;
 
     /** Base image address */
     uint64_t _baseAddress;
@@ -41,13 +41,13 @@
     uint64_t _imageSize;
 
     /** Name of binary image */
-    NSString *_imageName;
+    __strong NSString *_imageName;
 
     /** If the UUID is available */
     BOOL _hasImageUUID;
 
     /** 128-bit object UUID. May be nil. */
-    NSString *_imageUUID;
+    __strong NSString *_imageUUID;
 }
 
 - (id) initWithCodeType: (PLCrashReportProcessorInfo *) processorInfo

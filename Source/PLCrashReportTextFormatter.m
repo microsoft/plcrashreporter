@@ -181,8 +181,8 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
             hardwareModel = report.machineInfo.modelName;
 
         NSString *incidentIdentifier = @"???";
-        if (report.uuidRef != NULL) {
-            incidentIdentifier = (__bridge_transfer NSString *) CFUUIDCreateString(NULL, report.uuidRef);
+        if (report.uuidRef != nil) {
+            incidentIdentifier = (__bridge_transfer NSString *) CFUUIDCreateString(nil, report.uuidRef);
         }
     
         [text appendFormat: @"Incident Identifier: %@\n", incidentIdentifier];

@@ -37,13 +37,13 @@
     NSInteger _threadNumber;
 
     /** Ordered list of PLCrashReportStackFrame instances */
-    NSArray *_stackFrames;
+    __strong NSArray *_stackFrames;
 
     /** YES if this thread crashed. */
     BOOL _crashed;
 
     /** List of PLCrashReportRegister instances. Will be empty if _crashed is NO. */
-    NSArray *_registers;
+    __strong NSArray *_registers;
 }
 
 - (id) initWithThreadNumber: (NSInteger) threadNumber

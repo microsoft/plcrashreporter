@@ -109,22 +109,22 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
 @interface PLCrashReportSystemInfo : NSObject {
 @private
     /** Operating system */
-    PLCrashReportOperatingSystem _operatingSystem;
+    __strong PLCrashReportOperatingSystem _operatingSystem;
     
     /** Operating system version */
-    NSString *_osVersion;
+    __strong NSString *_osVersion;
     
     /** OS build. May be nil. */
-    NSString *_osBuild;
+    __strong NSString *_osBuild;
     
     /** Architecture */
-    PLCrashReportArchitecture _architecture;
+    __strong PLCrashReportArchitecture _architecture;
     
     /** Date crash report was generated. May be nil if the date is unknown. */
-    NSDate *_timestamp;
+    __strong NSDate *_timestamp;
 
     /** Processor information. */
-    PLCrashReportProcessorInfo *_processorInfo;
+    __strong PLCrashReportProcessorInfo *_processorInfo;
 }
 
 - (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem 
