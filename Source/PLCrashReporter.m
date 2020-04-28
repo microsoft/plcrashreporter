@@ -55,9 +55,7 @@
 }
 
 /**
- * Static fields to prevent ARC from freeing resuources. */
-static PLCrashMachExceptionServer *mach_server;
-static PLCrashMachExceptionPortSet *port_set;
+ * Static field to prevent ARC from freeing resuources. */
 static PLCrashReporter *pl_crash_reporter;
 
 /** @internal
@@ -624,13 +622,9 @@ static PLCrashReporter *sharedReporter = nil;
             if (_machServer == nil)
                 return NO;
             
-            /* Keep references to the values to prevent ARC from freeing them */
-            mach_server = _machServer;
-            port_set = _previousMachPorts;
-            
             /*
              * MEMORY WARNING: To ensure that our instance survives for the lifetime of the callback registration,
-             * we retain it here. This is necessary to ensure that the Mach exception server instance and previous port set
+             * we keep a reference on self. This is necessary to ensure that the Mach exception server instance and previous port set
              * survive for the lifetime of the callback. Since there's currently no support for *deregistering* a crash reporter,
              * this simply results in the reporter living forever.
              */
