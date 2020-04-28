@@ -77,7 +77,7 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath: _logPath]) {
         STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
     }
-    _logPath = NULL;
+    _logPath = nil;
 
     /* Stop the test thread */
     plcrash_test_thread_stop(&_thr_args);

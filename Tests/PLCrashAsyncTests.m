@@ -62,7 +62,7 @@
 
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _outputFile error: &error], @"Could not remove log file");
-    _outputFile = NULL;
+    _outputFile = nil;
 }
 
 - (void) testByteOrderDetection {

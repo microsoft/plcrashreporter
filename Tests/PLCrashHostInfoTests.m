@@ -47,7 +47,7 @@
 }
 
 - (void) tearDown {
-    _hostInfo = NULL;
+    _hostInfo = nil;
 }
 
 - (void) testDarwinVersion {

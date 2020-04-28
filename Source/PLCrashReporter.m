@@ -385,7 +385,7 @@ static void uncaught_exception_handler (NSException *exception) {
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration;
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
-- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
+- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (__strong PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
                                                                         error: (NSError **) outError;
@@ -613,13 +613,10 @@ static PLCrashReporter *sharedReporter = nil;
                 return NO;
             
             /* Enable the server. */
-            /* TODO review prevMacPorts usage */
-            PLCrashMachExceptionPortSet *prevMacPorts = _previousMachPorts;
-            _machServer = [self enableMachExceptionServerWithPreviousPortSet: &prevMacPorts
+            _machServer = [self enableMachExceptionServerWithPreviousPortSet:  &_previousMachPorts
                                                                     callback: &mach_exception_callback
                                                                      context: &signal_handler_context
                                                                        error: outError];
-            _previousMachPorts = prevMacPorts;
             if (_machServer == nil)
                 return NO;
             
@@ -629,6 +626,10 @@ static PLCrashReporter *sharedReporter = nil;
              * survive for the lifetime of the callback. Since there's currently no support for *deregistering* a crash reporter,
              * this simply results in the reporter living forever.
              */
+            if (pl_crash_reporter != NULL) {
+                plcrash_populate_error(outError, PLCrashReporterErrorResourceBusy, @"A PLCrashReporter instance has already been enabled", nil);
+                return NO;
+            }
             pl_crash_reporter = self;
             
             /*
@@ -924,7 +925,7 @@ cleanup:
  * could not be enabled. If no error occurs, this parameter will be left unmodified. You may
  * specify nil for this parameter, and no error information will be provided.
  */
-- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
+- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (__strong PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
                                                                         error: (NSError **) outError

@@ -65,7 +65,7 @@
     
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _logPath error: &error], @"Could not remove log file");
-    _logPath = NULL;
+    _logPath = nil;
 }
 
 struct plcr_live_report_context {

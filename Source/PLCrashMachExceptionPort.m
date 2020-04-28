@@ -166,7 +166,7 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) registerForTask: (task_t) task previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
+- (BOOL) registerForTask: (task_t) task previousPortSet: (__strong PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
     plcrash_mach_exception_port_set_t prev;
     
     kern_return_t kr;
@@ -204,7 +204,7 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
  */
-- (BOOL) registerForThread: (thread_t) thread previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
+- (BOOL) registerForThread: (thread_t) thread previousPortSet: (__strong PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
     plcrash_mach_exception_port_set_t prev;
     
     kern_return_t kr;
