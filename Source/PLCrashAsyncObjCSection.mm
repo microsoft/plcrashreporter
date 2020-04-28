@@ -966,7 +966,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     
     /* Figure out how many classes are in the class list based on its length and
      * the size of a pointer in the image. */
-    unsigned classCount = objcContext->classMobj.length / sizeof(machine_ptr_t);
+    pl_vm_size_t classCount = objcContext->classMobj.length / sizeof(machine_ptr_t);
     
     /* Iterate over all classes. */
     for(unsigned i = 0; i < classCount; i++) {
@@ -1016,7 +1016,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     }
     
     /* Figure out how many categories are in the category list based on its length and the size of a pointer in the image. */
-    unsigned catCount = objcContext->catMobj.length / sizeof(*catPtrs);
+    pl_vm_size_t catCount = objcContext->catMobj.length / sizeof(*catPtrs);
     
     /* Iterate over all classes. */
     for(unsigned i = 0; i < catCount; i++) {

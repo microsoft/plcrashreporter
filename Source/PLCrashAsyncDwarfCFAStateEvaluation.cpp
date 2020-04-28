@@ -511,7 +511,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::apply_state (task_t
             }
 
             /* Fetch the current value, apply the offset, and save as the new thread's CFA. */
-            cfa_val = plcrash_async_thread_state_get_reg(thread_state, regnum);
+            cfa_val = (machine_ptr) plcrash_async_thread_state_get_reg(thread_state, regnum);
             if (cfa_rule.type() == DWARF_CFA_STATE_CFA_TYPE_REGISTER)
                 cfa_val += cfa_rule.register_offset();
             else
