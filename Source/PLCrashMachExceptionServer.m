@@ -581,7 +581,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
     /* We prefer 64-bit codes; if the user requests 32-bit codes, we need to map them */
     exception_data_type_t code32[code_count];
     for (mach_msg_type_number_t i = 0; i < code_count; i++) {
-        code32[i] = (uint64_t) code[i];
+        code32[i] = (exception_data_type_t)code[i];
     }
     
     /* Strip the MACH_EXCEPTION_CODES modifier from the behavior flags */
@@ -677,7 +677,7 @@ static void *exception_server_thread (void *arg) {
     while (true) {
         /* Initialize our request message */
         request->Head.msgh_local_port = exc_context->port_set;
-        request->Head.msgh_size = request_size;
+        request->Head.msgh_size = (mach_msg_size_t)request_size;
         mr = mach_msg(&request->Head,
                       MACH_RCV_MSG | MACH_RCV_LARGE,
                       0,

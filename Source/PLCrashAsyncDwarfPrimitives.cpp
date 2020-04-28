@@ -145,7 +145,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
              * be used for the DW_EH_PE_pcrel base address; reviewing the available implementations demonstrates that
              * the current read buffer position should be used.
              */
-            base = location + offset;
+            base = (machine_ptr)(location + offset);
             break;
             
         case DW_EH_PE_absptr:
@@ -187,7 +187,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
             
             /* Compute the offset+alignment relative to the section base */
             PLCF_ASSERT(location >= _frame_section_base);
-            machine_ptr locationOffset = location - _frame_section_base;
+            machine_ptr locationOffset = (machine_ptr)location - _frame_section_base;
             
             /* Apply to the VM load address for the section. */
             machine_ptr vm_addr = _frame_section_vm_addr + locationOffset;
@@ -238,7 +238,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
                 return err;
             }
             
-            *result = ulebv + base;
+            *result = (machine_ptr)(ulebv + base);
             *size += uleb_size;
             break;
         }
@@ -274,7 +274,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
                 return err;
             }
             
-            *result = udata8 + base;
+            *result = (machine_ptr)(udata8 + base);
             *size += 8;
             break;
         }
@@ -288,7 +288,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
                 return err;
             }
             
-            *result = slebv + base;
+            *result = (machine_ptr)(slebv + base);
             *size += sleb_size;
             break;
         }
@@ -325,7 +325,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
                 return err;
             }
             
-            *result = sdata8 + base;
+            *result = (machine_ptr)(sdata8 + base);
             *size += 8;
             break;
         }

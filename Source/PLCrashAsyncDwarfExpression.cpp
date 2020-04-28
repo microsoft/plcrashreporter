@@ -153,7 +153,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
 })
 
     /* A push macro that handles reporting of stack overflow errors */
-#define dw_expr_push(v) if (!stack.push(v)) { \
+#define dw_expr_push(v) if (!stack.push((machine_ptr)v)) { \
     PLCF_DEBUG("Hit stack limit; cannot push further values"); \
     return PLCRASH_EINTERNAL; \
 }
@@ -394,7 +394,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                         PLCF_DEBUG("DW_OP_deref_size referenced an invalid target address 0x%" PRIx64, (uint64_t) addr); \
                         return err; \
                     } \
-                    value = r; \
+                    value = (machine_ptr)r; \
                     break; \
                 }
                 machine_ptr value = 0;
