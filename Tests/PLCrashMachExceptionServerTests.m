@@ -146,9 +146,9 @@ static kern_return_t exception_callback (task_t task,
 - (void) testTaskServerInsertion {
     NSError *error;
 
-    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+    PLCrashMachExceptionServer *server = [[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
                                                                                        context: NULL
-                                                                                         error: &error] autorelease];
+                                                                                         error: &error];
     STAssertNotNil(server, @"Failed to initialize server");
 
     PLCrashMachExceptionPort *port = [server exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
@@ -176,14 +176,14 @@ static kern_return_t exception_callback (task_t task,
     BOOL taskRan = false;
     BOOL threadRan = false;
     
-    PLCrashMachExceptionServer *task = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+    PLCrashMachExceptionServer *task = [[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
                                                                                      context: &taskRan
-                                                                                       error: &error] autorelease];
+                                                                                       error: &error];
     STAssertNotNil(task, @"Failed to initialize server");
 
-    PLCrashMachExceptionServer *thr = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+    PLCrashMachExceptionServer *thr = [[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
                                                                                     context: &threadRan
-                                                                                      error: &error] autorelease];
+                                                                                      error: &error];
     STAssertNotNil(thr, @"Failed to initialize server");
     
     PLCrashMachExceptionPort *taskPort = [task exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
@@ -221,9 +221,9 @@ static kern_return_t exception_callback (task_t task,
 
     /* Set up a test server */
     BOOL didRun = false;
-    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+    PLCrashMachExceptionServer *server = [[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
                                                                                        context: &didRun
-                                                                                         error: &error] autorelease];
+                                                                                         error: &error];
     STAssertNotNil(server, @"Failed to initialize server");
     
     PLCrashMachExceptionPort *port = [server exceptionPortWithMask: EXC_MASK_BAD_ACCESS error: &error];
@@ -266,9 +266,9 @@ static kern_return_t exception_callback (task_t task,
 - (void) testCopySendRight {
     NSError *error;
 
-    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
+    PLCrashMachExceptionServer *server = [[PLCrashMachExceptionServer alloc] initWithCallBack: exception_callback
                                                                                        context: NULL
-                                                                                         error: &error] autorelease];
+                                                                                         error: &error];
     STAssertNotNil(server, @"Failed to initialize server");
 
     mach_port_t sendRight = [server copySendRightForServerAndReturningError: &error];

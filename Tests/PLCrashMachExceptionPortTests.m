@@ -109,10 +109,10 @@
     NSError *error;
     PLCrashMachExceptionPortSet *previousStates;
 
-    PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
+    PLCrashMachExceptionPort *state = [[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
                                                                                            mask: EXC_MASK_SOFTWARE
                                                                                        behavior: EXCEPTION_STATE_IDENTITY
-                                                                                         flavor: MACHINE_THREAD_STATE] autorelease];
+                                                                                         flavor: MACHINE_THREAD_STATE];
 
     /* Fetch the current state to compare against */
     PLCrashMachExceptionPortSet *initialState = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_SOFTWARE error: &error];
@@ -143,10 +143,10 @@
     NSError *error;
     PLCrashMachExceptionPortSet *previousStates;
     
-    PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
+    PLCrashMachExceptionPort *state = [[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
                                                                                            mask: EXC_MASK_SOFTWARE
                                                                                        behavior: EXCEPTION_STATE_IDENTITY
-                                                                                         flavor: MACHINE_THREAD_STATE] autorelease];
+                                                                                         flavor: MACHINE_THREAD_STATE];
     
     /* Fetch the current state to compare against */
     PLCrashMachExceptionPortSet *initialState = [PLCrashMachExceptionPort exceptionPortsForThread: pl_mach_thread_self() mask: EXC_MASK_SOFTWARE error: &error];

@@ -54,7 +54,7 @@
         STFail(@"Unexpected sysctl error %d: %s", errno, strerror(errno));
     }
     
-    _pinfo = [[PLCrashProcessInfo currentProcessInfo] retain];
+    _pinfo = [PLCrashProcessInfo currentProcessInfo];
 }
 
 - (void) testProcessID {

@@ -43,11 +43,11 @@
 @implementation PLCrashHostInfoTests
 
 - (void) setUp {
-    _hostInfo = [[PLCrashHostInfo currentHostInfo] retain];
+    _hostInfo = [PLCrashHostInfo currentHostInfo];
 }
 
 - (void) tearDown {
-    [_hostInfo release];
+    _hostInfo = NULL;
 }
 
 - (void) testDarwinVersion {
@@ -56,7 +56,7 @@
 
     /* Extract release info */
     STAssertEquals(0, uname(&n), @"Failed to fetch uname");
-    NSString *osrelease = [[[NSString alloc] initWithBytes: n.release length: strlen(n.release) encoding:NSUTF8StringEncoding] autorelease];
+    NSString *osrelease = [[NSString alloc] initWithBytes: n.release length: strlen(n.release) encoding:NSUTF8StringEncoding];
     NSArray *vcomps = [osrelease componentsSeparatedByString: @"."];
     
     STAssertTrue([vcomps count] >= 1, @"Could not parse release version");
