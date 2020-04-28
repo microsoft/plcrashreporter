@@ -3268,6 +3268,11 @@
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = C26C529F2451B3B300D20162 /* PBXContainerItemProxy */;
 		};
+		C26C52A52451B45D00D20162 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
+			targetProxy = C26C52A42451B45D00D20162 /* PBXContainerItemProxy */;
+		};
 		C26C52AB2451B4D400D20162 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
