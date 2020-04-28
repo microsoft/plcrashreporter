@@ -407,7 +407,6 @@
 		C2198E0816441CF5006EB46A /* PLCrashAsyncMachOString.c in Sources */ = {isa = PBXBuildFile; fileRef = C2198E0516441CF5006EB46A /* PLCrashAsyncMachOString.c */; };
 		C238788524574C0100519007 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C238788624574C0700519007 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
-		C238788924574F2600519007 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
 		C26022881642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
 		C2620D442451CF8C00B11E68 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2620D432451CF8B00B11E68 /* Foundation.framework */; };
@@ -468,6 +467,8 @@
 		C2BBCDAD2456E0E800F9E820 /* PLCrashMachExceptionPortTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2BBCD7E2456E03D00F9E820 /* PLCrashMachExceptionPortTests.m */; };
 		C2BBCDAE2456E0E800F9E820 /* PLCrashMachExceptionServerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2BBCD802456E03D00F9E820 /* PLCrashMachExceptionServerTests.m */; };
 		C2BBCDAF2456E0E800F9E820 /* PLCrashSysctlTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */; };
+		C2CBA40724586975001B775F /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
+		C2CBA40824586975001B775F /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C2F7F1662451E9BD002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		C2F7F1672451EA71002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		C2F7F1682451EA72002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -804,13 +805,6 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
-		052A46241363553400987004 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
-			remoteInfo = "CrashReporter-iPhoneOS";
-		};
 		054F50E80EEC50B30034B184 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -853,13 +847,6 @@
 			remoteGlobalIDString = 8064D7AD1C4D22D8005A8B4C;
 			remoteInfo = "CrashReporter-tvOS-Device";
 		};
-		C238788A24574F3300519007 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
-			remoteInfo = "CrashReporter macOS";
-		};
 		C25664E4235737560088513E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -867,19 +854,12 @@
 			remoteGlobalIDString = C25664D123571D330088513E;
 			remoteInfo = Documentation;
 		};
-		C2620D352451CD3D00B11E68 /* PBXContainerItemProxy */ = {
+		C26C529F2451B3B300D20162 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05CD31510EE936A9000FDE88;
-			remoteInfo = "CrashReporter iOS";
-		};
-		C2620D382451CD4800B11E68 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8064D7AD1C4D22D8005A8B4C;
-			remoteInfo = "CrashReporter tvOS";
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
+			remoteInfo = "CrashReporter macOS";
 		};
 		C26C52A42451B45D00D20162 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -909,12 +889,26 @@
 			remoteGlobalIDString = C2B90D992456FBDE00834AFB;
 			remoteInfo = "CrashReporter tvOS Universal";
 		};
-		C9438EC9245846250052CEB9 /* PBXContainerItemProxy */ = {
+		C2CBA40924586975001B775F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
-			remoteInfo = "CrashReporter macOS";
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = "CrashReporter macOS Framework";
+		};
+		C2CBA40C245869ED001B775F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 058812B81040582D009128FB;
+			remoteInfo = "CrashReporter iOS Framework";
+		};
+		C2CBA40E245869F4001B775F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8064D88B1C4D22E5005A8B4C;
+			remoteInfo = "CrashReporter tvOS Framework";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -927,6 +921,17 @@
 			files = (
 			);
 			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C2CBA40B24586975001B775F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C2CBA40824586975001B775F /* CrashReporter.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -1231,7 +1236,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C238788924574F2600519007 /* libCrashReporter.a in Frameworks */,
+				C2CBA40724586975001B775F /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2279,8 +2284,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				052A46251363553400987004 /* PBXTargetDependency */,
-				C2620D362451CD3D00B11E68 /* PBXTargetDependency */,
+				C2CBA40D245869ED001B775F /* PBXTargetDependency */,
 			);
 			name = "DemoCrash iOS";
 			productName = "DemoCrash-iOS";
@@ -2404,11 +2408,12 @@
 				05F40CE30EF7AB80008050CF /* Resources */,
 				05F40CE40EF7AB80008050CF /* Sources */,
 				05F40CE50EF7AB80008050CF /* Frameworks */,
+				C2CBA40B24586975001B775F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				C238788B24574F3300519007 /* PBXTargetDependency */,
+				C2CBA40A24586975001B775F /* PBXTargetDependency */,
 			);
 			name = "DemoCrash macOS";
 			productName = DemoCrash;
@@ -2481,7 +2486,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				C2620D392451CD4800B11E68 /* PBXTargetDependency */,
+				C2CBA40F245869F4001B775F /* PBXTargetDependency */,
 			);
 			name = "DemoCrash tvOS";
 			productName = "DemoCrash-iOS";
@@ -3223,11 +3228,6 @@
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = 050DE25C0F61B92C00152ED3 /* PBXContainerItemProxy */;
 		};
-		052A46251363553400987004 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05CD31510EE936A9000FDE88 /* CrashReporter iOS */;
-			targetProxy = 052A46241363553400987004 /* PBXContainerItemProxy */;
-		};
 		054F50E90EEC50B30034B184 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05CD31510EE936A9000FDE88 /* CrashReporter iOS */;
@@ -3258,25 +3258,10 @@
 			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */;
 			targetProxy = 80A63BD91C4D384A0073B7A3 /* PBXContainerItemProxy */;
 		};
-		C238788B24574F3300519007 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
-			targetProxy = C238788A24574F3300519007 /* PBXContainerItemProxy */;
-		};
 		C25664E5235737560088513E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C25664D123571D330088513E /* Documentation */;
 			targetProxy = C25664E4235737560088513E /* PBXContainerItemProxy */;
-		};
-		C2620D362451CD3D00B11E68 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05CD31510EE936A9000FDE88 /* CrashReporter iOS */;
-			targetProxy = C2620D352451CD3D00B11E68 /* PBXContainerItemProxy */;
-		};
-		C2620D392451CD4800B11E68 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */;
-			targetProxy = C2620D382451CD4800B11E68 /* PBXContainerItemProxy */;
 		};
 		C26C52A02451B3B300D20162 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3298,10 +3283,20 @@
 			target = C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */;
 			targetProxy = C2B90D9F2456FBF400834AFB /* PBXContainerItemProxy */;
 		};
-		C9438ECA245846250052CEB9 /* PBXTargetDependency */ = {
+		C2CBA40A24586975001B775F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
-			targetProxy = C9438EC9245846250052CEB9 /* PBXContainerItemProxy */;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
+			targetProxy = C2CBA40924586975001B775F /* PBXContainerItemProxy */;
+		};
+		C2CBA40D245869ED001B775F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 058812B81040582D009128FB /* CrashReporter iOS Framework */;
+			targetProxy = C2CBA40C245869ED001B775F /* PBXContainerItemProxy */;
+		};
+		C2CBA40F245869F4001B775F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */;
+			targetProxy = C2CBA40E245869F4001B775F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -3543,6 +3538,10 @@
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/DemoCrash-macOS-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3557,6 +3556,10 @@
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/DemoCrash-macOS-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
