@@ -1,27 +1,26 @@
 #!/bin/sh
-set -xe
+set -e
 
 DEVICE_SDK="appletvos"
 SIMULATOR_SDK="appletvsimulator"
 TARGET_NAME="${PROJECT_NAME} tvOS"
 
 # Building both SDKs
-echo "\n\n\n 🛠 Building for ${DEVICE_SDK}"
-xcodebuild \
-    BUILD_DIR="${BUILD_DIR}" BUILD_ROOT="${BUILD_ROOT}" ONLY_ACTIVE_ARCH=NO \
-    BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
-    -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "${TARGET_NAME}" -sdk "${DEVICE_SDK}" \
-    clean build
-
-echo "\n\n\n 🛠 Building for ${SIMULATOR_SDK}"
-xcodebuild \
-    BUILD_DIR="${BUILD_DIR}" BUILD_ROOT="${BUILD_ROOT}" ONLY_ACTIVE_ARCH=NO \
-    BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
-    -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "${TARGET_NAME}" -sdk "${SIMULATOR_SDK}" \
-    clean build
+build() {
+    # Print only target name and issues. Mimic Xcode output to make prettify tools happy.
+    echo "=== BUILD TARGET $1 OF PROJECT ${PROJECT_NAME} WITH CONFIGURATION ${CONFIGURATION} ==="
+    # OBJROOT must be customized to avoid conflicts with the current process.
+    xcodebuild -quiet \
+        SYMROOT="${SYMROOT}" OBJROOT="${OBJROOT}/${CONFIGURATION}-$2" PROJECT_TEMP_DIR="${PROJECT_TEMP_DIR}" \
+        ONLY_ACTIVE_ARCH=NO BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
+        -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "$1" -sdk "$2"
+}
+echo "Building the library for ${DEVICE_SDK} and ${SIMULATOR_SDK}"
+build "${TARGET_NAME}" "${DEVICE_SDK}"
+build "${TARGET_NAME}" "${SIMULATOR_SDK}"
 
 # Combine libraries
-echo "\n\n\n 📦 Combining libraries"
+echo "Combining libraries"
 mkdir -p "${BUILT_PRODUCTS_DIR}"
 lipo \
     "${BUILD_DIR}/${CONFIGURATION}-${DEVICE_SDK}/lib${PRODUCT_NAME}.a" \

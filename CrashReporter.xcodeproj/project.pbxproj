@@ -2734,6 +2734,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "$SRCROOT/Scripts/build-ios-universal.sh\n";
+			showEnvVarsInLog = 0;
 		};
 		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
 			isa = PBXShellScriptBuildPhase;
