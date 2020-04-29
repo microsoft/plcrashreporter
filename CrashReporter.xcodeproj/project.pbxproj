@@ -1150,7 +1150,7 @@
 		C2B90DA32456FE8200834AFB /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		C2B90DA5245714E900834AFB /* generate-documentation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "generate-documentation.sh"; sourceTree = "<group>"; };
 		C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-static-libs-archive.sh"; sourceTree = "<group>"; };
-		C2B90DA7245714E900834AFB /* verify-modificatiions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modificatiions.sh"; sourceTree = "<group>"; };
+		C2B90DA7245714E900834AFB /* verify-modifications.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modifications.sh"; sourceTree = "<group>"; };
 		C2B90DA8245714E900834AFB /* create-disk-image.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-disk-image.sh"; sourceTree = "<group>"; };
 		C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-tvos-universal.sh"; sourceTree = "<group>"; };
 		C2B90DAA245714EA00834AFB /* build-ios-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-ios-universal.sh"; sourceTree = "<group>"; };
@@ -1915,7 +1915,7 @@
 				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
 				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
 				C2B90DA5245714E900834AFB /* generate-documentation.sh */,
-				C2B90DA7245714E900834AFB /* verify-modificatiions.sh */,
+				C2B90DA7245714E900834AFB /* verify-modifications.sh */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -2676,7 +2676,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/verify-modificatiions.sh\n";
+			shellScript = "$SRCROOT/Scripts/verify-modifications.sh\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D523571D3D0088513E /* Generate Documentation */ = {
