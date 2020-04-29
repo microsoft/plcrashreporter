@@ -44,3 +44,6 @@ lipo \
     "${SIMULATOR_DIR}/${FRAMEWORK_BINARY}" \
     -create -output "${BUILT_PRODUCTS_DIR}/${FRAMEWORK_BINARY}"
 echo "Final framework architectures: $(lipo -archs "${BUILT_PRODUCTS_DIR}/${FRAMEWORK_BINARY}")"
+
+echo "Appending simulator to Info.plist"
+plutil -insert CFBundleSupportedPlatforms.1 -string "iPhoneSimulator" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.framework/Info.plist"
