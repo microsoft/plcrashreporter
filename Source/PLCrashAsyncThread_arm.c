@@ -371,7 +371,7 @@ static inline void plcrash_async_thread_state_set_reg_64 (plcrash_async_thread_s
         case PLCRASH_ARM64_SP: THREAD_STATE_SET_PTR(sp, thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_LR: THREAD_STATE_SET_FPTR(lr, thread.ts_64, ts, regnum, reg); break;
         case PLCRASH_ARM64_PC: THREAD_STATE_SET_FPTR(pc, thread.ts_64, ts, regnum, reg); break;
-        case PLCRASH_ARM64_CPSR: THREAD_STATE_SET(cpsr, thread.ts_64, ts, regnum, (__uint32_t)reg); break;
+        case PLCRASH_ARM64_CPSR: THREAD_STATE_SET(cpsr, thread.ts_64, ts, regnum, (uint32_t)reg); break;
         default: __builtin_trap();
     }
 }
@@ -489,7 +489,7 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
     size_t reg_count = plcrash_async_thread_state_get_reg_count(thread_state);
     for (size_t reg = 0; reg < reg_count; reg++) {
         /* Skip unset registers */
-        if (!plcrash_async_thread_state_has_reg(thread_state, (__uint32_t)reg))
+        if (!plcrash_async_thread_state_has_reg(thread_state, (uint32_t)reg))
             continue;
         
         /* Check for the register in the preservation table */
@@ -503,7 +503,7 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
         
         /* If not preserved, clear */
         if (!preserved)
-            plcrash_async_thread_state_clear_reg(thread_state, (__uint32_t)reg);
+            plcrash_async_thread_state_clear_reg(thread_state, (uint32_t)reg);
     }
 }
 
