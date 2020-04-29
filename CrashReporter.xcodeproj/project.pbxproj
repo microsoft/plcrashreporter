@@ -3330,7 +3330,7 @@
 		052A45D2136353FB00987004 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3349,7 +3349,7 @@
 		052A45D3136353FB00987004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
