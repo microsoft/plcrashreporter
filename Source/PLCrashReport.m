@@ -26,10 +26,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReport.h"
 #import "CrashReporter.h"
-
-#import "crash_report.pb-c.h"
+#import "PLCrashReport.h"
+#import "PLCrashReport.pb-c.h"
 
 struct _PLCrashReportDecoder {
     Plcrash__CrashReport *crashReport;

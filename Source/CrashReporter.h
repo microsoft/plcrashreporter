@@ -36,6 +36,7 @@
 // it redefines symbol names
 #import "PLCrashNamespace.h"
 
+/* Library Imports */
 #import "PLCrashReporter.h"
 #import "PLCrashReport.h"
 #import "PLCrashReportTextFormatter.h"
@@ -97,12 +98,6 @@ typedef enum {
     /** An attempt to use a resource which was in use at the time in a manner which would have conflicted with the request. */
     PLCrashReporterErrorResourceBusy = 3
 } PLCrashReporterError;
-
-
-/* Library Imports */
-#import "PLCrashReporter.h"
-#import "PLCrashReport.h"
-#import "PLCrashReportTextFormatter.h"
 
 /**
  * @mainpage Plausible Crash Reporter

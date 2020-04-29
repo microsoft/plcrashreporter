@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0830"
+   LastUpgradeVersion = "1140"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,23 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "05CD31510EE936A9000FDE88"
-               BuildableName = "libCrashReporter-iphoneos.a"
-               BlueprintName = "CrashReporter-iOS-Device"
-               ReferencedContainer = "container:CrashReporter.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "05CD33230EE94439000FDE88"
-               BuildableName = "Tests-iOS-Device.xctest"
-               BlueprintName = "Tests-iOS-Device"
+               BlueprintIdentifier = "050DE24C0F61B80B00152ED3"
+               BuildableName = "Fuzz Testing"
+               BlueprintName = "Fuzz Testing"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,23 +30,13 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "05CD31510EE936A9000FDE88"
-            BuildableName = "libCrashReporter-iphoneos.a"
-            BlueprintName = "CrashReporter-iOS-Device"
+            BlueprintIdentifier = "050DE24C0F61B80B00152ED3"
+            BuildableName = "Fuzz Testing"
+            BlueprintName = "Fuzz Testing"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "05CD33230EE94439000FDE88"
-               BuildableName = "Tests-iOS-Device.xctest"
-               BlueprintName = "Tests-iOS-Device"
-               ReferencedContainer = "container:CrashReporter.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -73,15 +49,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "05CD31510EE936A9000FDE88"
-            BuildableName = "libCrashReporter-iphoneos.a"
-            BlueprintName = "CrashReporter-iOS-Device"
+            BlueprintIdentifier = "050DE24C0F61B80B00152ED3"
+            BuildableName = "Fuzz Testing"
+            BlueprintName = "Fuzz Testing"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -89,15 +66,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "05CD31510EE936A9000FDE88"
-            BuildableName = "libCrashReporter-iphoneos.a"
-            BlueprintName = "CrashReporter-iOS-Device"
+            BlueprintIdentifier = "050DE24C0F61B80B00152ED3"
+            BuildableName = "Fuzz Testing"
+            BlueprintName = "Fuzz Testing"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

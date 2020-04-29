@@ -32,6 +32,7 @@
 #import "PLCrashFrameWalker.h"
 #import "PLCrashAsyncImageList.h"
 #import "PLCrashReport.h"
+#import "PLCrashReport.pb-c.h"
 
 #import "PLCrashProcessInfo.h"
 #import "PLCrashHostInfo.h"
@@ -44,9 +45,7 @@
 #import <mach-o/loader.h>
 #import <mach-o/dyld.h>
 
-#import "crash_report.pb-c.h"
 #import "PLCrashTestThread.h"
-
 #import "PLCrashSysctl.h"
 
 @interface PLCrashLogWriterTests : SenTestCase {

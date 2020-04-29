@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "058812D410405908009128FB"
-               BuildableName = "Disk Image"
-               BlueprintName = "Disk Image"
+               BlueprintIdentifier = "C2B90D952456FBD000834AFB"
+               BuildableName = "CrashReporter iOS Universal"
+               BlueprintName = "CrashReporter iOS Universal"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -43,9 +43,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "058812D410405908009128FB"
-            BuildableName = "Disk Image"
-            BlueprintName = "Disk Image"
+            BlueprintIdentifier = "C2B90D952456FBD000834AFB"
+            BuildableName = "CrashReporter iOS Universal"
+            BlueprintName = "CrashReporter iOS Universal"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -59,9 +59,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "058812D410405908009128FB"
-            BuildableName = "Disk Image"
-            BlueprintName = "Disk Image"
+            BlueprintIdentifier = "C2B90D952456FBD000834AFB"
+            BuildableName = "CrashReporter iOS Universal"
+            BlueprintName = "CrashReporter iOS Universal"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
