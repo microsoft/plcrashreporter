@@ -35,7 +35,7 @@
 @interface PLCrashAsyncTests : SenTestCase {
 @private
     /* Path to test output file */
-    NSString *_outputFile;
+    __strong NSString *_outputFile;
 
     /* Open output file descriptor */
     int _testFd;

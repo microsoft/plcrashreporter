@@ -47,7 +47,7 @@
 @interface PLCrashReportTests : SenTestCase {
 @private
     /* Path to crash log */
-    NSString *_logPath;
+    __strong NSString *_logPath;
 }
 
 @end

@@ -51,7 +51,7 @@
 @interface PLCrashLogWriterTests : SenTestCase {
 @private
     /* Path to crash log */
-    NSString *_logPath;
+    __strong NSString *_logPath;
     
     /* Test thread */
     plcrash_test_thread_t _thr_args;

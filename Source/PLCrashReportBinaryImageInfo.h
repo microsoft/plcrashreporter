@@ -74,7 +74,7 @@
 /**
  * Image name (absolute path)
  */
-@property(nonatomic, readonly) NSString *imageName;
+@property(nonatomic, readonly, strong) NSString *imageName;
 
 
 /**
@@ -85,6 +85,6 @@
 /**
  * 128-bit object UUID (matches Mach-O DWARF dSYM files). May be nil if unavailable.
  */
-@property(nonatomic, readonly) NSString *imageUUID;
+@property(nonatomic, readonly, strong) NSString *imageUUID;
 
 @end

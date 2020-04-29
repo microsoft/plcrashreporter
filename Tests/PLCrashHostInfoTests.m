@@ -36,7 +36,7 @@
 
 @interface PLCrashHostInfoTests : SenTestCase {
 @private
-    PLCrashHostInfo *_hostInfo;
+    __strong PLCrashHostInfo *_hostInfo;
 }
 @end
 

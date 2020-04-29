@@ -34,7 +34,7 @@
 @interface PLCrashProcessInfoTests : SenTestCase {
 @private
     struct kinfo_proc _process_info;
-    PLCrashProcessInfo *_pinfo;
+    __strong PLCrashProcessInfo *_pinfo;
 }
 @end
 

@@ -45,7 +45,7 @@
                endAddress: (uint64_t) endAddress;
 
 /** The symbol name. */
-@property(nonatomic, readonly) NSString *symbolName;
+@property(nonatomic, readonly, strong) NSString *symbolName;
 
 /** The symbol start address. */
 @property(nonatomic, readonly) uint64_t startAddress;

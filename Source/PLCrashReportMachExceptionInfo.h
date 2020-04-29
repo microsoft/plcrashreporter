@@ -43,6 +43,6 @@
 @property(nonatomic, readonly) uint64_t type;
 
 /** The Mach exception codes, represented as an ordered array of 64-bit unsigned NSNumber instances. */
-@property(nonatomic, readonly) NSArray *codes;
+@property(nonatomic, readonly, strong) NSArray *codes;
 
 @end

@@ -42,7 +42,7 @@
 /**
  * Register name.
  */
-@property(nonatomic, readonly) NSString *registerName;
+@property(nonatomic, readonly, strong) NSString *registerName;
 
 /**
  * Register value.

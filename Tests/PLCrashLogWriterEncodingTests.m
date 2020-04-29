@@ -36,7 +36,7 @@
 @interface PLCrashLogWriterEncodingTests : SenTestCase {
 @private
     plcrash_async_file_t _file;
-    NSString *_filePath;
+    __strong NSString *_filePath;
 }
 @end
 
