@@ -231,7 +231,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 break;
                 
             case DW_CFA_def_cfa_sf:
-                set_cfa_register_signed(dw_expr_read_uleb128_regnum(), (machine_ptr)(dw_expr_read_sleb128() * cie_info->data_alignment_factor));
+                set_cfa_register_signed(dw_expr_read_uleb128_regnum(), (machine_ptr_s)(dw_expr_read_sleb128() * cie_info->data_alignment_factor));
                 break;
                 
             case DW_CFA_def_cfa_register: {
@@ -278,7 +278,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER:
                     case DWARF_CFA_STATE_CFA_TYPE_REGISTER_SIGNED:
                         /* Our new offset is signed, so all register rules are converted to signed here */
-                        set_cfa_register_signed(rule.register_number(), (machine_ptr)(dw_expr_read_sleb128() * cie_info->data_alignment_factor));
+                        set_cfa_register_signed(rule.register_number(), (machine_ptr_s)(dw_expr_read_sleb128() * cie_info->data_alignment_factor));
                         break;
 
                     case DWARF_CFA_STATE_CFA_TYPE_EXPRESSION:
