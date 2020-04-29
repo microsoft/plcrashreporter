@@ -54,11 +54,6 @@
     NSLog(@"[PLCrashReporter] " msg, ## args); \
 }
 
-/**
- * Static field (file visibility without symbol created) to prevent ARC from freeing resources.
- */
-static PLCrashReporter *pl_crash_reporter;
-
 /** @internal
  * CrashReporter cache directory name. */
 static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
@@ -625,10 +620,8 @@ static PLCrashReporter *sharedReporter = nil;
              * we keep a reference on self. This is necessary to ensure that the Mach exception server instance and previous port set
              * survive for the lifetime of the callback. Since there's currently no support for *deregistering* a crash reporter,
              * this simply results in the reporter living forever.
-             * We do not check pl_crash_reporter nullability here, because we already ensured
-             * that this is a single instance.
              */
-            pl_crash_reporter = self;
+            CFBridgingRetain(self);
             
             /*
              * Save the previous ports. There's a race condition here, in that an exception that is delivered before (or during)
@@ -830,7 +823,6 @@ cleanup:
     crashCallbacks.context = callbacks->context;
     crashCallbacks.handleSignal = callbacks->handleSignal;
 }
-
 
 @end
 

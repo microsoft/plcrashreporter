@@ -48,9 +48,7 @@
 - (void) setUp {
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    void *classRef = (__bridge void *)([self class]);
-    STAssertTrue(dladdr(classRef, &info) > 0, @"Could not fetch dyld info for %p", [self class]);
-    CFBridgingRelease(classRef);
+    STAssertTrue(dladdr((__bridge void *)([self class]), &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     /* Look up the vmaddr and slide for our image */
     uintptr_t text_vmaddr;
     pl_vm_off_t vmaddr_slide = 0;
