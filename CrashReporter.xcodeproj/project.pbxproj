@@ -1150,7 +1150,7 @@
 		C2B90DA32456FE8200834AFB /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		C2B90DA5245714E900834AFB /* generate-documentation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "generate-documentation.sh"; sourceTree = "<group>"; };
 		C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-static-libs-archive.sh"; sourceTree = "<group>"; };
-		C2B90DA7245714E900834AFB /* verify-modificatiions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modificatiions.sh"; sourceTree = "<group>"; };
+		C2B90DA7245714E900834AFB /* verify-modifications.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modifications.sh"; sourceTree = "<group>"; };
 		C2B90DA8245714E900834AFB /* create-disk-image.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-disk-image.sh"; sourceTree = "<group>"; };
 		C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-tvos-universal.sh"; sourceTree = "<group>"; };
 		C2B90DAA245714EA00834AFB /* build-ios-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-ios-universal.sh"; sourceTree = "<group>"; };
@@ -1915,7 +1915,7 @@
 				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
 				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
 				C2B90DA5245714E900834AFB /* generate-documentation.sh */,
-				C2B90DA7245714E900834AFB /* verify-modificatiions.sh */,
+				C2B90DA7245714E900834AFB /* verify-modifications.sh */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -2547,11 +2547,11 @@
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
 				Base,
+				en,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* CrashReporter */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -2676,7 +2676,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/verify-modificatiions.sh\n";
+			shellScript = "$SRCROOT/Scripts/verify-modifications.sh\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D523571D3D0088513E /* Generate Documentation */ = {
@@ -2734,6 +2734,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "$SRCROOT/Scripts/build-ios-universal.sh\n";
+			showEnvVarsInLog = 0;
 		};
 		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3309,6 +3310,7 @@
 		050DE24F0F61B80C00152ED3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
@@ -3318,6 +3320,7 @@
 		050DE2500F61B80C00152ED3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
@@ -3327,7 +3330,7 @@
 		052A45D2136353FB00987004 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3346,7 +3349,7 @@
 		052A45D3136353FB00987004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3365,7 +3368,7 @@
 		058812BC1040582E009128FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3385,7 +3388,7 @@
 		058812BD1040582E009128FB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3419,7 +3422,7 @@
 		05CD31530EE936AA000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3434,7 +3437,7 @@
 		05CD31540EE936AA000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
+				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					arm64e,
@@ -3495,6 +3498,7 @@
 		05E731E50EFA1A3E005EDFB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
@@ -3504,6 +3508,7 @@
 		05E731E60EFA1A3E005EDFB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
@@ -3539,6 +3544,7 @@
 		05F40CEA0EF7AB81008050CF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
@@ -3557,6 +3563,7 @@
 		05F40CEB0EF7AB81008050CF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
