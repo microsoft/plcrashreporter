@@ -328,7 +328,7 @@
     /* Initialize the image list */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
     for (uint32_t i = 0; i < _dyld_image_count(); i++)
-        plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
+        plcrash_nasync_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
 
     /* Initialze faux crash data */
     plcrash_log_signal_info_t info;

@@ -57,7 +57,7 @@
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
         if (_dyld_get_image_header(i) == info.dli_fbase) {
             vmaddr_slide = _dyld_get_image_vmaddr_slide(i);
-            text_vmaddr = info.dli_fbase - vmaddr_slide;
+            text_vmaddr = (uintptr_t) (info.dli_fbase - vmaddr_slide);
             found_image = true;
             break;
         }
@@ -418,7 +418,7 @@ static void testFindSymbol_cb (pl_vm_address_t address, const char *name, void *
     
     /* Perform our symbol lookup */
     pl_vm_address_t pc;
-    plcrash_error_t res = plcrash_async_macho_find_symbol_by_name(&_image, (pl_vm_address_t) dli.dli_sname, &pc);
+    plcrash_error_t res = plcrash_async_macho_find_symbol_by_name(&_image, (const char *) dli.dli_sname, &pc);
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to locate symbol %s", dli.dli_sname);
 
     /* Compare the results */

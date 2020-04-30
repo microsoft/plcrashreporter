@@ -69,7 +69,7 @@
     plframe_error_t err;
     
     plcrash_async_thread_state_clear_all_regs(&frame.thread_state);
-    plcrash_async_thread_state_set_reg(&frame.thread_state, PLCRASH_REG_IP, NULL);
+    plcrash_async_thread_state_set_reg(&frame.thread_state, PLCRASH_REG_IP, (plcrash_greg_t) NULL);
     
     err = plframe_cursor_read_compact_unwind(mach_task_self(), &_image_list, &frame, NULL, &next);
     STAssertEquals(err, PLFRAME_ENOTSUP, @"Unexpected result for a frame missing a valid image");

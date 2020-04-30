@@ -120,16 +120,16 @@
     union test_data dest;
     src.u64 = 0xCAFEF00DDEADBEEFULL;
     
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint64(mach_task_self(), byteorder, &src, 0, &dest.u64), @"Failed to read value");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint64(mach_task_self(), byteorder, (pl_vm_address_t) &src, 0, &dest.u64), @"Failed to read value");
     STAssertEquals(byteorder->swap64(dest.u64), src.u64, @"Incorrect value read");
     
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint32(mach_task_self(), byteorder, &src, 0, &dest.u32), @"Failed to read value");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint32(mach_task_self(), byteorder, (pl_vm_address_t) &src, 0, &dest.u32), @"Failed to read value");
     STAssertEquals(byteorder->swap32(dest.u32), src.u32, @"Incorrect value read");
     
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint16(mach_task_self(), byteorder, &src, 0, &dest.u16), @"Failed to read value");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint16(mach_task_self(), byteorder, (pl_vm_address_t) &src, 0, &dest.u16), @"Failed to read value");
     STAssertEquals(byteorder->swap16(dest.u16), src.u16, @"Incorrect value read");
     
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint8(mach_task_self(), &src, 0, &dest.u8), @"Failed to read value");
+    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_task_read_uint8(mach_task_self(), (pl_vm_address_t) &src, 0, &dest.u8), @"Failed to read value");
     STAssertEquals(dest.u8, src.u8, @"Incorrect value read");
 }
 

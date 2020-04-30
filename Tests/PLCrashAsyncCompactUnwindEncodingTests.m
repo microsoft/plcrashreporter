@@ -110,7 +110,7 @@
     plcrash_error_t err;
     NSData *mappedImage = [self nativeBinaryFromTestResource: TEST_BINARY];
     
-    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], [mappedImage bytes]);
+    err = plcrash_nasync_macho_init(&_image, mach_task_self(), [TEST_BINARY UTF8String], (pl_vm_address_t) [mappedImage bytes]);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize Mach-O parser");
     
     /* Map the unwind section */
@@ -957,7 +957,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_X86_64, encoding), @"Failed to initialize CFE entry");
     
     /* Initialize default thread state */
-    plcrash_greg_t stack_addr = &stackframe[4]; // rbp
+    plcrash_greg_t stack_addr = (plcrash_greg_t) &stackframe[4]; // rbp
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
     plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_FP, stack_addr);
 
@@ -1081,7 +1081,7 @@
     
     /* Initialize default thread state */
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
-    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, &stackframe);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, (plcrash_greg_t) &stackframe);
 
     /* Apply */
     plcrash_async_thread_state_t nts;
@@ -1148,7 +1148,7 @@
     
     /* Initialize default thread state */
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_X86_64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
-    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, &stackframe);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, (plcrash_greg_t) &stackframe);
     
     /* Apply */
     plcrash_async_thread_state_t nts;
