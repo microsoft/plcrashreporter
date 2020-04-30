@@ -35,7 +35,7 @@
     uint64_t _instructionPointer;
 
     /** Symbol information, if available. Otherwise, will be nil. */
-    PLCrashReportSymbolInfo *_symbolInfo;
+    __strong PLCrashReportSymbolInfo *_symbolInfo;
 }
 
 - (id) initWithInstructionPointer: (uint64_t) instructionPointer symbolInfo: (PLCrashReportSymbolInfo *) symbolInfo;

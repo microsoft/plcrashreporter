@@ -34,7 +34,7 @@
     uint64_t _type;
     
     /** The Mach exception codes, represented as an ordered array of NSNumber instances. */
-    NSArray *_codes;
+    __strong NSArray *_codes;
 }
 
 - (id) initWithType: (uint64_t) type codes: (NSArray *) codes;
@@ -43,6 +43,6 @@
 @property(nonatomic, readonly) uint64_t type;
 
 /** The Mach exception codes, represented as an ordered array of 64-bit unsigned NSNumber instances. */
-@property(nonatomic, readonly) NSArray *codes;
+@property(nonatomic, readonly, strong) NSArray *codes;
 
 @end

@@ -86,31 +86,31 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
     _PLCrashReportDecoder *_decoder;
 
     /** System info */
-    PLCrashReportSystemInfo *_systemInfo;
+    __strong PLCrashReportSystemInfo *_systemInfo;
     
     /** Machine info */
-    PLCrashReportMachineInfo *_machineInfo;
+    __strong PLCrashReportMachineInfo *_machineInfo;
 
     /** Application info */
-    PLCrashReportApplicationInfo *_applicationInfo;
+    __strong PLCrashReportApplicationInfo *_applicationInfo;
     
     /** Process info */
-    PLCrashReportProcessInfo *_processInfo;
+    __strong PLCrashReportProcessInfo *_processInfo;
 
     /** Signal info */
-    PLCrashReportSignalInfo *_signalInfo;
+    __strong PLCrashReportSignalInfo *_signalInfo;
     
     /** Mach exception info */
-    PLCrashReportMachExceptionInfo *_machExceptionInfo;
+    __strong PLCrashReportMachExceptionInfo *_machExceptionInfo;
 
     /** Thread info (PLCrashReportThreadInfo instances) */
-    NSArray *_threads;
+    __strong NSArray *_threads;
 
     /** Binary images (PLCrashReportBinaryImageInfo instances */
-    NSArray *_images;
+    __strong NSArray *_images;
 
     /** Exception information (may be nil) */
-    PLCrashReportExceptionInfo *_exceptionInfo;
+    __strong PLCrashReportExceptionInfo *_exceptionInfo;
 
     /** Report UUID */
     CFUUIDRef _uuid;
@@ -123,7 +123,7 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 /**
  * System information.
  */
-@property(nonatomic, readonly) PLCrashReportSystemInfo *systemInfo;
+@property(nonatomic, readonly, strong) PLCrashReportSystemInfo *systemInfo;
 
 /**
  * YES if machine information is available.
@@ -134,12 +134,12 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * Machine information. Only available in later (v1.1+) crash report format versions. If not available,
  * will be nil.
  */
-@property(nonatomic, readonly) PLCrashReportMachineInfo *machineInfo;
+@property(nonatomic, readonly, strong) PLCrashReportMachineInfo *machineInfo;
 
 /**
  * Application information.
  */
-@property(nonatomic, readonly) PLCrashReportApplicationInfo *applicationInfo;
+@property(nonatomic, readonly, strong) PLCrashReportApplicationInfo *applicationInfo;
 
 /**
  * YES if process information is available.
@@ -150,12 +150,12 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * Process information. Only available in later (v1.1+) crash report format versions. If not available,
  * will be nil.
  */
-@property(nonatomic, readonly) PLCrashReportProcessInfo *processInfo;
+@property(nonatomic, readonly, strong) PLCrashReportProcessInfo *processInfo;
 
 /**
  * Signal information. This provides the signal and signal code of the fatal signal.
  */
-@property(nonatomic, readonly) PLCrashReportSignalInfo *signalInfo;
+@property(nonatomic, readonly, strong) PLCrashReportSignalInfo *signalInfo;
 
 /**
  * Mach exception information, if available. This will only be included in the
@@ -167,17 +167,17 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * Mach exception info by the encoding crash reporter, and thus may not exactly match the kernel exception-to-signal
  * mappings implemented in xnu. As such, when Mach exception info is available, its use should be preferred.
  */
-@property(nonatomic, readonly) PLCrashReportMachExceptionInfo *machExceptionInfo;
+@property(nonatomic, readonly, strong) PLCrashReportMachExceptionInfo *machExceptionInfo;
 
 /**
  * Thread information. Returns a list of PLCrashReportThreadInfo instances.
  */
-@property(nonatomic, readonly) NSArray *threads;
+@property(nonatomic, readonly, strong) NSArray *threads;
 
 /**
  * Binary image information. Returns a list of PLCrashReportBinaryImageInfo instances.
  */
-@property(nonatomic, readonly) NSArray *images;
+@property(nonatomic, readonly, strong) NSArray *images;
 
 /**
  * YES if exception information is available.
@@ -188,7 +188,7 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
  * Exception information. Only available if a crash was caused by an uncaught exception,
  * otherwise nil.
  */
-@property(nonatomic, readonly) PLCrashReportExceptionInfo *exceptionInfo;
+@property(nonatomic, readonly, strong) PLCrashReportExceptionInfo *exceptionInfo;
 
 /**
  * A client-generated 16-byte UUID. May be used to filter duplicate reports submitted or generated

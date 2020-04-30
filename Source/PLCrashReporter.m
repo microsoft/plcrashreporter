@@ -380,7 +380,7 @@ static void uncaught_exception_handler (NSException *exception) {
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration;
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
-- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
+- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (__strong PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
                                                                         error: (NSError **) outError;
@@ -608,24 +608,20 @@ static PLCrashReporter *sharedReporter = nil;
                 return NO;
             
             /* Enable the server. */
-            _machServer = [self enableMachExceptionServerWithPreviousPortSet: &_previousMachPorts
+            _machServer = [self enableMachExceptionServerWithPreviousPortSet:  &_previousMachPorts
                                                                     callback: &mach_exception_callback
                                                                      context: &signal_handler_context
                                                                        error: outError];
             if (_machServer == nil)
                 return NO;
             
-            /* Acquire references to the autoreleased values */
-            [_machServer retain];
-            [_previousMachPorts retain];
-            
             /*
              * MEMORY WARNING: To ensure that our instance survives for the lifetime of the callback registration,
-             * we retain it here. This is necessary to ensure that the Mach exception server instance and previous port set
+             * we keep a reference on self. This is necessary to ensure that the Mach exception server instance and previous port set
              * survive for the lifetime of the callback. Since there's currently no support for *deregistering* a crash reporter,
              * this simply results in the reporter living forever.
              */
-            [self retain];
+            CFBridgingRetain(self);
             
             /*
              * Save the previous ports. There's a race condition here, in that an exception that is delivered before (or during)
@@ -828,7 +824,6 @@ cleanup:
     crashCallbacks.handleSignal = callbacks->handleSignal;
 }
 
-
 @end
 
 /**
@@ -858,17 +853,17 @@ cleanup:
         return nil;
 
     /* Save the configuration */
-    _config = [configuration retain];
-    _applicationIdentifier = [applicationIdentifier retain];
-    _applicationVersion = [applicationVersion retain];
-    _applicationMarketingVersion = [applicationMarketingVersion retain];
+    _config = configuration;
+    _applicationIdentifier = applicationIdentifier;
+    _applicationVersion = applicationVersion;
+    _applicationMarketingVersion = applicationMarketingVersion;
     
     /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
     NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *cacheDir = [paths objectAtIndex: 0];
-    _crashReportDirectory = [[[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath] retain];
+    _crashReportDirectory = [[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath];
     
     return self;
 }
@@ -892,7 +887,6 @@ cleanup:
         const char *progname = getprogname();
         if (progname == NULL) {
             [NSException raise: PLCrashReporterException format: @"Can not determine process identifier or process name"];
-            [self release];
             return nil;
         }
 
@@ -921,7 +915,7 @@ cleanup:
  * could not be enabled. If no error occurs, this parameter will be left unmodified. You may
  * specify nil for this parameter, and no error information will be provided.
  */
-- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (PLCrashMachExceptionPortSet **) previousPortSet
+- (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (__strong PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
                                                                         error: (NSError **) outError
@@ -959,7 +953,7 @@ cleanup:
     
     /* Create the server */
     NSError *osError;
-    PLCrashMachExceptionServer *server = [[[PLCrashMachExceptionServer alloc] initWithCallBack: callback context: context error: &osError] autorelease];
+    PLCrashMachExceptionServer *server = [[PLCrashMachExceptionServer alloc] initWithCallBack: callback context: context error: &osError];
     if (server == nil) {
         plcrash_populate_error(outError, PLCrashReporterErrorOperatingSystem, @"Failed to instantiate the Mach exception server.", osError);
         return nil;
@@ -983,21 +977,6 @@ cleanup:
 
 #endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
 
-- (void) dealloc {
-    [_config release];
-
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
-    [_machServer release];
-    [_previousMachPorts release];
-#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
-
-    [_crashReportDirectory release];
-    [_applicationIdentifier release];
-    [_applicationVersion release];
-    [_applicationMarketingVersion release];
-
-    [super dealloc];
-}
 
 /**
  * Map the configuration defined @a strategy to the backing plcrash_async_symbol_strategy_t representation.

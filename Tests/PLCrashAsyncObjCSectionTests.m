@@ -34,6 +34,12 @@
 
 #include "PLCrashAsyncObjCSection.h"
 
+typedef void (^plcrash_async_objc_found_method_cb_block)(bool, plcrash_async_macho_string_t *, plcrash_async_macho_string_t *, pl_vm_address_t);
+
+static void parse_callback_trampoline(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    plcrash_async_objc_found_method_cb_block block = (__bridge_transfer plcrash_async_objc_found_method_cb_block)ctx;
+    block(isClassMethod, className, methodName, imp);
+}
 
 @interface PLCrashAsyncObjCSectionTests : SenTestCase {
     /** The image containing our class. */
@@ -82,7 +88,7 @@
 - (void) setUp {
     /* Fetch our containing image's dyld info */
     Dl_info info;
-    STAssertTrue(dladdr([self class], &info) > 0, @"Could not fetch dyld info for %p", [self class]);
+    STAssertTrue(dladdr((__bridge void *)([self class]), &info) > 0, @"Could not fetch dyld info for %p", [self class]);
     
     /* Look up the vmaddr slide for our image */
     pl_vm_off_t vmaddr_slide = 0;
@@ -112,11 +118,6 @@
     plcrash_nasync_macho_free(&_image);
 }
 
-static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
-    void (^block)(bool, plcrash_async_macho_string_t *, plcrash_async_macho_string_t *, pl_vm_address_t) = ctx;
-    block(isClassMethod, className, methodName, imp);
-}
-
 - (void) testParse {
     __block plcrash_error_t err;
     
@@ -126,7 +127,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
     
     __block BOOL didCall = NO;
     uint64_t pc = [[[NSThread callStackReturnAddresses] objectAtIndex: 0] unsignedLongLongValue];
-    err = plcrash_async_objc_find_method(&_image, &objCContext, pc, ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, pc, parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -150,12 +151,12 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
         STAssertEqualObjects(methodNameNS, NSStringFromSelector(_cmd), @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[self methodForSelector: _cmd], @"Method IMPs don't match");
-    });
+    }));
     STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = plcrash_async_objc_find_method(&_image, &objCContext, [self addressInCategory], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, [self addressInCategory], parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -179,13 +180,13 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInCategory", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[self methodForSelector: @selector(addressInCategory)], @"Method IMPs don't match");
-    });
+    }));
     STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
-    PLCrashAsyncObjCSectionTestsSimpleClass *obj = [[[PLCrashAsyncObjCSectionTestsSimpleClass alloc] init] autorelease];
+    PLCrashAsyncObjCSectionTestsSimpleClass *obj = [[PLCrashAsyncObjCSectionTestsSimpleClass alloc] init];
     didCall = NO;
-    err = plcrash_async_objc_find_method(&_image, &objCContext, [obj addressInSimpleClass], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, [obj addressInSimpleClass], parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -209,12 +210,12 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
         STAssertEqualObjects(classNameNS, @"PLCrashAsyncObjCSectionTestsSimpleClass", @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInSimpleClass", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[obj methodForSelector: @selector(addressInSimpleClass)], @"Method IMPs don't match");
-    });
+    }));
     STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     
     didCall = NO;
-    err = plcrash_async_objc_find_method(&_image, &objCContext, [[self class] addressInClassMethod], ParseCallbackTrampoline, ^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
+    err = plcrash_async_objc_find_method(&_image, &objCContext, [[self class] addressInClassMethod], parse_callback_trampoline, (__bridge_retained void *)(^(bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
         didCall = YES;
         
         pl_vm_size_t classNameLength;
@@ -238,7 +239,7 @@ static void ParseCallbackTrampoline(bool isClassMethod, plcrash_async_macho_stri
         STAssertEqualObjects(classNameNS, NSStringFromClass([self class]), @"Class names don't match");
         STAssertEqualObjects(methodNameNS, @"addressInClassMethod", @"Method names don't match");
         STAssertEquals(imp, (pl_vm_address_t)[[self class] methodForSelector: @selector(addressInClassMethod)], @"Method IMPs don't match");
-    });
+    }));
     STAssertTrue(didCall, @"Method find callback never got called");
     STAssertEquals(err, PLCRASH_ESUCCESS, @"ObjC parse failed");
     

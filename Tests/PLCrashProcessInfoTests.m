@@ -34,7 +34,7 @@
 @interface PLCrashProcessInfoTests : SenTestCase {
 @private
     struct kinfo_proc _process_info;
-    PLCrashProcessInfo *_pinfo;
+    __strong PLCrashProcessInfo *_pinfo;
 }
 @end
 
@@ -54,7 +54,7 @@
         STFail(@"Unexpected sysctl error %d: %s", errno, strerror(errno));
     }
     
-    _pinfo = [[PLCrashProcessInfo currentProcessInfo] retain];
+    _pinfo = [PLCrashProcessInfo currentProcessInfo];
 }
 
 - (void) testProcessID {

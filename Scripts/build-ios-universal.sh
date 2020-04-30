@@ -1,54 +1,49 @@
 #!/bin/sh
-set -xe
+set -e
 
+# Helper variables
 DEVICE_SDK="iphoneos"
 SIMULATOR_SDK="iphonesimulator"
-TARGET_NAME="${PROJECT_NAME} iOS"
+TARGET_NAME="${PROJECT_NAME} iOS Framework"
+DEVICE_DIR="${BUILD_DIR}/${CONFIGURATION}-${DEVICE_SDK}"
+SIMULATOR_DIR="${BUILD_DIR}/${CONFIGURATION}-${SIMULATOR_SDK}"
+LIBRARY_BINARY="lib${PRODUCT_NAME}.a"
+FRAMEWORK_BINARY="${PRODUCT_NAME}.framework/${PRODUCT_NAME}"
 
 # Building both SDKs
-echo "\n\n\n 🛠 Building for ${DEVICE_SDK}"
-xcodebuild \
-    BUILD_DIR="${BUILD_DIR}" BUILD_ROOT="${BUILD_ROOT}" ONLY_ACTIVE_ARCH=NO \
-    BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
-    -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "${TARGET_NAME}" -sdk "${DEVICE_SDK}" \
-    clean build
+build() {
+    # Print only target name and issues. Mimic Xcode output to make prettify tools happy.
+    echo "=== BUILD TARGET $1 OF PROJECT ${PROJECT_NAME} WITH CONFIGURATION ${CONFIGURATION} ==="
+    # OBJROOT must be customized to avoid conflicts with the current process.
+    xcodebuild -quiet \
+        SYMROOT="${SYMROOT}" OBJROOT="${BUILT_PRODUCTS_DIR}" PROJECT_TEMP_DIR="${PROJECT_TEMP_DIR}" \
+        ONLY_ACTIVE_ARCH=NO BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
+        -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "$1" -sdk "$2"
+}
+echo "Building the library for ${DEVICE_SDK} and ${SIMULATOR_SDK}..."
+build "${TARGET_NAME}" "${DEVICE_SDK}"
+build "${TARGET_NAME}" "${SIMULATOR_SDK}"
 
-echo "\n\n\n 🛠 Building for ${SIMULATOR_SDK}"
-xcodebuild \
-    BUILD_DIR="${BUILD_DIR}" BUILD_ROOT="${BUILD_ROOT}" ONLY_ACTIVE_ARCH=NO \
-    BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
-    -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "${TARGET_NAME}" -sdk "${SIMULATOR_SDK}" \
-    clean build
-
-# Combine libraries
-echo "\n\n\n 📦 Combining libraries"
+# Clean output folder
+rm -rf "${BUILT_PRODUCTS_DIR}"
 mkdir -p "${BUILT_PRODUCTS_DIR}"
+
+# Combine libraries and frameworks
+echo "Combining libraries..."
 lipo \
-    "${BUILD_DIR}/${CONFIGURATION}-${DEVICE_SDK}/lib${PRODUCT_NAME}.a" \
-    "${BUILD_DIR}/${CONFIGURATION}-${SIMULATOR_SDK}/lib${PRODUCT_NAME}.a" \
-    -create -output "${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}.a"
-echo "Final library architectures: $(lipo -archs "${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}.a")"
+    "${DEVICE_DIR}/${LIBRARY_BINARY}" \
+    "${SIMULATOR_DIR}/${LIBRARY_BINARY}" \
+    -create -output "${BUILT_PRODUCTS_DIR}/${LIBRARY_BINARY}"
+echo "Final library architectures: $(lipo -archs "${BUILT_PRODUCTS_DIR}/${LIBRARY_BINARY}")"
 
-# Pack to fake framework
-cd "${BUILT_PRODUCTS_DIR}"
-FULL_PRODUCT_NAME="${PRODUCT_NAME}.framework"
-if [ -d "${FULL_PRODUCT_NAME}" ]; then
-    rm -rf "${FULL_PRODUCT_NAME}"
-fi
+# Frameworks contains additional linker data and should be processed separately.
+echo "Combining frameworks..."
+cp -R "${DEVICE_DIR}/${PRODUCT_NAME}.framework" "${BUILT_PRODUCTS_DIR}"
+lipo \
+    "${BUILT_PRODUCTS_DIR}/${FRAMEWORK_BINARY}" \
+    "${SIMULATOR_DIR}/${FRAMEWORK_BINARY}" \
+    -create -output "${BUILT_PRODUCTS_DIR}/${FRAMEWORK_BINARY}"
+echo "Final framework architectures: $(lipo -archs "${BUILT_PRODUCTS_DIR}/${FRAMEWORK_BINARY}")"
 
-# Copy module map
-mkdir -p "${FULL_PRODUCT_NAME}/Versions/${FRAMEWORK_VERSION}/Modules"
-cp -f "${SRCROOT}/${MODULEMAP_FILE}" "${FULL_PRODUCT_NAME}/Versions/${FRAMEWORK_VERSION}/Modules/module.modulemap"
-
-# Copy headers files
-mkdir -p "${FULL_PRODUCT_NAME}/Versions/${FRAMEWORK_VERSION}/Headers"
-cp -R "${BUILD_DIR}/${CONFIGURATION}-${DEVICE_SDK}/include/" "${FULL_PRODUCT_NAME}/Versions/${FRAMEWORK_VERSION}/Headers"
-
-# Copy library
-cp "${BUILT_PRODUCTS_DIR}/lib${PRODUCT_NAME}.a" "${FULL_PRODUCT_NAME}/Versions/${FRAMEWORK_VERSION}/${PRODUCT_NAME}"
-
-# Create links
-ln -sfh ${FRAMEWORK_VERSION} "${FULL_PRODUCT_NAME}/Versions/Current"
-ln -sfh Versions/Current/Modules "${FULL_PRODUCT_NAME}/Modules"
-ln -sfh Versions/Current/Headers "${FULL_PRODUCT_NAME}/Headers"
-ln -sfh Versions/Current/${PRODUCT_NAME} "${FULL_PRODUCT_NAME}/${PRODUCT_NAME}"
+echo "Appending simulator to Info.plist"
+plutil -insert CFBundleSupportedPlatforms.1 -string "iPhoneSimulator" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.framework/Info.plist"

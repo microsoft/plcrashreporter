@@ -58,7 +58,7 @@
         return nil;
 
     NSAssert([set count] <= EXC_TYPES_COUNT, @"Set size of %lu exceeds EXC_TYPES_COUNT (%lu)", (unsigned long)[set count], (unsigned long)EXC_TYPES_COUNT);
-    _state_set = [set retain];
+    _state_set = set;
 
     /* Initialize the async-safe C representation (using borrowed port references) */
     plcrash_mach_exception_port_set_t port_set;
@@ -94,10 +94,10 @@
     kern_return_t kt;
     NSMutableSet *stateResult = [NSMutableSet setWithCapacity: states->count];
     for (mach_msg_type_number_t i = 0; i < states->count; i++) {
-        PLCrashMachExceptionPort *state = [[[PLCrashMachExceptionPort alloc] initWithServerPort: states->ports[i]
+        PLCrashMachExceptionPort *state = [[PLCrashMachExceptionPort alloc] initWithServerPort: states->ports[i]
                                                                                                mask: states->masks[i]
                                                                                            behavior: states->behaviors[i]
-                                                                                             flavor: states->flavors[i]] autorelease];
+                                                                                             flavor: states->flavors[i]];
         [stateResult addObject: state];
 
         /* The state instance increments the refcount, and we acquire ownership of the caller's refcount */
@@ -106,20 +106,14 @@
         }
     }
 
-    _state_set = [stateResult retain];
+    _state_set = stateResult;
     _asyncSafeRepresentation = asyncSafeRepresentation;
 
     return self;
 }
 
-- (void) dealloc {
-    [_state_set release];
-    [super dealloc];
-}
-
-
 // from NSFastEnumeration protocol
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState *) state objects: (id *) stackbuf count: (NSUInteger) len {
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState *) state objects: (id __unsafe_unretained _Nullable [_Nonnull]) stackbuf count: (NSUInteger) len {
     return [_state_set countByEnumeratingWithState: state objects: stackbuf count: len];
 }
 

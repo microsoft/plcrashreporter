@@ -44,14 +44,9 @@
         return nil;
     
     _type = type;
-    _codes = [codes retain];
+    _codes = codes;
 
     return self;
-}
-
-- (void) dealloc {
-    [_codes release];
-    [super dealloc];
 }
 
 @end

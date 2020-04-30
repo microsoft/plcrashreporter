@@ -33,20 +33,20 @@
 @interface PLCrashReportProcessInfo : NSObject {
 @private
     /** Process name, or nil if unavailable. */
-    NSString *_processName;
+    __strong NSString *_processName;
     
     /** Process ID */
     NSUInteger _processID;
     
     /** Process path */
-    NSString* _processPath;
+    __strong NSString* _processPath;
 
     /** Date and time that the crashing process was started. This may be unavailable, and this property
      * will be nil. */
-    NSDate *_processStartTime;
+    __strong NSDate *_processStartTime;
 
     /** Parent process name, or nil if unavailable.  */
-    NSString *_parentProcessName;
+    __strong NSString *_parentProcessName;
     
     /** Parent process ID */
     NSUInteger _parentProcessID;
@@ -67,7 +67,7 @@
  * The process name. This value may not be included in the crash report, in which case this property
  * will be nil.
  */
-@property(nonatomic, readonly) NSString *processName;
+@property(nonatomic, readonly, strong) NSString *processName;
 
 /**
  * The process ID.
@@ -78,19 +78,19 @@
  * The path to the process executable. This value may not be included in the crash report, in which case this property
  * will be nil.
  */
-@property(nonatomic, readonly) NSString *processPath;
+@property(nonatomic, readonly, strong) NSString *processPath;
 
 /**
  * Date and time that the crashing process was started. This value may not be included in the crash report, in which case this property
  * will be nil.
  */
-@property(nonatomic, readonly) NSDate *processStartTime;
+@property(nonatomic, readonly, strong) NSDate *processStartTime;
 
 /**
  * The parent process name. This value may not be included in the crash report, in which case this property
  * will be nil.
  */
-@property(nonatomic, readonly) NSString *parentProcessName;
+@property(nonatomic, readonly, strong) NSString *parentProcessName;
 
 /**
  * The parent process ID.

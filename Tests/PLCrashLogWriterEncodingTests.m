@@ -36,7 +36,7 @@
 @interface PLCrashLogWriterEncodingTests : SenTestCase {
 @private
     plcrash_async_file_t _file;
-    NSString *_filePath;
+    __strong NSString *_filePath;
 }
 @end
 
@@ -44,7 +44,7 @@
 @implementation PLCrashLogWriterEncodingTests
 
 - (void) setUp {
-    _filePath = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
+    _filePath = [NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]];
     int fd = open([_filePath fileSystemRepresentation], O_RDWR|O_CREAT|O_TRUNC, 0644);
     STAssertTrue(fd >= 0, @"Could not open output file: %s", strerror(errno));
 
@@ -53,8 +53,6 @@
 
 - (void) tearDown {
     STAssertTrue(plcrash_async_file_close(&_file), @"Failed to close file");
-
-    [_filePath release];
     _filePath = nil;
 }
 
