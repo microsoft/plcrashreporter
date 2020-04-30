@@ -59,7 +59,7 @@
 /**
  * Image code type, or nil if unavailable.
  */
-@property(nonatomic, readonly) PLCrashReportProcessorInfo *codeType;
+@property(nonatomic, readonly, strong) PLCrashReportProcessorInfo *codeType;
 
 /**
  * Image base address.
