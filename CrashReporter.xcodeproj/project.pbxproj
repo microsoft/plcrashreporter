@@ -409,8 +409,6 @@
 		C238788624574C0700519007 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C26022861642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
 		C26022881642FCA6007FC29F /* PLCrashAsyncSymbolication.c in Sources */ = {isa = PBXBuildFile; fileRef = C26022851642FCA6007FC29F /* PLCrashAsyncSymbolication.c */; };
-		C2620D442451CF8C00B11E68 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2620D432451CF8B00B11E68 /* Foundation.framework */; };
-		C2620D462451CF9400B11E68 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2620D452451CF9400B11E68 /* CoreServices.framework */; };
 		C26C52A12451B3E500D20162 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05CD31520EE936A9000FDE88 /* libCrashReporter.a */; };
 		C26C52A22451B3F900D20162 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C26C52A32451B41800D20162 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */; };
@@ -1276,8 +1274,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C26C52A22451B3F900D20162 /* libCrashReporter.a in Frameworks */,
-				C2620D462451CF9400B11E68 /* CoreServices.framework in Frameworks */,
-				C2620D442451CF8C00B11E68 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2528,6 +2524,9 @@
 						DevelopmentTeam = 5Z97G9NZQ6;
 						ProvisioningStyle = Automatic;
 					};
+					8064D88B1C4D22E5005A8B4C = {
+						ProvisioningStyle = Manual;
+					};
 					8064D9971C4D27E9005A8B4C = {
 						DevelopmentTeam = 5Z97G9NZQ6;
 					};
@@ -3587,6 +3586,7 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = (
@@ -3606,6 +3606,7 @@
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = (
@@ -3720,12 +3721,15 @@
 					"$(ARCHS_STANDARD)",
 					arm64e,
 				);
+				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 			};
 			name = Debug;
@@ -3737,12 +3741,15 @@
 					"$(ARCHS_STANDARD)",
 					arm64e,
 				);
+				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 			};
 			name = Release;
