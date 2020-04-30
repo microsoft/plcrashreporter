@@ -64,9 +64,9 @@ struct stack_frame {
 - (void) testNULLFrame {
     /* Set up test stack */
     struct stack_frame frames[] = {
-        { .fp = &frames[1], .pc = 0x1 },
-        { .fp = &frames[2], .pc = 0x2 },
-        { .fp = 0x0,        .pc = 0x3 },
+        { .fp = (uintptr_t) &frames[1], .pc = 0x1 },
+        { .fp = (uintptr_t) &frames[2], .pc = 0x2 },
+        { .fp = (uintptr_t) 0x0,        .pc = 0x3 },
     };
     size_t frame_count = sizeof(frames) / sizeof(frames[0]);
 
@@ -112,9 +112,9 @@ struct stack_frame {
 - (void) testStackDirection {
     /* Set up test stack */
     struct stack_frame frames[] = {
-        { .fp = &frames[1], .pc = 0x1 },
-        { .fp = &frames[2], .pc = 0x2 },
-        { .fp = &frames[0], .pc = 0x3 },
+        { .fp = (uintptr_t) &frames[1], .pc = 0x1 },
+        { .fp = (uintptr_t) &frames[2], .pc = 0x2 },
+        { .fp = (uintptr_t) &frames[0], .pc = 0x3 },
     };
     size_t frame_count = sizeof(frames) / sizeof(frames[0]);
     

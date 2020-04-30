@@ -250,7 +250,7 @@ static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state
     /* Initialize the image list */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
     for (uint32_t i = 0; i < _dyld_image_count(); i++)
-        plcrash_nasync_image_list_append(&image_list, _dyld_get_image_header(i), _dyld_get_image_name(i));
+        plcrash_nasync_image_list_append(&image_list, (pl_vm_address_t) _dyld_get_image_header(i), _dyld_get_image_name(i));
 
     /* Initialie our cursor */
     plframe_cursor_init(&cursor, mach_task_self(), state, &image_list);
@@ -274,7 +274,7 @@ static plcrash_error_t unwind_current_state (plcrash_async_thread_state_t *state
     
     if (err != PLFRAME_ESUCCESS) {
         PLCF_DEBUG("Step within test function failed: %d (%s)", err, plframe_strerror(err));
-        return PLFRAME_EINVAL;
+        return (plcrash_error_t) PLFRAME_EINVAL;
     }
 
     /* Now in unwind_tester; verify that we unwound to the correct IP */

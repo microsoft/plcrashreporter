@@ -249,7 +249,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_EINVAL;
             }
             
-            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, entries_offset, entries_count * sizeof(struct unwind_info_regular_second_level_entry))) {
+            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, (uintptr_t)header, entries_offset, entries_count * sizeof(struct unwind_info_regular_second_level_entry))) {
                 PLCF_DEBUG("CFE entries table lies outside the mapped CFE range");
                 return PLCRASH_EINVAL;
             }
@@ -292,7 +292,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_EINVAL;
             }
             
-            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, entries_offset, entries_count * sizeof(uint32_t))) {
+            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, (uintptr_t)header, entries_offset, entries_count * sizeof(uint32_t))) {
                 PLCF_DEBUG("CFE entries table lies outside the mapped CFE range");
                 return PLCRASH_EINVAL;
             }
@@ -334,7 +334,7 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
                 return PLCRASH_EINVAL;
             }
 
-            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, header, encodings_offset, encodings_count * sizeof(uint32_t))) {
+            if (!plcrash_async_mobject_verify_local_pointer(reader->mobj, (uintptr_t)header, encodings_offset, encodings_count * sizeof(uint32_t))) {
                 PLCF_DEBUG("CFE compressed encodings table lies outside the mapped CFE range");
                 return PLCRASH_EINVAL;
             }
@@ -359,8 +359,11 @@ plcrash_error_t plcrash_async_cfe_reader_find_pc (plcrash_async_cfe_reader_t *re
     }
 
     // Unreachable
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
     __builtin_trap();
     return PLCRASH_ENOTFOUND;
+#pragma clang diagnostic pop
 }
 
 /**
@@ -769,9 +772,11 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
         }
         
         // Unreachable
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
         __builtin_trap();
         return PLCRASH_EINTERNAL;
-
+#pragma clang diagnostic pop
     } else if (cpu_type == CPU_TYPE_X86_64) {
         uint32_t mode = encoding & UNWIND_X86_64_MODE_MASK;
         switch (mode) {
@@ -865,8 +870,11 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
         }
         
         // Unreachable
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
         __builtin_trap();
         return PLCRASH_EINTERNAL;
+#pragma clang diagnostic pop
     } else if (cpu_type == CPU_TYPE_ARM64) {
         uint32_t mode = encoding & UNWIND_ARM64_MODE_MASK;
         switch (mode) {

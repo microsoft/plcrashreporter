@@ -227,7 +227,7 @@ struct __attribute__((packed)) cie_data {
     plcrash_async_mobject_t mobj;
     plcrash_error_t err;
     
-    _cie_data.cie_version = 9999; // invalid version
+    _cie_data.cie_version = (uint8_t)9999; // invalid version
     err = plcrash_async_mobject_init(&mobj, mach_task_self(), (pl_vm_address_t) &_cie_data, sizeof(_cie_data), true);
     STAssertEquals(err, PLCRASH_ESUCCESS, @"Failed to initialize mobj");
     
