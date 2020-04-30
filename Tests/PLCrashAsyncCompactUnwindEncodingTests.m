@@ -209,7 +209,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
 
-    uint32_t reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_ebp_offset = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, -encoded_reg_ebp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
@@ -269,7 +269,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
 
-    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t stack_size = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
 
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
@@ -314,7 +314,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
 
-    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t stack_size = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     uint32_t stack_adjust = plcrash_async_cfe_entry_stack_adjustment(&entry);
 
@@ -354,7 +354,7 @@
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
-    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t dwarf_offset = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
     plcrash_async_cfe_entry_free(&entry);
@@ -426,7 +426,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    uint32_t reg_ebp_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t reg_ebp_offset = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_ebp_offset, -encoded_reg_rbp_offset, @"Incorrect offset extracted");
     STAssertEquals(reg_count, (uint32_t)3, @"Incorrect register count extracted");
@@ -471,7 +471,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t stack_size = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
@@ -514,7 +514,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t stack_size = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
@@ -552,7 +552,7 @@
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
     
-    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);    
+    uint32_t dwarf_offset = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
     plcrash_async_cfe_entry_free(&entry);
@@ -573,7 +573,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAME_PTR, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    int32_t reg_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    int32_t reg_offset = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     STAssertEquals(reg_count, (uint32_t)4, @"Incorrect register count extracted");
     STAssertEquals(reg_offset, (int32_t)-32, @"Incorrect register offset extracted (wanted -32, got %"PRId32")", reg_offset);
@@ -616,7 +616,7 @@
     STAssertEquals(res, PLCRASH_ESUCCESS, @"Failed to decode entry");
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     
-    uint32_t stack_size = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t stack_size = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     uint32_t reg_count = plcrash_async_cfe_entry_register_count(&entry);
     
     STAssertEquals(stack_size, encoded_stack_size, @"Incorrect stack size decoded");
@@ -659,7 +659,7 @@
     STAssertEquals(PLCRASH_ASYNC_CFE_ENTRY_TYPE_DWARF, plcrash_async_cfe_entry_type(&entry), @"Incorrect entry type");
     STAssertEquals((plcrash_regnum_t)PLCRASH_REG_INVALID, plcrash_async_cfe_entry_return_address_register(&entry), @"Return address register set");
 
-    uint32_t dwarf_offset = plcrash_async_cfe_entry_stack_offset(&entry);
+    uint32_t dwarf_offset = (uint32_t) plcrash_async_cfe_entry_stack_offset(&entry);
     STAssertEquals(dwarf_offset, encoded_dwarf_offset, @"Incorrect dwarf offset decoded");
     
     plcrash_async_cfe_entry_free(&entry);

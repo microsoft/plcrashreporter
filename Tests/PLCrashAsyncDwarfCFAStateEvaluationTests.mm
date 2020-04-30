@@ -450,10 +450,10 @@ using namespace plcrash::async;
  * @param skip The number of valid registers to skip before returning a register. This may be used to fetch
  * multiple general purpose registers.
  */
-- (uint64_t) findTestDwarfRegister: (plcrash_async_thread_state_t *) ts skip: (NSUInteger) skip {
+- (dwarf_cfa_state_regnum_t) findTestDwarfRegister: (plcrash_async_thread_state_t *) ts skip: (NSUInteger) skip {
     uint64_t dw;
     STAssertTrue(plcrash_async_thread_state_map_reg_to_dwarf(ts, [self findTestRegister: ts skip: skip], &dw), @"Failed to map to dwarf register");
-    return dw;
+    return (dwarf_cfa_state_regnum_t) dw;
 }
 
 /**
