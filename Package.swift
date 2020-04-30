@@ -11,9 +11,21 @@ let package = Package(
         .target(
             name: "CrashReporter",
             path: "",
+            exclude: [
+                "Source/dwarf_opstream.hpp",
+                "Source/dwarf_stack.hpp",
+                "Source/PLCrashAsyncDwarfCFAState.hpp",
+                "Source/PLCrashAsyncDwarfCIE.hpp",
+                "Source/PLCrashAsyncDwarfEncoding.hpp",
+                "Source/PLCrashAsyncDwarfExpression.hpp",
+                "Source/PLCrashAsyncDwarfFDE.hpp",
+                "Source/PLCrashAsyncDwarfPrimitives.hpp",
+                "Source/PLCrashAsyncLinkedList.hpp",
+                "Source/PLCrashReport.proto"
+            ],
             sources: [
                 "Source",
-                "Dependencies"
+                "Dependencies/protobuf-c"
             ],
             cSettings: [
                 .define("PLCR_PRIVATE"),
