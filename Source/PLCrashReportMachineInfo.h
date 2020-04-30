@@ -33,10 +33,10 @@
 @interface PLCrashReportMachineInfo : NSObject {
 @private
     /** The hardware model name (eg, MacBookPro6,1). This may be unavailable, and this property will be nil. */
-    NSString *_modelName;
+    __strong NSString *_modelName;
     
     /** The processor type. */
-    PLCrashReportProcessorInfo *_processorInfo;
+    __strong PLCrashReportProcessorInfo *_processorInfo;
     
     /* The number of actual physical processor cores. */
     NSUInteger _processorCount;
@@ -51,10 +51,10 @@
    logicalProcessorCount: (NSUInteger) logicalProcessorCount;
 
 /** The hardware model name (eg, MacBookPro6,1). This may be unavailable, and this property will be nil. */
-@property(nonatomic, readonly) NSString *modelName;
+@property(nonatomic, readonly, strong) NSString *modelName;
 
 /** The processor type. This will be unavailable in reports generated prior to PLCrashReporter 1.2, in which case this property will be nil. */
-@property(nonatomic, readonly) PLCrashReportProcessorInfo *processorInfo;
+@property(nonatomic, readonly, strong) PLCrashReportProcessorInfo *processorInfo;
 
 /*
  * The number of actual physical processor cores. Note that the number of active processors may be managed by the

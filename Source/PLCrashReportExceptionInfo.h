@@ -33,13 +33,13 @@
 @interface PLCrashReportExceptionInfo : NSObject {
 @private
     /** Name */
-    NSString *_name;
+    __strong NSString *_name;
 
     /** Reason */
-    NSString *_reason;
+    __strong NSString *_reason;
 
     /** Ordered list of PLCrashReportStackFrame instances, or nil if unavailable. */
-    NSArray *_stackFrames;
+    __strong NSArray *_stackFrames;
 }
 
 - (id) initWithExceptionName: (NSString *) name reason: (NSString *) reason;
@@ -51,15 +51,15 @@
 /**
  * The exception name.
  */
-@property(nonatomic, readonly) NSString *exceptionName;
+@property(nonatomic, readonly, strong) NSString *exceptionName;
 
 /**
  * The exception reason.
  */
-@property(nonatomic, readonly) NSString *exceptionReason;
+@property(nonatomic, readonly, strong) NSString *exceptionReason;
 
 /* The exception's original call stack, as an array of PLCrashReportStackFrameInfo instances, or nil if unavailable.
  * This may be preserved across rethrow of an exception, and can be used to determine the original call stack. */
-@property(nonatomic, readonly) NSArray *stackFrames;
+@property(nonatomic, readonly, strong) NSArray *stackFrames;
 
 @end

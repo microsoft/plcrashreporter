@@ -35,7 +35,7 @@
 @interface PLCrashAsyncTests : SenTestCase {
 @private
     /* Path to test output file */
-    NSString *_outputFile;
+    __strong NSString *_outputFile;
 
     /* Open output file descriptor */
     int _testFd;
@@ -48,7 +48,7 @@
 
 - (void) setUp {
     /* Create a temporary output file */
-    _outputFile = [[NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]] retain];
+    _outputFile = [NSTemporaryDirectory() stringByAppendingString: [[NSProcessInfo processInfo] globallyUniqueString]];
 
     _testFd = open([_outputFile UTF8String], O_RDWR|O_CREAT|O_EXCL, 0644);
     STAssertTrue(_testFd >= 0, @"Could not open test output file");
@@ -62,7 +62,7 @@
 
     /* Delete the file */
     STAssertTrue([[NSFileManager defaultManager] removeItemAtPath: _outputFile error: &error], @"Could not remove log file");
-    [_outputFile release];
+    _outputFile = nil;
 }
 
 - (void) testByteOrderDetection {

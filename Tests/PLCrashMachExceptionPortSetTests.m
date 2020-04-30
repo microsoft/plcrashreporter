@@ -53,7 +53,7 @@
     state_set.ports[1] = MACH_PORT_NULL;
     state_set.flavors[1] = MACHINE_THREAD_STATE;
     
-    PLCrashMachExceptionPortSet *stateSet = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: state_set] autorelease];
+    PLCrashMachExceptionPortSet *stateSet = [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: state_set];
     exception_mask_t found = 0;
     
     /* Test basic initialization; This also tests fast enumeration pass-through */
@@ -110,17 +110,17 @@
 }
 
 - (void) testInitWithSet {
-    PLCrashMachExceptionPort *firstState = [[[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_DEAD
+    PLCrashMachExceptionPort *firstState = [[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_DEAD
                                                                                                 mask: EXC_MASK_BAD_ACCESS
                                                                                             behavior: EXCEPTION_DEFAULT
-                                                                                              flavor: MACHINE_THREAD_STATE] autorelease];
-    PLCrashMachExceptionPort *secondState = [[[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
+                                                                                              flavor: MACHINE_THREAD_STATE];
+    PLCrashMachExceptionPort *secondState = [[PLCrashMachExceptionPort alloc] initWithServerPort: MACH_PORT_NULL
                                                                                                  mask: EXC_MASK_BAD_INSTRUCTION
                                                                                              behavior: EXCEPTION_STATE
-                                                                                               flavor: MACHINE_THREAD_STATE] autorelease];
+                                                                                               flavor: MACHINE_THREAD_STATE];
     NSSet *set = [NSSet setWithObjects: firstState, secondState, nil];
     
-    PLCrashMachExceptionPortSet *stateSet = [[[PLCrashMachExceptionPortSet alloc] initWithSet: set] autorelease];
+    PLCrashMachExceptionPortSet *stateSet = [[PLCrashMachExceptionPortSet alloc] initWithSet: set];
     exception_mask_t found = 0;
     
     /* Test basic initialization; This also tests fast enumeration pass-through */

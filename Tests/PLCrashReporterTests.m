@@ -56,14 +56,14 @@
 
     /* Spawn a thread and generate a report for it */
     plcrash_test_thread_spawn(&thr);
-    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]] autorelease];
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
     reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
                                                   error: &error];
     plcrash_test_thread_stop(&thr);
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
 
     /* Try parsing the result */
-    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: reportData error: &error] autorelease];
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
 
     /* Sanity check the signal info */
@@ -78,11 +78,11 @@
  */
 - (void) testGenerateLiveReport {
     NSError *error;
-    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]] autorelease];
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
     NSData *reportData = [reporter generateLiveReportAndReturnError: &error];
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
     
-    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: reportData error: &error] autorelease];
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
 
     STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
