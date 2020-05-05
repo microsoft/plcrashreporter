@@ -3,7 +3,10 @@
 ## Version 1.6.0 (Under development)
 
 * Support integration via [Carthage](https://github.com/Carthage/Carthage).
-* Support integration via [Swift Package Manager](https://swift.org/package-manager). Please note that macOS 64-bit mach_* APIs is not available here.
+* Support integration via [Swift Package Manager](https://swift.org/package-manager). Please note that this way has some limitations:
+  * macOS 64-bit mach_* APIs is not available here.
+  * `protobuf-c` symbols are not prefixed, so it can cause conflicts with other libraries.
+  * Additional architectures like `arm64e` are not built explicitly.
 * Migrate to Automatic Reference Counting (ARC).
 * Embed required `protoc-c` sources instead of using submodule. No more additional steps on cloning the repo.
 * Store generated from `*.proto` sources to drop `protobuf-c` compiler requirement for building the library. It's required only for contributors now.
