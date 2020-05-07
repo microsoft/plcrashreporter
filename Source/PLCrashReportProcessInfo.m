@@ -61,23 +61,15 @@
     if ((self = [super init]) == nil)
         return nil;
     
-    _processName = [processName retain];
+    _processName = processName;
     _processID = processID;
-    _processPath = [processPath retain];
-    _processStartTime = [processStartTime retain];
-    _parentProcessName = [parentProcessName retain];
+    _processPath = processPath;
+    _processStartTime = processStartTime;
+    _parentProcessName = parentProcessName;
     _parentProcessID = parentProcessID;
     _native = native;
 
     return self;
-}
-
-- (void) dealloc {
-    [_processName release];
-    [_processPath release];
-    [_processStartTime release];
-    [_parentProcessName release];
-    [super dealloc];
 }
 
 @synthesize processName = _processName;

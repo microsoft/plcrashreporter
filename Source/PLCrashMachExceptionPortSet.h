@@ -67,7 +67,7 @@ typedef struct plcrash_mach_exception_port_set {
 @interface PLCrashMachExceptionPortSet : NSObject <NSFastEnumeration> {
 @private
     /** Backing state set representation. */
-    NSSet *_state_set;
+    __strong NSSet *_state_set;
     
     plcrash_mach_exception_port_set_t _asyncSafeRepresentation;
 }
@@ -76,7 +76,7 @@ typedef struct plcrash_mach_exception_port_set {
 - (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_set_t) asyncSafeRepresentation;
 
 /** The set of PLCrashMachExceptionPortState instances managed by this state set. */
-@property(nonatomic, readonly) NSSet *set;
+@property(nonatomic, readonly, strong) NSSet *set;
 
 /** The C representation of the port state set. May be used in async-safe code paths. */
 @property(nonatomic, readonly) plcrash_mach_exception_port_set_t asyncSafeRepresentation;

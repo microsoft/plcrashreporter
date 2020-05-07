@@ -43,7 +43,7 @@
  * Return the default local configuration.
  */
 + (instancetype) defaultConfiguration {
-    return [[[self alloc] init] autorelease];
+    return [[self alloc] init];
 }
 
 /**

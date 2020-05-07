@@ -37,13 +37,13 @@
     NSInteger _threadNumber;
 
     /** Ordered list of PLCrashReportStackFrame instances */
-    NSArray *_stackFrames;
+    __strong NSArray *_stackFrames;
 
     /** YES if this thread crashed. */
     BOOL _crashed;
 
     /** List of PLCrashReportRegister instances. Will be empty if _crashed is NO. */
-    NSArray *_registers;
+    __strong NSArray *_registers;
 }
 
 - (id) initWithThreadNumber: (NSInteger) threadNumber
@@ -60,7 +60,7 @@
  * Thread backtrace. Provides an array of PLCrashReportStackFrameInfo instances.
  * The array is ordered, last callee to first.
  */
-@property(nonatomic, readonly) NSArray *stackFrames;
+@property(nonatomic, readonly, strong) NSArray *stackFrames;
 
 /**
  * If this thread crashed, set to YES.
@@ -72,6 +72,6 @@
  * PLCrashReportRegister instances. If this thead did not crash (crashed returns NO),
  * this list will be empty.
  */
-@property(nonatomic, readonly) NSArray *registers;
+@property(nonatomic, readonly, strong) NSArray *registers;
 
 @end

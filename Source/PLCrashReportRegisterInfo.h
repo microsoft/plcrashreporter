@@ -31,7 +31,7 @@
 @interface PLCrashReportRegisterInfo : NSObject {
 @private
     /** Register name */
-    NSString *_registerName;
+    __strong NSString *_registerName;
     
     /** Register value */
     uint64_t _registerValue;
@@ -42,7 +42,7 @@
 /**
  * Register name.
  */
-@property(nonatomic, readonly) NSString *registerName;
+@property(nonatomic, readonly, strong) NSString *registerName;
 
 /**
  * Register value.

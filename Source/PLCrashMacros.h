@@ -42,7 +42,10 @@
 #endif
 
 #if defined(__cplusplus)
-#  if defined(PLCRASHREPORTER_PREFIX)
+#  define NO_OTHER_MACRO_STARTS_WITH_THIS_NAME_
+#  define IS_EMPTY_(name) defined(NO_OTHER_MACRO_STARTS_WITH_THIS_NAME_ ## name)
+#  define IS_EMPTY(name) IS_EMPTY_(name)
+#  if defined(PLCRASHREPORTER_PREFIX) && !IS_EMPTY(PLCRASHREPORTER_PREFIX)
      /** @internal Define the plcrash namespace, automatically inserting an inline namespace containing the configured PLCRASHREPORTER_PREFIX, if any. */
 #    define PLCR_CPP_BEGIN_NS namespace plcrash { inline namespace PLCRASHREPORTER_PREFIX {
 

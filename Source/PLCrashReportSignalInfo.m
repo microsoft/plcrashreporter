@@ -41,17 +41,11 @@
     if ((self = [super init]) == nil)
         return nil;
     
-    _name = [name retain];
-    _code = [code retain];
+    _name = name;
+    _code = code;
     _address = address;
     
     return self;
-}
-
-- (void) dealloc {
-    [_name release];
-    [_code release];
-    [super dealloc];
 }
 
 @synthesize name = _name;

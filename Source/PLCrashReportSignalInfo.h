@@ -31,10 +31,10 @@
 @interface PLCrashReportSignalInfo : NSObject {
 @private
     /** Signal name */
-    NSString *_name;
+    __strong NSString *_name;
     
     /** Signal code */
-    NSString *_code;
+    __strong NSString *_code;
 
     /** Fauling instruction or address */
     uint64_t _address;
@@ -45,12 +45,12 @@
 /**
  * The signal name.
  */
-@property(nonatomic, readonly) NSString *name;
+@property(nonatomic, readonly, strong) NSString *name;
 
 /**
  * The signal code.
  */
-@property(nonatomic, readonly) NSString *code;
+@property(nonatomic, readonly, strong) NSString *code;
 
 /**
  * The faulting instruction or address.

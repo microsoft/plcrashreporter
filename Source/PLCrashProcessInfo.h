@@ -37,7 +37,7 @@
     pid_t _processID;
     
     /** The target process name. */
-    NSString *_processName;
+    __strong NSString *_processName;
     
     /** The target process parent's process identifier. */
     pid_t _parentProcessID;
@@ -57,7 +57,7 @@
 @property(nonatomic, readonly) pid_t processID;
 
 /** The name of the target process. This value is provided as a best-effort, and may be truncated or inaccurate. May be nil. */
-@property(nonatomic, readonly) NSString *processName;
+@property(nonatomic, readonly, strong) NSString *processName;
 
 /** The process ID of the parent of the target process. */
 @property(nonatomic, readonly) pid_t parentProcessID;
