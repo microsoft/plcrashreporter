@@ -1159,6 +1159,7 @@
 		C2BBCD822456E03D00F9E820 /* PLCrashAsyncLinkedListTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncLinkedListTests.mm; sourceTree = "<group>"; };
 		C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSysctlTests.m; sourceTree = "<group>"; };
 		C2BBCD842456E03D00F9E820 /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
+		C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "DemoCrash-iOS.entitlements"; sourceTree = "<group>"; };
 		C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-tvOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
@@ -1789,6 +1790,7 @@
 				C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */,
 				05F40CE90EF7AB80008050CF /* DemoCrash-macOS-Info.plist */,
 				C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */,
+				C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */,
 				050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				05F3CD6C16DE7625007911FB /* Tests */,
@@ -3334,6 +3336,7 @@
 					armv7s,
 					arm64e,
 				);
+				CODE_SIGN_ENTITLEMENTS = "Resources/DemoCrash-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
@@ -3341,6 +3344,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3353,6 +3357,7 @@
 					armv7s,
 					arm64e,
 				);
+				CODE_SIGN_ENTITLEMENTS = "Resources/DemoCrash-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
@@ -3360,6 +3365,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -3379,7 +3385,7 @@
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3399,7 +3405,7 @@
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
