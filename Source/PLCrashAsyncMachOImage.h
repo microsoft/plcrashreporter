@@ -217,7 +217,7 @@ void plcrash_async_macho_mapped_segment_free (pl_async_macho_mapped_segment_t *s
 
 void plcrash_nasync_macho_free (plcrash_async_macho_t *image);
 
-/**
+/*
  * @}
  */
     

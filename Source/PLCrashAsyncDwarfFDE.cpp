@@ -256,7 +256,7 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint64_t> (plc
                                                                              pl_vm_address_t fde_address,
                                                                              bool debug_frame);
 
-/**
+/*
  * @}
  */
 

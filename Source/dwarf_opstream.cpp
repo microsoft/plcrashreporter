@@ -85,7 +85,7 @@ plcrash_error_t dwarf_opstream::init (plcrash_async_mobject_t *mobj,
 }
 
 
-/**
+/*
  * @}
  */
 

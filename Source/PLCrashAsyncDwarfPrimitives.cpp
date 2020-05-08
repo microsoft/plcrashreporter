@@ -534,7 +534,7 @@ template class plcrash::async::gnu_ehptr_reader<uint32_t>;
 template class plcrash::async::gnu_ehptr_reader<uint64_t>;
 
 
-/**
+/*
  * @}
  */
 

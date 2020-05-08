@@ -86,7 +86,7 @@ pl_vm_size_t plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwa
 void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info);
 
 
-/**
+/*
  * @}
  */
 

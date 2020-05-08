@@ -1227,7 +1227,7 @@ void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry) {
     // noop
 }
 
-/**
+/*
  * @} plcrash_async_cfe
  */
 

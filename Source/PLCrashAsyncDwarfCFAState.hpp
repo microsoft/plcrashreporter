@@ -370,7 +370,7 @@ public:
 PLCR_CPP_END_NS
 }
 
-/**
+/*
  * @}
  */
 

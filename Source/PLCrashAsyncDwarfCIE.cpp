@@ -424,7 +424,7 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_cie_info_init<uint64_t> (plc
                                                                              gnu_ehptr_reader<uint64_t> *ptr_reader,
                                                                              pl_vm_address_t address);
 
-/**
+/*
  * @}
  */
 
