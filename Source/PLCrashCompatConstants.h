@@ -49,7 +49,7 @@
  * ensure this doesn't break inclusion of the header in which the enum identifiers may be defined, we explicitly
  * include the compact unwind header.
  */
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if TARGET_OS_MAC && !TARGET_OS_IPHONE || TARGET_OS_MACCATALYST
 #include <mach-o/compact_unwind_encoding.h>
 #define UNWIND_ARM64_MODE_MASK                  0x0F000000
 #define UNWIND_ARM64_MODE_FRAMELESS             0x02000000
