@@ -206,7 +206,7 @@ plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t
     
     /* Lazily swap in the cyclic node reference. This is pessimestic, but there's really not a better time to do it. */
     plcrash_async_image_t *image = node->value();
-    OSAtomicCompareAndSwapPtrBarrier(NULL, (void *) node, (void * volatile *) &image->_node);
+    image->_node = node;
 
     return node->value();
 }
