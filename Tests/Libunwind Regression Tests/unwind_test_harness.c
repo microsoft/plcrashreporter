@@ -129,8 +129,8 @@ static struct unwind_test_case unwind_test_cases[] = {
     /* frame-based unwinding */
     { unwind_tester_list_x86_64_frame,      false,  frame_readers_frame,    2 },
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_compact,  2 },
-#if !TARGET_OS_SIMULATOR
-    /* This doesn't work on iOS and tvOS simulators - failed to find DWARF's FDE section.
+#if !TARGET_OS_SIMULATOR && !TARGET_OS_MACCATALYST
+    /* This doesn't work on iOS, tvOS simulators and Mac Catalyst - failed to find DWARF's FDE section.
      * It happens because compiler overwrites __eh_frame to __unwind_info (compact unwind). */
     { unwind_tester_list_x86_64_frame,      true,   frame_readers_dwarf,    2 },
 #endif
