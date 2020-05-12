@@ -428,7 +428,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init<uint64_t> (plcrash_async_dwarf
  * @}
  */
 
-#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
-
 }
 PLCR_CPP_END_NS
+
+#endif /* PLCRASH_FEATURE_UNWIND_DWARF */
