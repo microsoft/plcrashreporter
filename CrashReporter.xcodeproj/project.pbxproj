@@ -3465,6 +3465,7 @@
 		05CD326B0EE93DC4000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3477,6 +3478,7 @@
 		05CD326C0EE93DC4000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3489,6 +3491,7 @@
 		05CD33270EE9443A000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3501,6 +3504,7 @@
 		05CD33280EE9443A000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3773,6 +3777,7 @@
 		8064D9931C4D27E2005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3784,6 +3789,7 @@
 		8064D9941C4D27E2005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
