@@ -90,8 +90,8 @@ void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info
  * @}
  */
 
-PLCR_CPP_END_NS
 }
+PLCR_CPP_END_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* !PLCRASH_ASYNC_DWARF_FDE_H */
