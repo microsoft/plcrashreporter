@@ -66,20 +66,12 @@ typedef _STRUCT_UCONTEXT pl_ucontext_t;
 #if defined(__arm__) || defined(__arm64__)
     
 #include <mach/arm/thread_state.h>
-    
-/**
- * Host architecture mcontext_t-compatible type.
- */
-#ifdef __LP64__
-// XXX_ARM64 rdar://14970271 -- In the Xcode 5 GM SDK, _STRUCT_MCONTEXT is not correctly
-// defined as _STRUCT_MCONTEXT64 when building for arm64; this requires defining
-// 32-bit and 64-bit pl_*context types.
-typedef _STRUCT_UCONTEXT pl_ucontext_t;
-typedef _STRUCT_MCONTEXT64 pl_mcontext_t;
-#else
-typedef _STRUCT_UCONTEXT pl_ucontext_t;
+
+/** Host architecture mcontext_t type. */
 typedef _STRUCT_MCONTEXT pl_mcontext_t;
-#endif
+
+/** Host architecture ucontext_t type. */
+typedef _STRUCT_UCONTEXT pl_ucontext_t;
 
 /** Defined if ARM thread states are supported by the PLCrashReporter thread state API. */
 #define PLCRASH_ASYNC_THREAD_ARM_SUPPORT 1
