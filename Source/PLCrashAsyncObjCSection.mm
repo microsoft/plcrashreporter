@@ -369,6 +369,20 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
     }
 }
 
+/**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-file.mm
+ *
+ * Find and map a named section within a __DATA or __DATA_CONST or __DATA_DIRTY segment, initializing @a mobj.
+ * It is the caller's responsibility to dealloc @a mobj after a successful initialization.
+ *
+ * @param image The image to search for @a segname.
+ * @param sectname The name of the section to map.
+ * @param mobj The mobject to be initialized with a mapping of the section's data. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the section is not found, or an error result on failure.
+ */
 static plcrash_error_t map_data_section (plcrash_async_macho_t *image, const char *sectname, plcrash_async_mobject_t *mobj) {
     plcrash_error_t err = plcrash_async_macho_map_section(image, kDataSegmentName, sectname, mobj);
     if (err == PLCRASH_ENOTFOUND) {
