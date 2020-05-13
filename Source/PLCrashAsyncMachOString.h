@@ -69,7 +69,7 @@ plcrash_error_t plcrash_async_macho_string_get_pointer (plcrash_async_macho_stri
 
 void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string);
     
-/**
+/*
  * @}
  */
     

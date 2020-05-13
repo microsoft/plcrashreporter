@@ -207,7 +207,7 @@ plcrash_error_t dwarf_frame_reader::find_fde (pl_vm_off_t offset,
     return PLCRASH_ENOTFOUND;
 }
 
-/**
+/*
  * @}
  */
 

@@ -77,6 +77,6 @@ void plcrash_test_thread_stop (plcrash_test_thread_t *args) {
     pthread_join(args->thread, NULL);
 }
 
-/**
+/*
  * @}
  */

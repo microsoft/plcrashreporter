@@ -573,7 +573,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                                                      size_t initial_count,
                                                      machine_ptr *result);
 
-/**
+/*
  * @}
  */
 

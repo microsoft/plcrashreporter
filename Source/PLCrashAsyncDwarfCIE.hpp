@@ -176,12 +176,12 @@ pl_vm_size_t plcrash_async_dwarf_cie_info_initial_instructions_length (plcrash_a
 void plcrash_async_dwarf_cie_info_free (plcrash_async_dwarf_cie_info_t *info);
 
 
-/**
+/*
  * @}
  */
 
-PLCR_CPP_END_NS
 }
+PLCR_CPP_END_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */
 #endif /* PLCRASH_ASYNC_DWARF_CIE_H */

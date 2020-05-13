@@ -726,7 +726,7 @@ template plcrash_error_t plcrash_async_dwarf_expression_eval<uint64_t, int64_t> 
                                                                                  uint64_t initial_state[],
                                                                                  size_t initial_count,
                                                                                  uint64_t *result);
-/**
+/*
  * @}
  */
     
