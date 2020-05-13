@@ -43,6 +43,8 @@
 
 static const char * const kObjCSegmentName = "__OBJC";
 static const char * const kDataSegmentName = "__DATA";
+static const char * const kDataConstSegmentName = "__DATA_CONST";
+static const char * const kDataDirtySegmentName = "__DATA_DIRTY";
 
 static const char * const kObjCModuleInfoSectionName = "__module_info";
 static const char * const kClassListSectionName = "__objc_classlist";
@@ -368,6 +370,31 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
 }
 
 /**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-750/runtime/objc-file.mm
+ *
+ * Find and map a named section within a __DATA or __DATA_CONST or __DATA_DIRTY segment, initializing @a mobj.
+ * It is the caller's responsibility to dealloc @a mobj after a successful initialization.
+ *
+ * @param image The image to search for @a segname.
+ * @param sectname The name of the section to map.
+ * @param mobj The mobject to be initialized with a mapping of the section's data. It is the caller's responsibility to dealloc @a mobj after
+ * a successful initialization.
+ *
+ * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the section is not found, or an error result on failure.
+ */
+static plcrash_error_t map_data_section (plcrash_async_macho_t *image, const char *sectname, plcrash_async_mobject_t *mobj) {
+    plcrash_error_t err = plcrash_async_macho_map_section(image, kDataSegmentName, sectname, mobj);
+    if (err == PLCRASH_ENOTFOUND) {
+        err = plcrash_async_macho_map_section(image, kDataConstSegmentName, sectname, mobj);
+    }
+    if (err == PLCRASH_ENOTFOUND) {
+        err = plcrash_async_macho_map_section(image, kDataDirtySegmentName, sectname, mobj);
+    }
+    return err;
+}
+
+/**
  * Set up the memory objects in an ObjC context object for the given image. This will
  * map the memory objects in the context to the appropriate sections in the image.
  *
@@ -397,7 +424,7 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
     context->objcConstMobjInitialized = true;
     
     /* Map in the class list section.  */
-    err = plcrash_async_macho_map_section(image, kDataSegmentName, kClassListSectionName, &context->classMobj);
+    err = map_data_section(image, kClassListSectionName, &context->classMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
             PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kClassListSectionName, &context->classMobj, err);
@@ -406,7 +433,7 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
     context->classMobjInitialized = true;
     
     /* Map in the category list section.  */
-    err = plcrash_async_macho_map_section(image, kDataSegmentName, kCategoryListSectionName, &context->catMobj);
+    err = map_data_section(image, kCategoryListSectionName, &context->catMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
             PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kCategoryListSectionName, &context->catMobj, err);
