@@ -14,6 +14,7 @@
 				C25664D023571BC60088513E /* Verify Modifications */,
 				058812D310405908009128FB /* Create Disk Image */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
+				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 			);
 			dependencies = (
 				C26C52AB2451B4D400D20162 /* PBXTargetDependency */,
@@ -21,6 +22,7 @@
 				C2B90DA02456FBF400834AFB /* PBXTargetDependency */,
 				C25664E5235737560088513E /* PBXTargetDependency */,
 				05EC525A10531C9300DB9D39 /* PBXTargetDependency */,
+				F8358676246BEFA500D1CE3E /* PBXTargetDependency */,
 			);
 			name = "Disk Image";
 			productName = "Disk Image";
@@ -57,6 +59,20 @@
 			);
 			name = "CrashReporter tvOS Universal";
 			productName = "CrashReporter tvOS Universal";
+		};
+		F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = F8B9C72B24695BE600B9FEF6 /* Build configuration list for PBXAggregateTarget "CrashReporter XCFramework" */;
+			buildPhases = (
+				F8B9C72E24695BF200B9FEF6 /* Build XCFramework */,
+			);
+			dependencies = (
+				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
+				F8CF2BD1246C05D100904633 /* PBXTargetDependency */,
+				F8CF2BCF246C05D100904633 /* PBXTargetDependency */,
+			);
+			name = "CrashReporter XCFramework";
+			productName = "CrashReporter XCFramework";
 		};
 /* End PBXAggregateTarget section */
 
@@ -910,6 +926,34 @@
 			remoteGlobalIDString = 8064D88B1C4D22E5005A8B4C;
 			remoteInfo = "CrashReporter tvOS Framework";
 		};
+		F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
+			remoteInfo = "CrashReporter XCFramework";
+		};
+		F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2B90D952456FBD000834AFB;
+			remoteInfo = "CrashReporter iOS Universal";
+		};
+		F8CF2BCE246C05D100904633 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
+			remoteInfo = "CrashReporter macOS";
+		};
+		F8CF2BD0246C05D100904633 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2B90D992456FBDE00834AFB;
+			remoteInfo = "CrashReporter tvOS Universal";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1167,6 +1211,8 @@
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-xcframework.sh"; sourceTree = "<group>"; };
+		F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-xcframework-archive.sh"; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1914,8 +1960,10 @@
 			children = (
 				C2B90DAA245714EA00834AFB /* build-ios-universal.sh */,
 				C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */,
+				F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */,
 				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
 				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
+				F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */,
 				C2B90DA5245714E900834AFB /* generate-documentation.sh */,
 				C2B90DA7245714E900834AFB /* verify-modifications.sh */,
 			);
@@ -2566,6 +2614,7 @@
 			targets = (
 				058812D410405908009128FB /* Disk Image */,
 				C25664D123571D330088513E /* Documentation */,
+				F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */,
 				C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */,
 				C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */,
@@ -2759,6 +2808,44 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "$SRCROOT/Scripts/build-tvos-universal.sh\n";
+			showEnvVarsInLog = 0;
+		};
+		F8B9C72E24695BF200B9FEF6 /* Build XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "$SRCROOT/Scripts/build-xcframework.sh\n";
+			showEnvVarsInLog = 0;
+		};
+		F8CF2BD2246C139400904633 /* Create Archive With XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Create Archive With XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "$SRCROOT/Scripts/create-xcframework-archive.sh\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -3311,6 +3398,26 @@
 			target = 8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */;
 			targetProxy = C2CBA40E245869F4001B775F /* PBXContainerItemProxy */;
 		};
+		F8358676246BEFA500D1CE3E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
+			targetProxy = F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */;
+		};
+		F8CF2BCD246C05D100904633 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
+			targetProxy = F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */;
+		};
+		F8CF2BCF246C05D100904633 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
+			targetProxy = F8CF2BCE246C05D100904633 /* PBXContainerItemProxy */;
+		};
+		F8CF2BD1246C05D100904633 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */;
+			targetProxy = F8CF2BD0246C05D100904633 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -3438,6 +3545,7 @@
 					armv7s,
 					arm64e,
 				);
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				MACH_O_TYPE = staticlib;
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -3454,6 +3562,7 @@
 					armv7s,
 					arm64e,
 				);
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				MACH_O_TYPE = staticlib;
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -3537,6 +3646,7 @@
 		05E731F40EFA1AAC005EDFB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -3550,6 +3660,7 @@
 		05E731F50EFA1AAC005EDFB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -3719,6 +3830,7 @@
 		8064D8191C4D22D8005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
@@ -3728,6 +3840,7 @@
 		8064D81A1C4D22D8005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
@@ -3869,6 +3982,20 @@
 				EFFECTIVE_PLATFORM_NAME = "-tvOS";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
+			};
+			name = Release;
+		};
+		F8B9C72C24695BE600B9FEF6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EFFECTIVE_PLATFORM_NAME = "-xcframework";
+			};
+			name = Debug;
+		};
+		F8B9C72D24695BE600B9FEF6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EFFECTIVE_PLATFORM_NAME = "-xcframework";
 			};
 			name = Release;
 		};
@@ -4042,6 +4169,15 @@
 			buildConfigurations = (
 				C2B90D9B2456FBDF00834AFB /* Debug */,
 				C2B90D9C2456FBDF00834AFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F8B9C72B24695BE600B9FEF6 /* Build configuration list for PBXAggregateTarget "CrashReporter XCFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8B9C72C24695BE600B9FEF6 /* Debug */,
+				F8B9C72D24695BE600B9FEF6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
