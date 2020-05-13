@@ -1,7 +1,7 @@
 #!/bin/sh
 set -xe
 
-# Set up the destroot
+# Set up the target folder
 OUTPUT_DEST="${BUILT_PRODUCTS_DIR}"
 PRODUCT_DIR="${PRODUCT_NAME}-XCFramework-${CURRENT_PROJECT_VERSION}"
 DESTROOT="${OUTPUT_DEST}/${PRODUCT_DIR}"
@@ -12,12 +12,9 @@ LICENSE_DEST="${DESTROOT}/LICENSE.txt"
 
 DOC_SUBDIR="Documentation"
 
-# XCFramework sources
-XCF_SRC="${BUILD_DIR}/${CONFIGURATION}-xcframework"
-
-# Populate the destroot
+# Populate the target folder
 mkdir -p "${DESTROOT}/CrashReporter.xcframework"
-rsync -av "${XCF_SRC}/CrashReporter.xcframework" "${DESTROOT}"
+rsync -av "${BUILD_DIR}/${CONFIGURATION}-xcframework/CrashReporter.xcframework" "${DESTROOT}"
 
 rsync -av "${SRCROOT}/LICENSE" "${LICENSE_DEST}"
 

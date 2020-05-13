@@ -14,7 +14,7 @@
 				C25664D023571BC60088513E /* Verify Modifications */,
 				058812D310405908009128FB /* Create Disk Image */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
-				F8CF2BD2246C139400904633 /* Create xcframework archive  */,
+				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 			);
 			dependencies = (
 				C26C52AB2451B4D400D20162 /* PBXTargetDependency */,
@@ -2829,7 +2829,7 @@
 			shellScript = "$SRCROOT/Scripts/build-xcframework.sh\n";
 			showEnvVarsInLog = 0;
 		};
-		F8CF2BD2246C139400904633 /* Create xcframework archive  */ = {
+		F8CF2BD2246C139400904633 /* Create Archive With XCFramework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2838,7 +2838,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Create xcframework archive ";
+			name = "Create Archive With XCFramework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
