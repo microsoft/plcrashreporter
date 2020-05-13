@@ -49,7 +49,6 @@
 #import <fcntl.h>
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
-#include <os/lock.h>
 
 #import <stdatomic.h>
 
@@ -425,13 +424,11 @@ static PLCrashReporter *sharedReporter = nil;
  * clients should initialize a crash reporter instance directly.
  */
 + (PLCrashReporter *) sharedReporter {
-    /* Once we drop 10.5 support, this may be converted to dispatch_once() */
-    static os_unfair_lock onceLock = OS_UNFAIR_LOCK_INIT;
-    os_unfair_lock_lock(&onceLock); {
+    static dispatch_once_t onceLock;
+    dispatch_once(&onceLock, ^{
         if (sharedReporter == nil)
             sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] configuration: [PLCrashReporterConfig defaultConfiguration]];
-    } os_unfair_lock_unlock(&onceLock);
-
+    });
     return sharedReporter;
 }
 
