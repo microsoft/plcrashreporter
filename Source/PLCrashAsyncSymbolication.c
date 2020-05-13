@@ -243,6 +243,6 @@ static void objc_symbol_callback (bool isClassMethod, plcrash_async_macho_string
     lookup_ctx->found = true;
 }
 
-/**
+/*
  * @}
  */

@@ -471,7 +471,7 @@ plcrash_error_t plcrash_async_dwarf_read_task_uintmax64 (task_t task,
 PLCR_CPP_END_NS
 }
 
-/**
+/*
  * @}
  */
 

@@ -33,7 +33,8 @@
 
 #if PLCRASH_FEATURE_UNWIND_DWARF
 
-using namespace plcrash::async;
+PLCR_CPP_BEGIN_NS
+namespace async {
 
 /**
  * @internal
@@ -56,7 +57,7 @@ using namespace plcrash::async;
  * frame reader will assume eh_frame data.
  */
 template <typename machine_ptr>
-plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
+plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_t *info,
                                                                    plcrash_async_mobject_t *mobj,
                                                                    const plcrash_async_byteorder_t *byteorder,
                                                                    pl_vm_address_t fde_address,
@@ -219,7 +220,7 @@ plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init (plcrash_async
  *
  * @param info The FDE info record for which the instruction offset should be returned.
  */
-pl_vm_address_t plcrash::async::plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_dwarf_fde_info_t *info) {
+pl_vm_address_t plcrash_async_dwarf_fde_info_instructions_offset (plcrash_async_dwarf_fde_info_t *info) {
     return info->instructions_offset;
 }
 
@@ -228,7 +229,7 @@ pl_vm_address_t plcrash::async::plcrash_async_dwarf_fde_info_instructions_offset
  *
  * @param info The FDE info record for which the instruction length should be returned.
  */
-pl_vm_size_t plcrash::async::plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwarf_fde_info_t *info) {
+pl_vm_size_t plcrash_async_dwarf_fde_info_instructions_length (plcrash_async_dwarf_fde_info_t *info) {
     return info->instructions_length;
 }
 
@@ -237,27 +238,30 @@ pl_vm_size_t plcrash::async::plcrash_async_dwarf_fde_info_instructions_length (p
  *
  * @param fde_info A previously initialized FDE info instance.
  */
-void plcrash::async::plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info) {
+void plcrash_async_dwarf_fde_info_free (plcrash_async_dwarf_fde_info_t *fde_info) {
     // noop
 }
 
 /* Provide explicit 32/64-bit instantiations */
 template
-plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
+plcrash_error_t plcrash_async_dwarf_fde_info_init<uint32_t> (plcrash_async_dwarf_fde_info_t *info,
                                                                              plcrash_async_mobject_t *mobj,
                                                                              const plcrash_async_byteorder_t *byteorder,
                                                                              pl_vm_address_t fde_address,
                                                                              bool debug_frame);
 
 template
-plcrash_error_t plcrash::async::plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
+plcrash_error_t plcrash_async_dwarf_fde_info_init<uint64_t> (plcrash_async_dwarf_fde_info_t *info,
                                                                              plcrash_async_mobject_t *mobj,
                                                                              const plcrash_async_byteorder_t *byteorder,
                                                                              pl_vm_address_t fde_address,
                                                                              bool debug_frame);
 
-/**
+/*
  * @}
  */
+
+}
+PLCR_CPP_END_NS
 
 #endif /* PLCRASH_FEATURE_UNWIND_DWARF */

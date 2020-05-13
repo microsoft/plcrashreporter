@@ -348,7 +348,7 @@ template class plcrash::async::dwarf_cfa_state_iterator<uint32_t, int32_t>;
 template class plcrash::async::dwarf_cfa_state<uint64_t, int64_t>;
 template class plcrash::async::dwarf_cfa_state_iterator<uint64_t, int64_t>;
 
-/**
+/*
  * @}
  */
 

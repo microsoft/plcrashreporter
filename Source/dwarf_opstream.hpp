@@ -280,7 +280,7 @@ inline uintptr_t dwarf_opstream::get_position (void) {
 PLCR_CPP_END_NS
 }
     
-/**
+/*
  * @}
  */
 

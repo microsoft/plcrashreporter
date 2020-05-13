@@ -59,7 +59,7 @@ typedef struct plcrash_test_thread {
 void plcrash_test_thread_spawn (plcrash_test_thread_t *thread);
 void plcrash_test_thread_stop (plcrash_test_thread_t *thread);
 
-/**
+/*
  * @}
  */
     

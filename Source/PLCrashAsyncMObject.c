@@ -484,6 +484,6 @@ void plcrash_async_mobject_free (plcrash_async_mobject_t *mobj) {
     mach_port_mod_refs(mach_task_self(), mobj->task, MACH_PORT_RIGHT_SEND, -1);
 }
 
-/**
+/*
  * @} plcrash_async
  */

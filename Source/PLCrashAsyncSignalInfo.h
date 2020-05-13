@@ -47,7 +47,7 @@ extern "C" {
 const char *plcrash_async_signal_signame (int signal);
 const char *plcrash_async_signal_sigcode (int signal, int si_code);
 
-/**
+/*
  * @} plcrash_async_signal_info
  */
 

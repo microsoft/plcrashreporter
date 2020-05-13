@@ -1401,6 +1401,6 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 }
 
 
-/**
+/*
  * @} plcrash_log_writer
  */

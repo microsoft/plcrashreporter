@@ -230,7 +230,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
 plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer);
 void plcrash_log_writer_free (plcrash_log_writer_t *writer);
 
-/**
+/*
  * @} plcrash_log_writer
  */
     

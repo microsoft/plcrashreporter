@@ -211,6 +211,6 @@ plcrash_async_image_t *plcrash_async_image_list_next (plcrash_async_image_list_t
     return node->value();
 }
 
-/**
+/*
  * @}
  */

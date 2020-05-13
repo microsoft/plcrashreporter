@@ -114,7 +114,7 @@ typedef void (*plcrash_async_objc_found_method_cb)(bool isClassMethod, plcrash_a
 
 plcrash_error_t plcrash_async_objc_find_method (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *cache, pl_vm_address_t imp, plcrash_async_objc_found_method_cb callback, void *ctx);
     
-/**
+/*
  * @}
  */
 

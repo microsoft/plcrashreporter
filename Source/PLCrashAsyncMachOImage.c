@@ -951,6 +951,6 @@ void plcrash_nasync_macho_free (plcrash_async_macho_t *image) {
 }
 
 
-/**
+/*
  * @} pl_async_macho
  */
