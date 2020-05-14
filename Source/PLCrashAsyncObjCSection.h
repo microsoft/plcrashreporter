@@ -86,6 +86,12 @@ typedef struct plcrash_async_objc_cache {
     
     /** A memory object for the __objc_data section. */
     plcrash_async_mobject_t objcDataMobj;
+
+    /** Whether the objcData object is initialized. */
+    bool dataMobjInitialized;
+
+    /** A memory object for the __data section. */
+    plcrash_async_mobject_t dataMobj;
     
     /** The size of the class cache, in entries. */
     size_t classCacheSize;

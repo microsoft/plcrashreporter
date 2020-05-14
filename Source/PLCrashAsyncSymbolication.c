@@ -108,7 +108,7 @@ plcrash_error_t plcrash_async_find_symbol (plcrash_async_macho_t *image,
         objcErr = plcrash_async_objc_find_method(image, &cache->objc_cache, pc, objc_symbol_callback, &lookup_ctx);
 
     if (machoErr != PLCRASH_ESUCCESS && objcErr != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Could not find symbol for PC %" PRIx64 " image %p", (uint64_t) pc, image);
+        PLCF_DEBUG("Could not find symbol for PC 0x%" PRIx64 " image %p (%s)", (uint64_t) pc, image, PLCF_DEBUG_IMAGE_NAME(image));
         PLCF_DEBUG("pl_async_macho_find_symbol error %d, pl_async_objc_find_method error %d", machoErr, objcErr);
         return machoErr;
     }

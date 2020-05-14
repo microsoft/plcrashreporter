@@ -51,6 +51,7 @@ static const char * const kClassListSectionName = "__objc_classlist";
 static const char * const kCategoryListSectionName = "__objc_catlist";
 static const char * const kObjCConstSectionName = "__objc_const";
 static const char * const kObjCDataSectionName = "__objc_data";
+static const char * const kDataSectionName = "__data";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
@@ -367,6 +368,10 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
         plcrash_async_mobject_free(&context->objcDataMobj);
         context->objcDataMobjInitialized = false;
     }
+    if (context->dataMobjInitialized) {
+        plcrash_async_mobject_free(&context->dataMobj);
+        context->dataMobjInitialized = false;
+    }
 }
 
 /**
@@ -453,6 +458,10 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
         goto cleanup;
     }
     context->objcDataMobjInitialized = true;
+
+    /* Map in the __data section. */
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kDataSectionName, &context->dataMobj);
+    context->dataMobjInitialized = err == PLCRASH_ESUCCESS;
     
     /* Only after all mappings succeed do we set the image. If any failed, the image won't be set,
      * and any mappings that DO succeed will be cleaned up on the next call (or when freeing the
@@ -1005,7 +1014,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         pl_vm_address_t ptr = classPtrs[i];
         class_t *classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr, 0, sizeof(*classPtr));
         if (classPtr == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_data for pointer 0x%llx returned NULL", (long long)ptr);
+            classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->dataMobj, ptr, 0, sizeof(*classPtr));
+        }
+        if (classPtr == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_data and __data for pointer 0x%llx returned NULL", (long long)ptr);
             return PLCRASH_EINVALID_DATA;
         }
         
@@ -1027,7 +1039,10 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         pl_vm_address_t isa = plcrash_async_objc_isa_pointer(image->byteorder->swap(classPtr->isa));
         class_t *metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, 0, sizeof(*metaclass));
         if (metaclass == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_data for pointer 0x%llx returned NULL", (long long)isa);
+            metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->dataMobj, isa, 0, sizeof(*metaclass));
+        }
+        if (metaclass == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_data and __data for pointer 0x%llx returned NULL", (long long)isa);
             return PLCRASH_EINVALID_DATA;
         }
 
@@ -1109,6 +1124,7 @@ plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *cache
     cache->classMobjInitialized = false;
     cache->catMobjInitialized = false;
     cache->objcDataMobjInitialized = false;
+    cache->dataMobjInitialized = false;
     cache->classCacheSize = 0;
     cache->classCacheKeys = NULL;
     cache->classCacheValues = NULL;
