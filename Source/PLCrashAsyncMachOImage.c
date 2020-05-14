@@ -512,7 +512,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
         cursor += sizeof(*cmd_32);
     }
 
-    for (uint32_t i = 0; i < nsects; i++) {        
+    for (uint32_t i = 0; i < nsects; i++) {
         struct section *sect_32 = NULL;
         struct section_64 *sect_64 = NULL;
        
@@ -547,8 +547,8 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
                 sectsize = image->byteorder->swap32(sect_32->size);
             }
             
-            
             /* Perform and return the mapping */
+            // PLCF_DEBUG("%s (%s,%s): 0x%lx - 0x%lx", strrchr(image->name, '/'), segname, sectname, sectaddr, sectsize);
             return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize, true);
         }
     }
