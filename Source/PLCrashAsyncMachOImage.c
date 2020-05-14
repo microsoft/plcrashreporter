@@ -35,6 +35,12 @@
 
 #include <mach-o/fat.h>
 
+/* Size of the field in the structure. struct.h is not available here */
+#ifndef fldsiz
+#define fldsiz(name, field) \
+    (sizeof(((struct name *)0)->field))
+#endif
+
 /**
  * @internal
  * @ingroup plcrash_async
@@ -477,6 +483,45 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
     return plcrash_async_mobject_init(&seg->mobj, image->task, segaddr, segsize, false);
 }
 
+static uint32_t plcrash_async_macho_read_sections_count (plcrash_async_macho_t *image, uintptr_t *cursor) {
+    uint32_t nsects;
+    if (image->m64) {
+        struct segment_command_64 *cmd_64 = *cursor;
+        nsects = image->byteorder->swap32(cmd_64->nsects);
+        *cursor += sizeof(*cmd_64);
+    } else {
+        struct segment_command *cmd_32 = *cursor;
+        nsects = image->byteorder->swap32(cmd_32->nsects);
+        *cursor += sizeof(*cmd_32);
+    }
+    return nsects;
+}
+
+static bool plcrash_async_macho_read_section (plcrash_async_macho_t *image, uintptr_t *cursor, const char **sectname, pl_vm_address_t *sectaddr, pl_vm_size_t *sectsize) {
+    if (image->m64) {
+        struct section_64 *sect_64 = *cursor;
+        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, sect_64, 0, sizeof(*sect_64))) {
+            return false;
+        }
+        /* Calculate the in-memory address and size. */
+        *sectname = sect_64->sectname;
+        *sectaddr = image->byteorder->swap64(sect_64->addr) + image->vmaddr_slide;
+        *sectsize = image->byteorder->swap64(sect_64->size);
+        *cursor += sizeof(*sect_64);
+    } else {
+        struct section *sect_32 = *cursor;
+        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, sect_32, 0, sizeof(*sect_32))) {
+            return false;
+        }
+        /* Calculate the in-memory address and size. */
+        *sectname = sect_32->sectname;
+        *sectaddr = image->byteorder->swap32(sect_32->addr) + image->vmaddr_slide;
+        *sectsize = image->byteorder->swap32(sect_32->size);
+        *cursor += sizeof(*sect_32);
+    }
+    return true;
+}
+
 /**
  * Find and map a named section within a named segment, initializing @a mobj.
  * It is the caller's responsibility to dealloc @a mobj after a successful
@@ -491,64 +536,23 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
  * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the section is not found, or an error result on failure.
  */
 plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, const char *segname, const char *sectname, plcrash_async_mobject_t *mobj) {
-    struct segment_command *cmd_32;
-    struct segment_command_64 *cmd_64;
-    
     void *segment =  plcrash_async_macho_find_segment_cmd(image, segname);
-    if (segment == NULL)
+    if (segment == NULL) {
         return PLCRASH_ENOTFOUND;
-
-    cmd_32 = segment;
-    cmd_64 = segment;
-    
-    uint32_t nsects;
-    uintptr_t cursor = (uintptr_t) segment;
-
-    if (image->m64) {
-        nsects = image->byteorder->swap32(cmd_64->nsects);
-        cursor += sizeof(*cmd_64);
-    } else {
-        nsects = image->byteorder->swap32(cmd_32->nsects);
-        cursor += sizeof(*cmd_32);
     }
-
+    uintptr_t cursor = (uintptr_t) segment;
+    uint32_t nsects = plcrash_async_macho_read_sections_count(image, &cursor);
     for (uint32_t i = 0; i < nsects; i++) {
-        struct section *sect_32 = NULL;
-        struct section_64 *sect_64 = NULL;
-       
-        if (image->m64) {
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, 0, sizeof(*sect_64))) {
-                PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
-                return PLCRASH_EINVAL;
-            }
-            
-            sect_64 = (void *) cursor;
-            cursor += sizeof(*sect_64);
-        } else {
-            if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, cursor, 0, sizeof(*sect_32))) {
-                PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
-                return PLCRASH_EINVAL;
-            }
-            
-            sect_32 = (void *) cursor;
-            cursor += sizeof(*sect_32);
+        const char *image_sectname;
+        pl_vm_address_t sectaddr;
+        pl_vm_size_t sectsize;
+        if (!plcrash_async_macho_read_section(image, &cursor, &image_sectname, &sectaddr, &sectsize)) {
+            PLCF_DEBUG("Section table entry outside of expected range; searching for (%s,%s)", segname, sectname);
+            return PLCRASH_EINVAL;
         }
-        
-        const char *image_sectname = image->m64 ? sect_64->sectname : sect_32->sectname;
-        if (plcrash_async_strncmp(sectname, image_sectname, sizeof(sect_64->sectname)) == 0) {
-            /* Calculate the in-memory address and size */
-            pl_vm_address_t sectaddr;
-            pl_vm_size_t sectsize;
-            if (image->m64) {
-                sectaddr = image->byteorder->swap64(sect_64->addr) + image->vmaddr_slide;
-                sectsize = image->byteorder->swap64(sect_64->size);
-            } else {
-                sectaddr = image->byteorder->swap32(sect_32->addr) + image->vmaddr_slide;
-                sectsize = image->byteorder->swap32(sect_32->size);
-            }
-            
+        if (plcrash_async_strncmp(sectname, image_sectname, fldsiz(section_64, sectname)) == 0) {
             /* Perform and return the mapping */
-            // PLCF_DEBUG("%s (%s,%s): 0x%lx - 0x%lx", PLCF_DEBUG_IMAGE_NAME(image), segname, sectname, sectaddr, sectsize);
+            // PLCF_DEBUG("%s (%s,%.*s): 0x%lx - 0x%lx", PLCF_DEBUG_IMAGE_NAME(image), segname, (int)fldsiz(section_64, sectname), image_sectname, sectaddr, sectaddr + sectsize);
             return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize, true);
         }
     }
