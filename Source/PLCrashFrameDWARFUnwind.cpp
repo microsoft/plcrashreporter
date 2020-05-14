@@ -126,9 +126,9 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     /* Find the FDE (if any) */
     {
         err = reader.find_fde(0x0 /* offset hint */, pc, &fde_info);
-        
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Failed to find FDE the current frame pc 0x%" PRIx64 " in %s: %d", (uint64_t) pc, PLCF_DEBUG_IMAGE_NAME(image), err);
+            if (err != PLCRASH_ENOTFOUND)
+                PLCF_DEBUG("Failed to find FDE the current frame pc 0x%" PRIx64 " in %s: %d", (uint64_t) pc, PLCF_DEBUG_IMAGE_NAME(image), err);
             result = PLFRAME_ENOTSUP;
             goto cleanup;
         }
