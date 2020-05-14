@@ -9,7 +9,7 @@
   * macOS 64-bit mach_* APIs is not available here.
   * `protobuf-c` symbols are not prefixed, so it can cause conflicts with other libraries.
   * Additional architectures like `arm64e` are not built explicitly.
-* Distribute `.xcframework` archive aside the other options.
+* Distribute `.xcframework` archive alongside with the other options.
 * Migrate to Automatic Reference Counting (ARC).
 * Embed required `protoc-c` sources instead of using submodule. No more additional steps on cloning the repo.
 * Store sources generated from `*.proto` files to drop `protobuf-c` compiler requirement for building the library. It's required only for contributors now.
