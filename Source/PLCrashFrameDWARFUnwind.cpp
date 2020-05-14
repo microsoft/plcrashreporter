@@ -224,6 +224,9 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         return PLFRAME_EBADFRAME;
     }
     plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
+    if (pc == 0) {
+        return PLFRAME_ENOTSUP;
+    }
 
     /*
      * Mark the list as being read; this prevents any deallocation of our borrowed reference to a plcrash_async_image_t,
