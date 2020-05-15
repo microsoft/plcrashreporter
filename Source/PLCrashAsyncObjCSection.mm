@@ -50,6 +50,7 @@ static const char * const kObjCModuleInfoSectionName = "__module_info";
 static const char * const kClassListSectionName = "__objc_classlist";
 static const char * const kCategoryListSectionName = "__objc_catlist";
 static const char * const kObjCConstSectionName = "__objc_const";
+static const char * const kObjCConstAxSectionName = "__objc_const_ax";
 static const char * const kObjCDataSectionName = "__objc_data";
 static const char * const kDataSectionName = "__data";
 
@@ -356,6 +357,10 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
         plcrash_async_mobject_free(&context->objcConstMobj);
         context->objcConstMobjInitialized = false;
     }
+    if (context->objcConstAxMobjInitialized) {
+        plcrash_async_mobject_free(&context->objcConstAxMobj);
+        context->objcConstAxMobjInitialized = false;
+    }
     if (context->classMobjInitialized) {
         plcrash_async_mobject_free(&context->classMobj);
         context->classMobjInitialized = false;
@@ -431,6 +436,10 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
         goto cleanup;
     }
     context->objcConstMobjInitialized = true;
+
+    /* Map in the __objc_const_ax section. */
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCConstAxSectionName, &context->objcConstAxMobj);
+    context->objcConstAxMobjInitialized = err == PLCRASH_ESUCCESS;
     
     /* Map in the class list section. */
     err = map_data_section(image, &segname, kClassListSectionName, &context->classMobj);
@@ -713,9 +722,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     
     /* Read the method list header. */
     struct pl_objc2_list_header *header;
-    header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_addr, 0, sizeof(*header));
+    plcrash_async_mobject_t *section = &objc_cache->objcConstMobj;
+    header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(section, method_list_addr, 0, sizeof(*header));
     if (header == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_const failed to map methods pointer 0x%llx", (long long) method_list_addr);
+        section = &objc_cache->objcConstAxMobj;
+        header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(section, method_list_addr, 0, sizeof(*header));
+    }
+    if (header == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_const and __objc_const_ax failed to map methods pointer 0x%llx", (long long) method_list_addr);
         return PLCRASH_EINVALID_DATA;
     }
     
@@ -727,7 +741,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     pl_vm_address_t method_list_start = method_list_addr + sizeof(*header);
     pl_vm_size_t method_list_length = (pl_vm_size_t)entsize * count;
     
-    const char *cursor = (const char *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_start, 0, method_list_length);
+    const char *cursor = (const char *) plcrash_async_mobject_remap_address(section, method_list_start, 0, method_list_length);
     if (cursor == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx length %llu returned NULL", (long long)method_list_start, (unsigned long long)method_list_length);
         return PLCRASH_EINVALID_DATA;
@@ -1135,6 +1149,7 @@ plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *cache
     cache->gotObjC2Info = false;
     cache->lastImage = NULL;
     cache->objcConstMobjInitialized = false;
+    cache->objcConstAxMobjInitialized = false;
     cache->classMobjInitialized = false;
     cache->catMobjInitialized = false;
     cache->objcDataMobjInitialized = false;

@@ -68,7 +68,13 @@ typedef struct plcrash_async_objc_cache {
     
     /** A memory object for the __objc_const section. */
     plcrash_async_mobject_t objcConstMobj;
-    
+
+    /** Whether the objcConstAx object is initialized. */
+    bool objcConstAxMobjInitialized;
+
+    /** A memory object for the __objc_const_ax section. */
+    plcrash_async_mobject_t objcConstAxMobj;
+
     /** Whether the class memory object is initialized. */
     bool classMobjInitialized;
     
@@ -87,7 +93,7 @@ typedef struct plcrash_async_objc_cache {
     /** A memory object for the __objc_data section. */
     plcrash_async_mobject_t objcDataMobj;
 
-    /** Whether the objcData object is initialized. */
+    /** Whether the data object is initialized. */
     bool dataMobjInitialized;
 
     /** A memory object for the __data section. */
