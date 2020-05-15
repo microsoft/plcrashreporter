@@ -482,7 +482,6 @@
 		C2BBCDAF2456E0E800F9E820 /* PLCrashSysctlTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */; };
 		C2CBA40724586975001B775F /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
 		C2CBA40824586975001B775F /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C2DCD87D24657D5E007322C5 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C2DCD87824657CE5007322C5 /* libc++.tbd */; platformFilter = maccatalyst; };
 		C2DCD88124658A63007322C5 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		C2DCD88224658A63007322C5 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; platformFilter = maccatalyst; };
 		C2F7F1662451E9BD002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -1230,7 +1229,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C2DCD87D24657D5E007322C5 /* libc++.tbd in Frameworks */,
 				C2F7F2622451F4CE002BD8BF /* CrashReporter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -111,7 +111,6 @@ typedef struct plcrash_async_objc_cache {
 
 plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *context);
 void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *context);
-pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa);
 
 /**
  * A callback to invoke when an Objective-C method is found.
