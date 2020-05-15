@@ -50,7 +50,9 @@ static const char * const kObjCModuleInfoSectionName = "__module_info";
 static const char * const kClassListSectionName = "__objc_classlist";
 static const char * const kCategoryListSectionName = "__objc_catlist";
 static const char * const kObjCConstSectionName = "__objc_const";
+static const char * const kObjCConstAxSectionName = "__objc_const_ax";
 static const char * const kObjCDataSectionName = "__objc_data";
+static const char * const kDataSectionName = "__data";
 
 static uint32_t CLS_NO_METHOD_ARRAY = 0x4000;
 static uint32_t END_OF_METHODS_LIST = -1;
@@ -96,7 +98,8 @@ static uint32_t END_OF_METHODS_LIST = -1;
  * @sa https://github.com/opensource-apple/objc4/blob/master/runtime/objc-private.h
  */
 #if defined(__arm64__)
-#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x0000000ffffffff8ULL
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK     0x0000000ffffffff8ULL
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK_OLD 0x00000001fffffff8ULL
 #elif defined(__x86_64__)
 #define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x00007ffffffffff8ULL
 #else
@@ -266,6 +269,24 @@ struct pl_objc2_list_header {
     uint32_t count;
 };
 
+/**
+ * Returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
+ * used to designate a non-pointer isa; see the PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA documentation for more details.
+ */
+static pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa) {
+#if PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA
+    if (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG) {
+#if TARGET_OS_IPHONE && PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK_OLD
+        /* Before iOS 9 other bit-mask was used. */
+        if (floor(kCFCoreFoundationVersionNumber) <= kCFCoreFoundationVersionNumber_iOS_8_x_Max) {
+            return isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK_OLD;
+        }
+#endif
+        return isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK;
+    }
+#endif
+    return isa;
+}
 
 /**
  * Get the index into the context's cache for the given key. Must only be called
@@ -355,6 +376,10 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
         plcrash_async_mobject_free(&context->objcConstMobj);
         context->objcConstMobjInitialized = false;
     }
+    if (context->objcConstAxMobjInitialized) {
+        plcrash_async_mobject_free(&context->objcConstAxMobj);
+        context->objcConstAxMobjInitialized = false;
+    }
     if (context->classMobjInitialized) {
         plcrash_async_mobject_free(&context->classMobj);
         context->classMobjInitialized = false;
@@ -366,6 +391,10 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
     if (context->objcDataMobjInitialized) {
         plcrash_async_mobject_free(&context->objcDataMobj);
         context->objcDataMobjInitialized = false;
+    }
+    if (context->dataMobjInitialized) {
+        plcrash_async_mobject_free(&context->dataMobj);
+        context->dataMobjInitialized = false;
     }
 }
 
@@ -383,13 +412,16 @@ static void free_mapped_sections (plcrash_async_objc_cache_t *context) {
  *
  * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the section is not found, or an error result on failure.
  */
-static plcrash_error_t map_data_section (plcrash_async_macho_t *image, const char *sectname, plcrash_async_mobject_t *mobj) {
-    plcrash_error_t err = plcrash_async_macho_map_section(image, kDataSegmentName, sectname, mobj);
+static plcrash_error_t map_data_section (plcrash_async_macho_t *image, const char **segname, const char *sectname, plcrash_async_mobject_t *mobj) {
+    *segname = kDataSegmentName;
+    plcrash_error_t err = plcrash_async_macho_map_section(image, *segname, sectname, mobj);
     if (err == PLCRASH_ENOTFOUND) {
-        err = plcrash_async_macho_map_section(image, kDataConstSegmentName, sectname, mobj);
+        *segname = kDataConstSegmentName;
+        err = plcrash_async_macho_map_section(image, *segname, sectname, mobj);
     }
     if (err == PLCRASH_ENOTFOUND) {
-        err = plcrash_async_macho_map_section(image, kDataDirtySegmentName, sectname, mobj);
+        *segname = kDataDirtySegmentName;
+        err = plcrash_async_macho_map_section(image, *segname, sectname, mobj);
     }
     return err;
 }
@@ -413,30 +445,37 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
     context->lastImage = NULL;
     
     plcrash_error_t err;
+    const char *segname;
     
     /* Map in the __objc_const section, which is where all the read-only class data lives. */
-    err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj);
+    err = map_data_section(image, &segname, kObjCConstSectionName, &context->objcConstMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
-            PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kDataSegmentName, kObjCConstSectionName, &context->objcConstMobj, err);
+            PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, segname, kObjCConstSectionName, &context->objcConstMobj, err);
         goto cleanup;
     }
     context->objcConstMobjInitialized = true;
+
+    /* Map in the __objc_const_ax section. */
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCConstAxSectionName, &context->objcConstAxMobj);
+    if (err != PLCRASH_ESUCCESS && err != PLCRASH_ENOTFOUND)
+        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), kDataSegmentName, kObjCConstAxSectionName, &context->objcConstAxMobj, err);
+    context->objcConstAxMobjInitialized = err == PLCRASH_ESUCCESS;
     
-    /* Map in the class list section.  */
-    err = map_data_section(image, kClassListSectionName, &context->classMobj);
+    /* Map in the class list section. */
+    err = map_data_section(image, &segname, kClassListSectionName, &context->classMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
-            PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kClassListSectionName, &context->classMobj, err);
+            PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), segname, kClassListSectionName, &context->classMobj, err);
         goto cleanup;
     }
     context->classMobjInitialized = true;
     
-    /* Map in the category list section.  */
-    err = map_data_section(image, kCategoryListSectionName, &context->catMobj);
+    /* Map in the category list section. */
+    err = map_data_section(image, &segname, kCategoryListSectionName, &context->catMobj);
     if (err != PLCRASH_ESUCCESS) {
         if (err != PLCRASH_ENOTFOUND)
-            PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kCategoryListSectionName, &context->catMobj, err);
+            PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), segname, kCategoryListSectionName, &context->catMobj, err);
         goto cleanup;
     }
     context->catMobjInitialized = true;
@@ -444,11 +483,17 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
     /* Map in the __objc_data section, which is where the actual classes live. */
     err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj);
     if (err != PLCRASH_ESUCCESS) {
-        /* If the class list was found, the data section must also be found */
-        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", image->name, kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj, err);
+        /* If the class list was found, the data section must also be found. */
+        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), kDataSegmentName, kObjCDataSectionName, &context->objcDataMobj, err);
         goto cleanup;
     }
     context->objcDataMobjInitialized = true;
+
+    /* Map in the __data section. */
+    err = plcrash_async_macho_map_section(image, kDataSegmentName, kDataSectionName, &context->dataMobj);
+    if (err != PLCRASH_ESUCCESS && err != PLCRASH_ENOTFOUND)
+        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), kDataSegmentName, kDataSectionName, &context->dataMobj, err);
+    context->dataMobjInitialized = err == PLCRASH_ESUCCESS;
     
     /* Only after all mappings succeed do we set the image. If any failed, the image won't be set,
      * and any mappings that DO succeed will be cleaned up on the next call (or when freeing the
@@ -595,7 +640,7 @@ static plcrash_error_t pl_async_objc_parse_from_module_info (plcrash_async_macho
             PLCF_DEBUG("pl_async_macho_map_section(%p, %s, %s, %p) failure %d", image, kObjCSegmentName, kObjCModuleInfoSectionName, &moduleMobj, err);
         goto cleanup;
     }
-    
+
     /* Successful mapping, so mark the memory object as needing cleanup. */
     moduleMobjInitialized = true;
     
@@ -700,9 +745,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     
     /* Read the method list header. */
     struct pl_objc2_list_header *header;
-    header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_addr, 0, sizeof(*header));
+    plcrash_async_mobject_t *section = &objc_cache->objcConstMobj;
+    header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(section, method_list_addr, 0, sizeof(*header));
     if (header == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address in objCConstMobj failed to map methods pointer 0x%llx", (long long) method_list_addr);
+        section = &objc_cache->objcConstAxMobj;
+        header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(section, method_list_addr, 0, sizeof(*header));
+    }
+    if (header == NULL) {
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_const and __objc_const_ax failed to map methods pointer 0x%llx", (long long) method_list_addr);
         return PLCRASH_EINVALID_DATA;
     }
     
@@ -714,7 +764,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     pl_vm_address_t method_list_start = method_list_addr + sizeof(*header);
     pl_vm_size_t method_list_length = (pl_vm_size_t)entsize * count;
     
-    const char *cursor = (const char *) plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, method_list_start, 0, method_list_length);
+    const char *cursor = (const char *) plcrash_async_mobject_remap_address(section, method_list_start, 0, method_list_length);
     if (cursor == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx length %llu returned NULL", (long long)method_list_start, (unsigned long long)method_list_length);
         return PLCRASH_EINVALID_DATA;
@@ -777,7 +827,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
  * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the class is unrealized, PLCRASH_EINVALID_DATA if
  * the input format is invalid (including failed pointer dereferencing), or another appropriate error.
  */
-template<typename class_t, typename class_ro_t, typename class_rw_t>
+template<typename class_t, typename class_ro_t, typename class_rw_t, typename machine_ptr_t>
 static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objc_cache, class_t *cls, plcrash_async_macho_string_t *class_name, class_ro_t *cls_data_ro) {
     plcrash_error_t err;
     
@@ -797,18 +847,33 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
             PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)data_ptr, err);
             return PLCRASH_EINVALID_DATA;
         }
-        
+
         /* Check the flags. If it's not yet realized, then we need to skip the class. */
         uint32_t flags = image->byteorder->swap(cls_data_rw.flags);
         if ((flags & RW_REALIZED) == 0)  {
-            // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)dataPtr);
+            // PLCF_DEBUG("Found unrealized class with RO data at 0x%llx, skipping it", (long long)data_ptr);
             return PLCRASH_ENOTFOUND;
         }
-        
+
         /* Grab the data_ro pointer. The RO data (read-only) contains the class name
          * and method list. */
         cached_data_ro_addr = image->byteorder->swap(cls_data_rw.data_ro);
-        
+
+        /* When objc_class_abi_version >= 1, it's a tagged union based on the low bit:
+         * 0: class_ro_t  1: class_rw_ext_t
+         * @see https://opensource.apple.com/source/objc4/objc4-781/runtime/objc-runtime-new.h */
+        if (cached_data_ro_addr & 0x1) {
+            cached_data_ro_addr &= ~0x1;
+            /* class_rw_ext_t has a link to R/O data without any offset, so just grab this pointer. */
+            machine_ptr_t data_ro_addr;
+            err = plcrash_async_task_memcpy(image->task, cached_data_ro_addr, 0, &data_ro_addr, sizeof(data_ro_addr));
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)cached_data_ro_addr, err);
+                return PLCRASH_EINVALID_DATA;
+            }
+            cached_data_ro_addr = image->byteorder->swap(data_ro_addr);
+        }
+
         /* Copy the R/O data; it will either be heap allocated (RW_COPIED_RO), found within the __objc_const section of the current cached image,
          * or found within the __objc_const section of a non-cached image. */
         if ((flags & RW_COPIED_RO) != 0 || !plcrash_async_macho_contains_address(image, cached_data_ro_addr)) {
@@ -819,7 +884,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
         } else {
             void *ptr = plcrash_async_mobject_remap_address(&objc_cache->objcConstMobj, cached_data_ro_addr, 0, sizeof(*cls_data_ro));
             if (ptr == NULL) {
-                PLCF_DEBUG("plcrash_async_mobject_remap_address at 0x%llx returned NULL", (long long)cached_data_ro_addr);
+                PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_const for pointer 0x%llx returned NULL", (long long)cached_data_ro_addr);
                 return PLCRASH_EINVALID_DATA;
             }
             
@@ -870,14 +935,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
  *
  * @return An error code.
  */
-template<typename class_t, typename class_ro_t, typename class_rw_t>
+template<typename class_t, typename class_ro_t, typename class_rw_t, typename machine_ptr_t>
 static plcrash_error_t pl_async_objc_parse_objc2_class_methods (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objc_cache, class_t *cls, bool is_meta_class, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_async_macho_string_t class_name;
     class_ro_t cls_data_ro;
     plcrash_error_t err;
     
     /* Parse the class */
-    if ((err = pl_async_objc_parse_objc2_class<class_t, class_ro_t, class_rw_t>(image, objc_cache, cls, &class_name, &cls_data_ro)) != PLCRASH_ESUCCESS)
+    if ((err = pl_async_objc_parse_objc2_class<class_t, class_ro_t, class_rw_t, machine_ptr_t>(image, objc_cache, cls, &class_name, &cls_data_ro)) != PLCRASH_ESUCCESS)
         return err;
 
     /* Fetch and parse the method list. */
@@ -911,7 +976,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class_methods (plcrash_async_ma
  * @return Returns PLCRASH_ESUCCESS on success, PLCRASH_ENOTFOUND if the class referenced by the category is unrealized, PLCRASH_EINVALID_DATA if
  * the input format is invalid (including failed pointer dereferencing), or another appropriate error.
  */
-template <typename category_t, typename class_t, typename class_ro_t, typename class_rw_t>
+template <typename category_t, typename class_t, typename class_ro_t, typename class_rw_t, typename machine_ptr_t>
 static plcrash_error_t pl_async_objc_parse_objc2_category_methods (plcrash_async_macho_t *image, plcrash_async_objc_cache_t *objc_cache, category_t *category, plcrash_async_objc_found_method_cb callback, void *ctx) {
     plcrash_async_macho_string_t class_name;
     class_ro_t cls_data_ro;
@@ -925,14 +990,14 @@ static plcrash_error_t pl_async_objc_parse_objc2_category_methods (plcrash_async
 
     if (classPtr == NULL) {
         if ((err = plcrash_async_task_memcpy(image->task, ptr, 0, &class_data, sizeof(class_data))) != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("plcrash_async_task_memcpy() for pointer %llx returned NULL", (long long)ptr);
+            PLCF_DEBUG("plcrash_async_task_memcpy() for pointer 0x%llx returned NULL", (long long)ptr);
             return PLCRASH_EINVALID_DATA;
         }
         
         classPtr = &class_data;
     }
     
-    if ((err = pl_async_objc_parse_objc2_class<class_t, class_ro_t, class_rw_t>(image, objc_cache, classPtr, &class_name, &cls_data_ro)) != PLCRASH_ESUCCESS)
+    if ((err = pl_async_objc_parse_objc2_class<class_t, class_ro_t, class_rw_t, machine_ptr_t>(image, objc_cache, classPtr, &class_name, &cls_data_ro)) != PLCRASH_ESUCCESS)
         return err;
     
     /* Fetch and parse the instance and class method lists. The method list will be NULL if no methods are defined for the category; in that case, we simply skip the category. */
@@ -980,14 +1045,14 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     if (err != PLCRASH_ESUCCESS) {
         /* Don't log an error if ObjC data was simply not found */
         if (err != PLCRASH_ENOTFOUND)
-            PLCF_DEBUG("Unable to map relevant sections for ObjC2 class parsing, error %d", err);
+            PLCF_DEBUG("Unable to map relevant sections in %s for ObjC2 class parsing, error %d", PLCF_DEBUG_IMAGE_NAME(image), err);
         return err;
     }
     
     /* Get a pointer out of the mapped class list. */
     machine_ptr_t *classPtrs = (machine_ptr_t *) plcrash_async_mobject_remap_address(&objcContext->classMobj, objcContext->classMobj.task_address, 0, objcContext->classMobj.length);
     if (classPtrs == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address in objcConstMobj for pointer %llx returned NULL", (long long)objcContext->classMobj.address);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_classlist for pointer 0x%llx returned NULL", (long long)objcContext->classMobj.address);
         return PLCRASH_EINVALID_DATA;
     }
     
@@ -1001,12 +1066,15 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         pl_vm_address_t ptr = classPtrs[i];
         class_t *classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr, 0, sizeof(*classPtr));
         if (classPtr == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
+            classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->dataMobj, ptr, 0, sizeof(*classPtr));
+        }
+        if (classPtr == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_data and __data for pointer 0x%llx returned NULL", (long long)ptr);
             return PLCRASH_EINVALID_DATA;
         }
         
         /* Parse the class. */
-        err = pl_async_objc_parse_objc2_class_methods<class_t, class_ro_t, class_rw_t>(image, objcContext, classPtr, false, callback, ctx);
+        err = pl_async_objc_parse_objc2_class_methods<class_t, class_ro_t, class_rw_t, machine_ptr_t>(image, objcContext, classPtr, false, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             /* Skip unrealized classes; they'll never appear in a live backtrace. */
             if (err == PLCRASH_ENOTFOUND) {
@@ -1014,7 +1082,6 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
                 err = PLCRASH_ESUCCESS;
                 continue;
             }
-
             PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing class", err);
             return err;
         }
@@ -1023,14 +1090,17 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         pl_vm_address_t isa = plcrash_async_objc_isa_pointer(image->byteorder->swap(classPtr->isa));
         class_t *metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, 0, sizeof(*metaclass));
         if (metaclass == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)isa);
+            metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->dataMobj, isa, 0, sizeof(*metaclass));
+        }
+        if (metaclass == NULL) {
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_data and __data for pointer 0x%llx returned NULL", (long long)isa);
             return PLCRASH_EINVALID_DATA;
         }
 
         /* Parse the metaclass. */
-        err = pl_async_objc_parse_objc2_class_methods<class_t, class_ro_t, class_rw_t>(image, objcContext, metaclass, true, callback, ctx);
+        err = pl_async_objc_parse_objc2_class_methods<class_t, class_ro_t, class_rw_t, machine_ptr_t>(image, objcContext, metaclass, true, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("pl_async_objc_parse_objc2_class error %d while parsing metaclass", err);
+            PLCF_DEBUG("pl_async_objc_parse_objc2_class_methods error %d while parsing metaclass", err);
             return err;
         }
     }
@@ -1038,7 +1108,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     /* Get a pointer out of the mapped category list. */
     machine_ptr_t *catPtrs = (machine_ptr_t *) plcrash_async_mobject_remap_address(&objcContext->catMobj, objcContext->catMobj.task_address, 0, objcContext->catMobj.length);
     if (catPtrs == NULL) {
-        PLCF_DEBUG("plcrash_async_mobject_remap_address in catMobj for pointer %llx returned NULL", (long long)objcContext->catMobj.address);
+        PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_catlist for pointer 0x%llx returned NULL", (long long)objcContext->catMobj.address);
         return PLCRASH_EINVALID_DATA;
     }
     
@@ -1051,15 +1121,14 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         pl_vm_address_t ptr = image->byteorder->swap(catPtrs[i]);
         
         /* Read the category structure. */
-        category_t *category;
-        category = (category_t *) plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, ptr, 0, sizeof(*category));
+        category_t *category = (category_t *) plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, ptr, 0, sizeof(*category));
         if (category == NULL) {
-            PLCF_DEBUG("plcrash_async_mobject_remap_address in objcDataMobj for pointer %llx returned NULL", (long long)ptr);
+            PLCF_DEBUG("plcrash_async_mobject_remap_address in __objc_const for pointer 0x%llx returned NULL", (long long)ptr);
             return PLCRASH_EINVALID_DATA;
         }
 
         /* Parse the category. */
-        err = pl_async_objc_parse_objc2_category_methods<category_t, class_t, class_ro_t, class_rw_t>(image, objcContext, category, callback, ctx);
+        err = pl_async_objc_parse_objc2_category_methods<category_t, class_t, class_ro_t, class_rw_t, machine_ptr_t>(image, objcContext, category, callback, ctx);
         if (err != PLCRASH_ESUCCESS) {
             /* Skip unrealized classes; they'll never appear in a live backtrace. */
             if (err == PLCRASH_ENOTFOUND)
@@ -1074,26 +1143,6 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
 }
 
 /**
- * Returns the pointer value for a non-pointer isa. This assumes that the lsb flag of 0x1 will continue to be
- * used to designate a non-pointer isa; see the PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA documentation for more details.
- */
-pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa) {
-#if PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA
-    if (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG) {
-#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
-        /* Before iOS 9 other bit-mask was used. */
-        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-        if (processInfo.operatingSystemVersion.majorVersion < 9) {
-            return isa & 0x00000001fffffff8UL;
-        }
-#endif
-        return isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK;
-    }
-#endif
-    return isa;
-}
-
-/**
  * Initialize an ObjC cache object.
  *
  * @param cache A pointer to the cache object to initialize.
@@ -1103,9 +1152,11 @@ plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *cache
     cache->gotObjC2Info = false;
     cache->lastImage = NULL;
     cache->objcConstMobjInitialized = false;
+    cache->objcConstAxMobjInitialized = false;
     cache->classMobjInitialized = false;
     cache->catMobjInitialized = false;
     cache->objcDataMobjInitialized = false;
+    cache->dataMobjInitialized = false;
     cache->classCacheSize = 0;
     cache->classCacheKeys = NULL;
     cache->classCacheValues = NULL;
@@ -1228,7 +1279,7 @@ plcrash_error_t plcrash_async_objc_find_method (plcrash_async_macho_t *image, pl
     if (err != PLCRASH_ESUCCESS) {
         /* Don't log an error if ObjC data was simply not found */
         if (err != PLCRASH_ENOTFOUND)
-            PLCF_DEBUG("pl_async_objc_parse(%p, 0x%llx, %p, %p) failure %d", image, (long long)imp, callback, ctx, err);
+            PLCF_DEBUG("pl_async_objc_parse of %p (%s) failure %d", image, PLCF_DEBUG_IMAGE_NAME(image), err);
         return err;
     }
     

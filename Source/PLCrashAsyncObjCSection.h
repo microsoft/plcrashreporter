@@ -68,7 +68,13 @@ typedef struct plcrash_async_objc_cache {
     
     /** A memory object for the __objc_const section. */
     plcrash_async_mobject_t objcConstMobj;
-    
+
+    /** Whether the objcConstAx object is initialized. */
+    bool objcConstAxMobjInitialized;
+
+    /** A memory object for the __objc_const_ax section. */
+    plcrash_async_mobject_t objcConstAxMobj;
+
     /** Whether the class memory object is initialized. */
     bool classMobjInitialized;
     
@@ -86,6 +92,12 @@ typedef struct plcrash_async_objc_cache {
     
     /** A memory object for the __objc_data section. */
     plcrash_async_mobject_t objcDataMobj;
+
+    /** Whether the data object is initialized. */
+    bool dataMobjInitialized;
+
+    /** A memory object for the __data section. */
+    plcrash_async_mobject_t dataMobj;
     
     /** The size of the class cache, in entries. */
     size_t classCacheSize;
@@ -99,7 +111,6 @@ typedef struct plcrash_async_objc_cache {
 
 plcrash_error_t plcrash_async_objc_cache_init (plcrash_async_objc_cache_t *context);
 void plcrash_async_objc_cache_free (plcrash_async_objc_cache_t *context);
-pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa);
 
 /**
  * A callback to invoke when an Objective-C method is found.

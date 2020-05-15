@@ -59,6 +59,9 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         return PLFRAME_EBADFRAME;
     }
     plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
+    if (pc == 0) {
+        return PLFRAME_ENOTSUP;
+    }
     
     /* Find the corresponding image */
     plcrash_async_image_list_set_reading(image_list, true);

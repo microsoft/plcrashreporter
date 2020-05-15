@@ -14,7 +14,7 @@
 * Embed required `protoc-c` sources instead of using submodule. No more additional steps on cloning the repo.
 * Store sources generated from `*.proto` files to drop `protobuf-c` compiler requirement for building the library. It's required only for contributors now.
 * Enable generating debug symbols for static libraries. Previously it was included only to macOS framework.
-* Add locating class list in `__DATA_CONST` and `__DATA_DIRTY` segments. The behavior matches Objective-C runtime now.
+* Fix symbolication issues with new Objective-C runtime version.
 * Fix framework targets type issue that prevents use the library as a project dependency (instead of binary distribution) in Xcode 11.
 * Fix implicit casting warnings.
 
