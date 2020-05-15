@@ -439,6 +439,8 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
 
     /* Map in the __objc_const_ax section. */
     err = plcrash_async_macho_map_section(image, kDataSegmentName, kObjCConstAxSectionName, &context->objcConstAxMobj);
+    if (err != PLCRASH_ESUCCESS && err != PLCRASH_ENOTFOUND)
+        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), kDataSegmentName, kObjCConstAxSectionName, &context->objcConstAxMobj, err);
     context->objcConstAxMobjInitialized = err == PLCRASH_ESUCCESS;
     
     /* Map in the class list section. */
@@ -470,6 +472,8 @@ static plcrash_error_t map_sections (plcrash_async_macho_t *image, plcrash_async
 
     /* Map in the __data section. */
     err = plcrash_async_macho_map_section(image, kDataSegmentName, kDataSectionName, &context->dataMobj);
+    if (err != PLCRASH_ESUCCESS && err != PLCRASH_ENOTFOUND)
+        PLCF_DEBUG("pl_async_macho_map_section(%s, %s, %s, %p) failure %d", PLCF_DEBUG_IMAGE_NAME(image), kDataSegmentName, kDataSectionName, &context->dataMobj, err);
     context->dataMobjInitialized = err == PLCRASH_ESUCCESS;
     
     /* Only after all mappings succeed do we set the image. If any failed, the image won't be set,
