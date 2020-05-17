@@ -1,0 +1,99 @@
+name: Backtrace-PLCrashReporter
+options:
+  bundleIdPrefix: io.backtrace.plcrashreporter
+  deploymentTarget:
+    iOS: "10.0"
+    macOS: "10.10"
+    tvOS: "10.0"
+targets:
+  CrashReporter-macOS:
+    templates: 
+      - CrashReporter
+    templateAttributes:
+      platform: macOS
+  CrashReporter-iOS:
+    templates: 
+      - CrashReporter
+    templateAttributes:
+      platform: iOS
+  CrashReporter-tvOS:
+    templates: 
+      - CrashReporter
+    templateAttributes:
+      platform: tvOS
+
+  CrashReporter-macOSTests:
+    templates: 
+      - CrashReporterTests
+    templateAttributes:
+      platform: macOS
+  CrashReporter-iOSTests:
+    templates: 
+      - CrashReporterTests
+    templateAttributes:
+      platform: iOS
+  CrashReporter-tvOSTests:
+    templates: 
+      - CrashReporterTests
+    templateAttributes:
+      platform: tvOS
+
+settingGroups:
+  presets:
+    base:
+      HEADER_SEARCH_PATHS: "$(SRCROOT)/Dependencies/protobuf-c/protobuf-c"
+      GCC_PREFIX_HEADER: "$(SRCROOT)/Sources/include/PLCrashNamespace.h"
+      PRODUCT_MODULE_NAME: "Backtrace_PLCrashReporter"
+      PRODUCT_NAME: "Backtrace_PLCrashReporter"
+      CLANG_CXX_LANGUAGE_STANDARD: "c++0x"
+      CLANG_CXX_LIBRARY: "libc++"
+      PL_MIN_MACOSX_SDK: 101400
+      PROTOBUF_C_UNPACK_ERROR: PLCF_DEBUG
+      CLANG_ENABLE_OBJC_ARC: NO
+      SUPPORTS_MACCATALYST: NO
+    configs:
+      debug:
+        GCC_PREPROCESSOR_DEFINITIONS: ["$(inherited)", "PLCR_PRIVATE", "PLCF_DEBUG_BUILD", "PLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)"]
+        PL_BUILD_CONFIG_FLAG: PLCF_DEBUG_BUILD
+      release:
+        GCC_PREPROCESSOR_DEFINITIONS: ["$(inherited)", "PLCR_PRIVATE", "PLCF_RELEASE_BUILD", "PLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)"]
+        PL_BUILD_CONFIG_FLAG: PLCF_RELEASE_BUILD
+      
+targetTemplates:
+  CrashReporter:
+    type: framework
+    info:
+      path: Resources/Info.plist
+    platform: ${platform}
+    sources: 
+      - path: Sources
+        includes: 
+          - include
+        headerVisibility: public
+      - path: Sources
+        exludes: 
+          - include
+        headerVisibility: project
+      - path: Dependencies/protobuf-c/protobuf-c
+        includes:
+          - protobuf-c.[ch]
+        headerVisibility: project
+    settings:
+      groups:
+        - presets
+  
+  CrashReporterTests:
+    type: bundle.unit-test
+    platform: ${platform}
+    sources: 
+      - path: Tests
+        excludes:
+          - "**/*.txt"
+      - path: Resources/Tests
+        type: folder
+    dependencies:
+      - target: CrashReporter-${platform}
+    settings:
+      groups:
+        - presets
+        

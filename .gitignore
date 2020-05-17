@@ -3,6 +3,8 @@
 **/.idea/**
 
 ## Build generated
+.build/
+.swiftpm/
 build/
 DerivedData/
 Documentation/API/
