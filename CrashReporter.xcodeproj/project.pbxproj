@@ -2710,7 +2710,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/create-disk-image.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/create-disk-image.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
@@ -2729,7 +2729,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/verify-modifications.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/verify-modifications.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D523571D3D0088513E /* Generate Documentation */ = {
@@ -2748,7 +2748,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/generate-documentation.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/generate-documentation.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664E62357487D0088513E /* Create Archive With Static Libraries */ = {
@@ -2767,7 +2767,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/create-static-libs-archive.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/create-static-libs-archive.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAB2457178800834AFB /* Build Universal Framework */ = {
@@ -2786,7 +2786,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/build-ios-universal.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/build-ios-universal.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
@@ -2805,7 +2805,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/build-tvos-universal.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/build-tvos-universal.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8B9C72E24695BF200B9FEF6 /* Build XCFramework */ = {
@@ -2824,7 +2824,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/build-xcframework.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/build-xcframework.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8CF2BD2246C139400904633 /* Create Archive With XCFramework */ = {
@@ -2843,7 +2843,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/create-xcframework-archive.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/create-xcframework-archive.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
