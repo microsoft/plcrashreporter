@@ -17,6 +17,7 @@ for SDK in iphoneos iphonesimulator appletvos appletvsimulator macOS maccatalyst
   XC_FRAMEWORKS="${XC_FRAMEWORKS} -framework ${FRAMEWORK_PATH}"
 done
 
-rm -rf ${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework
+# Remove the previous version of the xcframework
+rm -rf "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
 
 xcodebuild -create-xcframework ${XC_FRAMEWORKS} -output ${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework
