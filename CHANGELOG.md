@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.6.0 (Under development)
+## Version 1.6.0
 
 * Support integration via [Carthage](https://github.com/Carthage/Carthage).
 * Support integration via [Swift Package Manager](https://swift.org/package-manager). Please note that this way has some limitations:
