@@ -11,13 +11,12 @@ xcodebuild -quiet \
     -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -scheme "${PROJECT_NAME} iOS Framework" \
     -destination 'platform=macOS,variant=Mac Catalyst'
 
+# Remove the previous version of the xcframework.
+rm -rf "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
+
 # Build XCFramework.
 for SDK in iphoneos iphonesimulator appletvos appletvsimulator macOS maccatalyst; do
   FRAMEWORK_PATH="${BUILD_DIR}/${CONFIGURATION}-${SDK}/${PRODUCT_NAME}.framework"
-  XC_FRAMEWORKS="${XC_FRAMEWORKS} -framework ${FRAMEWORK_PATH}"
+  XC_FRAMEWORKS+=( -framework "${FRAMEWORK_PATH}")
 done
-
-# Remove the previous version of the xcframework
-rm -rf "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
-
-xcodebuild -create-xcframework ${XC_FRAMEWORKS} -output ${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework
+xcodebuild -create-xcframework "${XC_FRAMEWORKS[@]}" -output "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
