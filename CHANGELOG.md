@@ -1,20 +1,25 @@
 # PLCrashReporter Change Log
 
-## Version 1.6.0
+## Version 1.7.0 (Under development)
 
 * Drop support old versions of Xcode. The minimal version is Xcode 11 now.
 * Support [Mac Catalyst](https://developer.apple.com/mac-catalyst/).
+* Distribute `.xcframework` archive alongside with the other options.
+* Fix symbolication issues with new Objective-C runtime version.
+
+___
+
+## Version 1.6.0
+
 * Support integration via [Carthage](https://github.com/Carthage/Carthage).
 * Support integration via [Swift Package Manager](https://swift.org/package-manager). Please note that this way has some limitations:
   * macOS 64-bit mach_* APIs is not available here.
   * `protobuf-c` symbols are not prefixed, so it can cause conflicts with other libraries.
   * Additional architectures like `arm64e` are not built explicitly.
-* Distribute `.xcframework` archive alongside with the other options.
 * Migrate to Automatic Reference Counting (ARC).
 * Embed required `protoc-c` sources instead of using submodule. No more additional steps on cloning the repo.
 * Store sources generated from `*.proto` files to drop `protobuf-c` compiler requirement for building the library. It's required only for contributors now.
 * Enable generating debug symbols for static libraries. Previously it was included only to macOS framework.
-* Fix symbolication issues with new Objective-C runtime version.
 * Fix framework targets type issue that prevents use the library as a project dependency (instead of binary distribution) in Xcode 11.
 * Fix implicit casting warnings.
 
