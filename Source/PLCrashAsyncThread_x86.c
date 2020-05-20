@@ -202,8 +202,8 @@ void plcrash_async_thread_state_clear_volatile_regs (plcrash_async_thread_state_
         table_count = sizeof(x86_64_nonvolatile_registers) / sizeof(x86_64_nonvolatile_registers[0]);
     }
     
-    size_t reg_count = plcrash_async_thread_state_get_reg_count(thread_state);
-    for (size_t reg = 0; reg < reg_count; reg++) {
+    plcrash_regnum_t reg_count = (plcrash_regnum_t) plcrash_async_thread_state_get_reg_count(thread_state);
+    for (plcrash_regnum_t reg = 0; reg < reg_count; reg++) {
         /* Skip unset registers */
         if (!plcrash_async_thread_state_has_reg(thread_state, reg))
             continue;
@@ -427,52 +427,52 @@ static void plcrash_async_thread_state_set_reg_32 (plcrash_async_thread_state_t 
     /* All word-sized registers */
     switch (regnum) {
         case PLCRASH_X86_EAX:
-            SETGEN(eax, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(eax, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_EDX:
-            SETGEN(edx, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(edx, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_ECX:
-            SETGEN(ecx, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(ecx, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_EBX:
-            SETGEN(ebx, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(ebx, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_EBP:
-            SETGEN(ebp, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(ebp, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_ESI:
-            SETGEN(esi, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(esi, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_EDI:
-            SETGEN(edi, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(edi, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_ESP:
-            SETGEN(esp, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(esp, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_EIP:
-            SETGEN(eip, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(eip, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_EFLAGS:
-            SETGEN(eflags, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(eflags, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_TRAPNO:
             SETGEN(trapno, exception.ues.es32, ts, regnum, reg);
             
         case PLCRASH_X86_CS:
-            SETGEN(cs, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(cs, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_DS:
-            SETGEN(ds, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(ds, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_ES:
-            SETGEN(es, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(es, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_FS:
-            SETGEN(fs, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(fs, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         case PLCRASH_X86_GS:
-            SETGEN(gs, thread.uts.ts32, ts, regnum, reg);
+            SETGEN(gs, thread.uts.ts32, ts, regnum, (uint32_t)reg);
             
         default:
             // Unsupported register

@@ -59,7 +59,7 @@
  * will be fetched once, and the returned instance is immutable.
  */
 + (instancetype) currentProcessInfo {
-    return [[[self alloc] initWithProcessID: getpid()] autorelease];
+    return [[self alloc] initWithProcessID: getpid()];
 }
 
 /**
@@ -87,8 +87,6 @@
     if (sysctl(process_info_mib, sizeof(process_info_mib)/sizeof(process_info_mib[0]), &process_info, &process_info_len, NULL, 0) != 0) {
         if (errno == ENOENT)
             PLCF_DEBUG("Unexpected sysctl error %d: %s", errno, strerror(errno));
-        
-        [self release];
         return nil;
     }
     
@@ -126,13 +124,8 @@
     return self;
 }
 
-- (void) dealloc {
-    [_processName release];
-    [super dealloc];
-}
-
 @end
 
-/**
+/*
  * @}
  */

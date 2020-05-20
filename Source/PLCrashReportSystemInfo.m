@@ -147,21 +147,13 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
         return nil;
     
     _operatingSystem = operatingSystem;
-    _osVersion = [operatingSystemVersion retain];
-    _osBuild = [operatingSystemBuild retain];
+    _osVersion = operatingSystemVersion;
+    _osBuild = operatingSystemBuild;
     _architecture = architecture;
-    _processorInfo = [processorInfo retain];
-    _timestamp = [timestamp retain];
+    _processorInfo = processorInfo;
+    _timestamp = timestamp;
     
     return self;
-}
-
-- (void) dealloc {
-    [_osVersion release];
-    [_osBuild release];
-    [_timestamp release];
-    [_processorInfo release];
-    [super dealloc];
 }
 
 @synthesize operatingSystem = _operatingSystem;

@@ -526,10 +526,10 @@ bool plcrash_async_file_close (plcrash_async_file_t *file) {
     return true;
 }
 
-/**
+/*
  * @} plcrash_async_bufio
  */
 
-/**
+/*
  * @} plcrash_async
  */

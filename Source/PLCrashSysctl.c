@@ -240,6 +240,6 @@ size_t plcrash_sysctl_valid_utf8_bytes (const uint8_t *s) {
     return plcrash_sysctl_valid_utf8_bytes_max(s, strlen((const char *)s));
 }
 
-/**
+/*
  * @}
  */

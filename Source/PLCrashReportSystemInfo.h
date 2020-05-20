@@ -112,19 +112,19 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
     PLCrashReportOperatingSystem _operatingSystem;
     
     /** Operating system version */
-    NSString *_osVersion;
+    __strong NSString *_osVersion;
     
     /** OS build. May be nil. */
-    NSString *_osBuild;
+    __strong NSString *_osBuild;
     
     /** Architecture */
     PLCrashReportArchitecture _architecture;
     
     /** Date crash report was generated. May be nil if the date is unknown. */
-    NSDate *_timestamp;
+    __strong NSDate *_timestamp;
 
     /** Processor information. */
-    PLCrashReportProcessorInfo *_processorInfo;
+    __strong PLCrashReportProcessorInfo *_processorInfo;
 }
 
 - (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem 
@@ -149,10 +149,10 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
 @property(nonatomic, readonly) PLCrashReportOperatingSystem operatingSystem;
 
 /** The operating system's release version. */
-@property(nonatomic, readonly) NSString *operatingSystemVersion;
+@property(nonatomic, readonly, strong) NSString *operatingSystemVersion;
 
 /** The operating system's build identifier (eg, 10J869). This may be unavailable, and this property will be nil. */
-@property(nonatomic, readonly) NSString *operatingSystemBuild;
+@property(nonatomic, readonly, strong) NSString *operatingSystemBuild;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdocumentation-deprecated-sync"
@@ -162,10 +162,10 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
 @property(nonatomic, readonly) PLCrashReportArchitecture architecture PLCR_DEPRECATED;
 
 /** Date and time that the crash report was generated. This may be unavailable, and this property will be nil. */
-@property(nonatomic, readonly) NSDate *timestamp;
+@property(nonatomic, readonly, strong) NSDate *timestamp;
 
 /** The processor type. For v1.2 reports and later, this is an alias to the machine info's processorInfo.
   * For earlier reports, this will be synthesized from the deprecated architecture property.  */
-@property(nonatomic, readonly) PLCrashReportProcessorInfo *processorInfo;
+@property(nonatomic, readonly, strong) PLCrashReportProcessorInfo *processorInfo;
 
 @end

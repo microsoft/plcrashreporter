@@ -216,7 +216,7 @@ void plcrash_async_cfe_entry_free (plcrash_async_cfe_entry_t *entry);
 uint32_t plcrash_async_cfe_register_encode (const uint32_t registers[], uint32_t count);
 plcrash_error_t plcrash_async_cfe_register_decode (uint32_t permutation, uint32_t count, uint32_t registers[]);
 
-/**
+/*
  * @} plcrash_async_cfe
  */
 

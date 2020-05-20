@@ -290,7 +290,6 @@ static PLCrashSignalHandler *sharedHandler;
 
     /* (Unlikely) malloc failure */
     if (_sigstk.ss_sp == NULL) {
-        [self release];
         return nil;
     }
 

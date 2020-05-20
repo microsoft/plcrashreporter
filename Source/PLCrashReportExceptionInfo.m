@@ -58,19 +58,11 @@
     if ((self = [super init]) == nil)
         return nil;
     
-    _name = [name retain];
-    _reason = [reason retain];
-    _stackFrames = [stackFrames retain];
+    _name = name;
+    _reason = reason;
+    _stackFrames = stackFrames;
     
     return self;
-}
-
-- (void) dealloc {
-    [_name release];
-    [_reason release];
-    [_stackFrames release];
-
-    [super dealloc];
 }
 
 @end

@@ -109,10 +109,10 @@ static size_t
 uint64_pack (uint64_t value, uint8_t *out)
 {
     uint32_t hi = value>>32;
-    uint32_t lo = value;
+    uint32_t lo = (uint32_t) value;
     unsigned rv;
     if (hi == 0)
-        return uint32_pack ((uint32_t)lo, out);
+        return uint32_pack (lo, out);
     out[0] = (lo) | 0x80;
     out[1] = (lo>>7) | 0x80;
     out[2] = (lo>>14) | 0x80;
@@ -242,7 +242,7 @@ size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLPro
             
         case PLPROTOBUF_C_TYPE_STRING:
         {
-            size_t sublen = strlen (value);
+            uint32_t sublen = (uint32_t) strlen (value);
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
             rv += uint32_pack (sublen, scratch + rv);
             if (file != NULL) {
@@ -256,7 +256,7 @@ size_t plcrash_writer_pack (plcrash_async_file_t *file, uint32_t field_id, PLPro
         case PLPROTOBUF_C_TYPE_BYTES:
         {
             const PLProtobufCBinaryData * bd = ((const PLProtobufCBinaryData*) value);
-            size_t sublen = bd->len;
+            uint32_t sublen = (uint32_t) bd->len;
             scratch[0] |= PLPROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED;
             rv += uint32_pack (sublen, scratch + rv);
             if (file != NULL) {

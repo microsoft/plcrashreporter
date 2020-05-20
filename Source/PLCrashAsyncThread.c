@@ -286,6 +286,6 @@ size_t plcrash_async_thread_state_get_greg_size (const plcrash_async_thread_stat
     return thread_state->greg_size;
 }
 
-/**
+/*
  * @}
  */

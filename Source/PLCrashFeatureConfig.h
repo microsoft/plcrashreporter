@@ -101,7 +101,7 @@
 #    define PLCRASH_FEATURE_UNWIND_COMPACT 1
 #endif
 
-/**
+/*
  * @}
  */
 

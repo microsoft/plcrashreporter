@@ -261,7 +261,7 @@ bool plcrash_async_thread_state_map_reg_to_dwarf (plcrash_async_thread_state_t *
  */
 bool plcrash_async_thread_state_map_dwarf_to_reg (const plcrash_async_thread_state_t *thread_state, uint64_t dwarf_reg, plcrash_regnum_t *regnum);
 
-/**
+/*
  * @}
  */
     

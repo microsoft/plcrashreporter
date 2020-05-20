@@ -28,7 +28,6 @@
 
 #include "PLCrashFrameWalker.h"
 #include "PLCrashAsync.h"
-#include "PLCrashTestThread.h"
 
 #include "PLCrashFrameStackUnwind.h"
 #include "PLCrashFrameCompactUnwind.h"
@@ -121,7 +120,7 @@ plframe_error_t plframe_cursor_thread_init (plframe_cursor_t *cursor, task_t tas
     /* Standard initialization */
     plframe_cursor_internal_init(cursor, task, image_list);
     
-    return plcrash_async_thread_state_mach_thread_init(&cursor->frame.thread_state, thread);
+    return (plframe_error_t)plcrash_async_thread_state_mach_thread_init(&cursor->frame.thread_state, thread);
 }
 
 /**

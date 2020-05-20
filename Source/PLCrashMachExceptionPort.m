@@ -76,7 +76,7 @@
         return nil;
     }
     
-    return [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
+    return [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states];
 }
 
 /**
@@ -110,7 +110,7 @@
         return nil;
     }
     
-    return [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states] autorelease];
+    return [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: states];
 }
 
 /**
@@ -151,8 +151,6 @@
     if (MACH_PORT_VALID(_port) && (kt = mach_port_mod_refs(mach_task_self(), _port, MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
         NSLog(@"Unexpected error incrementing mach port reference: %d", kt);
     }
-
-    [super dealloc];
 }
 
 /**
@@ -168,7 +166,7 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a task, NO on error.
  */
-- (BOOL) registerForTask: (task_t) task previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
+- (BOOL) registerForTask: (task_t) task previousPortSet: (__strong PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
     plcrash_mach_exception_port_set_t prev;
     
     kern_return_t kr;
@@ -189,8 +187,7 @@
     }
 
     if (ports != NULL)
-        *ports = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
-
+        *ports = [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev];
     return YES;
 }
 
@@ -207,7 +204,7 @@
  * will be provided.
  * @return YES if the mach exception port state was successfully registered for @a thread, NO on error.
  */
-- (BOOL) registerForThread: (thread_t) thread previousPortSet: (PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
+- (BOOL) registerForThread: (thread_t) thread previousPortSet: (__strong PLCrashMachExceptionPortSet **) ports error: (NSError **) outError {
     plcrash_mach_exception_port_set_t prev;
     
     kern_return_t kr;
@@ -228,7 +225,7 @@
     }
     
     if (ports != NULL)
-        *ports = [[[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev] autorelease];
+        *ports = [[PLCrashMachExceptionPortSet alloc] initWithAsyncSafeRepresentation: prev];
     
     return YES;
 }

@@ -138,6 +138,6 @@ void plcrash_async_macho_string_free (plcrash_async_macho_string_t *string) {
         plcrash_async_mobject_free(&string->mobj);
 }
 
-/**
+/*
  * @}
  */

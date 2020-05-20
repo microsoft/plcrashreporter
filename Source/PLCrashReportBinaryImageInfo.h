@@ -32,7 +32,7 @@
 @interface PLCrashReportBinaryImageInfo : NSObject {
 @private
     /** Code type */
-    PLCrashReportProcessorInfo *_processorInfo;
+    __strong PLCrashReportProcessorInfo *_processorInfo;
 
     /** Base image address */
     uint64_t _baseAddress;
@@ -41,13 +41,13 @@
     uint64_t _imageSize;
 
     /** Name of binary image */
-    NSString *_imageName;
+    __strong NSString *_imageName;
 
     /** If the UUID is available */
     BOOL _hasImageUUID;
 
     /** 128-bit object UUID. May be nil. */
-    NSString *_imageUUID;
+    __strong NSString *_imageUUID;
 }
 
 - (id) initWithCodeType: (PLCrashReportProcessorInfo *) processorInfo
@@ -59,7 +59,7 @@
 /**
  * Image code type, or nil if unavailable.
  */
-@property(nonatomic, readonly) PLCrashReportProcessorInfo *codeType;
+@property(nonatomic, readonly, strong) PLCrashReportProcessorInfo *codeType;
 
 /**
  * Image base address.
@@ -74,7 +74,7 @@
 /**
  * Image name (absolute path)
  */
-@property(nonatomic, readonly) NSString *imageName;
+@property(nonatomic, readonly, strong) NSString *imageName;
 
 
 /**
@@ -85,6 +85,6 @@
 /**
  * 128-bit object UUID (matches Mach-O DWARF dSYM files). May be nil if unavailable.
  */
-@property(nonatomic, readonly) NSString *imageUUID;
+@property(nonatomic, readonly, strong) NSString *imageUUID;
 
 @end

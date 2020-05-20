@@ -31,13 +31,13 @@
 @interface PLCrashReportApplicationInfo : NSObject {
 @private
     /** Application identifier */
-    NSString *_applicationIdentifier;
+    __strong NSString *_applicationIdentifier;
     
     /** Application version */
-    NSString *_applicationVersion;
+    __strong NSString *_applicationVersion;
     
     /** Application marketing version */
-    NSString *_applicationMarketingVersion;
+    __strong NSString *_applicationMarketingVersion;
 }
 
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier 
@@ -47,16 +47,16 @@
 /**
  * The application identifier. This is usually the application's CFBundleIdentifier value.
  */
-@property(nonatomic, readonly) NSString *applicationIdentifier;
+@property(nonatomic, readonly, strong) NSString *applicationIdentifier;
 
 /**
  * The application version. This is usually the application's CFBundleVersion value.
  */
-@property(nonatomic, readonly) NSString *applicationVersion;
+@property(nonatomic, readonly, strong) NSString *applicationVersion;
 
 /**
  * The application marketing version. This is usually the application's CFBundleShortVersionString value if available. May be nil.
  */
-@property(nonatomic, readonly) NSString *applicationMarketingVersion;
+@property(nonatomic, readonly, strong) NSString *applicationMarketingVersion;
 
 @end

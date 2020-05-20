@@ -61,19 +61,12 @@
     if ((self = [super init]) == nil)
         return nil;
 
-    _modelName = [modelName retain];
-    _processorInfo = [processorInfo retain];
+    _modelName = modelName;
+    _processorInfo = processorInfo;
     _processorCount = processorCount;
     _logicalProcessorCount = logicalProcessorCount;
 
     return self;
-}
-
-- (void) dealloc {
-    [_modelName release];
-    [_processorInfo release];
-
-    [super dealloc];
 }
 
 @end
