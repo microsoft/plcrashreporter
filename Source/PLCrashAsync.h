@@ -42,7 +42,7 @@ extern "C" {
 #include <TargetConditionals.h>
 #include <mach/mach.h>
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
 
 /*
  * iOS does not provide the mach_vm_* APIs, and as such, we can't support both

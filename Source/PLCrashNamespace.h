@@ -204,7 +204,6 @@
 #define plcrash_async_objc_cache_free PLNS(plcrash_async_objc_cache_free)
 #define plcrash_async_objc_cache_init PLNS(plcrash_async_objc_cache_init)
 #define plcrash_async_objc_find_method PLNS(plcrash_async_objc_find_method)
-#define plcrash_async_objc_isa_pointer PLNS(plcrash_async_objc_isa_pointer)
 #define plcrash_async_read_addr PLNS(plcrash_async_read_addr)
 #define plcrash_async_signal_sigcode PLNS(plcrash_async_signal_sigcode)
 #define plcrash_async_signal_signame PLNS(plcrash_async_signal_signame)

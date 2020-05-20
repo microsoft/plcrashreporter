@@ -38,7 +38,7 @@
 
 #import <mach-o/dyld.h>
 
-#import <libkern/OSAtomic.h>
+#import <stdatomic.h>
 
 #import "PLCrashReport.h"
 #import "PLCrashLogWriter.h"
@@ -354,7 +354,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     /* Fetch the machine information */
     {
         /* Model */
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
         /* On iOS, we want hw.machine (e.g. hw.machine = iPad2,1; hw.model = K93AP) */
         writer->machine_info.model = plcrash_sysctl_string("hw.machine");
 #else
@@ -425,7 +425,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     }
 
 #if TARGET_OS_IPHONE
-    /* iOS and tvOS */
+    /* iOS, tvOS and Mac Catalyst */
     {
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
         NSOperatingSystemVersion systemVersion = processInfo.operatingSystemVersion;
@@ -437,7 +437,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         writer->system_info.version = strdup([systemVersionString UTF8String]);
     }
 #elif TARGET_OS_MAC
-    /* Mac OS X */
+    /* macOS */
     {
         SInt32 major, minor, bugfix;
 
@@ -464,7 +464,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 #endif
 
     /* Ensure that any signal handler has a consistent view of the above initialization. */
-    OSMemoryBarrier();
+    atomic_thread_fence(memory_order_seq_cst);
 
     return PLCRASH_ESUCCESS;
 }
@@ -499,7 +499,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
     }
 
     /* Ensure that any signal handler has a consistent view of the above initialization. */
-    OSMemoryBarrier();
+    atomic_thread_fence(memory_order_seq_cst);
 }
 
 /**

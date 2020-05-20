@@ -1,5 +1,14 @@
 # PLCrashReporter Change Log
 
+## Version 1.7.0 (Under development)
+
+* Drop support old versions of Xcode. The minimal version is Xcode 11 now.
+* Support [Mac Catalyst](https://developer.apple.com/mac-catalyst/).
+* Distribute `.xcframework` archive alongside with the other options.
+* Fix symbolication issues with new Objective-C runtime version.
+
+___
+
 ## Version 1.6.0
 
 * Support integration via [Carthage](https://github.com/Carthage/Carthage).

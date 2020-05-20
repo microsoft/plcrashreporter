@@ -45,7 +45,7 @@
  *
  * @sa mach_exceptions
  */
-#if !TARGET_OS_IPHONE && !SWIFT_PACKAGE
+#if (!TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !SWIFT_PACKAGE
 /* If true, the mach_exc* APIs are available. */
 #  define PL_MACH64_EXC_API 1
 
