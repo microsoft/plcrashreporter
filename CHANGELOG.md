@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.6.0 (Under development)
+## Version 1.6.0
 
 * Drop support old versions of Xcode. The minimal version is Xcode 11 now.
 * Support [Mac Catalyst](https://developer.apple.com/mac-catalyst/).
