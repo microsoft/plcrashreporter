@@ -201,7 +201,7 @@ static plcrash_error_t plcrash_async_mobject_remap_pages_workaround (mach_port_t
 #ifdef PL_HAVE_MACH_VM
         kt = mach_vm_map(mach_task_self(), &target_address, entry_length, 0x0, VM_FLAGS_FIXED|VM_FLAGS_OVERWRITE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
 #else
-        kt = vm_map(mach_task_self(), &target_address, entry_length, 0x0, VM_FLAGS_FIXED|VM_FLAGS_OVERWRITE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
+        kt = vm_map(mach_task_self(), &target_address, (vm_size_t) entry_length, 0x0, VM_FLAGS_FIXED|VM_FLAGS_OVERWRITE, mem_handle, 0x0, TRUE, VM_PROT_READ, VM_PROT_READ, VM_INHERIT_COPY);
 #endif /* !PL_HAVE_MACH_VM */
         
         if (kt != KERN_SUCCESS) {
@@ -365,7 +365,7 @@ bool plcrash_async_mobject_verify_local_pointer (plcrash_async_mobject_t *mobj, 
  */
 void *plcrash_async_mobject_remap_address (plcrash_async_mobject_t *mobj, pl_vm_address_t address, pl_vm_off_t offset, size_t length) {
     /* Map into our memory space */
-    pl_vm_address_t remapped = address - mobj->vm_slide;
+    pl_vm_address_t remapped = address - (pl_vm_address_t) mobj->vm_slide;
 
     if (!plcrash_async_mobject_verify_local_pointer(mobj, (uintptr_t) remapped, offset, length))
         return NULL;

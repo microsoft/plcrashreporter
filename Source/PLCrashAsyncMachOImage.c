@@ -158,8 +158,8 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
             if (plcrash_async_strncmp(segment->segname, SEG_TEXT, sizeof(segment->segname)) != 0)
                 continue;
 
-            image->text_size = image->byteorder->swap64(segment->vmsize);
-            image->text_vmaddr = image->byteorder->swap64(segment->vmaddr);
+            image->text_size = (pl_vm_size_t) image->byteorder->swap64(segment->vmsize);
+            image->text_vmaddr = (pl_vm_address_t) image->byteorder->swap64(segment->vmaddr);
             found_text_seg = true;
             break;
         } else {
@@ -466,8 +466,8 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
     pl_vm_address_t segaddr;
     pl_vm_size_t segsize;
     if (image->m64) {
-        segaddr = image->byteorder->swap64(cmd_64->vmaddr) + image->vmaddr_slide;
-        segsize = image->byteorder->swap64(cmd_64->vmsize);
+        segaddr = (pl_vm_address_t) image->byteorder->swap64(cmd_64->vmaddr) + image->vmaddr_slide;
+        segsize = (pl_vm_size_t) image->byteorder->swap64(cmd_64->vmsize);
 
         seg->fileoff = image->byteorder->swap64(cmd_64->fileoff);
         seg->filesize = image->byteorder->swap64(cmd_64->filesize);
@@ -505,8 +505,8 @@ static bool plcrash_async_macho_read_section (plcrash_async_macho_t *image, uint
         }
         /* Calculate the in-memory address and size. */
         *sectname = sect_64->sectname;
-        *sectaddr = image->byteorder->swap64(sect_64->addr) + image->vmaddr_slide;
-        *sectsize = image->byteorder->swap64(sect_64->size);
+        *sectaddr = (pl_vm_address_t) image->byteorder->swap64(sect_64->addr) + image->vmaddr_slide;
+        *sectsize = (pl_vm_size_t) image->byteorder->swap64(sect_64->size);
         *cursor += sizeof(*sect_64);
     } else {
         struct section *sect_32 = *cursor;
@@ -657,7 +657,7 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
     void *nlist_table;
     char *string_table;
     
-    nlist_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj, reader->linkedit.mobj.task_address, (image->byteorder->swap32(symtab_cmd->symoff) - reader->linkedit.fileoff), nlist_table_size);
+    nlist_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj, reader->linkedit.mobj.task_address, (pl_vm_off_t)(image->byteorder->swap32(symtab_cmd->symoff) - reader->linkedit.fileoff), nlist_table_size);
     if (nlist_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.symoff in %s",
                    (uint64_t) reader->linkedit.mobj.address + image->byteorder->swap32(symtab_cmd->symoff), (uint64_t) nlist_table_size, PLCF_DEBUG_IMAGE_NAME(image));
@@ -665,7 +665,7 @@ plcrash_error_t plcrash_async_macho_symtab_reader_init (plcrash_async_macho_symt
         goto cleanup;
     }
     
-    string_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj, reader->linkedit.mobj.task_address, (image->byteorder->swap32(symtab_cmd->stroff) - reader->linkedit.fileoff), string_size);
+    string_table = plcrash_async_mobject_remap_address(&reader->linkedit.mobj, reader->linkedit.mobj.task_address, (pl_vm_off_t)(image->byteorder->swap32(symtab_cmd->stroff) - reader->linkedit.fileoff), string_size);
     if (string_table == NULL) {
         PLCF_DEBUG("plcrash_async_mobject_remap_address(mobj, %" PRIx64 ", %" PRIx64") returned NULL mapping __LINKEDIT.stroff in %s",
                    (uint64_t) reader->linkedit.mobj.address + image->byteorder->swap32(symtab_cmd->stroff), (uint64_t) string_size, PLCF_DEBUG_IMAGE_NAME(image));
@@ -765,7 +765,7 @@ plcrash_async_macho_symtab_entry_t plcrash_async_macho_symtab_reader_read (plcra
         .n_type = symbol->n32.n_type,
         .n_sect = symbol->n32.n_sect,
         .n_desc = byteorder->swap16(symbol->n32.n_desc),
-        .n_value = pl_sym_value(reader->image, symbol)
+        .n_value = (pl_vm_address_t) pl_sym_value(reader->image, symbol)
     };
     
     entry.normalized_value = entry.n_value;

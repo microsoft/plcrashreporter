@@ -324,10 +324,10 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 }
 
                 /* Save the position */
-                set_cfa_expression(abs_addr, blockLength);
+                set_cfa_expression(abs_addr, (pl_vm_size_t) blockLength);
                 
                 /* Skip the expression opcodes */
-                opstream.skip(blockLength);
+                opstream.skip((pl_vm_off_t) blockLength);
                 break;
             }
                 
@@ -396,7 +396,7 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::eval_program (plcra
                 }
 
                 /* Skip the expression opcodes */
-                opstream.skip(blockLength);
+                opstream.skip((pl_vm_off_t) blockLength);
                 break;
             }
                 
@@ -634,7 +634,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
     /* Apply the rule */
     switch (dw_rule) {
         case PLCRASH_DWARF_CFA_REG_RULE_OFFSET: {
-            if ((err = plcrash_async_task_memcpy(task, cfa_val, (machine_ptr_s)dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_task_memcpy(task, (pl_vm_address_t) cfa_val, (pl_vm_off_t) dw_value, vptr, greg_size)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Failed to read offset(N) register value: %d", err);
                 return err;
             }
@@ -688,7 +688,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
             
             /* Map the expression data  */
             plcrash_async_mobject_t mobj;
-            if ((err = plcrash_async_mobject_init(&mobj, task, expr_addr, expr_len, true)) != PLCRASH_ESUCCESS) {
+            if ((err = plcrash_async_mobject_init(&mobj, task, expr_addr, (pl_vm_size_t) expr_len, true)) != PLCRASH_ESUCCESS) {
                 PLCF_DEBUG("Could not map CFA expression range");
                 return err;
             }
@@ -697,7 +697,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
             plcrash_greg_t regval;
             if (m64) {
                 uint64_t initial_state[] = { cfa_val };
-                if ((err = plcrash_async_dwarf_expression_eval<uint64_t, int64_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v64)) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_dwarf_expression_eval<uint64_t, int64_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, (pl_vm_size_t) expr_len, initial_state, 1, &rvalue.v64)) != PLCRASH_ESUCCESS) {
                     plcrash_async_mobject_free(&mobj);
                     PLCF_DEBUG("CFA eval_64 failed");
                     return err;
@@ -706,7 +706,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
                 regval = rvalue.v64;
             } else {
                 uint32_t initial_state[] = { static_cast<uint32_t>(cfa_val) };
-                if ((err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_dwarf_expression_eval<uint32_t, int32_t>(&mobj, task, thread_state, byteorder, expr_addr, 0, (pl_vm_size_t) expr_len, initial_state, 1, &rvalue.v32)) != PLCRASH_ESUCCESS) {
                     plcrash_async_mobject_free(&mobj);
                     PLCF_DEBUG("CFA eval_32 failed");
                     return err;
@@ -720,7 +720,7 @@ static plcrash_error_t plcrash_async_dwarf_cfa_state_apply_register (task_t task
             
             /* Dereference the target address, if using the non-value EXPRESSION rule */
             if (dw_rule == PLCRASH_DWARF_CFA_REG_RULE_EXPRESSION) {
-                if ((err = plcrash_async_task_memcpy(task, regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_task_memcpy(task, (pl_vm_address_t) regval, 0, vptr, greg_size)) != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("Failed to read register value from expression result: %d", err);
                     return err;
                 }

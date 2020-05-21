@@ -350,7 +350,7 @@ plcrash_error_t plcrash_async_dwarf_expression_eval (plcrash_async_mobject_t *mo
                 machine_ptr value;
 
                 dw_expr_pop(&addr);
-                if ((err = plcrash_async_task_memcpy(task, addr, 0, &value, sizeof(value))) != PLCRASH_ESUCCESS) {
+                if ((err = plcrash_async_task_memcpy(task, (pl_vm_address_t) addr, 0, &value, sizeof(value))) != PLCRASH_ESUCCESS) {
                     PLCF_DEBUG("DW_OP_deref referenced an invalid target address 0x%" PRIx64, (uint64_t) addr);
                     return err;
                 }

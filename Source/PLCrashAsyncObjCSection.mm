@@ -781,7 +781,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
         
         /* Extract the method name pointer. */
         pl_vm_address_t methodNamePtr = (image->m64
-                                         ? image->byteorder->swap64(method_64->name)
+                                         ? (pl_vm_address_t) image->byteorder->swap64(method_64->name)
                                          : image->byteorder->swap32(method_32->name));
         
         /* Read the method name. */
@@ -793,7 +793,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     
         /* Extract the method IMP. */
         pl_vm_address_t imp = (image->m64
-                               ? image->byteorder->swap64(method_64->imp)
+                               ? (pl_vm_address_t) image->byteorder->swap64(method_64->imp)
                                : image->byteorder->swap32(method_32->imp));
         
         /* Call the callback. */
@@ -833,7 +833,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     
     /* Grab the class's data_rw pointer. This needs masking because it also
      * can contain flags. */
-    pl_vm_address_t data_ptr = image->byteorder->swap(cls->data_rw);
+    pl_vm_address_t data_ptr = (pl_vm_address_t) image->byteorder->swap(cls->data_rw);
     data_ptr &= FAST_DATA_MASK;
 
     /* Grab the data RO pointer from the cache. If unavailable, we'll fetch the data and populate the class. */
@@ -857,7 +857,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
 
         /* Grab the data_ro pointer. The RO data (read-only) contains the class name
          * and method list. */
-        cached_data_ro_addr = image->byteorder->swap(cls_data_rw.data_ro);
+        cached_data_ro_addr = (pl_vm_address_t) image->byteorder->swap(cls_data_rw.data_ro);
 
         /* When objc_class_abi_version >= 1, it's a tagged union based on the low bit:
          * 0: class_ro_t  1: class_rw_ext_t
@@ -871,7 +871,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
                 PLCF_DEBUG("plcrash_async_task_memcpy at 0x%llx error %d", (long long)cached_data_ro_addr, err);
                 return PLCRASH_EINVALID_DATA;
             }
-            cached_data_ro_addr = image->byteorder->swap(data_ro_addr);
+            cached_data_ro_addr = (pl_vm_address_t) image->byteorder->swap(data_ro_addr);
         }
 
         /* Copy the R/O data; it will either be heap allocated (RW_COPIED_RO), found within the __objc_const section of the current cached image,
@@ -909,7 +909,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class (plcrash_async_macho_t *i
     }
     
     /* Fetch the pointer to the class name, and make the string. */
-    pl_vm_address_t class_name_ptr = image->byteorder->swap(cls_data_ro->name);
+    pl_vm_address_t class_name_ptr = (pl_vm_address_t) image->byteorder->swap(cls_data_ro->name);
     err = plcrash_async_macho_string_init(class_name, image, class_name_ptr);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("plcrash_async_macho_string_init at 0x%llx error %d", (long long)class_name_ptr, err);
@@ -946,7 +946,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_class_methods (plcrash_async_ma
         return err;
 
     /* Fetch and parse the method list. */
-    pl_vm_address_t methods_ptr = image->byteorder->swap(cls_data_ro.baseMethods);
+    pl_vm_address_t methods_ptr = (pl_vm_address_t) image->byteorder->swap(cls_data_ro.baseMethods);
     if (methods_ptr != 0) {
         err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, is_meta_class, methods_ptr, callback, ctx);
     } else {
@@ -984,7 +984,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_category_methods (plcrash_async
     
     /* Grab the class reference and parse the class. We try to simply remap the pointer, but if that fails, we perform a more
      * expensive read. */
-    pl_vm_address_t ptr = image->byteorder->swap(category->cls);
+    pl_vm_address_t ptr = (pl_vm_address_t) image->byteorder->swap(category->cls);
     class_t *classPtr = (class_t *) plcrash_async_mobject_remap_address(&objc_cache->objcDataMobj, ptr, 0, sizeof(*classPtr));
     class_t class_data;
 
@@ -1001,13 +1001,13 @@ static plcrash_error_t pl_async_objc_parse_objc2_category_methods (plcrash_async
         return err;
     
     /* Fetch and parse the instance and class method lists. The method list will be NULL if no methods are defined for the category; in that case, we simply skip the category. */
-    pl_vm_address_t methods_ptr = image->byteorder->swap(category->instanceMethods);
+    pl_vm_address_t methods_ptr = (pl_vm_address_t) image->byteorder->swap(category->instanceMethods);
     if (methods_ptr != 0) {
         if ((err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, false, methods_ptr, callback, ctx)) != PLCRASH_ESUCCESS)
             goto cleanup;
     }
     
-    methods_ptr = image->byteorder->swap(category->classMethods);
+    methods_ptr = (pl_vm_address_t) image->byteorder->swap(category->classMethods);
     if (methods_ptr != 0) {
         if ((err = pl_async_objc_parse_objc2_method_list(image, objc_cache, &class_name, true, methods_ptr, callback, ctx)) != PLCRASH_ESUCCESS)
             goto cleanup;
@@ -1063,7 +1063,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     /* Iterate over all classes. */
     for(unsigned i = 0; i < classCount; i++) {
         /* Read the class structure */
-        pl_vm_address_t ptr = classPtrs[i];
+        pl_vm_address_t ptr = (pl_vm_address_t) classPtrs[i];
         class_t *classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, ptr, 0, sizeof(*classPtr));
         if (classPtr == NULL) {
             classPtr = (class_t *) plcrash_async_mobject_remap_address(&objcContext->dataMobj, ptr, 0, sizeof(*classPtr));
@@ -1087,7 +1087,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
         }
         
         /* Read an architecture-appropriate class structure for the metaclass. */
-        pl_vm_address_t isa = plcrash_async_objc_isa_pointer(image->byteorder->swap(classPtr->isa));
+        pl_vm_address_t isa = plcrash_async_objc_isa_pointer((pl_vm_address_t) image->byteorder->swap(classPtr->isa));
         class_t *metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->objcDataMobj, isa, 0, sizeof(*metaclass));
         if (metaclass == NULL) {
             metaclass = (class_t *) plcrash_async_mobject_remap_address(&objcContext->dataMobj, isa, 0, sizeof(*metaclass));
@@ -1118,7 +1118,7 @@ static plcrash_error_t pl_async_objc_parse_from_data_section (plcrash_async_mach
     /* Iterate over all classes. */
     for(unsigned i = 0; i < catCount; i++) {
         /* Read a category pointer at the current index from the appropriate pointer. */
-        pl_vm_address_t ptr = image->byteorder->swap(catPtrs[i]);
+        pl_vm_address_t ptr = (pl_vm_address_t) image->byteorder->swap(catPtrs[i]);
         
         /* Read the category structure. */
         category_t *category = (category_t *) plcrash_async_mobject_remap_address(&objcContext->objcConstMobj, ptr, 0, sizeof(*category));
