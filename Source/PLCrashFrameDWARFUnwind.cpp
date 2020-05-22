@@ -125,7 +125,7 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     
     /* Find the FDE (if any) */
     {
-        err = reader.find_fde(0x0 /* offset hint */, pc, &fde_info);
+        err = reader.find_fde(0x0 /* offset hint */, (pl_vm_address_t) pc, &fde_info);
         if (err != PLCRASH_ESUCCESS) {
             if (err != PLCRASH_ENOTFOUND)
                 PLCF_DEBUG("Failed to find FDE the current frame pc 0x%" PRIx64 " in %s: %d", (uint64_t) pc, PLCF_DEBUG_IMAGE_NAME(image), err);
@@ -235,7 +235,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     plcrash_async_image_list_set_reading(image_list, true);
     
     /* Find the corresponding image */
-    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, pc);
+    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pc);
     if (image == NULL) {
         PLCF_DEBUG("Could not find a loaded image for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
         plcrash_async_image_list_set_reading(image_list, false);

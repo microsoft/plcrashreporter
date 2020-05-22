@@ -116,10 +116,10 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
         /* In a .debug_frame, the CIE offset is already relative to the start of the section;
          * In a .eh_frame, the CIE offset is negative, relative to the current offset of the the FDE. */
         if (debug_frame) {
-            info->cie_offset = raw_offset;
+            info->cie_offset = (pl_vm_address_t) raw_offset;
             
             /* (Safely) calculate the absolute, task-relative address */
-            if (raw_offset > PL_VM_OFF_MAX || !plcrash_async_address_apply_offset(sect_addr, raw_offset, &cie_target_address)) {
+            if (raw_offset > PL_VM_OFF_MAX || !plcrash_async_address_apply_offset(sect_addr, (pl_vm_address_t) raw_offset, &cie_target_address)) {
                 PLCF_DEBUG("CIE offset of 0x%" PRIx64 " overflows representable range of pl_vm_address_t", raw_offset);
                 return PLCRASH_EINVAL;
             }
@@ -130,7 +130,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
                 return PLCRASH_EINVAL;
             }
             
-            cie_target_address = (fde_address+length_size) - raw_offset;
+            cie_target_address = (fde_address+length_size) - (pl_vm_address_t) raw_offset;
             info->cie_offset = cie_target_address - sect_addr;
         }
         
@@ -207,7 +207,7 @@ plcrash_error_t plcrash_async_dwarf_fde_info_init (plcrash_async_dwarf_fde_info_
         return PLCRASH_EINVAL;
     }
 
-    info->instructions_length = info->fde_length - (info->instructions_offset - info->fde_offset);
+    info->instructions_length = (pl_vm_size_t) info->fde_length - (info->instructions_offset - info->fde_offset);
 
     /* Clean up */
     plcrash_async_dwarf_cie_info_free(&cie);
