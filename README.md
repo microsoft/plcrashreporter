@@ -51,7 +51,7 @@ Also, next optional tools are used to build additional resources:
 - Go to PLCrashReporter's root folder and run
 
     ```bash
-    xcodebuild BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" -configuration Release -target 'Disk Image'
+    xcodebuild -configuration Release -target 'Disk Image'
     ```
 
     to create binaries for all platforms.
