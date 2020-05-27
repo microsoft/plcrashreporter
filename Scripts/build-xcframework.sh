@@ -7,7 +7,7 @@ echo "=== BUILD TARGET ${PROJECT_NAME} iOS Framework OF PROJECT ${PROJECT_NAME} 
 # OBJROOT must be customized to avoid conflicts with the current process.
 xcodebuild -quiet \
     SYMROOT="${SYMROOT}" OBJROOT="${BUILT_PRODUCTS_DIR}" PROJECT_TEMP_DIR="${PROJECT_TEMP_DIR}" \
-    ONLY_ACTIVE_ARCH=NO ARCHS="${ARCHS}" BITCODE_GENERATION_MODE=bitcode OTHER_CFLAGS="-fembed-bitcode" \
+    ONLY_ACTIVE_ARCH=NO ARCHS="${ARCHS}" \
     -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -scheme "${PROJECT_NAME} iOS Framework" \
     -destination 'platform=macOS,variant=Mac Catalyst'
 
