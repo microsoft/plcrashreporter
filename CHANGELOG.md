@@ -6,6 +6,7 @@
 * Support [Mac Catalyst](https://developer.apple.com/mac-catalyst/).
 * Distribute `.xcframework` archive alongside with the other options.
 * Fix symbolication issues with new Objective-C runtime version.
+* Fix `Undefined symbol: ___llvm_profile_runtime` when the SDK was built from source by Carthage.
 
 ___
 
