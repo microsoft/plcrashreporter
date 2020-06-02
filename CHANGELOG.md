@@ -5,6 +5,7 @@
 * Drop support old versions of Xcode. The minimal version is Xcode 11 now.
 * Support [Mac Catalyst](https://developer.apple.com/mac-catalyst/).
 * Distribute `.xcframework` archive alongside with the other options.
+* Improve reliability of writing crash reports in case of memory corruption.
 * Fix symbolication issues with new Objective-C runtime version.
 
 ___
