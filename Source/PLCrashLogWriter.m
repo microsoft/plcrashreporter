@@ -357,7 +357,8 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             PLCrashProcessInfo *parentInfo = [[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID];
             if (parentInfo != nil) {
                 if (parentInfo.processName != nil) {
-                    plprotobuf_cbinary_data_nsstring_init(&writer->process_info.parent_process_name, parentInfo.processName);                }
+                    plprotobuf_cbinary_data_nsstring_init(&writer->process_info.parent_process_name, parentInfo.processName);
+                }
             } else {
                 PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
             }
