@@ -80,8 +80,13 @@ static void save_crash_report (PLCrashReporter *reporter) {
         NSLog(@"Failed to load crash report data: %@", error);
         return;
     }
+    [reporter purgePendingCrashReport];
 
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: data error: &error];
+    if (report == nil) {
+       NSLog(@"Failed to parse crash report: %@", error);
+       return;
+   }
     NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport: report withTextFormat: PLCrashReportTextFormatiOS];
     NSLog(@"%@", text);
 
@@ -89,7 +94,6 @@ static void save_crash_report (PLCrashReporter *reporter) {
     if (![data writeToFile: outputPath atomically: YES]) {
         NSLog(@"Failed to write crash report");
     }
-    
     NSLog(@"Saved crash report to: %@", outputPath);
 }
 
