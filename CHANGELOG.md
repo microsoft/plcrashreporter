@@ -7,6 +7,7 @@
 * Distribute `.xcframework` archive alongside with the other options.
 * Improve reliability of saving crash reports in case of memory corruption.
 * Fix symbolication issues with new Objective-C runtime version.
+* Add workaround for SwiftPM on Xcode 11.1 bug (`SWIFT_PACKAGE` is not defined) that prevents library usage on macOS.
 
 ___
 
