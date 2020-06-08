@@ -69,7 +69,7 @@
 			dependencies = (
 				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
 				F8CF2BD1246C05D100904633 /* PBXTargetDependency */,
-				F8CF2BCF246C05D100904633 /* PBXTargetDependency */,
+				C23D0556248A7C440094EC6B /* PBXTargetDependency */,
 			);
 			name = "CrashReporter XCFramework";
 			productName = "CrashReporter XCFramework";
@@ -862,6 +862,13 @@
 			remoteGlobalIDString = 8064D7AD1C4D22D8005A8B4C;
 			remoteInfo = "CrashReporter-tvOS-Device";
 		};
+		C23D0555248A7C440094EC6B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = "CrashReporter macOS Framework";
+		};
 		C25664E4235737560088513E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -938,13 +945,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = C2B90D952456FBD000834AFB;
 			remoteInfo = "CrashReporter iOS Universal";
-		};
-		F8CF2BCE246C05D100904633 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
-			remoteInfo = "CrashReporter macOS";
 		};
 		F8CF2BD0246C05D100904633 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3351,6 +3351,11 @@
 			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */;
 			targetProxy = 80A63BD91C4D384A0073B7A3 /* PBXContainerItemProxy */;
 		};
+		C23D0556248A7C440094EC6B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
+			targetProxy = C23D0555248A7C440094EC6B /* PBXContainerItemProxy */;
+		};
 		C25664E5235737560088513E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C25664D123571D330088513E /* Documentation */;
@@ -3405,11 +3410,6 @@
 			isa = PBXTargetDependency;
 			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
 			targetProxy = F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */;
-		};
-		F8CF2BCF246C05D100904633 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
-			targetProxy = F8CF2BCE246C05D100904633 /* PBXContainerItemProxy */;
 		};
 		F8CF2BD1246C05D100904633 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3748,6 +3748,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				BITCODE_GENERATION_MODE = marker;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -3790,6 +3791,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				BITCODE_GENERATION_MODE = bitcode;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_CODE_COVERAGE = NO;
