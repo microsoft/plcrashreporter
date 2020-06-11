@@ -3494,6 +3494,8 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
@@ -3509,11 +3511,15 @@
 					armv7s,
 					arm64e,
 				);
+				BITCODE_GENERATION_MODE = bitcode;
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
@@ -3545,6 +3551,8 @@
 				);
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3559,8 +3567,12 @@
 					armv7s,
 					arm64e,
 				);
+				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3748,7 +3760,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				BITCODE_GENERATION_MODE = marker;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -3776,7 +3787,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				PL_MIN_MACOSX_SDK = 101500;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
@@ -3791,7 +3801,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				BITCODE_GENERATION_MODE = bitcode;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_CODE_COVERAGE = NO;
@@ -3817,7 +3826,6 @@
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				OTHER_CFLAGS = "-fembed-bitcode";
 				PL_MIN_MACOSX_SDK = 101500;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
@@ -3833,6 +3841,7 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
 			};
@@ -3841,8 +3850,11 @@
 		8064D81A1C4D22D8005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
 			};
@@ -3862,6 +3874,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				OTHER_LDFLAGS = "-ObjC";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -3875,6 +3888,7 @@
 					"$(ARCHS_STANDARD)",
 					arm64e,
 				);
+				BITCODE_GENERATION_MODE = bitcode;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
@@ -3882,6 +3896,8 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
 				OTHER_LDFLAGS = "-ObjC";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
