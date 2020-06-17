@@ -49,7 +49,7 @@
  * ensure this doesn't break inclusion of the header in which the enum identifiers may be defined, we explicitly
  * include the compact unwind header.
  */
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if TARGET_OS_MAC && !TARGET_OS_IPHONE || TARGET_OS_MACCATALYST
 #include <mach-o/compact_unwind_encoding.h>
 #define UNWIND_ARM64_MODE_MASK                  0x0F000000
 #define UNWIND_ARM64_MODE_FRAMELESS             0x02000000
@@ -62,19 +62,6 @@
 #define UNWIND_ARM64_FRAME_X27_X28_PAIR         0x00000010
 #define UNWIND_ARM64_FRAMELESS_STACK_SIZE_MASK  0x00FFF000
 #define UNWIND_ARM64_DWARF_SECTION_OFFSET       0x00FFFFFF
-#endif
-
-/* CPU type/subtype constants */
-#ifndef CPU_SUBTYPE_ARM64E
-# define CPU_SUBTYPE_ARM64E 2
-#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_14_1)
-# warning CPU_SUBTYPE_ARM64E is now defined by the minimum supported Mac SDK. Please remove this define.
-#endif
-
-#ifndef CPU_SUBTYPE_ARM64E
-# define CPU_SUBTYPE_ARM64E 2
-#elif PLCF_COMPAT_HAS_UPDATED_OSX_SDK(MAC_OS_X_VERSION_10_14_1)
-# warning CPU_SUBTYPE_ARM64E is now defined by the minimum supported Mac SDK. Please remove this define.
 #endif
 
 #endif /* PLCRASH_COMPAT_CONSTANTS_H */

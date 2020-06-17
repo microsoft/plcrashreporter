@@ -257,11 +257,18 @@
     plcrash_async_mobject_t mobj;
     
     /* Try to map the section */
-    STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_macho_map_section(&_image, "__DATA", "__const", &mobj), @"Failed to map section");
+    const char *segname = "__DATA";
+    const char *sectname = "__const";
+    plcrash_error_t err = plcrash_async_macho_map_section(&_image, segname, sectname, &mobj);
+    if (err == PLCRASH_ENOTFOUND) {
+        segname = "__DATA_CONST";
+        err = plcrash_async_macho_map_section(&_image, segname, sectname, &mobj);
+    }
+    STAssertEquals(PLCRASH_ESUCCESS, err, @"Failed to map section");
     
     /* Fetch the section directly for comparison */
     unsigned long sectsize = 0;
-    uint8_t *data = getsectiondata((void *)_image.header_addr, "__DATA", "__const", &sectsize);
+    uint8_t *data = getsectiondata((void *)_image.header_addr, segname, sectname, &sectsize);
     STAssertNotNULL(data, @"Could not fetch section data");
 
     /* Compare the address and length. We have to apply the slide to determine the original source address. */

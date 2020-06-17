@@ -50,6 +50,8 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 
+#import <stdatomic.h>
+
 #define NSDEBUG(msg, args...) {\
     NSLog(@"[PLCrashReporter] " msg, ## args); \
 }
@@ -220,10 +222,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
     }
 
     /* Extract the thread state */
-    // XXX_ARM64 rdar://14970271 -- In the Xcode 5 GM SDK, _STRUCT_MCONTEXT is not correctly
-    // defined as _STRUCT_MCONTEXT64 when building for arm64; this requires the pl_mcontext_t
-    // cast.
-    plcrash_async_thread_state_mcontext_init(&thread_state, (pl_mcontext_t *) uap->uc_mcontext);
+    plcrash_async_thread_state_mcontext_init(&thread_state, uap->uc_mcontext);
     
     /* Set up the BSD signal info */
     bsd_signal_info.signo = info->si_signo;
@@ -361,8 +360,9 @@ static void uncaught_exception_handler (NSException *exception) {
      * It is possible that another crash may occur between setting the uncaught
      * exception field, and triggering the signal handler.
      */
-    static int32_t exception_is_handled = 0;
-    if (!OSAtomicCompareAndSwap32(0, 1, &exception_is_handled)) {
+    static atomic_bool exception_is_handled = false;
+    bool expected = false;
+    if (!atomic_compare_exchange_strong(&exception_is_handled, &expected, true)) {
         return;
     }
     
@@ -424,13 +424,11 @@ static PLCrashReporter *sharedReporter = nil;
  * clients should initialize a crash reporter instance directly.
  */
 + (PLCrashReporter *) sharedReporter {
-    /* Once we drop 10.5 support, this may be converted to dispatch_once() */
-    static OSSpinLock onceLock = OS_SPINLOCK_INIT;
-    OSSpinLockLock(&onceLock); {
+    static dispatch_once_t onceLock;
+    dispatch_once(&onceLock, ^{
         if (sharedReporter == nil)
             sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] configuration: [PLCrashReporterConfig defaultConfiguration]];
-    } OSSpinLockUnlock(&onceLock);
-
+    });
     return sharedReporter;
 }
 

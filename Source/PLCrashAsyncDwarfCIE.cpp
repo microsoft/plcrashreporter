@@ -367,7 +367,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
      * must be valid, as well as offset >= lengthsize, or the read would have failed. It's possible that the declared
      * CIE length is short, however, which we validate here.
      */
-    info->initial_instructions_offset = info->cie_offset + (offset - length_size);
+    info->initial_instructions_offset = (pl_vm_address_t) info->cie_offset + (offset - length_size);
     
     if (info->cie_length < (info->initial_instructions_offset - info->cie_offset)) {
         PLCF_DEBUG("CIE length of 0x%" PRIu64 " declared to be less than the actual read length of 0x%" PRIu64, (uint64_t) info->cie_length,
@@ -375,7 +375,7 @@ plcrash_error_t plcrash_async_dwarf_cie_info_init (plcrash_async_dwarf_cie_info_
         return PLCRASH_EINVAL;
     }
 
-    info->initial_instructions_length = info->cie_length - (info->initial_instructions_offset - info->cie_offset);
+    info->initial_instructions_length = (pl_vm_size_t)(info->cie_length - (info->initial_instructions_offset - info->cie_offset));
     
     return PLCRASH_ESUCCESS;
 }

@@ -118,17 +118,17 @@ static plframe_error_t plframe_cursor_read_dwarf_unwind_int (task_t task,
     
     /* Initialize the reader. */
     if ((err = reader.init(dwarf_section, image->byteorder, image->m64, is_debug_frame)) != PLCRASH_ESUCCESS) {
-        PLCF_DEBUG("Could not initialize a %s DWARF parser for the current frame pc: 0x%" PRIx64 ": %d", (is_debug_frame ? "debug_frame" : "eh_frame"), (uint64_t) pc, err);
+        PLCF_DEBUG("Could not initialize a %s DWARF parser for the current frame pc 0x%" PRIx64 " in %s: %d", (is_debug_frame ? "debug_frame" : "eh_frame"), (uint64_t) pc, PLCF_DEBUG_IMAGE_NAME(image), err);
         result = PLFRAME_EINVAL;
         goto cleanup;
     }
     
     /* Find the FDE (if any) */
     {
-        err = reader.find_fde(0x0 /* offset hint */, pc, &fde_info);
-        
+        err = reader.find_fde(0x0 /* offset hint */, (pl_vm_address_t) pc, &fde_info);
         if (err != PLCRASH_ESUCCESS) {
-            PLCF_DEBUG("Failed to find FDE the current frame pc: 0x%" PRIx64 ": %d", (uint64_t) pc, err);
+            if (err != PLCRASH_ENOTFOUND)
+                PLCF_DEBUG("Failed to find FDE the current frame pc 0x%" PRIx64 " in %s: %d", (uint64_t) pc, PLCF_DEBUG_IMAGE_NAME(image), err);
             result = PLFRAME_ENOTSUP;
             goto cleanup;
         }
@@ -224,6 +224,9 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
         return PLFRAME_EBADFRAME;
     }
     plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
+    if (pc == 0) {
+        return PLFRAME_ENOTSUP;
+    }
 
     /*
      * Mark the list as being read; this prevents any deallocation of our borrowed reference to a plcrash_async_image_t,
@@ -232,7 +235,7 @@ plframe_error_t plframe_cursor_read_dwarf_unwind (task_t task,
     plcrash_async_image_list_set_reading(image_list, true);
     
     /* Find the corresponding image */
-    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, pc);
+    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pc);
     if (image == NULL) {
         PLCF_DEBUG("Could not find a loaded image for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
         plcrash_async_image_list_set_reading(image_list, false);

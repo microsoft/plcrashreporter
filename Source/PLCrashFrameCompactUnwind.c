@@ -59,10 +59,13 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         return PLFRAME_EBADFRAME;
     }
     plcrash_greg_t pc = plcrash_async_thread_state_get_reg(&current_frame->thread_state, PLCRASH_REG_IP);
+    if (pc == 0) {
+        return PLFRAME_ENOTSUP;
+    }
     
     /* Find the corresponding image */
     plcrash_async_image_list_set_reading(image_list, true);
-    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, pc);
+    plcrash_async_image_t *image = plcrash_async_image_containing_address(image_list, (pl_vm_address_t) pc);
     if (image == NULL) {
         PLCF_DEBUG("Could not find a loaded image for the current frame pc: 0x%" PRIx64, (uint64_t) pc);
         result = PLFRAME_ENOTSUP;
@@ -93,7 +96,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     /* Find the encoding entry (if any) and free the reader */
     pl_vm_address_t function_base;
     uint32_t encoding;
-    err = plcrash_async_cfe_reader_find_pc(&reader, pc - image->macho_image.header_addr, &function_base, &encoding);
+    err = plcrash_async_cfe_reader_find_pc(&reader, (pl_vm_address_t)(pc - image->macho_image.header_addr), &function_base, &encoding);
     plcrash_async_cfe_reader_free(&reader);
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Did not find CFE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);

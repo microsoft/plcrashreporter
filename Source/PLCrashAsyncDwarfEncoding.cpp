@@ -155,7 +155,7 @@ plcrash_error_t dwarf_frame_reader::find_fde (pl_vm_off_t offset,
         
         /* Calculate the next entry address; the length_size addition is known-safe, as we were able to successfully read the length from *cfi_entry */
         pl_vm_address_t next_cfi_entry;
-        if (!plcrash_async_address_apply_offset(cfi_entry+length_size, length, &next_cfi_entry)) {
+        if (!plcrash_async_address_apply_offset(cfi_entry+length_size, (pl_vm_off_t) length, &next_cfi_entry)) {
             PLCF_DEBUG("Entry length size overflows the CFI address");
             return PLCRASH_EINVAL;
         }

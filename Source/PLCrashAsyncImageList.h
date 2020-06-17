@@ -30,7 +30,6 @@
 #define PLCRASH_ASYNC_IMAGE_LIST_H
 
 #include <stdint.h>
-#include <libkern/OSAtomic.h>
 #include <stdbool.h>
 
 #include "PLCrashAsyncMachOImage.h"
@@ -62,9 +61,9 @@ struct plcrash_async_image {
 
     /** A borrowed, circular reference to the backing list node. */
 #ifdef __cplusplus
-    plcrash::async::async_list<plcrash_async_image_t *>::node *_node;
+    plcrash::async::async_list<plcrash_async_image_t *>::node * volatile _node;
 #else
-    void *_node;
+    void * volatile _node;
 #endif
 };
 

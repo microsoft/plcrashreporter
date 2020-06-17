@@ -1083,12 +1083,12 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
             plcrash_greg_t fp = plcrash_async_thread_state_get_reg(thread_state, PLCRASH_REG_FP);
             
             /* Address of saved registers */
-            saved_reg_addr = fp + entry->stack_offset;
+            saved_reg_addr = (pl_vm_address_t)(fp + entry->stack_offset);
             
             /* Restore the previous frame's stack pointer from the saved frame pointer. This is
              * the FP + saved FP + return address. */
             pl_vm_address_t new_sp;
-            if (!plcrash_async_address_apply_offset(fp, greg_size * 2, &new_sp)) {
+            if (!plcrash_async_address_apply_offset((pl_vm_address_t) fp, greg_size * 2, &new_sp)) {
                 PLCF_DEBUG("Current frame pointer falls outside of addressable bounds");
                 return PLCRASH_EINVAL;
             }
@@ -1149,7 +1149,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
 
             if (entry->return_address_register == PLCRASH_REG_INVALID) {
                 /* Return address is on the stack */
-                pl_vm_address_t retaddr = sp - greg_size;
+                pl_vm_address_t retaddr = (pl_vm_address_t)(sp - greg_size);
                 saved_reg_addr = retaddr - (greg_size * entry->register_count); /* retaddr - [saved registers] */
 
                 /* Original SP is found just before the return address. */
@@ -1178,7 +1178,7 @@ plcrash_error_t plcrash_async_cfe_entry_apply (task_t task,
                 plcrash_async_thread_state_set_reg(new_thread_state, PLCRASH_REG_IP, plcrash_async_thread_state_get_reg(thread_state, entry->return_address_register));
                 
                 /* Saved registers are found below the new stack pointer. */
-                saved_reg_addr = sp - (greg_size * entry->register_count); /* sp - [saved registers] */
+                saved_reg_addr = (pl_vm_address_t) sp - (greg_size * entry->register_count); /* sp - [saved registers] */
             }
 
             break;

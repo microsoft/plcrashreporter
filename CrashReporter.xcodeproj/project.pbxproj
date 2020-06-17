@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -14,6 +14,7 @@
 				C25664D023571BC60088513E /* Verify Modifications */,
 				058812D310405908009128FB /* Create Disk Image */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
+				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 			);
 			dependencies = (
 				C26C52AB2451B4D400D20162 /* PBXTargetDependency */,
@@ -21,6 +22,7 @@
 				C2B90DA02456FBF400834AFB /* PBXTargetDependency */,
 				C25664E5235737560088513E /* PBXTargetDependency */,
 				05EC525A10531C9300DB9D39 /* PBXTargetDependency */,
+				F8358676246BEFA500D1CE3E /* PBXTargetDependency */,
 			);
 			name = "Disk Image";
 			productName = "Disk Image";
@@ -57,6 +59,20 @@
 			);
 			name = "CrashReporter tvOS Universal";
 			productName = "CrashReporter tvOS Universal";
+		};
+		F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = F8B9C72B24695BE600B9FEF6 /* Build configuration list for PBXAggregateTarget "CrashReporter XCFramework" */;
+			buildPhases = (
+				F8B9C72E24695BF200B9FEF6 /* Build XCFramework */,
+			);
+			dependencies = (
+				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
+				F8CF2BD1246C05D100904633 /* PBXTargetDependency */,
+				C23D0556248A7C440094EC6B /* PBXTargetDependency */,
+			);
+			name = "CrashReporter XCFramework";
+			productName = "CrashReporter XCFramework";
 		};
 /* End PBXAggregateTarget section */
 
@@ -108,7 +124,6 @@
 		057C9BBE17970F54006B242E /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
 		057C9BBF17970F6D006B242E /* PLCrashAsyncDwarfEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05659DED17455DED00D2EE21 /* PLCrashAsyncDwarfEncoding.cpp */; };
 		057C9BC017970F77006B242E /* PLCrashAsyncDwarfExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05E7488A176135CE009B8745 /* PLCrashAsyncDwarfExpression.cpp */; };
-		0581B521168FDB280098C103 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		05920D21177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05920D1E177B9257001E8975 /* PLCrashFrameDWARFUnwind.cpp */; };
 		05920D27177B9257001E8975 /* PLCrashFrameDWARFUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05920D1F177B9257001E8975 /* PLCrashFrameDWARFUnwind.h */; };
 		059666E00EEDDFB8008A0601 /* PLCrashFrameWalker.h in Headers */ = {isa = PBXBuildFile; fileRef = 059666DA0EEDDFB8008A0601 /* PLCrashFrameWalker.h */; };
@@ -467,6 +482,8 @@
 		C2BBCDAF2456E0E800F9E820 /* PLCrashSysctlTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */; };
 		C2CBA40724586975001B775F /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; };
 		C2CBA40824586975001B775F /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C2DCD88124658A63007322C5 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
+		C2DCD88224658A63007322C5 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; platformFilter = maccatalyst; };
 		C2F7F1662451E9BD002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		C2F7F1672451EA71002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
 		C2F7F1682451EA72002BD8BF /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 05CD318A0EE93A90000FDE88 /* CrashReporter.m */; };
@@ -845,6 +862,13 @@
 			remoteGlobalIDString = 8064D7AD1C4D22D8005A8B4C;
 			remoteInfo = "CrashReporter-tvOS-Device";
 		};
+		C23D0555248A7C440094EC6B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = "CrashReporter macOS Framework";
+		};
 		C25664E4235737560088513E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -907,6 +931,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8064D88B1C4D22E5005A8B4C;
 			remoteInfo = "CrashReporter tvOS Framework";
+		};
+		F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
+			remoteInfo = "CrashReporter XCFramework";
+		};
+		F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2B90D952456FBD000834AFB;
+			remoteInfo = "CrashReporter iOS Universal";
+		};
+		F8CF2BD0246C05D100904633 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2B90D992456FBDE00834AFB;
+			remoteInfo = "CrashReporter tvOS Universal";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1159,10 +1204,14 @@
 		C2BBCD822456E03D00F9E820 /* PLCrashAsyncLinkedListTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncLinkedListTests.mm; sourceTree = "<group>"; };
 		C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSysctlTests.m; sourceTree = "<group>"; };
 		C2BBCD842456E03D00F9E820 /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
+		C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "DemoCrash-iOS.entitlements"; sourceTree = "<group>"; };
+		C2DCD87824657CE5007322C5 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-tvOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-xcframework.sh"; sourceTree = "<group>"; };
+		F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-xcframework-archive.sh"; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1789,6 +1838,7 @@
 				C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */,
 				05F40CE90EF7AB80008050CF /* DemoCrash-macOS-Info.plist */,
 				C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */,
+				C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */,
 				050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				05F3CD6C16DE7625007911FB /* Tests */,
@@ -1908,8 +1958,10 @@
 			children = (
 				C2B90DAA245714EA00834AFB /* build-ios-universal.sh */,
 				C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */,
+				F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */,
 				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
 				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
+				F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */,
 				C2B90DA5245714E900834AFB /* generate-documentation.sh */,
 				C2B90DA7245714E900834AFB /* verify-modifications.sh */,
 			);
@@ -1929,6 +1981,7 @@
 		F81CF5EE235A0AE20007FA54 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C2DCD87824657CE5007322C5 /* libc++.tbd */,
 				C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */,
 				C2620D452451CF9400B11E68 /* CoreServices.framework */,
 				C2620D432451CF8B00B11E68 /* Foundation.framework */,
@@ -2559,6 +2612,7 @@
 			targets = (
 				058812D410405908009128FB /* Disk Image */,
 				C25664D123571D330088513E /* Documentation */,
+				F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */,
 				C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */,
 				C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */,
@@ -2656,7 +2710,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/create-disk-image.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/create-disk-image.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
@@ -2675,7 +2729,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/verify-modifications.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/verify-modifications.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D523571D3D0088513E /* Generate Documentation */ = {
@@ -2694,7 +2748,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/generate-documentation.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/generate-documentation.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664E62357487D0088513E /* Create Archive With Static Libraries */ = {
@@ -2713,7 +2767,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/create-static-libs-archive.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/create-static-libs-archive.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAB2457178800834AFB /* Build Universal Framework */ = {
@@ -2732,7 +2786,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/build-ios-universal.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/build-ios-universal.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
@@ -2751,7 +2805,45 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/Scripts/build-tvos-universal.sh\n";
+			shellScript = "\"$SRCROOT/Scripts/build-tvos-universal.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F8B9C72E24695BF200B9FEF6 /* Build XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-xcframework.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F8CF2BD2246C139400904633 /* Create Archive With XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Create Archive With XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/create-xcframework-archive.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -2802,6 +2894,7 @@
 				05E734350EFAC46D005EDFB7 /* PLCrashAsyncSignalInfo.c in Sources */,
 				05E734FA0EFAE59C005EDFB7 /* PLCrashReportSignalInfo.m in Sources */,
 				2D0E104B1141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */,
+				C2DCD88224658A63007322C5 /* mach_exc.defs in Sources */,
 				C2B72B2224534E5300D03ABD /* PLCrashReport.proto in Sources */,
 				054627AC11D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */,
 				052A46BF1363650100987004 /* PLCrashAsyncImageList.cpp in Sources */,
@@ -3009,6 +3102,7 @@
 				05E734FE0EFAE59C005EDFB7 /* PLCrashReportSignalInfo.m in Sources */,
 				2D0E10491141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m in Sources */,
 				054627B211D998BB007891C7 /* PLCrashReportTextFormatter.m in Sources */,
+				C2DCD88124658A63007322C5 /* mach_exc.defs in Sources */,
 				052A46C31363650100987004 /* PLCrashAsyncImageList.cpp in Sources */,
 				05BB83D41364A77800D53B84 /* PLCrashReportProcessorInfo.m in Sources */,
 				05BB83F81364AD3E00D53B84 /* PLCrashReportMachineInfo.m in Sources */,
@@ -3025,7 +3119,6 @@
 				05D9E55416765A0200B39833 /* PLCrashReportRegisterInfo.m in Sources */,
 				05D9E55F16765D0200B39833 /* PLCrashReportSymbolInfo.m in Sources */,
 				0573B4301681098E00395F2A /* PLCrashMachExceptionServer.m in Sources */,
-				0581B521168FDB280098C103 /* mach_exc.defs in Sources */,
 				FCE4550BA74D9DF923CFCD5A /* PLCrashFrameStackUnwind.c in Sources */,
 				05A17DC516D7F81600888448 /* PLCrashAsyncThread.c in Sources */,
 				05A17DF116DBD0AD00888448 /* PLCrashAsyncThread_x86.c in Sources */,
@@ -3258,6 +3351,11 @@
 			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */;
 			targetProxy = 80A63BD91C4D384A0073B7A3 /* PBXContainerItemProxy */;
 		};
+		C23D0556248A7C440094EC6B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
+			targetProxy = C23D0555248A7C440094EC6B /* PBXContainerItemProxy */;
+		};
 		C25664E5235737560088513E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C25664D123571D330088513E /* Documentation */;
@@ -3303,6 +3401,21 @@
 			target = 8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */;
 			targetProxy = C2CBA40E245869F4001B775F /* PBXContainerItemProxy */;
 		};
+		F8358676246BEFA500D1CE3E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
+			targetProxy = F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */;
+		};
+		F8CF2BCD246C05D100904633 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
+			targetProxy = F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */;
+		};
+		F8CF2BD1246C05D100904633 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */;
+			targetProxy = F8CF2BD0246C05D100904633 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -3334,6 +3447,7 @@
 					armv7s,
 					arm64e,
 				);
+				CODE_SIGN_ENTITLEMENTS = "Resources/DemoCrash-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
@@ -3341,6 +3455,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3353,6 +3468,7 @@
 					armv7s,
 					arm64e,
 				);
+				CODE_SIGN_ENTITLEMENTS = "Resources/DemoCrash-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
@@ -3360,6 +3476,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -3377,9 +3494,11 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3392,14 +3511,18 @@
 					armv7s,
 					arm64e,
 				);
+				BITCODE_GENERATION_MODE = bitcode;
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -3426,7 +3549,10 @@
 					armv7s,
 					arm64e,
 				);
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3441,7 +3567,12 @@
 					armv7s,
 					arm64e,
 				);
+				BITCODE_GENERATION_MODE = bitcode;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
+				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3451,6 +3582,7 @@
 		05CD326B0EE93DC4000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3463,6 +3595,7 @@
 		05CD326C0EE93DC4000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3475,6 +3608,7 @@
 		05CD33270EE9443A000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests iOS";
@@ -3486,6 +3620,7 @@
 		05CD33280EE9443A000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests iOS";
@@ -3517,6 +3652,7 @@
 		05E731F40EFA1AAC005EDFB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -3530,6 +3666,7 @@
 		05E731F50EFA1AAC005EDFB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -3628,12 +3765,12 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.6.0;
+				CURRENT_PROJECT_VERSION = 1.7.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -3645,11 +3782,12 @@
 					PLCF_DEBUG_BUILD,
 				);
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
-				PL_MIN_MACOSX_SDK = 101400;
+				PL_MIN_MACOSX_SDK = 101500;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
@@ -3665,14 +3803,15 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_CODE_COVERAGE = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.6.0;
+				CURRENT_PROJECT_VERSION = 1.7.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -3683,10 +3822,11 @@
 					PLCF_RELEASE_BUILD,
 				);
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				PL_MIN_MACOSX_SDK = 101400;
+				PL_MIN_MACOSX_SDK = 101500;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
@@ -3699,7 +3839,9 @@
 		8064D8191C4D22D8005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
 			};
@@ -3708,7 +3850,11 @@
 		8064D81A1C4D22D8005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BITCODE_GENERATION_MODE = bitcode;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
 			};
@@ -3728,6 +3874,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				OTHER_LDFLAGS = "-ObjC";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -3741,6 +3888,7 @@
 					"$(ARCHS_STANDARD)",
 					arm64e,
 				);
+				BITCODE_GENERATION_MODE = bitcode;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
@@ -3748,6 +3896,8 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
+				OTHER_CFLAGS = "-fembed-bitcode-marker";
+				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
 				OTHER_LDFLAGS = "-ObjC";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -3757,6 +3907,7 @@
 		8064D9931C4D27E2005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3768,6 +3919,7 @@
 		8064D9941C4D27E2005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3847,6 +3999,20 @@
 				EFFECTIVE_PLATFORM_NAME = "-tvOS";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
+			};
+			name = Release;
+		};
+		F8B9C72C24695BE600B9FEF6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EFFECTIVE_PLATFORM_NAME = "-xcframework";
+			};
+			name = Debug;
+		};
+		F8B9C72D24695BE600B9FEF6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EFFECTIVE_PLATFORM_NAME = "-xcframework";
 			};
 			name = Release;
 		};
@@ -4020,6 +4186,15 @@
 			buildConfigurations = (
 				C2B90D9B2456FBDF00834AFB /* Debug */,
 				C2B90D9C2456FBDF00834AFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F8B9C72B24695BE600B9FEF6 /* Build configuration list for PBXAggregateTarget "CrashReporter XCFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8B9C72C24695BE600B9FEF6 /* Debug */,
+				F8B9C72D24695BE600B9FEF6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -198,7 +198,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
             
             /* Set the base size to the number of bytes skipped */
             base = 0x0;
-            *size = (vm_aligned - vm_addr);
+            *size = (size_t)(vm_aligned - vm_addr);
             break;
         }
             
@@ -344,7 +344,7 @@ template <typename machine_ptr> plcrash_error_t gnu_ehptr_reader<machine_ptr>::r
          *
          * TODO: This implementation should provide a resolvable GNUEHPtr value, rather than requiring resolution occur here.
          */
-        return plcrash_async_dwarf_read_task_uintmax64(plcrash_async_mobject_task(mobj), _byteorder, *result, 0, sizeof(machine_ptr), result);
+        return plcrash_async_dwarf_read_task_uintmax64(plcrash_async_mobject_task(mobj), _byteorder, (pl_vm_address_t) *result, 0, sizeof(machine_ptr), result);
     }
     
     return PLCRASH_ESUCCESS;
