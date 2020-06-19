@@ -3555,6 +3555,7 @@
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3575,6 +3576,7 @@
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -3660,6 +3662,7 @@
 				);
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3674,6 +3677,7 @@
 				);
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -3844,6 +3848,7 @@
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3857,6 +3862,7 @@
 				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
