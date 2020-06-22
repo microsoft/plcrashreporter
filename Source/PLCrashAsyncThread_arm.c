@@ -59,6 +59,7 @@
 })
 #define THREAD_STATE_GET_FPTR(name, type, ts)  ({ \
     plcrash_greg_t ptr = (plcrash_greg_t) arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
+    ptr = ptr ? ptr : arm_thread_state64_get_ ## name (ts->arm_state. type); \
     (plcrash_greg_t) ptrauth_strip((void *) ptr, ptrauth_key_function_pointer); \
 })
 
@@ -89,6 +90,7 @@
 })
 #define THREAD_STATE_GET_FPTR(name, type, ts) ({ \
     plcrash_greg_t ptr = (plcrash_greg_t) arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
+    ptr = ptr ? ptr : arm_thread_state64_get_ ## name (ts->arm_state. type); \
     (ptr & ARM64_PTR_MASK); \
 })
 
