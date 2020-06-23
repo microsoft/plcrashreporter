@@ -815,7 +815,7 @@ static void *exception_server_thread (void *arg) {
     mr = mach_msg(&msg, MACH_SEND_MSG, msg.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 
     if (mr != MACH_MSG_SUCCESS) {
-        NSLog(@"Unexpected error sending termination message to background thread: %d", mr);
+        PLCR_LOG("Unexpected error sending termination message to background thread: %d", mr);
         return;
     }
 

@@ -139,4 +139,10 @@
 #  endif
 #endif /* PLCR_PRIVATE */
 
+#ifdef PLCR_PRIVATE
+#include <asl.h>
+#define PLCR_LOG(msg, args...) \
+    asl_log(NULL, NULL, ASL_LEVEL_INFO, msg, ## args)
+#endif /* PLCR_PRIVATE */
+
 #endif /* PLCRASH_CONSTANTS_H */

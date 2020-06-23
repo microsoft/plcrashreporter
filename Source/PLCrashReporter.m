@@ -52,10 +52,6 @@
 
 #import <stdatomic.h>
 
-#define NSDEBUG(msg, args...) {\
-    NSLog(@"[PLCrashReporter] " msg, ## args); \
-}
-
 /** @internal
  * CrashReporter cache directory name. */
 static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
@@ -331,7 +327,7 @@ static void image_add_callback (const struct mach_header *mh, intptr_t vmaddr_sl
     
     /* Look up the image info */
     if (dladdr(mh, &info) == 0) {
-        NSLog(@"%s: dladdr(%p, ...) failed", __FUNCTION__, mh);
+        PLCR_LOG("%s: dladdr(%p, ...) failed", __FUNCTION__, mh);
         return;
     }
 
@@ -740,7 +736,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     /* Check for write failure */
     NSData *data;
     if (err != PLCRASH_ESUCCESS) {
-        NSLog(@"Write failed with error %s", plcrash_async_strerror(err));
+        PLCR_LOG("Write failed with error %s", plcrash_async_strerror(err));
         plcrash_populate_error(outError, PLCrashReporterErrorUnknown, @"Failed to write the crash report to disk", nil);
         data = nil;
         goto cleanup;
@@ -759,7 +755,7 @@ cleanup:
 
     if (unlink(path) != 0) {
         /* This shouldn't fail, but if it does, there's no use in returning nil */
-        NSLog(@"Failure occured deleting live crash report: %s", strerror(errno));
+        PLCR_LOG("Failure occured deleting live crash report: %s", strerror(errno));
     }
 
     free(path);
@@ -888,13 +884,13 @@ cleanup:
             return nil;
         }
 
-        NSDEBUG(@"Warning -- bundle identifier, using process name %s", progname);
+        PLCR_LOG("Warning -- bundle identifier, using process name %s", progname);
         bundleIdentifier = [NSString stringWithUTF8String: progname];
     }
 
     /* Verify that the version is available */
     if (bundleVersion == nil) {
-        NSDEBUG(@"Warning -- bundle version unavailable");
+        PLCR_LOG("Warning -- bundle version unavailable");
         bundleVersion = @"";
     }
     
