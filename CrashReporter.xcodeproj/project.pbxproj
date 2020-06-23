@@ -3498,6 +3498,7 @@
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -3522,6 +3523,7 @@
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -3884,6 +3886,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3907,6 +3910,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
