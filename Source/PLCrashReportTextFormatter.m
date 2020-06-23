@@ -517,8 +517,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
     if (frameInfo.symbolInfo != nil) {
         NSString *symbolName = frameInfo.symbolInfo.symbolName;
 
-        /* Apple strips the _ symbol prefix in their reports. Only OS X makes use of an
-         * underscore symbol prefix by default. */
+        /* Apple strips the _ symbol prefix in their reports. */
         if ([symbolName rangeOfString: @"_"].location == 0 && [symbolName length] > 1) {
             switch (report.systemInfo.operatingSystem) {
                 case PLCrashReportOperatingSystemMacOSX:
@@ -529,7 +528,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
                     break;
 
                 default:
-                    NSLog(@"Symbol prefix rules are unknown for this OS!");
+                    NSLog(@"Symbol \"%@\" prefix rules are unknown for this OS!", symbolName);
                     break;
             }
         }
