@@ -3855,10 +3855,6 @@
 		8064D8B91C4D22E5005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD)",
-					arm64e,
-				);
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
@@ -3876,10 +3872,6 @@
 		8064D8BA1C4D22E5005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD)",
-					arm64e,
-				);
 				BITCODE_GENERATION_MODE = bitcode;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
