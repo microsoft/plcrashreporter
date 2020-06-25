@@ -3488,7 +3488,6 @@
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
-				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRELINK_FLAGS = "-w";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = iphoneos;
@@ -3515,7 +3514,6 @@
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
-				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRELINK_FLAGS = "-w";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = iphoneos;
@@ -3732,7 +3730,6 @@
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
 				);
-				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRELINK_FLAGS = "-w";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
@@ -3754,7 +3751,6 @@
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
 				);
-				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRELINK_FLAGS = "-w";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
@@ -3816,6 +3812,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PL_MIN_MACOSX_SDK = 101500;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
@@ -3878,6 +3875,7 @@
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PL_MIN_MACOSX_SDK = 101500;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
@@ -3925,7 +3923,6 @@
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
-				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRELINK_FLAGS = "-w";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3947,7 +3944,6 @@
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
-				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRELINK_FLAGS = "-w";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				PROVISIONING_PROFILE_SPECIFIER = "";
