@@ -1,5 +1,14 @@
 # PLCrashReporter Change Log
 
+## Version 1.7.1
+
+* Fix crash on old operating systems: macOS 10.11, iOS 9 and tvOS 9 (and older).
+* Fix duplicate symbols in applications with `-all_load` linker flag.
+* Fix exporting PLCrashReporter along with an application into `.xcarchive`.
+* Fix collecting stacktraces on `arm64e` devices in some cases.
+
+___
+
 ## Version 1.7.0
 
 * Drop support old versions of Xcode. The minimal version is Xcode 11 now.
