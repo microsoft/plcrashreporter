@@ -29,6 +29,7 @@
 #import "CrashReporter.h"
 #import "PLCrashReport.h"
 #import "PLCrashReport.pb-c.h"
+#import "PLCrashAsyncThread.h"
 
 struct _PLCrashReportDecoder {
     Plcrash__CrashReport *crashReport;
@@ -578,11 +579,20 @@ error:
     PLCrashReportSymbolInfo *symbolInfo = nil;
     if (stackFrame->symbol != NULL) {
         if ((symbolInfo = [self extractSymbolInfo: stackFrame->symbol error: outError]) == NULL)
-            return NULL;
+            return nil;
     }
-
-    return [[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: stackFrame->pc
-                                                                 symbolInfo: symbolInfo];
+    uint64_t instructionPointer = stackFrame->pc;
+    /*
+     * Workaround to handle incorrectly collected reports by old PLCrashReporter versions.
+     * This guard does nothing on correctly collected reports.
+     */
+    if (_machineInfo &&
+        _machineInfo.processorInfo.type == CPU_TYPE_ARM64 &&
+        _machineInfo.processorInfo.subtype == CPU_SUBTYPE_ARM64E) {
+        instructionPointer &= ARM64_PTR_MASK;
+    }
+    return [[PLCrashReportStackFrameInfo alloc] initWithInstructionPointer: instructionPointer
+                                                                symbolInfo: symbolInfo];
 }
 
 /**

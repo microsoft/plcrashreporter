@@ -82,8 +82,6 @@
  * Even if pointer authentication is not available at the compile time, the binary still can be used in an environment with PAC.
  * In this case, we can apply bitmask as a workaround.
  */
-#define ARM64_PTR_MASK 0x0000000FFFFFFFFF
-
 #define THREAD_STATE_GET_PTR(name, type, ts) ({ \
     plcrash_greg_t ptr = arm_thread_state64_get_ ## name (ts->arm_state. type); \
     (ptr & ARM64_PTR_MASK); \

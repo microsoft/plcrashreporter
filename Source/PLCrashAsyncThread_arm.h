@@ -33,6 +33,11 @@
 extern "C" {
 #endif
 
+/**
+ * Bitmask to strip pointer authentication (PAC).
+ */
+#define ARM64_PTR_MASK 0x0000000FFFFFFFFF
+
 #if defined(__arm__) || defined(__arm64__)
 
 // Large enough for 64-bit or 32-bit
