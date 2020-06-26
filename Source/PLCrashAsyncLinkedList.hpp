@@ -31,8 +31,18 @@
 
 #include "PLCrashAsync.h"
 #include "PLCrashMacros.h"
-#include <os/lock.h>
 #include <atomic>
+
+/*
+ * OSAtomic* and OSSpinLock are deprecated since macOS 10.12, iOS 10.0 and tvOS 10.0, but suggested replacement
+ * for OSSpinLock is missed at runtime on older versions, so we must use it until we support older versions.
+ * For modern platforms like Mac Catalyst where we can use the new API, define OSSPINLOCK_USE_INLINED=1 to get
+ * inline implementations of the OSSpinLock interfaces in terms of the <os/lock.h> primitives.
+ */
+#if TARGET_OS_MACCATALYST
+#define OSSPINLOCK_USE_INLINED 1
+#endif
+#include <libkern/OSAtomic.h>
 
 PLCR_CPP_BEGIN_NS
 
@@ -155,7 +165,7 @@ private:
     void free_list (node *next);
 
     /** The lock used by writers. No lock is required for readers. */
-    os_unfair_lock _write_lock;
+    OSSpinLock _write_lock;
     
     /** The head of the list, or NULL if the list is empty. Must only be used to iterate or delete entries. */
     std::atomic<node *> _head;
@@ -177,7 +187,7 @@ template <typename V> async_list<V>::async_list (void) {
     _tail = NULL;
     _free = NULL;
     _refcount = 0;
-    _write_lock = OS_UNFAIR_LOCK_INIT;
+    _write_lock = OS_SPINLOCK_INIT;
 }
     
 template <typename V> async_list<V>::~async_list (void) {
@@ -198,7 +208,7 @@ template <typename V> async_list<V>::~async_list (void) {
  */
 template <typename V> void async_list<V>::nasync_prepend (V value) {
     /* Lock the list from other writers. */
-    os_unfair_lock_lock(&_write_lock); {
+    OSSpinLockLock(&_write_lock); {
         /* Construct the new entry, or recycle an existing one. */
         node *new_node;
         if (_free != NULL) {
@@ -247,7 +257,7 @@ template <typename V> void async_list<V>::nasync_prepend (V value) {
                 PLCF_DEBUG("Failed to prepend to image list despite holding lock");
             }
         }
-    } os_unfair_lock_unlock(&_write_lock);
+    } OSSpinLockUnlock(&_write_lock);
 }
 
 
@@ -261,7 +271,7 @@ template <typename V> void async_list<V>::nasync_prepend (V value) {
 template <typename V> void async_list<V>::nasync_append (V value) {
     
     /* Lock the list from other writers. */
-    os_unfair_lock_lock(&_write_lock); {
+    OSSpinLockLock(&_write_lock); {
         /* Construct the new entry, or recycle an existing one. */
         node *new_node;
         if (_free != NULL) {
@@ -305,7 +315,7 @@ template <typename V> void async_list<V>::nasync_append (V value) {
             new_node->_prev = _tail;
             _tail = new_node;
         }
-    } os_unfair_lock_unlock(&_write_lock);
+    } OSSpinLockUnlock(&_write_lock);
 }
 
 /**
@@ -337,7 +347,7 @@ template <typename V> void async_list<V>::nasync_remove_first_value (V value) {
  */
 template <typename V> void async_list<V>::nasync_remove_node (node *deleted_node) {
     /* Lock the list from other writers. */
-    os_unfair_lock_lock(&_write_lock); {
+    OSSpinLockLock(&_write_lock); {
         /* Find the record. */
         node *item = _head;
         while (item != NULL) {
@@ -349,7 +359,7 @@ template <typename V> void async_list<V>::nasync_remove_node (node *deleted_node
         
         /* If not found, nothing to do */
         if (item == NULL) {
-            os_unfair_lock_unlock(&_write_lock);
+            OSSpinLockUnlock(&_write_lock);
             return;
         }
         
@@ -392,7 +402,7 @@ template <typename V> void async_list<V>::nasync_remove_node (node *deleted_node
         } else {
             delete item;
         }
-    } os_unfair_lock_unlock(&_write_lock);
+    } OSSpinLockUnlock(&_write_lock);
 }
 
 /**
