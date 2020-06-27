@@ -31,7 +31,7 @@
 
 #include "PLCrashAsync.h"
 #include "PLCrashMacros.h"
-#include <os/lock.h>
+#include "PLCrashCompatConstants.h"
 #include <atomic>
 
 PLCR_CPP_BEGIN_NS
@@ -155,7 +155,7 @@ private:
     void free_list (node *next);
 
     /** The lock used by writers. No lock is required for readers. */
-    os_unfair_lock _write_lock;
+    PLCR_COMPAT_LOCK_TYPE _write_lock;
     
     /** The head of the list, or NULL if the list is empty. Must only be used to iterate or delete entries. */
     std::atomic<node *> _head;
@@ -177,7 +177,7 @@ template <typename V> async_list<V>::async_list (void) {
     _tail = NULL;
     _free = NULL;
     _refcount = 0;
-    _write_lock = OS_UNFAIR_LOCK_INIT;
+    _write_lock = PLCR_COMPAT_LOCK_INIT;
 }
     
 template <typename V> async_list<V>::~async_list (void) {
@@ -198,7 +198,7 @@ template <typename V> async_list<V>::~async_list (void) {
  */
 template <typename V> void async_list<V>::nasync_prepend (V value) {
     /* Lock the list from other writers. */
-    os_unfair_lock_lock(&_write_lock); {
+    PLCR_COMPAT_LOCK_LOCK(&_write_lock); {
         /* Construct the new entry, or recycle an existing one. */
         node *new_node;
         if (_free != NULL) {
@@ -247,7 +247,7 @@ template <typename V> void async_list<V>::nasync_prepend (V value) {
                 PLCF_DEBUG("Failed to prepend to image list despite holding lock");
             }
         }
-    } os_unfair_lock_unlock(&_write_lock);
+    } PLCR_COMPAT_LOCK_UNLOCK(&_write_lock);
 }
 
 
@@ -261,7 +261,7 @@ template <typename V> void async_list<V>::nasync_prepend (V value) {
 template <typename V> void async_list<V>::nasync_append (V value) {
     
     /* Lock the list from other writers. */
-    os_unfair_lock_lock(&_write_lock); {
+    PLCR_COMPAT_LOCK_LOCK(&_write_lock); {
         /* Construct the new entry, or recycle an existing one. */
         node *new_node;
         if (_free != NULL) {
@@ -305,7 +305,7 @@ template <typename V> void async_list<V>::nasync_append (V value) {
             new_node->_prev = _tail;
             _tail = new_node;
         }
-    } os_unfair_lock_unlock(&_write_lock);
+    } PLCR_COMPAT_LOCK_UNLOCK(&_write_lock);
 }
 
 /**
@@ -337,7 +337,7 @@ template <typename V> void async_list<V>::nasync_remove_first_value (V value) {
  */
 template <typename V> void async_list<V>::nasync_remove_node (node *deleted_node) {
     /* Lock the list from other writers. */
-    os_unfair_lock_lock(&_write_lock); {
+    PLCR_COMPAT_LOCK_LOCK(&_write_lock); {
         /* Find the record. */
         node *item = _head;
         while (item != NULL) {
@@ -349,7 +349,7 @@ template <typename V> void async_list<V>::nasync_remove_node (node *deleted_node
         
         /* If not found, nothing to do */
         if (item == NULL) {
-            os_unfair_lock_unlock(&_write_lock);
+            PLCR_COMPAT_LOCK_UNLOCK(&_write_lock);
             return;
         }
         
@@ -392,7 +392,7 @@ template <typename V> void async_list<V>::nasync_remove_node (node *deleted_node
         } else {
             delete item;
         }
-    } os_unfair_lock_unlock(&_write_lock);
+    } PLCR_COMPAT_LOCK_UNLOCK(&_write_lock);
 }
 
 /**
