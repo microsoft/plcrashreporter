@@ -124,6 +124,7 @@ static struct signal_code signal_codes[] = {
     { SIGBUS,   BUS_OBJERR,     "BUS_OBJERR"  },
 
     /* SIGTRAP */
+    { SIGTRAP,  0,              "#0"          },
     { SIGTRAP,  TRAP_BRKPT,     "TRAP_BRKPT"  },
     { SIGTRAP,  TRAP_TRACE,     "TRAP_TRACE"  },
 

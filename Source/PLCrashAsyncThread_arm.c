@@ -55,11 +55,12 @@
 
 #define THREAD_STATE_GET_PTR(name, type, ts) ({ \
     plcrash_greg_t ptr = arm_thread_state64_get_ ## name (ts->arm_state. type); \
-    ptrauth_strip((void *) ptr, ptrauth_key_frame_pointer); \
+    (plcrash_greg_t) ptrauth_strip((void *) ptr, ptrauth_key_frame_pointer); \
 })
 #define THREAD_STATE_GET_FPTR(name, type, ts)  ({ \
-    plcrash_greg_t ptr = arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
-    ptrauth_strip((void *) ptr, ptrauth_key_function_pointer); \
+    plcrash_greg_t ptr = (plcrash_greg_t) arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
+    ptr = ptr ? ptr : arm_thread_state64_get_ ## name (ts->arm_state. type); \
+    (plcrash_greg_t) ptrauth_strip((void *) ptr, ptrauth_key_function_pointer); \
 })
 
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
@@ -81,13 +82,15 @@
  * Even if pointer authentication is not available at the compile time, the binary still can be used in an environment with PAC.
  * In this case, we can apply bitmask as a workaround.
  */
-#define ARM64_PTR_MASK 0x0000000FFFFFFFFF
-
 #define THREAD_STATE_GET_PTR(name, type, ts) ({ \
     plcrash_greg_t ptr = arm_thread_state64_get_ ## name (ts->arm_state. type); \
     (ptr & ARM64_PTR_MASK); \
 })
-#define THREAD_STATE_GET_FPTR(name, type, ts) THREAD_STATE_GET_PTR(name ## _fptr, type, ts)
+#define THREAD_STATE_GET_FPTR(name, type, ts) ({ \
+    plcrash_greg_t ptr = (plcrash_greg_t) arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
+    ptr = ptr ? ptr : arm_thread_state64_get_ ## name (ts->arm_state. type); \
+    (ptr & ARM64_PTR_MASK); \
+})
 
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
     ts->valid_regs |= 1ULL << regnum; \

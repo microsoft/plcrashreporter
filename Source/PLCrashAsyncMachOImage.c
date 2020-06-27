@@ -486,11 +486,11 @@ plcrash_error_t plcrash_async_macho_map_segment (plcrash_async_macho_t *image, c
 static uint32_t plcrash_async_macho_read_sections_count (plcrash_async_macho_t *image, uintptr_t *cursor) {
     uint32_t nsects;
     if (image->m64) {
-        struct segment_command_64 *cmd_64 = *cursor;
+        struct segment_command_64 *cmd_64 = (void *)*cursor;
         nsects = image->byteorder->swap32(cmd_64->nsects);
         *cursor += sizeof(*cmd_64);
     } else {
-        struct segment_command *cmd_32 = *cursor;
+        struct segment_command *cmd_32 = (void *)*cursor;
         nsects = image->byteorder->swap32(cmd_32->nsects);
         *cursor += sizeof(*cmd_32);
     }
@@ -499,8 +499,8 @@ static uint32_t plcrash_async_macho_read_sections_count (plcrash_async_macho_t *
 
 static bool plcrash_async_macho_read_section (plcrash_async_macho_t *image, uintptr_t *cursor, const char **sectname, pl_vm_address_t *sectaddr, pl_vm_size_t *sectsize) {
     if (image->m64) {
-        struct section_64 *sect_64 = *cursor;
-        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, sect_64, 0, sizeof(*sect_64))) {
+        struct section_64 *sect_64 = (void *)*cursor;
+        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)sect_64, 0, sizeof(*sect_64))) {
             return false;
         }
         /* Calculate the in-memory address and size. */
@@ -509,8 +509,8 @@ static bool plcrash_async_macho_read_section (plcrash_async_macho_t *image, uint
         *sectsize = (pl_vm_size_t) image->byteorder->swap64(sect_64->size);
         *cursor += sizeof(*sect_64);
     } else {
-        struct section *sect_32 = *cursor;
-        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, sect_32, 0, sizeof(*sect_32))) {
+        struct section *sect_32 = (void *)*cursor;
+        if (!plcrash_async_mobject_verify_local_pointer(&image->load_cmds, (uintptr_t)sect_32, 0, sizeof(*sect_32))) {
             return false;
         }
         /* Calculate the in-memory address and size. */
