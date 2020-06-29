@@ -115,10 +115,7 @@ static void save_crash_report (PLCrashReporter *reporter) {
  * enabled.
  */
 static bool debugger_should_exit (void) {
-#if !TARGET_OS_IPHONE
-    return false;
-#endif
-
+#if TARGET_OS_IPHONE
     struct kinfo_proc info;
     size_t info_size = sizeof(info);
     int name[4];
@@ -135,7 +132,7 @@ static bool debugger_should_exit (void) {
 
     if ((info.kp_proc.p_flag & P_TRACED) != 0)
         return true;
-    
+#endif
     return false;
 }
 

@@ -188,7 +188,7 @@ ret
 
 stp     fp, lr, [sp, #-16]!
 add     fp, sp, 0
-sub     sp, sp, #816 // Size of 340 for context
+sub     sp, sp, #816 // Size of 816 for context
 
 // These assumed offsets are compile-time validated in PLCrashLogWriter_trampoline.m, and are ABI-stable.
 
