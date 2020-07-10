@@ -187,7 +187,6 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         }
     
         [text appendFormat: @"Incident Identifier: %@\n", incidentIdentifier];
-        [text appendFormat: @"CrashReporter Key:   TODO\n"];
         [text appendFormat: @"Hardware Model:      %@\n", hardwareModel];
     }
     
