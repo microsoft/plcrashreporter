@@ -746,7 +746,9 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         goto cleanup;
     }
 
-    data = [NSData dataWithContentsOfFile: [NSString stringWithUTF8String: path]];
+    data = [NSData dataWithContentsOfFile:[NSString stringWithUTF8String: path]
+                                  options:NSDataReadingMappedAlways | NSDataReadingUncached
+                                    error:outError];
     if (data == nil) {
         /* This should only happen if our data is deleted out from under us */
         plcrash_populate_error(outError, PLCrashReporterErrorUnknown, NSLocalizedString(@"Unable to open live crash report for reading", nil), nil);
