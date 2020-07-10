@@ -1,11 +1,22 @@
 # PLCrashReporter Change Log
 
-## Version 1.7.0 (Under development)
+## Version 1.7.1
+
+* Fix crash on old operating systems: macOS 10.11, iOS 9 and tvOS 9 (and older).
+* Fix duplicate symbols in applications with `-all_load` linker flag.
+* Fix exporting PLCrashReporter along with an application into `.xcarchive`.
+* Fix collecting stacktraces on `arm64e` devices in some cases.
+
+___
+
+## Version 1.7.0
 
 * Drop support old versions of Xcode. The minimal version is Xcode 11 now.
 * Support [Mac Catalyst](https://developer.apple.com/mac-catalyst/).
 * Distribute `.xcframework` archive alongside with the other options.
+* Improve reliability of saving crash reports in case of memory corruption.
 * Fix symbolication issues with new Objective-C runtime version.
+* Add workaround for SwiftPM on Xcode 11.1 bug (`SWIFT_PACKAGE` is not defined) that prevents library usage on macOS.
 
 ___
 

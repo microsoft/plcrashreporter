@@ -297,7 +297,7 @@
     plcrash_log_writer_t writer;
 
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_init(&writer, @"test.id", @"1.0", @"2.0", PLCRASH_ASYNC_SYMBOL_STRATEGY_ALL, false), @"Initialization failed");
-    char *version = writer.system_info.version;
+    char *version = writer.system_info.version.data;
 
     STAssertTrue(version && version[0], @"Device version not saved");
 }

@@ -64,4 +64,22 @@
 #define UNWIND_ARM64_DWARF_SECTION_OFFSET       0x00FFFFFF
 #endif
 
+/*
+ * OSAtomic* and OSSpinLock are deprecated since macOS 10.12, iOS 10.0 and tvOS 10.0, but suggested replacement
+ * for OSSpinLock is missed at runtime on older versions, so we must use it until we support older versions.
+ */
+#if TARGET_OS_MACCATALYST
+#include <os/lock.h>
+#define PLCR_COMPAT_LOCK_TYPE           os_unfair_lock
+#define PLCR_COMPAT_LOCK_INIT           OS_UNFAIR_LOCK_INIT
+#define PLCR_COMPAT_LOCK_LOCK(lock)     os_unfair_lock_lock(lock)
+#define PLCR_COMPAT_LOCK_UNLOCK(lock)   os_unfair_lock_unlock(lock)
+#else
+#include <libkern/OSAtomic.h>
+#define PLCR_COMPAT_LOCK_TYPE           OSSpinLock
+#define PLCR_COMPAT_LOCK_INIT           OS_SPINLOCK_INIT
+#define PLCR_COMPAT_LOCK_LOCK(lock)     OSSpinLockLock(lock)
+#define PLCR_COMPAT_LOCK_UNLOCK(lock)   OSSpinLockUnlock(lock)
+#endif
+
 #endif /* PLCRASH_COMPAT_CONSTANTS_H */

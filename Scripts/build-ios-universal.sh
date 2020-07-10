@@ -15,7 +15,7 @@ build() {
     # Print only target name and issues. Mimic Xcode output to make prettify tools happy.
     echo "=== BUILD TARGET $1 OF PROJECT ${PROJECT_NAME} WITH CONFIGURATION ${CONFIGURATION} ==="
     # OBJROOT must be customized to avoid conflicts with the current process.
-    xcodebuild -quiet \
+    env -i "PATH=$PATH" xcodebuild \
         SYMROOT="${SYMROOT}" OBJROOT="${BUILT_PRODUCTS_DIR}" PROJECT_TEMP_DIR="${PROJECT_TEMP_DIR}" \
         ONLY_ACTIVE_ARCH=NO \
         -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -target "$1" -sdk "$2"

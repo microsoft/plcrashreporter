@@ -5,7 +5,7 @@ set -e
 # Print only target name and issues. Mimic Xcode output to make prettify tools happy.
 echo "=== BUILD TARGET ${PROJECT_NAME} iOS Framework OF PROJECT ${PROJECT_NAME} WITH CONFIGURATION ${CONFIGURATION} ==="
 # OBJROOT must be customized to avoid conflicts with the current process.
-xcodebuild -quiet \
+env -i "PATH=$PATH" xcodebuild \
     SYMROOT="${SYMROOT}" OBJROOT="${BUILT_PRODUCTS_DIR}" PROJECT_TEMP_DIR="${PROJECT_TEMP_DIR}" \
     ONLY_ACTIVE_ARCH=NO ARCHS="${ARCHS}" \
     -project "${PROJECT_NAME}.xcodeproj" -configuration "${CONFIGURATION}" -scheme "${PROJECT_NAME} iOS Framework" \

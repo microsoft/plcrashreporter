@@ -249,6 +249,22 @@ enum {
     PLCRASH_PROTO_REPORT_INFO_UUID_ID = 2,
 };
 
+static void plprotobuf_cbinary_data_string_init (PLProtobufCBinaryData *data, const char *value) {
+    data->data = (void *)value;
+    data->len = strlen(value);
+}
+
+static void plprotobuf_cbinary_data_nsstring_init (PLProtobufCBinaryData *data, NSString *value) {
+    plprotobuf_cbinary_data_string_init(data, strdup([value UTF8String]));
+}
+
+static void plprotobuf_cbinary_data_free (PLProtobufCBinaryData *data) {
+    if (data != NULL && data->data != NULL) {
+        free(data->data);
+        data->len = 0;
+    }
+}
+
 /**
  * Initialize a new crash log writer instance and issue a memory barrier upon completion. This fetches all necessary
  * environment information.
@@ -294,10 +310,10 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 
     /* Fetch the application information */
     {
-        writer->application_info.app_identifier = strdup([app_identifier UTF8String]);
-        writer->application_info.app_version = strdup([app_version UTF8String]);
+        plprotobuf_cbinary_data_nsstring_init(&writer->application_info.app_identifier, app_identifier);
+        plprotobuf_cbinary_data_nsstring_init(&writer->application_info.app_version, app_version);
         if (app_marketing_version != nil) {
-            writer->application_info.app_marketing_version = strdup([app_marketing_version UTF8String]);
+            plprotobuf_cbinary_data_nsstring_init(&writer->application_info.app_marketing_version, app_marketing_version);
         }
     }
     
@@ -317,19 +333,18 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
 
             /* Retrieve name and start time. */
             if (pinfo.processName != nil) {
-                writer->process_info.process_name = strdup([pinfo.processName UTF8String]);
+                plprotobuf_cbinary_data_nsstring_init(&writer->process_info.process_name, pinfo.processName);
             }
             writer->process_info.start_time = pinfo.startTime.tv_sec;
 
             /* Retrieve path */
-            char *process_path = NULL;
             uint32_t process_path_len = 0;
-
             _NSGetExecutablePath(NULL, &process_path_len);
             if (process_path_len > 0) {
-                process_path = malloc(process_path_len);
+                char *process_path = malloc(process_path_len);
                 _NSGetExecutablePath(process_path, &process_path_len);
-                writer->process_info.process_path = process_path;
+                writer->process_info.process_path.data = process_path;
+                writer->process_info.process_path.len = process_path_len;
             }
         }
 
@@ -342,7 +357,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             PLCrashProcessInfo *parentInfo = [[PLCrashProcessInfo alloc] initWithProcessID: pinfo.parentProcessID];
             if (parentInfo != nil) {
                 if (parentInfo.processName != nil) {
-                    writer->process_info.parent_process_name = strdup([parentInfo.processName UTF8String]);
+                    plprotobuf_cbinary_data_nsstring_init(&writer->process_info.parent_process_name, parentInfo.processName);
                 }
             } else {
                 PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
@@ -356,14 +371,15 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         /* Model */
 #if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
         /* On iOS, we want hw.machine (e.g. hw.machine = iPad2,1; hw.model = K93AP) */
-        writer->machine_info.model = plcrash_sysctl_string("hw.machine");
+        char *model = plcrash_sysctl_string("hw.machine");
 #else
         /* On Mac OS X, we want hw.model (e.g. hw.machine = x86_64; hw.model = Macmini5,3) */
-        writer->machine_info.model = plcrash_sysctl_string("hw.model");
+        char *model = plcrash_sysctl_string("hw.model");
 #endif
-        if (writer->machine_info.model == NULL) {
+        if (model == NULL) {
             PLCF_DEBUG("Could not retrive hw.model: %s", strerror(errno));
         }
+        plprotobuf_cbinary_data_string_init(&writer->machine_info.model, model);
         
         /* CPU */
         {
@@ -419,10 +435,11 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
     }
 
     /* Fetch the OS information */    
-    writer->system_info.build = plcrash_sysctl_string("kern.osversion");
-    if (writer->system_info.build == NULL) {
+    char *build = plcrash_sysctl_string("kern.osversion");
+    if (build == NULL) {
         PLCF_DEBUG("Could not retrive kern.osversion: %s", strerror(errno));
     }
+    plprotobuf_cbinary_data_string_init(&writer->system_info.build, build);
 
 #if TARGET_OS_IPHONE
     /* iOS, tvOS and Mac Catalyst */
@@ -433,8 +450,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         if (systemVersion.patchVersion > 0) {
             systemVersionString = [systemVersionString stringByAppendingFormat:@".%ld", (long)systemVersion.patchVersion];
         }
-
-        writer->system_info.version = strdup([systemVersionString UTF8String]);
+        plprotobuf_cbinary_data_nsstring_init(&writer->system_info.version, systemVersionString);
     }
 #elif TARGET_OS_MAC
     /* macOS */
@@ -457,7 +473,9 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         }
 
         /* Compose the string */
-        asprintf(&writer->system_info.version, "%" PRId32 ".%" PRId32 ".%" PRId32, (int32_t)major, (int32_t)minor, (int32_t)bugfix);
+        char *version;
+        asprintf(&version, "%" PRId32 ".%" PRId32 ".%" PRId32, (int32_t)major, (int32_t)minor, (int32_t)bugfix);
+        plprotobuf_cbinary_data_string_init(&writer->system_info.version, version);
     }
 #else
 #error Unsupported Platform
@@ -518,31 +536,21 @@ plcrash_error_t plcrash_log_writer_close (plcrash_log_writer_t *writer) {
  */
 void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     /* Free the app info */
-    if (writer->application_info.app_identifier != NULL)
-        free(writer->application_info.app_identifier);
-    if (writer->application_info.app_version != NULL)
-        free(writer->application_info.app_version);
-    if (writer->application_info.app_marketing_version != NULL)
-        free(writer->application_info.app_marketing_version);
+    plprotobuf_cbinary_data_free(&writer->application_info.app_identifier);
+    plprotobuf_cbinary_data_free(&writer->application_info.app_version);
+    plprotobuf_cbinary_data_free(&writer->application_info.app_marketing_version);
 
     /* Free the process info */
-    if (writer->process_info.process_name != NULL) 
-        free(writer->process_info.process_name);
-    if (writer->process_info.process_path != NULL) 
-        free(writer->process_info.process_path);
-    if (writer->process_info.parent_process_name != NULL) 
-        free(writer->process_info.parent_process_name);
+    plprotobuf_cbinary_data_free(&writer->process_info.process_name);
+    plprotobuf_cbinary_data_free(&writer->process_info.process_path);
+    plprotobuf_cbinary_data_free(&writer->process_info.parent_process_name);
     
     /* Free the system info */
-    if (writer->system_info.version != NULL)
-        free(writer->system_info.version);
-    
-    if (writer->system_info.build != NULL)
-        free(writer->system_info.build);
+    plprotobuf_cbinary_data_free(&writer->system_info.version);
+    plprotobuf_cbinary_data_free(&writer->system_info.build);
     
     /* Free the machine info */
-    if (writer->machine_info.model != NULL)
-        free(writer->machine_info.model);
+    plprotobuf_cbinary_data_free(&writer->machine_info.model);
 
     /* Free the exception data */
     if (writer->uncaught_exception.has_exception) {
@@ -574,10 +582,10 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_ID, PLPROTOBUF_C_TYPE_ENUM, &enumval);
 
     /* OS Version */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.version);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_VERSION_ID, PLPROTOBUF_C_TYPE_BYTES, &writer->system_info.version);
     
     /* OS Build */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID, PLPROTOBUF_C_TYPE_STRING, writer->system_info.build);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID, PLPROTOBUF_C_TYPE_BYTES, &writer->system_info.build);
 
     /* Machine type */
     enumval = PLCrashReportHostArchitecture;
@@ -626,8 +634,8 @@ static size_t plcrash_writer_write_machine_info (plcrash_async_file_t *file, plc
     size_t rv = 0;
     
     /* Model */
-    if (writer->machine_info.model != NULL)
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_MODEL_ID, PLPROTOBUF_C_TYPE_STRING, writer->machine_info.model);
+    if (writer->machine_info.model.data != NULL)
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_MACHINE_INFO_MODEL_ID, PLPROTOBUF_C_TYPE_BYTES, &writer->machine_info.model);
 
     /* Processor */
     {
@@ -660,18 +668,21 @@ static size_t plcrash_writer_write_machine_info (plcrash_async_file_t *file, plc
  * @param app_version Application version
  * @param app_marketing_version Application marketing version
  */
-static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const char *app_identifier, const char *app_version, const char *app_marketing_version) {
+static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file,
+                                             PLProtobufCBinaryData *app_identifier,
+                                             PLProtobufCBinaryData *app_version,
+                                             PLProtobufCBinaryData *app_marketing_version) {
     size_t rv = 0;
 
     /* App identifier */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_IDENTIFIER_ID, PLPROTOBUF_C_TYPE_STRING, app_identifier);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_IDENTIFIER_ID, PLPROTOBUF_C_TYPE_BYTES, app_identifier);
     
     /* App version */
-    rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, app_version);
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_VERSION_ID, PLPROTOBUF_C_TYPE_BYTES, app_version);
     
     /* App marketing version */
     if (app_marketing_version != NULL)
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_MARKETING_VERSION_ID, PLPROTOBUF_C_TYPE_STRING, app_marketing_version);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_MARKETING_VERSION_ID, PLPROTOBUF_C_TYPE_BYTES, app_marketing_version);
     
     return rv;
 }
@@ -690,9 +701,9 @@ static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file, const c
  * @param native If false, process is running under emulation.
  * @param start_time The start time of the process.
  */
-static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, const char *process_name,
-                                                 const pid_t process_id, const char *process_path, 
-                                                 const char *parent_process_name, const pid_t parent_process_id,
+static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, PLProtobufCBinaryData *process_name,
+                                                 const pid_t process_id, PLProtobufCBinaryData *process_path,
+                                                 PLProtobufCBinaryData *parent_process_name, const pid_t parent_process_id,
                                                  bool native, time_t start_time)
 {
     size_t rv = 0;
@@ -711,7 +722,7 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 
     /* Process name */
     if (process_name != NULL)
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, process_name);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_BYTES, process_name);
 
     /* Process ID */
     pidval = process_id;
@@ -719,11 +730,11 @@ static size_t plcrash_writer_write_process_info (plcrash_async_file_t *file, con
 
     /* Process path */
     if (process_path != NULL)
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_PATH_ID, PLPROTOBUF_C_TYPE_STRING, process_path);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PROCESS_PATH_ID, PLPROTOBUF_C_TYPE_BYTES, process_path);
     
     /* Parent process name */
     if (parent_process_name != NULL)
-        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_STRING, parent_process_name);
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_PARENT_PROCESS_NAME_ID, PLPROTOBUF_C_TYPE_BYTES, parent_process_name);
     
 
     /* Parent process ID */
@@ -1293,11 +1304,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         uint32_t size;
 
         /* Determine size */
-        size = (uint32_t) plcrash_writer_write_app_info(NULL, writer->application_info.app_identifier, writer->application_info.app_version, writer->application_info.app_marketing_version);
+        size = (uint32_t) plcrash_writer_write_app_info(NULL, &writer->application_info.app_identifier, &writer->application_info.app_version, &writer->application_info.app_marketing_version);
         
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_app_info(file, writer->application_info.app_identifier, writer->application_info.app_version, writer->application_info.app_marketing_version);
+        plcrash_writer_write_app_info(file, &writer->application_info.app_identifier, &writer->application_info.app_version, &writer->application_info.app_marketing_version);
     }
     
     /* Process info */
@@ -1305,15 +1316,15 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         uint32_t size;
         
         /* Determine size */
-        size = (uint32_t) plcrash_writer_write_process_info(NULL, writer->process_info.process_name, writer->process_info.process_id,
-                                                 writer->process_info.process_path, writer->process_info.parent_process_name,
+        size = (uint32_t) plcrash_writer_write_process_info(NULL, &writer->process_info.process_name, writer->process_info.process_id,
+                                                 &writer->process_info.process_path, &writer->process_info.parent_process_name,
                                                  writer->process_info.parent_process_id, writer->process_info.native,
                                                  writer->process_info.start_time);
         
         /* Write message */
         plcrash_writer_pack(file, PLCRASH_PROTO_PROCESS_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
-        plcrash_writer_write_process_info(file, writer->process_info.process_name, writer->process_info.process_id, 
-                                          writer->process_info.process_path, writer->process_info.parent_process_name, 
+        plcrash_writer_write_process_info(file, &writer->process_info.process_name, writer->process_info.process_id,
+                                          &writer->process_info.process_path, &writer->process_info.parent_process_name, 
                                           writer->process_info.parent_process_id, writer->process_info.native,
                                           writer->process_info.start_time);
     }
