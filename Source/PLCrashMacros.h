@@ -143,10 +143,10 @@
 #ifdef PLCR_PRIVATE
 #  if TARGET_OS_MACCATALYST
 #    include <os/log.h>
-#    define PLCR_LOG(msg, args...) os_log(OS_LOG_DEFAULT, msg, ## args)
+#    define PLCR_LOG(msg, args...) os_log(OS_LOG_DEFAULT, "[PLCrashReporter] "  msg, ## args)
 #  else
 #    include <asl.h>
-#    define PLCR_LOG(msg, args...) asl_log(NULL, NULL, ASL_LEVEL_INFO, msg, ## args)
+#    define PLCR_LOG(msg, args...) asl_log(NULL, NULL, ASL_LEVEL_INFO, "[PLCrashReporter] " msg, ## args)
 #  endif /* TARGET_OS_MACCATALYST */
 #endif /* PLCR_PRIVATE */
 
