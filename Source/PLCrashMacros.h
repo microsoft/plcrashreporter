@@ -30,6 +30,7 @@
 #define PLCRASH_CONSTANTS_H
 
 #include <assert.h>
+#include <TargetConditionals.h>
 
 #if defined(__cplusplus)
 #   define PLCR_EXPORT extern "C"
@@ -140,9 +141,13 @@
 #endif /* PLCR_PRIVATE */
 
 #ifdef PLCR_PRIVATE
-#include <asl.h>
-#define PLCR_LOG(msg, args...) \
-    asl_log(NULL, NULL, ASL_LEVEL_INFO, msg, ## args)
+#  if TARGET_OS_MACCATALYST
+#    include <os/log.h>
+#    define PLCR_LOG(msg, args...) os_log(OS_LOG_DEFAULT, msg, ## args)
+#  else
+#    include <asl.h>
+#    define PLCR_LOG(msg, args...) asl_log(NULL, NULL, ASL_LEVEL_INFO, msg, ## args)
+#  endif /* TARGET_OS_MACCATALYST */
 #endif /* PLCR_PRIVATE */
 
 #endif /* PLCRASH_CONSTANTS_H */
