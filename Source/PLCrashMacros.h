@@ -30,6 +30,7 @@
 #define PLCRASH_CONSTANTS_H
 
 #include <assert.h>
+#include <TargetConditionals.h>
 
 #if defined(__cplusplus)
 #   define PLCR_EXPORT extern "C"
@@ -137,6 +138,16 @@
 #    define PLCR_ASSERT_STATIC_(name, cond, line) PLCR_ASSERT_STATIC__(name, cond, line)
 #    define PLCR_ASSERT_STATIC__(name, cond, line) typedef int plcf_static_assert_##name##_##line [(cond) ? 1 : -1] PLCR_UNUSED
 #  endif
+#endif /* PLCR_PRIVATE */
+
+#ifdef PLCR_PRIVATE
+#  if TARGET_OS_MACCATALYST
+#    include <os/log.h>
+#    define PLCR_LOG(msg, args...) os_log(OS_LOG_DEFAULT, "[PLCrashReporter] "  msg, ## args)
+#  else
+#    include <asl.h>
+#    define PLCR_LOG(msg, args...) asl_log(NULL, NULL, ASL_LEVEL_INFO, "[PLCrashReporter] " msg, ## args)
+#  endif /* TARGET_OS_MACCATALYST */
 #endif /* PLCR_PRIVATE */
 
 #endif /* PLCRASH_CONSTANTS_H */
