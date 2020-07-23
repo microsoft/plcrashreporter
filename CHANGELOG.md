@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.7.2 (Under development)
+
+* Fix `xcodebuild` command execution without `scheme` parameter with **PLCrashReporter** integrated via Swift Package Manager.
+
+___
+
 ## Version 1.7.1
 
 * Fix crash on old operating systems: macOS 10.11, iOS 9 and tvOS 9 (and older).
