@@ -1,5 +1,14 @@
 # PLCrashReporter Change Log
 
+## Version 1.7.2
+
+* Fix building on Xcode 12 beta.
+* Use memory mapping to reduce live reports memory pressure.
+* Remove "CrashReporter Key: TODO" from text report output.
+* Add `[PLCrashReporter]` prefix for all log messages.
+
+___
+
 ## Version 1.7.1
 
 * Fix crash on old operating systems: macOS 10.11, iOS 9 and tvOS 9 (and older).
