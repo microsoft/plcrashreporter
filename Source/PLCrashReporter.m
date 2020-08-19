@@ -820,6 +820,24 @@ cleanup:
     crashCallbacks.handleSignal = callbacks->handleSignal;
 }
 
+/**
+ * Get the user information that will be saved in the crash report along the rest of information
+ */
+- (NSString *) getUserInfo {
+    return _userInformation;
+}
+
+/**
+ * Set the user information that will be saved in the crash report along the rest of information,
+ * It deletes any previous user information configured.
+ *
+ * @param userInfo A string with the user information to save.
+ *
+*/
+- (void) setUserInfo: (NSString *) userInfo {
+    _userInformation = userInfo;
+}
+
 @end
 
 /**

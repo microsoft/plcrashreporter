@@ -247,6 +247,13 @@ enum {
 
     /** CrashReport.report_info.uuid */
     PLCRASH_PROTO_REPORT_INFO_UUID_ID = 2,
+
+    /** CrashReport.user_info */
+    PLCRASH_PROTO_USER_INFO_ID = 10,
+
+    /** CrashReport.report_info.data */
+    PLCRASH_PROTO_USER_DATA = 1,
+
 };
 
 static void plprotobuf_cbinary_data_string_init (PLProtobufCBinaryData *data, const char *value) {
@@ -521,6 +528,24 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
 }
 
 /**
+ * Set the user information for this writer. Once set, this information will be used to
+ * provide user data for the crash log output.
+ *
+ * @warning This function is not async safe, and must be called outside of a signal handler.
+ */
+void plcrash_log_writer_set_user_info (plcrash_log_writer_t *writer, NSString *user_info) {
+    /* If there is already user data, delete it */
+    if (writer->user_info.has_user_data) {
+        plprotobuf_cbinary_data_free(&writer->user_info.user_data);
+    }
+
+    /* Save the user data */
+    writer->user_info.has_user_data = true;
+    plprotobuf_cbinary_data_nsstring_init(&writer->user_info.user_data, user_info);
+}
+
+
+/**
  * Close the plcrash_writer_t output.
  *
  * @param writer Writer instance to be closed.
@@ -563,6 +588,10 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
         if (writer->uncaught_exception.callstack != NULL)
             free(writer->uncaught_exception.callstack);
     }
+
+      if (writer->user_info.has_user_data) {
+          plprotobuf_cbinary_data_free(&writer->user_info.user_data);
+      }
 }
 
 /**
@@ -684,6 +713,25 @@ static size_t plcrash_writer_write_app_info (plcrash_async_file_t *file,
     if (app_marketing_version != NULL)
         rv += plcrash_writer_pack(file, PLCRASH_PROTO_APP_INFO_APP_MARKETING_VERSION_ID, PLPROTOBUF_C_TYPE_BYTES, app_marketing_version);
     
+    return rv;
+}
+
+/**
+ * @internal
+ *
+ * Write the app info message.
+ *
+ * @param file Output file
+ * @param app_identifier Application identifier
+ * @param app_version Application version
+ * @param app_marketing_version Application marketing version
+ */
+static size_t plcrash_writer_write_user_info (plcrash_async_file_t *file,  PLProtobufCBinaryData *userData) {
+    size_t rv = 0;
+
+    /* User data identifier */
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_USER_DATA, PLPROTOBUF_C_TYPE_BYTES, userData);
+
     return rv;
 }
 
@@ -1394,6 +1442,16 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         size = (uint32_t) plcrash_writer_write_signal(NULL, siginfo);
         plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_signal(file, siginfo);
+    }
+
+    /* User info */
+    if (writer->user_info.has_user_data) {
+        uint32_t size;
+
+        /* Calculate the message size */
+        size = (uint32_t) plcrash_writer_write_user_info(NULL, &writer->user_info.user_data );
+        plcrash_writer_pack(file, PLCRASH_PROTO_USER_INFO_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
+        plcrash_writer_write_user_info(file, &writer->user_info.user_data);
     }
     
     plcrash_async_symbol_cache_free(&findContext);

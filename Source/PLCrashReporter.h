@@ -109,6 +109,9 @@ typedef struct PLCrashReporterCallbacks {
 
     /** Path to the crash reporter internal data directory */
     __strong NSString *_crashReportDirectory;
+
+    /** User defined information */
+    __strong NSString *_userInformation;
 }
 
 + (PLCrashReporter *) sharedReporter PLCR_DEPRECATED;
@@ -133,5 +136,8 @@ typedef struct PLCrashReporterCallbacks {
 - (BOOL) enableCrashReporterAndReturnError: (NSError **) outError;
 
 - (void) setCrashCallbacks: (PLCrashReporterCallbacks *) callbacks;
+
+- (NSString *) getUserInfo;
+- (void) setUserInfo: (NSString *) userInfo;
 
 @end

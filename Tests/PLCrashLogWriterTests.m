@@ -271,6 +271,13 @@
     }
 }
 
+- (void) checkUserInfo: (Plcrash__CrashReport *) crashReport {
+    Plcrash__CrashReport__UserInfo *userInfo = crashReport->user_info;
+
+    STAssertNotNULL(userInfo, @"No exception was written");
+    STAssertTrue(strcmp(userInfo->data, "DummyInfo") == 0, @"User info was not correctly serialized");
+}
+
 - (Plcrash__CrashReport *) loadReport {
     /* Reading the report */
     NSData *data = [NSData dataWithContentsOfFile:_logPath options:NSDataReadingMappedAlways error:nil];
@@ -372,6 +379,9 @@
     }
     plcrash_log_writer_set_exception(&writer, e);
 
+    /* Set user defined data */
+    plcrash_log_writer_set_user_info(&writer, @"DummyInfo");
+
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &thread_state), @"Crash log failed");
 
@@ -408,6 +418,7 @@
     [self checkProcessInfo: crashReport];
     [self checkThreads: crashReport];
     [self checkException: crashReport];
+    [self checkUserInfo: crashReport];
     
     /* Check the signal info */
     STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
