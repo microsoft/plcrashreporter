@@ -187,7 +187,6 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         }
     
         [text appendFormat: @"Incident Identifier: %@\n", incidentIdentifier];
-        [text appendFormat: @"CrashReporter Key:   TODO\n"];
         [text appendFormat: @"Hardware Model:      %@\n", hardwareModel];
     }
     
@@ -512,7 +511,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         baseAddress = imageInfo.imageBaseAddress;
         pcOffset = frameInfo.instructionPointer - imageInfo.imageBaseAddress;
     } else if (frameInfo.instructionPointer) {
-        PLCF_DEBUG("Cannot find image for 0x%" PRIx64, frameInfo.instructionPointer);
+        PLCR_LOG("Cannot find image for 0x%" PRIx64, frameInfo.instructionPointer);
     }
 
     /* If symbol info is available, the format used in Apple's reports is Sym + OffsetFromSym. Otherwise,
@@ -531,7 +530,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
                     break;
 
                 default:
-                    PLCF_DEBUG("Symbol \"%s\" prefix rules are unknown for this OS!", [symbolName UTF8String]);
+                    PLCR_LOG("Symbol \"%s\" prefix rules are unknown for this OS!", [symbolName UTF8String]);
                     break;
             }
         }

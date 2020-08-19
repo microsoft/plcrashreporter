@@ -138,7 +138,7 @@
     
     /* Retain the port if it's not MACH_PORT_(NULL|INVALID) */
     if (MACH_PORT_VALID(_port) && (kt = mach_port_mod_refs(mach_task_self(), _port, MACH_PORT_RIGHT_SEND, 1)) != KERN_SUCCESS) {
-        NSLog(@"Unexpected error incrementing mach port reference: %d", kt);
+        PLCR_LOG("Unexpected error incrementing mach port reference: %d", kt);
     }
 
     return self;
@@ -149,7 +149,7 @@
 
     /* Release the port if it's not MACH_PORT_(NULL|INVALID) */
     if (MACH_PORT_VALID(_port) && (kt = mach_port_mod_refs(mach_task_self(), _port, MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
-        NSLog(@"Unexpected error incrementing mach port reference: %d", kt);
+        PLCR_LOG("Unexpected error incrementing mach port reference: %d", kt);
     }
 }
 

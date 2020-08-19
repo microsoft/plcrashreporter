@@ -26,6 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#import "PLCrashMacros.h"
 #import "PLCrashMachExceptionPortSet.h"
 #import "PLCrashFeatureConfig.h"
 
@@ -102,7 +103,7 @@
 
         /* The state instance increments the refcount, and we acquire ownership of the caller's refcount */
         if ((kt = mach_port_mod_refs(mach_task_self(), states->ports[i], MACH_PORT_RIGHT_SEND, -1)) != KERN_SUCCESS) {
-            NSLog(@"Unexpected error decrementing mach port reference: %d", kt);
+            PLCR_LOG("Unexpected error decrementing mach port reference: %d", kt);
         }
     }
 

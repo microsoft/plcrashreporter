@@ -999,7 +999,7 @@ uint32_t plcrash_async_cfe_entry_stack_adjustment (plcrash_async_cfe_entry_t *en
  * - PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT
  */
 plcrash_regnum_t plcrash_async_cfe_entry_return_address_register (plcrash_async_cfe_entry_t *entry) {
-    PLCF_ASSERT(entry->return_address_register == PLCRASH_REG_INVALID || (entry->type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD || PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT));
+    PLCF_ASSERT(entry->return_address_register == PLCRASH_REG_INVALID || entry->type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_IMMD || entry->type == PLCRASH_ASYNC_CFE_ENTRY_TYPE_FRAMELESS_INDIRECT);
     return entry->return_address_register;
 }
 

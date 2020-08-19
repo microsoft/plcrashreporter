@@ -26,6 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#import "PLCrashMacros.h"
 #import "PLCrashHostInfo.h"
 #import "PLCrashSysctl.h"
 #import "PLCrashAsync.h"
@@ -83,7 +84,7 @@ static BOOL parse_osrelease (NSString *osrelease, PLCrashHostInfoVersion *versio
     return YES;
 
 error:
-    NSLog(@"Unexpected kern.osrelease string format: %@", osrelease);
+    PLCR_LOG("Unexpected kern.osrelease string format: %s", [osrelease UTF8String]);
     return NO;
 }
 
@@ -99,7 +100,7 @@ error:
     char *val = plcrash_sysctl_string("kern.osrelease");
     if (val == NULL) {
         /* This should never fail; if it does, either malloc failed, or 'kern.osrelease' disappeared. */
-        NSLog(@"Failed to fetch kern.osrelease value %d: %s", errno, strerror(errno));
+        PLCR_LOG("Failed to fetch kern.osrelease value %d: %s", errno, strerror(errno));
         return nil;
     }
     NSString *osrelease = [[NSString alloc] initWithBytesNoCopy: val length: strlen(val) encoding: NSUTF8StringEncoding freeWhenDone: YES];
