@@ -836,6 +836,7 @@ cleanup:
 */
 - (void) setUserInfo: (NSString *) userInfo {
     _userInformation = userInfo;
+    plcrash_log_writer_set_user_info( &signal_handler_context.writer, userInfo);
 }
 
 @end
