@@ -821,22 +821,14 @@ cleanup:
 }
 
 /**
- * Get the user information that will be saved in the crash report along the rest of information
- */
-- (NSString *) getUserInfo {
-    return _userInformation;
-}
-
-/**
- * Set the user information that will be saved in the crash report along the rest of information,
- * It deletes any previous user information configured.
+ * Set the custom data that will be saved in the crash report along the rest of information,
+ * It deletes any previous custom data configured.
  *
- * @param userInfo A string with the user information to save.
- *
+ * @param customData A string with the custom data to save.
 */
-- (void) setUserInfo: (NSString *) userInfo {
-    _userInformation = userInfo;
-    plcrash_log_writer_set_user_info( &signal_handler_context.writer, userInfo);
+- (void) setCustomData: (NSString *) customData {
+    _customData = customData;
+    plcrash_log_writer_set_custom_data( &signal_handler_context.writer, customData);
 }
 
 @end

@@ -47,7 +47,6 @@ struct _PLCrashReportDecoder {
 - (PLCrashReportApplicationInfo *) extractApplicationInfo: (Plcrash__CrashReport__ApplicationInfo *) applicationInfo error: (NSError **) outError;
 - (PLCrashReportProcessInfo *) extractProcessInfo: (Plcrash__CrashReport__ProcessInfo *) processInfo error: (NSError **) outError;
 - (NSArray *) extractThreadInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
-- (PLCrashReportUserInfo *) extractUserInfo: (Plcrash__CrashReport__UserInfo *) userInfo error: (NSError **) outError;
 - (NSArray *) extractImageInfo: (Plcrash__CrashReport *) crashReport error: (NSError **) outError;
 - (PLCrashReportExceptionInfo *) extractExceptionInfo: (Plcrash__CrashReport__Exception *) exceptionInfo error: (NSError **) outError;
 - (PLCrashReportSignalInfo *) extractSignalInfo: (Plcrash__CrashReport__Signal *) signalInfo error: (NSError **) outError;
@@ -167,10 +166,10 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
             goto error;
     }
 
-    /* User info, if it is available */
-    if (_decoder->crashReport->user_info != NULL) {
-        _userInfo = [self extractUserInfo: _decoder->crashReport->user_info error: outError];
-        if (!_userInfo)
+    /* Custom data, if it is available */
+    if (_decoder->crashReport->custom_data != NULL) {
+        _customData = [NSString stringWithUTF8String: _decoder->crashReport->custom_data];
+        if (!_customData)
             goto error;
     }
 
@@ -229,13 +228,6 @@ error:
 // property getter. Returns YES if exception information is available.
 - (BOOL) hasExceptionInfo {
     if (_exceptionInfo != nil)
-        return YES;
-    return NO;
-}
-
-// property getter. Returns YES if exception information is available.
-- (BOOL) hasUserInfo {
-    if (_userInfo != nil)
         return YES;
     return NO;
 }
@@ -665,34 +657,6 @@ error:
     }
     
     return threadResult;
-}
-
-/**
- * Extract user data from the crash log. Returns nil on error.
- */
-- (PLCrashReportUserInfo *) extractUserInfo: (Plcrash__CrashReport__UserInfo *) userInfo
-                                                    error: (NSError **) outError
-{
-    /* Validate */
-    if (userInfo == NULL) {
-        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
-                         NSLocalizedString(@"Crash report is missing User Information section",
-                                           @"Missing user info in crash report"));
-        return nil;
-    }
-
-    /* Identifier available? */
-    if (userInfo->data == NULL) {
-        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
-                         NSLocalizedString(@"Crash report is missing User Information app identifier field",
-                                           @"Missing user information in crash report"));
-        return nil;
-    }
-
-    /* Done */
-    NSString *userData = [NSString stringWithUTF8String: userInfo->data];
-
-    return [[PLCrashReportUserInfo alloc] initWithUserData: userData];
 }
 
 

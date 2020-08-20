@@ -361,14 +361,6 @@ message CrashReport {
     /* Report format information. Required for all v1.1+ crash reports. */
     optional ReportInfo report_info = 9;
 
-    /*
-     * Report format information
-     */
-    message UserInfo {
-        /* Custom string set by user */
-        optional string data = 1;
-    }
-
-    /* Custom user information. Can be used by user to store contextual information for the crash. */
-    optional UserInfo user_info = 10;
+    /* Custom data. Can be used by user to store contextual information for the crash. */
+    optional string custom_data = 10;
 }

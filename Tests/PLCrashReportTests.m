@@ -123,7 +123,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_writer_set_exception(&writer, exception);
 
     /* Set user defined data */
-    plcrash_log_writer_set_user_info(&writer, @"DummyInfo");
+    plcrash_log_writer_set_custom_data(&writer, @"DummyInfo");
 
     /* Provide binary image info */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
@@ -230,10 +230,9 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
         STAssertEquals(sf.instructionPointer, [retAddr unsignedLongLongValue], @"Stack frame address is incorrect");
     }
 
-    /* User info */
-    STAssertNotNil(crashLog.userInfo, @"No user information");
-    STAssertTrue(crashLog.hasUserInfo, @"hasUserInfo should be true");
-    STAssertEqualStrings(crashLog.userInfo.userData, @"DummyInfo", @"Incorrect user Information");
+    /* Custom data */
+    STAssertNotNil(crashLog.customData, @"No custom data");
+    STAssertEqualStrings(crashLog.customData, @"DummyInfo", @"Incorrect custom data");
 
     /* Thread info */
     STAssertNotNil(crashLog.threads, @"Thread list is nil");

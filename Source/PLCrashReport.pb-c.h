@@ -30,7 +30,6 @@ typedef struct _Plcrash__CrashReport__Signal__MachException Plcrash__CrashReport
 typedef struct _Plcrash__CrashReport__ProcessInfo Plcrash__CrashReport__ProcessInfo;
 typedef struct _Plcrash__CrashReport__MachineInfo Plcrash__CrashReport__MachineInfo;
 typedef struct _Plcrash__CrashReport__ReportInfo Plcrash__CrashReport__ReportInfo;
-typedef struct _Plcrash__CrashReport__UserInfo Plcrash__CrashReport__UserInfo;
 
 
 /* --- enums --- */
@@ -520,22 +519,6 @@ struct  _Plcrash__CrashReport__ReportInfo
 
 
 /*
- * Report format information
- */
-struct  _Plcrash__CrashReport__UserInfo
-{
-  ProtobufCMessage base;
-  /*
-   * Custom string set by user 
-   */
-  char *data;
-};
-#define PLCRASH__CRASH_REPORT__USER_INFO__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&plcrash__crash_report__user_info__descriptor) \
-    , NULL }
-
-
-/*
  * A crash report 
  */
 struct  _Plcrash__CrashReport
@@ -578,9 +561,9 @@ struct  _Plcrash__CrashReport
    */
   Plcrash__CrashReport__ReportInfo *report_info;
   /*
-   * Custom user information. Can be used by user to store contextual information for the crash. 
+   * Custom data. Can be used by user to store contextual information for the crash. 
    */
-  Plcrash__CrashReport__UserInfo *user_info;
+  char *custom_data;
 };
 #define PLCRASH__CRASH_REPORT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&plcrash__crash_report__descriptor) \
@@ -629,9 +612,6 @@ void   plcrash__crash_report__machine_info__init
 /* Plcrash__CrashReport__ReportInfo methods */
 void   plcrash__crash_report__report_info__init
                      (Plcrash__CrashReport__ReportInfo         *message);
-/* Plcrash__CrashReport__UserInfo methods */
-void   plcrash__crash_report__user_info__init
-                     (Plcrash__CrashReport__UserInfo         *message);
 /* Plcrash__CrashReport methods */
 void   plcrash__crash_report__init
                      (Plcrash__CrashReport         *message);
@@ -695,9 +675,6 @@ typedef void (*Plcrash__CrashReport__MachineInfo_Closure)
 typedef void (*Plcrash__CrashReport__ReportInfo_Closure)
                  (const Plcrash__CrashReport__ReportInfo *message,
                   void *closure_data);
-typedef void (*Plcrash__CrashReport__UserInfo_Closure)
-                 (const Plcrash__CrashReport__UserInfo *message,
-                  void *closure_data);
 typedef void (*Plcrash__CrashReport_Closure)
                  (const Plcrash__CrashReport *message,
                   void *closure_data);
@@ -725,7 +702,6 @@ extern const ProtobufCMessageDescriptor plcrash__crash_report__signal__mach_exce
 extern const ProtobufCMessageDescriptor plcrash__crash_report__process_info__descriptor;
 extern const ProtobufCMessageDescriptor plcrash__crash_report__machine_info__descriptor;
 extern const ProtobufCMessageDescriptor plcrash__crash_report__report_info__descriptor;
-extern const ProtobufCMessageDescriptor plcrash__crash_report__user_info__descriptor;
 
 PROTOBUF_C__END_DECLS
 

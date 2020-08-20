@@ -41,7 +41,6 @@
 #import "PLCrashReportSymbolInfo.h"
 #import "PLCrashReportSystemInfo.h"
 #import "PLCrashReportThreadInfo.h"
-#import "PLCrashReportUserInfo.h"
 
 /** 
  * @ingroup constants
@@ -114,7 +113,7 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
     __strong PLCrashReportExceptionInfo *_exceptionInfo;
 
     /** User defined information (may be nil) */
-    __strong PLCrashReportUserInfo *_userInfo;
+    __strong NSString *_customData;
 
     /** Report UUID */
     CFUUIDRef _uuid;
@@ -195,15 +194,10 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 @property(nonatomic, readonly, strong) PLCrashReportExceptionInfo *exceptionInfo;
 
 /**
- * YES if user information is available.
- */
-@property(nonatomic, readonly) BOOL hasUserInfo;
-
-/**
- * User information. Only available if user explicitly assigned it before crash heppened,
+ * Custom user data. Only available if user explicitly assigned it before crash happened,
  * otherwise nil.
  */
-@property(nonatomic, readonly, strong) PLCrashReportUserInfo *userInfo;
+@property(nonatomic, readonly, strong) NSString *customData;
 
 /**
  * A client-generated 16-byte UUID. May be used to filter duplicate reports submitted or generated

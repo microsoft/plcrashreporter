@@ -156,14 +156,8 @@ typedef struct plcrash_log_writer {
         size_t callstack_count;
     } uncaught_exception;
 
-    /** User data */
-    struct {
-        /** Flag specifying wether user data is available. */
-        bool has_user_data;
-
-        /** Application identifier */
-        PLProtobufCBinaryData user_data;
-    } user_info;
+    /** Custom user data */
+    PLProtobufCBinaryData custom_data;
 
 } plcrash_log_writer_t;
 
@@ -231,7 +225,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
-void plcrash_log_writer_set_user_info (plcrash_log_writer_t *writer, NSString *user_info);
+void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSString *custom_data);
 
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,

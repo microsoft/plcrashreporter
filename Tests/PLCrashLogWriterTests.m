@@ -271,11 +271,10 @@
     }
 }
 
-- (void) checkUserInfo: (Plcrash__CrashReport *) crashReport {
-    Plcrash__CrashReport__UserInfo *userInfo = crashReport->user_info;
-
-    STAssertNotNULL(userInfo, @"No exception was written");
-    STAssertTrue(strcmp(userInfo->data, "DummyInfo") == 0, @"User info was not correctly serialized");
+- (void) checkCustomData: (Plcrash__CrashReport *) crashReport {
+    char *customData = crashReport->custom_data;
+    STAssertNotNULL(customData, @"No custom data was written");
+    STAssertTrue(strcmp(customData, "DummyInfo") == 0, @"Custom data was not correctly serialized");
 }
 
 - (Plcrash__CrashReport *) loadReport {
@@ -380,7 +379,7 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Set user defined data */
-    plcrash_log_writer_set_user_info(&writer, @"DummyInfo");
+    plcrash_log_writer_set_custom_data(&writer, @"DummyInfo");
 
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &thread_state), @"Crash log failed");
@@ -418,7 +417,7 @@
     [self checkProcessInfo: crashReport];
     [self checkThreads: crashReport];
     [self checkException: crashReport];
-    [self checkUserInfo: crashReport];
+    [self checkCustomData: crashReport];
     
     /* Check the signal info */
     STAssertTrue(strcmp(crashReport->signal->name, "SIGSEGV") == 0, @"Signal incorrect");
