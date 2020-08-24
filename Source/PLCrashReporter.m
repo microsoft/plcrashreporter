@@ -825,10 +825,10 @@ cleanup:
  * It deletes any previous custom data configured.
  *
  * @param customData A string with the custom data to save.
-*/
+ */
 - (void) setCustomData: (NSString *) customData {
     _customData = customData;
-    plcrash_log_writer_set_custom_data( &signal_handler_context.writer, customData);
+    plcrash_log_writer_set_custom_data(&signal_handler_context.writer, customData);
 }
 
 @end

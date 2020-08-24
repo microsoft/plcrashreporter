@@ -541,7 +541,6 @@ void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSString 
     }
 }
 
-
 /**
  * Close the plcrash_writer_t output.
  *
@@ -587,8 +586,8 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     }
 
     if (writer->custom_data.data) {
-          plprotobuf_cbinary_data_free(&writer->custom_data);
-      }
+        plprotobuf_cbinary_data_free(&writer->custom_data);
+    }
 }
 
 /**
