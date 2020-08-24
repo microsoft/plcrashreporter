@@ -1804,7 +1804,6 @@
 				05D9E55816765CEB00B39833 /* Symbol Info */,
 				05BB83F91364AD4700D53B84 /* System Info */,
 				05BB84011364AD9600D53B84 /* Thread Info */,
-				E1ACF44424EBB4CD00D9F1CE /* User Info */,
 			);
 			name = "Crash Report";
 			sourceTree = "<group>";
@@ -1978,13 +1977,6 @@
 			);
 			name = "protobuf-c";
 			path = "protobuf-c/protobuf-c";
-			sourceTree = "<group>";
-		};
-		E1ACF44424EBB4CD00D9F1CE /* User Info */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "User Info";
 			sourceTree = "<group>";
 		};
 		F81CF5EE235A0AE20007FA54 /* Frameworks */ = {
