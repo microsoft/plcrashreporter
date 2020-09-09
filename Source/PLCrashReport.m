@@ -167,8 +167,8 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
     }
 
     /* Custom data, if it is available */
-    if (_decoder->crashReport->custom_data != NULL) {
-        _customData = [NSString stringWithUTF8String: _decoder->crashReport->custom_data];
+    if (_decoder->crashReport->has_custom_data) {
+        _customData = [NSData dataWithBytes:_decoder->crashReport->custom_data.data length:_decoder->crashReport->custom_data.len];
         if (!_customData)
             goto error;
     }

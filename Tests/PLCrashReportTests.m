@@ -123,7 +123,8 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_log_writer_set_exception(&writer, exception);
 
     /* Set user defined data */
-    plcrash_log_writer_set_custom_data(&writer, @"DummyInfo");
+    NSData *customData = [@"DummyInfo" dataUsingEncoding:NSUTF8StringEncoding];
+    plcrash_log_writer_set_custom_data(&writer, customData);
 
     /* Provide binary image info */
     plcrash_nasync_image_list_init(&image_list, mach_task_self());
@@ -232,7 +233,8 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
 
     /* Custom data */
     STAssertNotNil(crashLog.customData, @"No custom data");
-    STAssertEqualStrings(crashLog.customData, @"DummyInfo", @"Incorrect custom data");
+    NSString *dataString = [[NSString alloc] initWithData:crashLog.customData encoding:NSUTF8StringEncoding];
+    STAssertTrue([dataString isEqualToString:@"DummyInfo"], @"Incorrect custom data");
 
     /* Thread info */
     STAssertNotNil(crashLog.threads, @"Thread list is nil");

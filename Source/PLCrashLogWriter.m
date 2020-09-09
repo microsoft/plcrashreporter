@@ -252,6 +252,12 @@ enum {
     PLCRASH_PROTO_CUSTOM_DATA_ID = 10,
 };
 
+static void plprotobuf_cbinary_data_init (PLProtobufCBinaryData *data, const void *pointer, size_t len) {
+    data->data = malloc(len);
+    memcpy(data->data , pointer, len);
+    data->len = len;
+}
+
 static void plprotobuf_cbinary_data_string_init (PLProtobufCBinaryData *data, const char *value) {
     data->data = (void *)value;
     data->len = strlen(value);
@@ -529,7 +535,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
  *
  * @warning This function is not async safe, and must be called outside of a signal handler.
  */
-void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSString *custom_data) {
+void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSData *custom_data) {
     /* If there is already user data, delete it */
     if (writer->custom_data.data) {
         plprotobuf_cbinary_data_free(&writer->custom_data);
@@ -537,7 +543,7 @@ void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSString 
 
     /* Save the user data */
     if (custom_data != nil) {
-        plprotobuf_cbinary_data_nsstring_init(&writer->custom_data, custom_data);
+        plprotobuf_cbinary_data_init(&writer->custom_data, custom_data.bytes, custom_data.length);
     }
 }
 

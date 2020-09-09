@@ -835,7 +835,7 @@ cleanup:
  *
  * @param customData A string with the custom data to save.
  */
-- (void) setCustomData: (NSString *) customData {
+- (void) setCustomData: (NSData *) customData {
     _customData = customData;
     plcrash_log_writer_set_custom_data(&signal_handler_context.writer, customData);
 }

@@ -362,5 +362,5 @@ message CrashReport {
     optional ReportInfo report_info = 9;
 
     /* Custom data. Can be used by user to store contextual information for the crash. */
-    optional string custom_data = 10;
+    optional bytes custom_data = 10;
 }

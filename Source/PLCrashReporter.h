@@ -134,6 +134,6 @@ typedef struct PLCrashReporterCallbacks {
 
 - (void) setCrashCallbacks: (PLCrashReporterCallbacks *) callbacks;
 
-@property(nonatomic, strong) NSString *customData;
+@property(nonatomic, strong) NSData *customData;
 
 @end

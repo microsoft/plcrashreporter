@@ -1303,8 +1303,8 @@ static const ProtobufCFieldDescriptor plcrash__crash_report__field_descriptors[1
     "custom_data",
     10,
     PROTOBUF_C_LABEL_OPTIONAL,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
+    PROTOBUF_C_TYPE_BYTES,
+    offsetof(Plcrash__CrashReport, has_custom_data),
     offsetof(Plcrash__CrashReport, custom_data),
     NULL,
     NULL,

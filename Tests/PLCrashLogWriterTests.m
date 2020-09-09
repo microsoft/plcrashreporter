@@ -272,9 +272,11 @@
 }
 
 - (void) checkCustomData: (Plcrash__CrashReport *) crashReport {
-    char *customData = crashReport->custom_data;
-    STAssertNotNULL(customData, @"No custom data was written");
-    STAssertTrue(strcmp(customData, "DummyInfo") == 0, @"Custom data was not correctly serialized");
+    STAssertTrue(crashReport->has_custom_data, @"No custom data was written");
+    ProtobufCBinaryData customData = crashReport->custom_data;
+    NSData *data = [NSData dataWithBytes:customData.data length:customData.len];
+    NSString *dataString =[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    STAssertTrue([dataString isEqualToString:@"DummyInfo"],  @"Custom data was not correctly serialized");
 }
 
 - (Plcrash__CrashReport *) loadReport {
@@ -379,7 +381,7 @@
     plcrash_log_writer_set_exception(&writer, e);
 
     /* Set user defined data */
-    plcrash_log_writer_set_custom_data(&writer, @"DummyInfo");
+    plcrash_log_writer_set_custom_data(&writer, [@"DummyInfo" dataUsingEncoding:NSUTF8StringEncoding]);
 
     /* Write the crash report */
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_log_writer_write(&writer, thread, &image_list, &file, &info, &thread_state), @"Crash log failed");

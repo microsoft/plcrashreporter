@@ -225,7 +225,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                                          BOOL user_requested);
 void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException *exception);
 
-void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSString *custom_data);
+void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSData *custom_data);
 
 plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
                                           thread_t crashed_thread,
