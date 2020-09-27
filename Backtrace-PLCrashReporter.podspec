@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "Backtrace-PLCrashReporter"
-  s.version      = "1.5.3"
+  s.version      = "1.5.4"
   s.summary      = "Reliable, open-source crash reporting for iOS, tvOS and macOS."
   s.description      = <<-DESC
                       Plausible CrashReporter provides an in-process crash reporting

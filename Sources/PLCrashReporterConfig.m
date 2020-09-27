@@ -51,7 +51,7 @@
  * is appropriate for use in release builds.
  */
 - (instancetype) init {
-    return [self initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone];
+    return [self initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll];
 }
 
 /**
