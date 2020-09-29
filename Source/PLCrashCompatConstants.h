@@ -68,7 +68,10 @@
  * OSAtomic* and OSSpinLock are deprecated since macOS 10.12, iOS 10.0 and tvOS 10.0, but suggested replacement
  * for OSSpinLock is missed at runtime on older versions, so we must use it until we support older versions.
  */
-#if TARGET_OS_MACCATALYST
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_12 || \
+    __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_10_0 || \
+    __TV_OS_VERSION_MIN_REQUIRED >= __TVOS_10_0 || \
+    __WATCH_OS_VERSION_MIN_REQUIRED >= __WATCHOS_3_0
 #include <os/lock.h>
 #define PLCR_COMPAT_LOCK_TYPE           os_unfair_lock
 #define PLCR_COMPAT_LOCK_INIT           OS_UNFAIR_LOCK_INIT
