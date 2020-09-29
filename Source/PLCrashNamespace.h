@@ -246,6 +246,7 @@
 #define plcrash_log_writer_init PLNS(plcrash_log_writer_init)
 #define plcrash_log_writer_set_exception PLNS(plcrash_log_writer_set_exception)
 #define plcrash_log_writer_write PLNS(plcrash_log_writer_write)
+#define plcrash_log_writer_set_custom_data PLNS(plcrash_log_writer_set_custom_data)
 #define plcrash_nasync_image_list_append PLNS(plcrash_nasync_image_list_append)
 #define plcrash_nasync_image_list_free PLNS(plcrash_nasync_image_list_free)
 #define plcrash_nasync_image_list_init PLNS(plcrash_nasync_image_list_init)
