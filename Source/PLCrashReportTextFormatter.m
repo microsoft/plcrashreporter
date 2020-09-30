@@ -392,7 +392,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
                     
                 case CPU_TYPE_ARM64:
                     /* Apple includes subtype for ARM64 binaries. */
-                    switch (imageInfo.codeType.subtype) {
+                    switch (imageInfo.codeType.subtype & ~CPU_SUBTYPE_MASK) {
                         case CPU_SUBTYPE_ARM64_ALL:
                             archName = @"arm64";
                             break;
