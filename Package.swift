@@ -2,10 +2,16 @@
 
 import PackageDescription
 
+#if swift(>=5.3)
+let ios = SupportedPlatform.iOS(.v9)
+#else
+let ios = SupportedPlatform.iOS(.v8)
+#endif
+
 let package = Package(
     name: "PLCrashReporter",
     platforms: [
-        .iOS(.v8),
+        ios,
         .macOS(.v10_10),
         .tvOS(.v9)
     ],
