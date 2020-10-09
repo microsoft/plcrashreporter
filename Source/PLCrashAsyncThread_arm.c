@@ -53,8 +53,10 @@
 
 #if __DARWIN_OPAQUE_ARM_THREAD_STATE64
 #define THREAD_STATE_OPAQUE_PREFIX(name) __opaque_ ## name
+#define THREAD_STATE_OPAQUE_TYPE void *
 #else
 #define THREAD_STATE_OPAQUE_PREFIX THREAD_STATE_REG_PREFIX
+#define THREAD_STATE_OPAQUE_TYPE uint64_t
 #endif
 
 /*
@@ -74,7 +76,7 @@
 #define THREAD_STATE_GET_FPTR THREAD_STATE_GET_PTR
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
     ts->valid_regs |= 1ULL << regnum; \
-    (ts->arm_state. type . THREAD_STATE_OPAQUE_PREFIX(name)) = (void *)value; \
+    (ts->arm_state. type . THREAD_STATE_OPAQUE_PREFIX(name)) = (THREAD_STATE_OPAQUE_TYPE) value; \
 }
 #define THREAD_STATE_SET_FPTR THREAD_STATE_SET_PTR
 
