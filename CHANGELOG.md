@@ -1,8 +1,14 @@
 # PLCrashReporter Change Log
 
-## Version 1.7.3
+## Version 1.8.0
 
-* Fix get the subtype of device architecture on iOS 14.
+* Drop support of iOS 8. The minimal version is iOS 9 now.
+* Support saving custom data in crash report, see `PLCrashReporter.customData` property.
+* Fix exported symbols list for applying `PLCRASHREPORTER_PREFIX` prefix.
+* Fix Xcode 12 compatibility if the framework is used from sources.
+* Fix getting the subtype of device architecture on iOS 14.
+
+___
 
 ## Version 1.7.2
 
