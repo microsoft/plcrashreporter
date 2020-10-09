@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.7.3
+
+* Fix get the subtype of device architecture on iOS 14.
+
 ## Version 1.7.2
 
 * Fix building on Xcode 12 beta.
