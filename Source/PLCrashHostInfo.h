@@ -56,9 +56,6 @@ typedef struct PLCrashHostInfoVersion {
 /** The Darwin kernel major version for Mac OS X 10.9 */
 #define PLCRASH_HOST_MAC_OS_X_DARWIN_MAJOR_VERSION_10_9 13
 
-/** The Darwin kernel major version for iOS 6 */
-#define PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_6 13
-
 /** The Darwin kernel major version for iOS 9 */
 #define PLCRASH_HOST_IOS_DARWIN_MAJOR_VERSION_9 15
 
