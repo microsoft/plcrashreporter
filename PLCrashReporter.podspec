@@ -11,7 +11,7 @@ Pod::Spec.new do |spec|
   spec.source      = { :http     => "https://github.com/microsoft/plcrashreporter/releases/download/#{spec.version}/PLCrashReporter-#{spec.version}.zip",
                        :flatten  => true }
 
-  spec.ios.deployment_target    = '8.0'
+  spec.ios.deployment_target    = '9.0'
   spec.ios.vendored_frameworks  = "iOS Framework/CrashReporter.framework"
 
   spec.osx.deployment_target    = '10.7'
