@@ -42,7 +42,9 @@
 			isa = PBXAggregateTarget;
 			buildConfigurationList = C2B90D962456FBD000834AFB /* Build configuration list for PBXAggregateTarget "CrashReporter iOS Universal" */;
 			buildPhases = (
-				C2B90DAB2457178800834AFB /* Build Universal Framework */,
+				C2B90DAB2457178800834AFB /* Build iOS Device Framework */,
+				C2C74A842535CCC700313817 /* Build iOS Simulator Framework */,
+				C2C74A892535CD8000313817 /* Combine iOS Universal Framework */,
 			);
 			dependencies = (
 			);
@@ -1195,8 +1197,6 @@
 		C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-static-libs-archive.sh"; sourceTree = "<group>"; };
 		C2B90DA7245714E900834AFB /* verify-modifications.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modifications.sh"; sourceTree = "<group>"; };
 		C2B90DA8245714E900834AFB /* create-disk-image.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-disk-image.sh"; sourceTree = "<group>"; };
-		C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-tvos-universal.sh"; sourceTree = "<group>"; };
-		C2B90DAA245714EA00834AFB /* build-ios-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-ios-universal.sh"; sourceTree = "<group>"; };
 		C2BBCD7E2456E03D00F9E820 /* PLCrashMachExceptionPortTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionPortTests.m; sourceTree = "<group>"; };
 		C2BBCD7F2456E03D00F9E820 /* PLCrashAsyncDwarfEncodingTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncDwarfEncodingTests.mm; sourceTree = "<group>"; };
 		C2BBCD802456E03D00F9E820 /* PLCrashMachExceptionServerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServerTests.m; sourceTree = "<group>"; };
@@ -1204,13 +1204,16 @@
 		C2BBCD822456E03D00F9E820 /* PLCrashAsyncLinkedListTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncLinkedListTests.mm; sourceTree = "<group>"; };
 		C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSysctlTests.m; sourceTree = "<group>"; };
 		C2BBCD842456E03D00F9E820 /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
+		C2C74A852535CD3A00313817 /* combine-frameworks.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-frameworks.sh"; sourceTree = "<group>"; };
+		C2C74A862535CD3A00313817 /* combine-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-xcframework.sh"; sourceTree = "<group>"; };
+		C2C74A872535CD3A00313817 /* combine-libs.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-libs.sh"; sourceTree = "<group>"; };
+		C2C74A882535CD3A00313817 /* build-framework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-framework.sh"; sourceTree = "<group>"; };
 		C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "DemoCrash-iOS.entitlements"; sourceTree = "<group>"; };
 		C2F0AC9F24AB7C28004890EC /* CrashReporterFramework.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashReporterFramework.m; sourceTree = "<group>"; };
 		C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-tvOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-xcframework.sh"; sourceTree = "<group>"; };
 		F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-xcframework-archive.sh"; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
@@ -1957,9 +1960,10 @@
 		C2B90DA4245707BD00834AFB /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				C2B90DAA245714EA00834AFB /* build-ios-universal.sh */,
-				C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */,
-				F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */,
+				C2C74A882535CD3A00313817 /* build-framework.sh */,
+				C2C74A852535CD3A00313817 /* combine-frameworks.sh */,
+				C2C74A872535CD3A00313817 /* combine-libs.sh */,
+				C2C74A862535CD3A00313817 /* combine-xcframework.sh */,
 				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
 				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
 				F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */,
@@ -2770,7 +2774,7 @@
 			shellScript = "\"$SRCROOT/Scripts/create-static-libs-archive.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C2B90DAB2457178800834AFB /* Build Universal Framework */ = {
+		C2B90DAB2457178800834AFB /* Build iOS Device Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2779,14 +2783,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Build Universal Framework";
+			name = "Build iOS Device Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-ios-universal.sh\"\n";
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"iphoneos\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
@@ -2806,6 +2810,44 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/Scripts/build-tvos-universal.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74A842535CCC700313817 /* Build iOS Simulator Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build iOS Simulator Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"iphonesimulator\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74A892535CD8000313817 /* Combine iOS Universal Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine iOS Universal Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-iphoneos/$PRODUCT_NAME.framework\"\nSIMULATOR_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-iphonesimulator/$PRODUCT_NAME.framework\"\n\"$SRCROOT/Scripts/combine-frameworks.sh\" \"$DEVICE_FRAMEWORK\" \"$SIMULATOR_FRAMEWORK\" \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.framework\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8B9C72E24695BF200B9FEF6 /* Build XCFramework */ = {
@@ -3423,7 +3465,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
 			};
@@ -3433,7 +3474,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
 			};
@@ -3593,7 +3633,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests macOS";
@@ -3606,7 +3645,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests macOS";
@@ -3647,7 +3685,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3657,7 +3694,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3667,7 +3703,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
@@ -3682,7 +3717,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
@@ -3699,7 +3733,6 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/DemoCrash-macOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3719,7 +3752,6 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				INFOPLIST_FILE = "Resources/DemoCrash-macOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3737,7 +3769,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEFINES_MODULE = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
@@ -3759,7 +3790,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEFINES_MODULE = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
