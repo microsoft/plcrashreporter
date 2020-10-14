@@ -55,7 +55,9 @@
 			isa = PBXAggregateTarget;
 			buildConfigurationList = C2B90D9A2456FBDF00834AFB /* Build configuration list for PBXAggregateTarget "CrashReporter tvOS Universal" */;
 			buildPhases = (
-				C2B90DAC245717D800834AFB /* Build Universal Framework */,
+				C2C74C9825372B9800313817 /* Build tvOS Device Framework */,
+				C2C74C9925372B9A00313817 /* Build tvOS Simulator Framework */,
+				C2C74C9A25372B9B00313817 /* Combine tvOS Universal Framework */,
 			);
 			dependencies = (
 			);
@@ -66,7 +68,8 @@
 			isa = PBXAggregateTarget;
 			buildConfigurationList = F8B9C72B24695BE600B9FEF6 /* Build configuration list for PBXAggregateTarget "CrashReporter XCFramework" */;
 			buildPhases = (
-				F8B9C72E24695BF200B9FEF6 /* Build XCFramework */,
+				C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */,
+				F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */,
 			);
 			dependencies = (
 				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
@@ -2793,25 +2796,6 @@
 			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"iphoneos\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Build Universal Framework";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-tvos-universal.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		C2C74A842535CCC700313817 /* Build iOS Simulator Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2850,7 +2834,7 @@
 			shellScript = "DEVICE_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-iphoneos/$PRODUCT_NAME.framework\"\nSIMULATOR_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-iphonesimulator/$PRODUCT_NAME.framework\"\n\"$SRCROOT/Scripts/combine-frameworks.sh\" \"$DEVICE_FRAMEWORK\" \"$SIMULATOR_FRAMEWORK\" \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.framework\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F8B9C72E24695BF200B9FEF6 /* Build XCFramework */ = {
+		C2C74C9825372B9800313817 /* Build tvOS Device Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2859,14 +2843,90 @@
 			);
 			inputPaths = (
 			);
-			name = "Build XCFramework";
+			name = "Build tvOS Device Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-xcframework.sh\"\n";
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME tvOS Framework\" \"appletvos\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74C9925372B9A00313817 /* Build tvOS Simulator Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build tvOS Simulator Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME tvOS Framework\" \"appletvsimulator\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74C9A25372B9B00313817 /* Combine tvOS Universal Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine tvOS Universal Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-appletvos/$PRODUCT_NAME.framework\"\nSIMULATOR_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-appletvsimulator/$PRODUCT_NAME.framework\"\n\"$SRCROOT/Scripts/combine-frameworks.sh\" \"$DEVICE_FRAMEWORK\" \"$SIMULATOR_FRAMEWORK\" \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.framework\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Mac Catalyst Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"maccatalyst\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/combine-xcframework.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8CF2BD2246C139400904633 /* Create Archive With XCFramework */ = {
@@ -4075,7 +4135,7 @@
 		C2B90D972456FBD000834AFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-iOS";
+				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = iphoneos;
 			};
@@ -4084,7 +4144,7 @@
 		C2B90D982456FBD000834AFB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-iOS";
+				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = iphoneos;
 			};
@@ -4093,7 +4153,7 @@
 		C2B90D9B2456FBDF00834AFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-tvOS";
+				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
 			};
@@ -4102,7 +4162,7 @@
 		C2B90D9C2456FBDF00834AFB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-tvOS";
+				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
 			};
