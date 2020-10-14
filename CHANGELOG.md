@@ -2,7 +2,7 @@
 
 ## Version 1.8.0
 
-* Drop support of iOS 8. The minimal version is iOS 9 now.
+* Drop support of old versions of iOS and macOS. The minimal version is iOS 9 and macOS 10.9 now.
 * Support saving custom data in crash report, see `PLCrashReporter.customData` property.
 * Fix exported symbols list for applying `PLCRASHREPORTER_PREFIX` prefix.
 * Fix Xcode 12 compatibility if the framework is used from sources.

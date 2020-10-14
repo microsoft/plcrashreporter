@@ -14,7 +14,7 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target    = '9.0'
   spec.ios.vendored_frameworks  = "iOS Framework/CrashReporter.framework"
 
-  spec.osx.deployment_target    = '10.7'
+  spec.osx.deployment_target    = '10.9'
   spec.osx.vendored_frameworks  = "Mac OS X Framework/CrashReporter.framework"
   
   spec.tvos.deployment_target   = '9.0'
