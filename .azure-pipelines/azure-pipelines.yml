@@ -1,0 +1,45 @@
+trigger:
+- master
+
+pr:
+- master
+
+pool:
+  vmImage: internal-macos-10.15
+
+variables:
+  Configuration: Release
+  SDK:
+
+  # Xcode 11.3.1 version is the last one that has compatible bitcode with Xcode 11.0 (minimal supported).
+  XCODE_PATH: '/Applications/Xcode_11.3.1.app/Contents/Developer'
+
+jobs:
+- job:
+  displayName: Build SDK for All Platforms
+  steps:
+  - checkout: self
+
+  - bash: 'brew install doxygen graphviz protobuf-c'
+    displayName: 'Install dependencies'
+
+  - task: Xcode@5
+    displayName: 'Build Crash Reporter Archive'
+    inputs:
+      xcWorkspacePath: CrashReporter.xcodeproj
+      scheme: 'CrashReporter Archive'
+      xcodeVersion: specifyPath
+      xcodeDeveloperDir: '$(XCODE_PATH)'
+      args: 'SYMROOT="$(Build.BinariesDirectory)"'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Archives to Staging Directory'
+    inputs:
+      SourceFolder: '$(Build.BinariesDirectory)/Release'
+      Contents: '*.zip'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts'
+    inputs:
+      ArtifactName: Release
