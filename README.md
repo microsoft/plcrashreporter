@@ -51,7 +51,7 @@ Also, next optional tools are used to build additional resources:
 - Go to PLCrashReporter's root folder and run
 
     ```bash
-    xcodebuild -configuration Release -target 'Crash Reporter'
+    xcodebuild -configuration Release -target 'CrashReporter'
     ```
 
     to create binaries for all platforms.

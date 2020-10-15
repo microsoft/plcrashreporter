@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		058812D410405908009128FB /* Disk Image */ = {
+		058812D410405908009128FB /* CrashReporter Archive */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */;
+			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "CrashReporter Archive" */;
 			buildPhases = (
 				C25664D023571BC60088513E /* Verify Modifications */,
 				058812D310405908009128FB /* Create Archive With Universal Frameworks */,
@@ -19,18 +19,18 @@
 			dependencies = (
 				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
 			);
-			name = "Disk Image";
+			name = "CrashReporter Archive";
 			productName = "Disk Image";
 		};
-		C25664D123571D330088513E /* Documentation */ = {
+		C25664D123571D330088513E /* CrashReporter Documentation */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "Documentation" */;
+			buildConfigurationList = C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "CrashReporter Documentation" */;
 			buildPhases = (
 				C25664D523571D3D0088513E /* Generate Documentation */,
 			);
 			dependencies = (
 			);
-			name = Documentation;
+			name = "CrashReporter Documentation";
 			productName = Documentation;
 		};
 		C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */ = {
@@ -61,9 +61,9 @@
 			name = "CrashReporter tvOS Universal";
 			productName = "CrashReporter tvOS Universal";
 		};
-		C2C74D9B2538508300313817 /* Crash Reporter */ = {
+		C2C74D9B2538508300313817 /* CrashReporter */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "Crash Reporter" */;
+			buildConfigurationList = C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "CrashReporter" */;
 			buildPhases = (
 				C2C74DD1253851C300313817 /* Copy Products */,
 			);
@@ -75,7 +75,7 @@
 				C2C74DCC253850A500313817 /* PBXTargetDependency */,
 				C2C74DCE253850A500313817 /* PBXTargetDependency */,
 			);
-			name = "Crash Reporter";
+			name = CrashReporter;
 			productName = "Crash Reporter";
 		};
 		F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */ = {
@@ -2637,9 +2637,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				058812D410405908009128FB /* Disk Image */,
-				C2C74D9B2538508300313817 /* Crash Reporter */,
-				C25664D123571D330088513E /* Documentation */,
+				C2C74D9B2538508300313817 /* CrashReporter */,
+				058812D410405908009128FB /* CrashReporter Archive */,
+				C25664D123571D330088513E /* CrashReporter Documentation */,
 				F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */,
 				C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */,
 				C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */,
@@ -3563,7 +3563,7 @@
 		};
 		C2C74DCC253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C25664D123571D330088513E /* Documentation */;
+			target = C25664D123571D330088513E /* CrashReporter Documentation */;
 			targetProxy = C2C74DCB253850A500313817 /* PBXContainerItemProxy */;
 		};
 		C2C74DCE253850A500313817 /* PBXTargetDependency */ = {
@@ -3573,7 +3573,7 @@
 		};
 		C2C74E1D25385F5B00313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C2C74D9B2538508300313817 /* Crash Reporter */;
+			target = C2C74D9B2538508300313817 /* CrashReporter */;
 			targetProxy = C2C74E1C25385F5B00313817 /* PBXContainerItemProxy */;
 		};
 		C2CBA40A24586975001B775F /* PBXTargetDependency */ = {
@@ -4319,7 +4319,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */ = {
+		058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "CrashReporter Archive" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				058812D510405908009128FB /* Debug */,
@@ -4436,7 +4436,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "Documentation" */ = {
+		C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "CrashReporter Documentation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C25664D323571D340088513E /* Debug */,
@@ -4463,7 +4463,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "Crash Reporter" */ = {
+		C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "CrashReporter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C2C74D9C2538508300313817 /* Debug */,
