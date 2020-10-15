@@ -12,7 +12,7 @@
 			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */;
 			buildPhases = (
 				C25664D023571BC60088513E /* Verify Modifications */,
-				058812D310405908009128FB /* Create Disk Image */,
+				058812D310405908009128FB /* Create Archive With Universal Frameworks */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 			);
@@ -1218,9 +1218,7 @@
 		C2B90DA22456FE8200834AFB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		C2B90DA32456FE8200834AFB /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		C2B90DA5245714E900834AFB /* generate-documentation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "generate-documentation.sh"; sourceTree = "<group>"; };
-		C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-static-libs-archive.sh"; sourceTree = "<group>"; };
 		C2B90DA7245714E900834AFB /* verify-modifications.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modifications.sh"; sourceTree = "<group>"; };
-		C2B90DA8245714E900834AFB /* create-disk-image.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-disk-image.sh"; sourceTree = "<group>"; };
 		C2BBCD7E2456E03D00F9E820 /* PLCrashMachExceptionPortTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionPortTests.m; sourceTree = "<group>"; };
 		C2BBCD7F2456E03D00F9E820 /* PLCrashAsyncDwarfEncodingTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncDwarfEncodingTests.mm; sourceTree = "<group>"; };
 		C2BBCD802456E03D00F9E820 /* PLCrashMachExceptionServerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServerTests.m; sourceTree = "<group>"; };
@@ -1239,7 +1237,6 @@
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-xcframework-archive.sh"; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1990,9 +1987,6 @@
 				C2C74E1E25385F8300313817 /* combine-libraries.sh */,
 				C2C74A862535CD3A00313817 /* combine-xcframework.sh */,
 				C2C74E1F25385F8300313817 /* copy-products.sh */,
-				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
-				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
-				F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */,
 				C2B90DA5245714E900834AFB /* generate-documentation.sh */,
 				C2B90DA7245714E900834AFB /* verify-modifications.sh */,
 			);
@@ -2732,19 +2726,19 @@
 			shellScript = "# If zzuf isn't available, nothing to do.\nwhich -s zzuf\nif [ $? != 0 ]; then\n\texit\nfi\n\n# Run 4 jobs at once.\n# Run from seed 0 to 100000.\n# Only fuzz .plcrash files\nzzuf -I '\\.plcrash$' -j 4 -s 0:100000 \"${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}\" \"${SRCROOT}/Resources/fuzz_report.plcrash\"\n";
 			showEnvVarsInLog = 0;
 		};
-		058812D310405908009128FB /* Create Disk Image */ = {
+		058812D310405908009128FB /* Create Archive With Universal Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Create Disk Image";
+			name = "Create Archive With Universal Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/create-disk-image.sh\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-$CURRENT_PROJECT_VERSION\" \"iOS Framework\" \"tvOS Framework\" \"Mac OS X Framework\" \"Tools\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
@@ -2801,7 +2795,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/create-static-libs-archive.sh\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-$CURRENT_PROJECT_VERSION\" Static/*\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAB2457178800834AFB /* Build iOS Device Framework */ = {
@@ -3029,7 +3023,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/create-xcframework-archive.sh\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-XCFramework-$CURRENT_PROJECT_VERSION\" \"$PROJECT_NAME.xcframework\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
