@@ -14,9 +14,9 @@ LICENSE_DEST="${DESTROOT}/LICENSE.txt"
 DOC_SUBDIR="Documentation"
 
 # Per-platform framework sources
-MAC_SRC="${BUILD_DIR}/${CONFIGURATION}-macOS"
-IPHONE_SRC="${BUILD_DIR}/${CONFIGURATION}-iOS"
-APPLETV_SRC="${BUILD_DIR}/${CONFIGURATION}-tvOS"
+MAC_SRC="${BUILD_DIR}/${CONFIGURATION}-macosx"
+IPHONE_SRC="${BUILD_DIR}/${CONFIGURATION}-iphoneuniversal"
+APPLETV_SRC="${BUILD_DIR}/${CONFIGURATION}-appletvuniversal"
 
 # Populate the destroot
 cp "${IPHONE_SRC}/libCrashReporter.a" "${DESTROOT}/libCrashReporter-iOS.a"
