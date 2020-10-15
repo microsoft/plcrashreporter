@@ -17,12 +17,7 @@
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 			);
 			dependencies = (
-				C26C52AB2451B4D400D20162 /* PBXTargetDependency */,
-				C2B90D9E2456FBF400834AFB /* PBXTargetDependency */,
-				C2B90DA02456FBF400834AFB /* PBXTargetDependency */,
-				C25664E5235737560088513E /* PBXTargetDependency */,
-				05EC525A10531C9300DB9D39 /* PBXTargetDependency */,
-				F8358676246BEFA500D1CE3E /* PBXTargetDependency */,
+				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
 			);
 			name = "Disk Image";
 			productName = "Disk Image";
@@ -44,6 +39,7 @@
 			buildPhases = (
 				C2B90DAB2457178800834AFB /* Build iOS Device Framework */,
 				C2C74A842535CCC700313817 /* Build iOS Simulator Framework */,
+				C2C74E0825385BCE00313817 /* Combine iOS Universal Library */,
 				C2C74A892535CD8000313817 /* Combine iOS Universal Framework */,
 			);
 			dependencies = (
@@ -57,12 +53,30 @@
 			buildPhases = (
 				C2C74C9825372B9800313817 /* Build tvOS Device Framework */,
 				C2C74C9925372B9A00313817 /* Build tvOS Simulator Framework */,
+				C2C74E0925385C9700313817 /* Combine tvOS Universal Library */,
 				C2C74C9A25372B9B00313817 /* Combine tvOS Universal Framework */,
 			);
 			dependencies = (
 			);
 			name = "CrashReporter tvOS Universal";
 			productName = "CrashReporter tvOS Universal";
+		};
+		C2C74D9B2538508300313817 /* Crash Reporter */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "Crash Reporter" */;
+			buildPhases = (
+				C2C74DD1253851C300313817 /* Copy Products */,
+			);
+			dependencies = (
+				C2C74DC8253850A500313817 /* PBXTargetDependency */,
+				C2C74DC6253850A500313817 /* PBXTargetDependency */,
+				C2C74DCA253850A500313817 /* PBXTargetDependency */,
+				C2C74DC4253850A500313817 /* PBXTargetDependency */,
+				C2C74DCC253850A500313817 /* PBXTargetDependency */,
+				C2C74DCE253850A500313817 /* PBXTargetDependency */,
+			);
+			name = "Crash Reporter";
+			productName = "Crash Reporter";
 		};
 		F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */ = {
 			isa = PBXAggregateTarget;
@@ -846,13 +860,6 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
-		05EC525910531C9300DB9D39 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05E731E20EFA1A3E005EDFB7;
-			remoteInfo = plcrashutil;
-		};
 		80A63BC01C4D2BE20073B7A3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -874,13 +881,6 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter macOS Framework";
 		};
-		C25664E4235737560088513E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C25664D123571D330088513E;
-			remoteInfo = Documentation;
-		};
 		C26C529F2451B3B300D20162 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -895,26 +895,54 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter macOS";
 		};
-		C26C52AA2451B4D400D20162 /* PBXContainerItemProxy */ = {
+		C2C74DC3253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
-			remoteInfo = "CrashReporter macOS Framework";
+			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
+			remoteInfo = "CrashReporter XCFramework";
 		};
-		C2B90D9D2456FBF400834AFB /* PBXContainerItemProxy */ = {
+		C2C74DC5253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C2B90D952456FBD000834AFB;
 			remoteInfo = "CrashReporter iOS Universal";
 		};
-		C2B90D9F2456FBF400834AFB /* PBXContainerItemProxy */ = {
+		C2C74DC7253850A500313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = "CrashReporter macOS Framework";
+		};
+		C2C74DC9253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C2B90D992456FBDE00834AFB;
 			remoteInfo = "CrashReporter tvOS Universal";
+		};
+		C2C74DCB253850A500313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C25664D123571D330088513E;
+			remoteInfo = Documentation;
+		};
+		C2C74DCD253850A500313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731E20EFA1A3E005EDFB7;
+			remoteInfo = plcrashutil;
+		};
+		C2C74E1C25385F5B00313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2C74D9B2538508300313817;
+			remoteInfo = "Crash Reporter";
 		};
 		C2CBA40924586975001B775F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -936,13 +964,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8064D88B1C4D22E5005A8B4C;
 			remoteInfo = "CrashReporter tvOS Framework";
-		};
-		F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
-			remoteInfo = "CrashReporter XCFramework";
 		};
 		F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1209,8 +1230,9 @@
 		C2BBCD842456E03D00F9E820 /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
 		C2C74A852535CD3A00313817 /* combine-frameworks.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-frameworks.sh"; sourceTree = "<group>"; };
 		C2C74A862535CD3A00313817 /* combine-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-xcframework.sh"; sourceTree = "<group>"; };
-		C2C74A872535CD3A00313817 /* combine-libs.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-libs.sh"; sourceTree = "<group>"; };
 		C2C74A882535CD3A00313817 /* build-framework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-framework.sh"; sourceTree = "<group>"; };
+		C2C74E1E25385F8300313817 /* combine-libraries.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-libraries.sh"; sourceTree = "<group>"; };
+		C2C74E1F25385F8300313817 /* copy-products.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "copy-products.sh"; sourceTree = "<group>"; };
 		C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "DemoCrash-iOS.entitlements"; sourceTree = "<group>"; };
 		C2F0AC9F24AB7C28004890EC /* CrashReporterFramework.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashReporterFramework.m; sourceTree = "<group>"; };
 		C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-tvOS-Info.plist"; sourceTree = "<group>"; };
@@ -1965,8 +1987,9 @@
 			children = (
 				C2C74A882535CD3A00313817 /* build-framework.sh */,
 				C2C74A852535CD3A00313817 /* combine-frameworks.sh */,
-				C2C74A872535CD3A00313817 /* combine-libs.sh */,
+				C2C74E1E25385F8300313817 /* combine-libraries.sh */,
 				C2C74A862535CD3A00313817 /* combine-xcframework.sh */,
+				C2C74E1F25385F8300313817 /* copy-products.sh */,
 				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
 				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
 				F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */,
@@ -2602,6 +2625,9 @@
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
 					};
+					C2C74D9B2538508300313817 = {
+						CreatedOnToolsVersion = 12.2;
+					};
 				};
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
@@ -2618,6 +2644,7 @@
 			projectRoot = "";
 			targets = (
 				058812D410405908009128FB /* Disk Image */,
+				C2C74D9B2538508300313817 /* Crash Reporter */,
 				C25664D123571D330088513E /* Documentation */,
 				F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */,
 				C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */,
@@ -2908,6 +2935,63 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"maccatalyst\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74DD1253851C300313817 /* Copy Products */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Products";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/copy-products.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74E0825385BCE00313817 /* Combine iOS Universal Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine iOS Universal Library";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-iphoneos/lib$PRODUCT_NAME.a\"\nSIMULATOR_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-iphonesimulator/lib$PRODUCT_NAME.a\"\n\"$SRCROOT/Scripts/combine-libraries.sh\" \"$DEVICE_LIBRARY\" \"$SIMULATOR_LIBRARY\" \"$BUILT_PRODUCTS_DIR/lib$PRODUCT_NAME.a\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74E0925385C9700313817 /* Combine tvOS Universal Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine tvOS Universal Library";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvos/lib$PRODUCT_NAME.a\"\nSIMULATOR_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvsimulator/lib$PRODUCT_NAME.a\"\n\"$SRCROOT/Scripts/combine-libraries.sh\" \"$DEVICE_LIBRARY\" \"$SIMULATOR_LIBRARY\" \"$BUILT_PRODUCTS_DIR/lib$PRODUCT_NAME.a\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */ = {
@@ -3438,11 +3522,6 @@
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = 05E7325C0EFA1F6C005EDFB7 /* PBXContainerItemProxy */;
 		};
-		05EC525A10531C9300DB9D39 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
-			targetProxy = 05EC525910531C9300DB9D39 /* PBXContainerItemProxy */;
-		};
 		80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */;
@@ -3458,11 +3537,6 @@
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
 			targetProxy = C23D0555248A7C440094EC6B /* PBXContainerItemProxy */;
 		};
-		C25664E5235737560088513E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C25664D123571D330088513E /* Documentation */;
-			targetProxy = C25664E4235737560088513E /* PBXContainerItemProxy */;
-		};
 		C26C52A02451B3B300D20162 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
@@ -3473,20 +3547,40 @@
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = C26C52A42451B45D00D20162 /* PBXContainerItemProxy */;
 		};
-		C26C52AB2451B4D400D20162 /* PBXTargetDependency */ = {
+		C2C74DC4253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
-			targetProxy = C26C52AA2451B4D400D20162 /* PBXContainerItemProxy */;
+			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
+			targetProxy = C2C74DC3253850A500313817 /* PBXContainerItemProxy */;
 		};
-		C2B90D9E2456FBF400834AFB /* PBXTargetDependency */ = {
+		C2C74DC6253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
-			targetProxy = C2B90D9D2456FBF400834AFB /* PBXContainerItemProxy */;
+			targetProxy = C2C74DC5253850A500313817 /* PBXContainerItemProxy */;
 		};
-		C2B90DA02456FBF400834AFB /* PBXTargetDependency */ = {
+		C2C74DC8253850A500313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
+			targetProxy = C2C74DC7253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74DCA253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */;
-			targetProxy = C2B90D9F2456FBF400834AFB /* PBXContainerItemProxy */;
+			targetProxy = C2C74DC9253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74DCC253850A500313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C25664D123571D330088513E /* Documentation */;
+			targetProxy = C2C74DCB253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74DCE253850A500313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
+			targetProxy = C2C74DCD253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74E1D25385F5B00313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2C74D9B2538508300313817 /* Crash Reporter */;
+			targetProxy = C2C74E1C25385F5B00313817 /* PBXContainerItemProxy */;
 		};
 		C2CBA40A24586975001B775F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3502,11 +3596,6 @@
 			isa = PBXTargetDependency;
 			target = 8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */;
 			targetProxy = C2CBA40E245869F4001B775F /* PBXContainerItemProxy */;
-		};
-		F8358676246BEFA500D1CE3E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
-			targetProxy = F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */;
 		};
 		F8CF2BCD246C05D100904633 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4178,6 +4267,20 @@
 			};
 			name = Release;
 		};
+		C2C74D9C2538508300313817 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C2C74D9D2538508300313817 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		F8B9C72C24695BE600B9FEF6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4362,6 +4465,15 @@
 			buildConfigurations = (
 				C2B90D9B2456FBDF00834AFB /* Debug */,
 				C2B90D9C2456FBDF00834AFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "Crash Reporter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C2C74D9C2538508300313817 /* Debug */,
+				C2C74D9D2538508300313817 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
