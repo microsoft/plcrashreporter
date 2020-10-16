@@ -3,6 +3,9 @@
 ## Version 1.7.3
 
 * Fix get the subtype of device architecture on iOS 14.
+* Fix crash on collecting reg values on `arm64e` devices with iOS 14.
+
+___
 
 ## Version 1.7.2
 
