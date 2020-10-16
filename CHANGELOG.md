@@ -7,6 +7,7 @@
 * Fix exported symbols list for applying `PLCRASHREPORTER_PREFIX` prefix.
 * Fix Xcode 12 compatibility if the framework is used from sources.
 * Fix getting the subtype of device architecture on iOS 14.
+* Fix crash on collecting register values on `arm64e` devices with iOS 14.
 
 ___
 
