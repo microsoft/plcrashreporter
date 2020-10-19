@@ -34,14 +34,6 @@
 #include <mach/machine.h>
 
 /*
- * With the introduction of new processor types and subtypes, Apple often does not update the system headers
- * on Mac OS X (and the Simulator). This header provides compatibility defines (and #warnings that will
- * fire when the SDKs are updated to include the required constants.
- */
-#define PLCF_COMPAT_HAS_UPDATED_OSX_SDK(sdk_version) (TARGET_OS_MAC && !TARGET_OS_IPHONE) && (PLCF_MIN_MACOSX_SDK >= sdk_version)
-
-
-/*
  * ARM64 compact unwind constants; Since these values are fixed by the ABI, we can safely include them directly here.
  *
  * These are not defined on OS X, and they are defined as enums on iOS, preventing a stable #ifdef check. As such,
