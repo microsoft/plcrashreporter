@@ -3851,10 +3851,6 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -3866,10 +3862,6 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -3927,10 +3919,6 @@
 				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
@@ -3949,10 +3937,6 @@
 				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
@@ -4012,11 +3996,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
-				PL_MIN_MACOSX_SDK = 101500;
 				PL_SIMULATOR_ARCHS = "i386 x86_64";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
@@ -4077,10 +4060,9 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
-				PL_MIN_MACOSX_SDK = 101500;
 				PL_SIMULATOR_ARCHS = "i386 x86_64";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
