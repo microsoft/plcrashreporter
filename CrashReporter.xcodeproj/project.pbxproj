@@ -1186,7 +1186,7 @@
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
 		8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCrashReporter.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8064D8BB1C4D22E5005A8B4C /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8064D9951C4D27E2005A8B4C /* Tests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8064D9951C4D27E2005A8B4C /* CrashReporter tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CrashReporter tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8064D9A31C4D27E9005A8B4C /* DemoCrash tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1369,7 +1369,7 @@
 				052A45CF136353FB00987004 /* DemoCrash iOS.app */,
 				8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */,
 				8064D8BB1C4D22E5005A8B4C /* CrashReporter.framework */,
-				8064D9951C4D27E2005A8B4C /* Tests tvOS.xctest */,
+				8064D9951C4D27E2005A8B4C /* CrashReporter tvOS Tests.xctest */,
 				8064D9A31C4D27E9005A8B4C /* DemoCrash tvOS.app */,
 			);
 			name = Products;
@@ -2400,9 +2400,9 @@
 			productReference = 05CD31520EE936A9000FDE88 /* libCrashReporter.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		05CD32680EE93DC3000FDE88 /* Tests macOS */ = {
+		05CD32680EE93DC3000FDE88 /* CrashReporter macOS Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests macOS" */;
+			buildConfigurationList = 05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter macOS Tests" */;
 			buildPhases = (
 				05CD32640EE93DC3000FDE88 /* Resources */,
 				05CD34410EEA60F8000FDE88 /* Copy Frameworks */,
@@ -2415,14 +2415,14 @@
 			dependencies = (
 				C26C52A52451B45D00D20162 /* PBXTargetDependency */,
 			);
-			name = "Tests macOS";
+			name = "CrashReporter macOS Tests";
 			productName = "$(TARGET_NAME)";
 			productReference = 05CD32690EE93DC3000FDE88 /* Tests macOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		05CD33230EE94439000FDE88 /* Tests iOS */ = {
+		05CD33230EE94439000FDE88 /* CrashReporter iOS Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests iOS" */;
+			buildConfigurationList = 05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter iOS Tests" */;
 			buildPhases = (
 				05CD33200EE94439000FDE88 /* Resources */,
 				05CD33210EE94439000FDE88 /* Sources */,
@@ -2434,7 +2434,7 @@
 			dependencies = (
 				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
 			);
-			name = "Tests iOS";
+			name = "CrashReporter iOS Tests";
 			productName = "$(TARGET_NAME)";
 			productReference = 05CD33240EE94439000FDE88 /* Tests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -2529,9 +2529,9 @@
 			productReference = 8064D8BB1C4D22E5005A8B4C /* CrashReporter.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		8064D9281C4D27E2005A8B4C /* Tests tvOS */ = {
+		8064D9281C4D27E2005A8B4C /* CrashReporter tvOS Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "Tests tvOS" */;
+			buildConfigurationList = 8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "CrashReporter tvOS Tests" */;
 			buildPhases = (
 				8064D92D1C4D27E2005A8B4C /* Resources */,
 				8064D9301C4D27E2005A8B4C /* Sources */,
@@ -2543,9 +2543,9 @@
 			dependencies = (
 				80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */,
 			);
-			name = "Tests tvOS";
+			name = "CrashReporter tvOS Tests";
 			productName = "$(TARGET_NAME)";
-			productReference = 8064D9951C4D27E2005A8B4C /* Tests tvOS.xctest */;
+			productReference = 8064D9951C4D27E2005A8B4C /* CrashReporter tvOS Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		8064D9971C4D27E9005A8B4C /* DemoCrash tvOS */ = {
@@ -2649,9 +2649,9 @@
 				05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */,
 				05CD31510EE936A9000FDE88 /* CrashReporter iOS */,
 				8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */,
-				05CD32680EE93DC3000FDE88 /* Tests macOS */,
-				05CD33230EE94439000FDE88 /* Tests iOS */,
-				8064D9281C4D27E2005A8B4C /* Tests tvOS */,
+				05CD32680EE93DC3000FDE88 /* CrashReporter macOS Tests */,
+				05CD33230EE94439000FDE88 /* CrashReporter iOS Tests */,
+				8064D9281C4D27E2005A8B4C /* CrashReporter tvOS Tests */,
 				05F40CE60EF7AB80008050CF /* DemoCrash macOS */,
 				052A45CE136353FB00987004 /* DemoCrash iOS */,
 				8064D9971C4D27E9005A8B4C /* DemoCrash tvOS */,
@@ -4337,7 +4337,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests macOS" */ = {
+		05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter macOS Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD326B0EE93DC4000FDE88 /* Debug */,
@@ -4346,7 +4346,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests iOS" */ = {
+		05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter iOS Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD33270EE9443A000FDE88 /* Debug */,
@@ -4418,7 +4418,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "Tests tvOS" */ = {
+		8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "CrashReporter tvOS Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8064D9931C4D27E2005A8B4C /* Debug */,
