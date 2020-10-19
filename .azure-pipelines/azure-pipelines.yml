@@ -24,13 +24,41 @@ jobs:
     displayName: 'Install dependencies'
 
   - task: Xcode@5
-    displayName: 'Build Crash Reporter Archive'
+    displayName: 'Build Crash Reporter'
     inputs:
       xcWorkspacePath: CrashReporter.xcodeproj
-      scheme: 'CrashReporter Archive'
+      scheme: 'CrashReporter'
       xcodeVersion: specifyPath
       xcodeDeveloperDir: '$(XCODE_PATH)'
       args: 'SYMROOT="$(Build.BinariesDirectory)"'
+
+  - task: Xcode@5
+    displayName: 'Build CrashReporter macOS Framework for Apple Silicon'
+    inputs:
+      xcWorkspacePath: CrashReporter.xcodeproj
+      scheme: CrashReporter macOS Framework
+      xcodeVersion: specifyPath
+      xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
+      args: 'SYMROOT="$(Build.BinariesDirectory)"'
+
+  - template: build-apple-silicon-template.yml
+    parameters:
+      scheme: 'plcrashutil'
+
+  - bash: |
+      cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
+      cp -Rf "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release"
+      cp -f "Release-macosx/plcrashutil" "Release"
+    displayName: 'Combine Binaries'
+    workingDirectory: '$(Build.BinariesDirectory)'
+
+  - bash: |
+      VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "CrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "CrashReporter-Static-$VERSION" Static/*
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "CrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework"
+    displayName: 'Create Archives'
+    workingDirectory: '$(Build.BinariesDirectory)/Release'
 
   - task: CopyFiles@2
     displayName: 'Copy Archives to Staging Directory'
@@ -43,3 +71,7 @@ jobs:
     displayName: 'Publish Artifacts'
     inputs:
       ArtifactName: Release
+
+- template: analyze-and-test-template.yml
+  parameters:
+    platforms: [iOS, macOS, tvOS, MacCatalyst ]

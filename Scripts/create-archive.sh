@@ -7,7 +7,7 @@ set -e
 PROJECT_DIR="$(dirname "$0")/.."
 
 # Create temporary directory
-TEMP_DIR=$(mktemp -d -t $1) 
+TEMP_DIR=$(mktemp -d -t "$1") 
 mkdir -p "$TEMP_DIR/$1"
 
 # Copy required files
