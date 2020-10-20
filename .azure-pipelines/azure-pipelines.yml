@@ -45,10 +45,46 @@ jobs:
     parameters:
       scheme: 'plcrashutil'
 
+  - template: build-apple-silicon-template.yml
+    parameters:
+      scheme: 'CrashReporter iOS Framework'
+      destination:
+        destinationPlatformOption: iOS
+        destinationTypeOption: simulators
+        destinationSimulators: 'iPhone 11'
+        
+  - template: build-apple-silicon-template.yml
+    parameters:
+      scheme: 'CrashReporter iOS Framework'
+      destination:
+        destinationPlatformOption: macOS
+
+  - template: build-apple-silicon-template.yml
+    parameters:
+      scheme: 'CrashReporter tvOS Framework'
+      destination:
+        destinationPlatformOption: tvOS
+        destinationTypeOption: simulators
+        destinationSimulators: 'Apple TV'
+
   - bash: |
       cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
       cp -Rf "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release"
       cp -f "Release-macosx/plcrashutil" "Release"
+      lipo "Release-xcframework/CrashReporter.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" \
+        "Release-iphonesimulator/CrashReporter.framework/CrashReporter" \
+        -create -output "Release-xcframework/CrashReporter.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
+      lipo "Release-xcframework/CrashReporter.xcframework/ios-x86_64-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" \
+        "Release-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" \
+        -create -output "Release-xcframework/CrashReporter.xcframework/ios-x86_64-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" || exit 1
+      lipo "Release-xcframework/CrashReporter.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" \
+        "Release-appletvsimulator/CrashReporter.framework/CrashReporter" \
+        -create -output "Release-xcframework/CrashReporter.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
+      rm -rf "Release/CrashReporter.xcframework"
+      for framework in Release-xcframework/CrashReporter.xcframework/*/CrashReporter.framework; do
+        xcframeworks+=( -framework "$framework")
+      done
+      xcodebuild -create-xcframework "${xcframeworks[@]}" -output "Release/CrashReporter.xcframework"
     displayName: 'Combine Binaries'
     workingDirectory: '$(Build.BinariesDirectory)'
 
