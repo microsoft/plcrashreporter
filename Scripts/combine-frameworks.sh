@@ -2,7 +2,7 @@
 set -e
 
 # Combines frameworks for device and simulator into universal one.
-# Usage: combine-libs.sh <device> <simulator> <output>
+# Usage: combine-frameworks.sh <device> <simulator> <output>
 
 echo "Combining device and simulator frameworks"
 cp -Rv "$1" "$3"

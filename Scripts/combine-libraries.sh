@@ -2,7 +2,7 @@
 set -e
 
 # Combines libraries for device and simulator into universal one.
-# Usage: combine-libs.sh <device> <simulator> <output>
+# Usage: combine-libraries.sh <device> <simulator> <output>
 
 library_archs_diff() {
   local device_archs=($(lipo -archs "$1"))
@@ -20,5 +20,5 @@ fi
 echo "Combining device and simulator libraries"
 lipo "$1" "$3" -create -output "$3"
 
-# Show information of reesult library.
+# Show information of result library.
 lipo -info "$3"
