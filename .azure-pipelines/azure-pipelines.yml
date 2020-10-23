@@ -104,6 +104,7 @@ jobs:
 
   - bash: |
       VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
+      [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "CrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "CrashReporter-Static-$VERSION" Static/*
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "CrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework"
