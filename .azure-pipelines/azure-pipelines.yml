@@ -36,14 +36,19 @@ jobs:
     displayName: 'Build CrashReporter macOS Framework for Apple Silicon'
     inputs:
       xcWorkspacePath: CrashReporter.xcodeproj
-      scheme: CrashReporter macOS Framework
+      scheme: 'CrashReporter macOS Framework'
       xcodeVersion: specifyPath
       xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
       args: 'SYMROOT="$(Build.BinariesDirectory)"'
 
-  - template: build-apple-silicon-template.yml
-    parameters:
+  - task: Xcode@5
+    displayName: 'Build plcrashutil for Apple Silicon'
+    inputs:
+      xcWorkspacePath: CrashReporter.xcodeproj
       scheme: 'plcrashutil'
+      xcodeVersion: specifyPath
+      xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
+      args: 'SYMROOT="$(Build.BinariesDirectory)"'
 
   - template: build-apple-silicon-template.yml
     parameters:
@@ -69,8 +74,15 @@ jobs:
 
   - bash: |
       cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
-      cp -Rf "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release"
-      cp -f "Release-macosx/plcrashutil" "Release"
+      lipo -info "Release/Static/libCrashReporter-MacOSX-Static.a"
+      rm -rf "Release/Mac OS X Framework/CrashReporter.framework" "Release/Mac OS X Framework/CrashReporter.framework.dSYM"
+      cp -R "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release/Mac OS X Framework"
+      lipo -info "Release/Mac OS X Framework/CrashReporter.framework/CrashReporter"
+      cp -f "Release-macosx/plcrashutil" "Release/Tools"
+      lipo -info "Release/Tools/plcrashutil"
+
+      rm -rf "Release-xcframework/CrashReporter.xcframework/macos-x86_64/CrashReporter.framework"
+      cp -R "Release-macosx/CrashReporter.framework" "Release-xcframework/CrashReporter.xcframework/macos-x86_64"
       lipo "Release-xcframework/CrashReporter.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" \
         "Release-iphonesimulator/CrashReporter.framework/CrashReporter" \
         -create -output "Release-xcframework/CrashReporter.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
@@ -80,11 +92,13 @@ jobs:
       lipo "Release-xcframework/CrashReporter.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" \
         "Release-appletvsimulator/CrashReporter.framework/CrashReporter" \
         -create -output "Release-xcframework/CrashReporter.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
+
       rm -rf "Release/CrashReporter.xcframework"
       for framework in Release-xcframework/CrashReporter.xcframework/*/CrashReporter.framework; do
         xcframeworks+=( -framework "$framework")
       done
       xcodebuild -create-xcframework "${xcframeworks[@]}" -output "Release/CrashReporter.xcframework"
+      ls "Release/CrashReporter.xcframework"
     displayName: 'Combine Binaries'
     workingDirectory: '$(Build.BinariesDirectory)'
 
