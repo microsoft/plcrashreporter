@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1140"
+   LastUpgradeVersion = "1220"
    version = "1.3">
    <BuildAction
-      parallelizeBuildables = "YES"
+      parallelizeBuildables = "NO"
       buildImplicitDependencies = "NO">
       <BuildActionEntries>
          <BuildActionEntry
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C25664D123571D330088513E"
-               BuildableName = "Documentation"
-               BlueprintName = "Documentation"
+               BlueprintIdentifier = "C2C74D9B2538508300313817"
+               BuildableName = "CrashReporter"
+               BlueprintName = "CrashReporter"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -40,15 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C25664D123571D330088513E"
-            BuildableName = "Documentation"
-            BlueprintName = "Documentation"
-            ReferencedContainer = "container:CrashReporter.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -59,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C25664D123571D330088513E"
-            BuildableName = "Documentation"
-            BlueprintName = "Documentation"
+            BlueprintIdentifier = "C2C74D9B2538508300313817"
+            BuildableName = "CrashReporter"
+            BlueprintName = "CrashReporter"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
