@@ -98,8 +98,7 @@ static uint32_t END_OF_METHODS_LIST = -1;
  * @sa https://github.com/opensource-apple/objc4/blob/master/runtime/objc-private.h
  */
 #if defined(__arm64__)
-#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK     0x0000000ffffffff8ULL
-#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK_OLD 0x00000001fffffff8ULL
+#define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x0000000ffffffff8ULL
 #elif defined(__x86_64__)
 #define PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK 0x00007ffffffffff8ULL
 #else
@@ -276,12 +275,6 @@ struct pl_objc2_list_header {
 static pl_vm_address_t plcrash_async_objc_isa_pointer (pl_vm_address_t isa) {
 #if PLCRASH_ASYNC_OBJC_SUPPORT_NONPTR_ISA
     if (isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_FLAG) {
-#if TARGET_OS_IPHONE && PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK_OLD
-        /* Before iOS 9 other bit-mask was used. */
-        if (floor(kCFCoreFoundationVersionNumber) <= kCFCoreFoundationVersionNumber_iOS_8_x_Max) {
-            return isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK_OLD;
-        }
-#endif
         return isa & PLCRASH_ASYNC_OBJC_ISA_NONPTR_CLASS_MASK;
     }
 #endif

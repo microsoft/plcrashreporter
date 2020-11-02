@@ -560,10 +560,15 @@ struct  _Plcrash__CrashReport
    * Report format information. Required for all v1.1+ crash reports. 
    */
   Plcrash__CrashReport__ReportInfo *report_info;
+  /*
+   * Custom data. Can be used by user to store contextual information for the crash. 
+   */
+  protobuf_c_boolean has_custom_data;
+  ProtobufCBinaryData custom_data;
 };
 #define PLCRASH__CRASH_REPORT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&plcrash__crash_report__descriptor) \
-    , NULL, NULL, 0,NULL, 0,NULL, NULL, NULL, NULL, NULL, NULL }
+    , NULL, NULL, 0,NULL, 0,NULL, NULL, NULL, NULL, NULL, NULL, 0, {0,NULL} }
 
 
 /* Plcrash__CrashReport__Processor methods */

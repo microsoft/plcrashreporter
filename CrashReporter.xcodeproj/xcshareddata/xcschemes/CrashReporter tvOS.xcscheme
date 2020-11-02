@@ -33,8 +33,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8064D9281C4D27E2005A8B4C"
-               BuildableName = "Tests tvOS.xctest"
-               BlueprintName = "Tests tvOS"
+               BuildableName = "CrashReporter tvOS Tests.xctest"
+               BlueprintName = "CrashReporter tvOS Tests"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </TestableReference>

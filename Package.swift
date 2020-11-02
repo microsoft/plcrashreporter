@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "PLCrashReporter",
     platforms: [
-        .iOS(.v8),
+        .iOS(.v9),
         .macOS(.v10_10),
         .tvOS(.v9)
     ],

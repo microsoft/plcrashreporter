@@ -1189,7 +1189,7 @@ const ProtobufCMessageDescriptor plcrash__crash_report__report_info__descriptor 
   (ProtobufCMessageInit) plcrash__crash_report__report_info__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor plcrash__crash_report__field_descriptors[9] =
+static const ProtobufCFieldDescriptor plcrash__crash_report__field_descriptors[10] =
 {
   {
     "system_info",
@@ -1299,10 +1299,23 @@ static const ProtobufCFieldDescriptor plcrash__crash_report__field_descriptors[9
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "custom_data",
+    10,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_BYTES,
+    offsetof(Plcrash__CrashReport, has_custom_data),
+    offsetof(Plcrash__CrashReport, custom_data),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned plcrash__crash_report__field_indices_by_name[] = {
   1,   /* field[1] = application_info */
   3,   /* field[3] = binary_images */
+  9,   /* field[9] = custom_data */
   4,   /* field[4] = exception */
   7,   /* field[7] = machine_info */
   6,   /* field[6] = process_info */
@@ -1314,7 +1327,7 @@ static const unsigned plcrash__crash_report__field_indices_by_name[] = {
 static const ProtobufCIntRange plcrash__crash_report__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 9 }
+  { 0, 10 }
 };
 const ProtobufCMessageDescriptor plcrash__crash_report__descriptor =
 {
@@ -1324,7 +1337,7 @@ const ProtobufCMessageDescriptor plcrash__crash_report__descriptor =
   "Plcrash__CrashReport",
   "plcrash",
   sizeof(Plcrash__CrashReport),
-  9,
+  10,
   plcrash__crash_report__field_descriptors,
   plcrash__crash_report__field_indices_by_name,
   1,  plcrash__crash_report__number_ranges,
