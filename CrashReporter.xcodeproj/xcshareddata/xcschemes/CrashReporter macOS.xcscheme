@@ -34,7 +34,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "05CD32680EE93DC3000FDE88"
                BuildableName = "Tests macOS.xctest"
-               BlueprintName = "Tests macOS"
+               BlueprintName = "CrashReporter macOS Tests"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </TestableReference>

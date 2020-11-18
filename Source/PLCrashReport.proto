@@ -360,4 +360,7 @@ message CrashReport {
 
     /* Report format information. Required for all v1.1+ crash reports. */
     optional ReportInfo report_info = 9;
+
+    /* Custom data. Can be used by user to store contextual information for the crash. */
+    optional bytes custom_data = 10;
 }

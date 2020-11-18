@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "052A45CE136353FB00987004"
-               BuildableName = "DemoCrash iOS.app"
-               BlueprintName = "DemoCrash iOS"
+               BlueprintIdentifier = "C25664D123571D330088513E"
+               BuildableName = "CrashReporter Documentation"
+               BlueprintName = "CrashReporter Documentation"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,15 +27,6 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "052A45CE136353FB00987004"
-            BuildableName = "DemoCrash iOS.app"
-            BlueprintName = "DemoCrash iOS"
-            ReferencedContainer = "container:CrashReporter.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <Testables>
       </Testables>
    </TestAction>
@@ -49,16 +40,15 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "052A45CE136353FB00987004"
-            BuildableName = "DemoCrash iOS.app"
-            BlueprintName = "DemoCrash iOS"
+            BlueprintIdentifier = "C25664D123571D330088513E"
+            BuildableName = "CrashReporter Documentation"
+            BlueprintName = "CrashReporter Documentation"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -66,16 +56,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "052A45CE136353FB00987004"
-            BuildableName = "DemoCrash iOS.app"
-            BlueprintName = "DemoCrash iOS"
+            BlueprintIdentifier = "C25664D123571D330088513E"
+            BuildableName = "CrashReporter Documentation"
+            BlueprintName = "CrashReporter Documentation"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

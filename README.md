@@ -21,7 +21,7 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 ## Prerequisites
 
 - Xcode 11 or above.
-- Minimum supported platforms: iOS 8, macOS 10.7, tvOS 9, Mac Catalyst 13.0.
+- Minimum supported platforms: iOS 9, macOS 10.9, tvOS 9, Mac Catalyst 13.0.
 
 ## Decoding Crash Reports
 
@@ -29,7 +29,7 @@ Crash reports are output as protobuf-encoded messages, and may be decoded using 
 
 In addition to the in-library decoding support, you may use the included `plcrashutil` binary to convert crash reports to apple's standard iPhone text format. This may be passed to the symbolicate tool.
 
-`./bin/plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
+`plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
 ## Building
@@ -45,17 +45,16 @@ Also, next optional tools are used to build additional resources:
 - GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
 - `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
 
-### To build
+### Building
 
 - Open a new window for your Terminal.
 - Go to PLCrashReporter's root folder and run
 
     ```bash
-    xcodebuild -configuration Release -target 'Disk Image'
+    xcodebuild -configuration Release -target 'CrashReporter'
     ```
 
     to create binaries for all platforms.
-- Verify that your iOS and tvOS binaries have Bitcode enabled by running `otool -l build/Release-appletv/CrashReporter.framework/Versions/A/CrashReporter | grep __LLVM` (adjust the path to the binary as necessary). If you see some output, it means the binary is Bitcode enabled.
 
 ## Contributing
 
