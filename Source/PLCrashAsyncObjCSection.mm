@@ -740,7 +740,7 @@ static plcrash_error_t pl_async_objc_parse_objc2_method_list (plcrash_async_mach
     struct pl_objc2_list_header *header;
     plcrash_async_mobject_t *section = &objc_cache->objcConstMobj;
     header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(section, method_list_addr, 0, sizeof(*header));
-    if (header == NULL) {
+    if (header == NULL && objc_cache->objcConstAxMobjInitialized) {
         section = &objc_cache->objcConstAxMobj;
         header = (struct pl_objc2_list_header *) plcrash_async_mobject_remap_address(section, method_list_addr, 0, sizeof(*header));
     }
