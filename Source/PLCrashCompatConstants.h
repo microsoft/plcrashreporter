@@ -34,14 +34,6 @@
 #include <mach/machine.h>
 
 /*
- * With the introduction of new processor types and subtypes, Apple often does not update the system headers
- * on Mac OS X (and the Simulator). This header provides compatibility defines (and #warnings that will
- * fire when the SDKs are updated to include the required constants.
- */
-#define PLCF_COMPAT_HAS_UPDATED_OSX_SDK(sdk_version) (TARGET_OS_MAC && !TARGET_OS_IPHONE) && (PLCF_MIN_MACOSX_SDK >= sdk_version)
-
-
-/*
  * ARM64 compact unwind constants; Since these values are fixed by the ABI, we can safely include them directly here.
  *
  * These are not defined on OS X, and they are defined as enums on iOS, preventing a stable #ifdef check. As such,
@@ -68,7 +60,10 @@
  * OSAtomic* and OSSpinLock are deprecated since macOS 10.12, iOS 10.0 and tvOS 10.0, but suggested replacement
  * for OSSpinLock is missed at runtime on older versions, so we must use it until we support older versions.
  */
-#if TARGET_OS_MACCATALYST
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_12 || \
+    __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_10_0 || \
+    __TV_OS_VERSION_MIN_REQUIRED >= __TVOS_10_0 || \
+    __WATCH_OS_VERSION_MIN_REQUIRED >= __WATCHOS_3_0
 #include <os/lock.h>
 #define PLCR_COMPAT_LOCK_TYPE           os_unfair_lock
 #define PLCR_COMPAT_LOCK_INIT           OS_UNFAIR_LOCK_INIT

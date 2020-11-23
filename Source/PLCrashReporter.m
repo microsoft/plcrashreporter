@@ -581,8 +581,12 @@ static PLCrashReporter *sharedReporter = nil;
     assert(_applicationIdentifier != nil);
     assert(_applicationVersion != nil);
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, _applicationMarketingVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);
-    
-    
+
+    /* Set custom data, if already set before enabling */
+    if (self.customData != nil) {
+        plcrash_log_writer_set_custom_data(&signal_handler_context.writer, self.customData);
+    }
+
     /* Enable the signal handler */
     switch (_config.signalHandlerType) {
         case PLCrashReporterSignalHandlerTypeBSD:
@@ -705,6 +709,11 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     /* Initialize the output context */
     plcrash_log_writer_init(&writer, _applicationIdentifier, _applicationVersion, _applicationMarketingVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], true);
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
+
+    /* Set custom data, if already set before enabling */
+    if (self.customData != nil) {
+        plcrash_log_writer_set_custom_data(&writer, self.customData);
+    }
     
     /* Mock up a SIGTRAP-based signal info */
     plcrash_log_bsd_signal_info_t bsd_signal_info;
@@ -818,6 +827,17 @@ cleanup:
     /* Re-configure the saved callbacks */
     crashCallbacks.context = callbacks->context;
     crashCallbacks.handleSignal = callbacks->handleSignal;
+}
+
+/**
+ * Set the custom data that will be saved in the crash report along the rest of information,
+ * It deletes any previous custom data configured.
+ *
+ * @param customData A string with the custom data to save.
+ */
+- (void) setCustomData: (NSData *) customData {
+    _customData = customData;
+    plcrash_log_writer_set_custom_data(&signal_handler_context.writer, customData);
 }
 
 @end

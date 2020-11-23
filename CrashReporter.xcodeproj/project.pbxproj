@@ -7,42 +7,40 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		058812D410405908009128FB /* Disk Image */ = {
+		058812D410405908009128FB /* CrashReporter Archive */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */;
+			buildConfigurationList = 058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "CrashReporter Archive" */;
 			buildPhases = (
 				C25664D023571BC60088513E /* Verify Modifications */,
-				058812D310405908009128FB /* Create Disk Image */,
+				058812D310405908009128FB /* Create Archive With Universal Frameworks */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 			);
 			dependencies = (
-				C26C52AB2451B4D400D20162 /* PBXTargetDependency */,
-				C2B90D9E2456FBF400834AFB /* PBXTargetDependency */,
-				C2B90DA02456FBF400834AFB /* PBXTargetDependency */,
-				C25664E5235737560088513E /* PBXTargetDependency */,
-				05EC525A10531C9300DB9D39 /* PBXTargetDependency */,
-				F8358676246BEFA500D1CE3E /* PBXTargetDependency */,
+				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
 			);
-			name = "Disk Image";
+			name = "CrashReporter Archive";
 			productName = "Disk Image";
 		};
-		C25664D123571D330088513E /* Documentation */ = {
+		C25664D123571D330088513E /* CrashReporter Documentation */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "Documentation" */;
+			buildConfigurationList = C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "CrashReporter Documentation" */;
 			buildPhases = (
 				C25664D523571D3D0088513E /* Generate Documentation */,
 			);
 			dependencies = (
 			);
-			name = Documentation;
+			name = "CrashReporter Documentation";
 			productName = Documentation;
 		};
 		C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = C2B90D962456FBD000834AFB /* Build configuration list for PBXAggregateTarget "CrashReporter iOS Universal" */;
 			buildPhases = (
-				C2B90DAB2457178800834AFB /* Build Universal Framework */,
+				C2B90DAB2457178800834AFB /* Build iOS Device Framework */,
+				C2C74A842535CCC700313817 /* Build iOS Simulator Framework */,
+				C2C74E0825385BCE00313817 /* Combine iOS Universal Library */,
+				C2C74A892535CD8000313817 /* Combine iOS Universal Framework */,
 			);
 			dependencies = (
 			);
@@ -53,18 +51,39 @@
 			isa = PBXAggregateTarget;
 			buildConfigurationList = C2B90D9A2456FBDF00834AFB /* Build configuration list for PBXAggregateTarget "CrashReporter tvOS Universal" */;
 			buildPhases = (
-				C2B90DAC245717D800834AFB /* Build Universal Framework */,
+				C2C74C9825372B9800313817 /* Build tvOS Device Framework */,
+				C2C74C9925372B9A00313817 /* Build tvOS Simulator Framework */,
+				C2C74E0925385C9700313817 /* Combine tvOS Universal Library */,
+				C2C74C9A25372B9B00313817 /* Combine tvOS Universal Framework */,
 			);
 			dependencies = (
 			);
 			name = "CrashReporter tvOS Universal";
 			productName = "CrashReporter tvOS Universal";
 		};
+		C2C74D9B2538508300313817 /* CrashReporter */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "CrashReporter" */;
+			buildPhases = (
+				C2C74DD1253851C300313817 /* Copy Products */,
+			);
+			dependencies = (
+				C2C74DC8253850A500313817 /* PBXTargetDependency */,
+				C2C74DC6253850A500313817 /* PBXTargetDependency */,
+				C2C74DCA253850A500313817 /* PBXTargetDependency */,
+				C2C74DC4253850A500313817 /* PBXTargetDependency */,
+				C2C74DCC253850A500313817 /* PBXTargetDependency */,
+				C2C74DCE253850A500313817 /* PBXTargetDependency */,
+			);
+			name = CrashReporter;
+			productName = "Crash Reporter";
+		};
 		F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = F8B9C72B24695BE600B9FEF6 /* Build configuration list for PBXAggregateTarget "CrashReporter XCFramework" */;
 			buildPhases = (
-				F8B9C72E24695BF200B9FEF6 /* Build XCFramework */,
+				C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */,
+				F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */,
 			);
 			dependencies = (
 				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
@@ -841,13 +860,6 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
-		05EC525910531C9300DB9D39 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 05E731E20EFA1A3E005EDFB7;
-			remoteInfo = plcrashutil;
-		};
 		80A63BC01C4D2BE20073B7A3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -869,13 +881,6 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = "CrashReporter macOS Framework";
 		};
-		C25664E4235737560088513E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C25664D123571D330088513E;
-			remoteInfo = Documentation;
-		};
 		C26C529F2451B3B300D20162 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -890,26 +895,54 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter macOS";
 		};
-		C26C52AA2451B4D400D20162 /* PBXContainerItemProxy */ = {
+		C2C74DC3253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
-			remoteInfo = "CrashReporter macOS Framework";
+			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
+			remoteInfo = "CrashReporter XCFramework";
 		};
-		C2B90D9D2456FBF400834AFB /* PBXContainerItemProxy */ = {
+		C2C74DC5253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C2B90D952456FBD000834AFB;
 			remoteInfo = "CrashReporter iOS Universal";
 		};
-		C2B90D9F2456FBF400834AFB /* PBXContainerItemProxy */ = {
+		C2C74DC7253850A500313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = "CrashReporter macOS Framework";
+		};
+		C2C74DC9253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = C2B90D992456FBDE00834AFB;
 			remoteInfo = "CrashReporter tvOS Universal";
+		};
+		C2C74DCB253850A500313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C25664D123571D330088513E;
+			remoteInfo = Documentation;
+		};
+		C2C74DCD253850A500313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731E20EFA1A3E005EDFB7;
+			remoteInfo = plcrashutil;
+		};
+		C2C74E1C25385F5B00313817 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2C74D9B2538508300313817;
+			remoteInfo = "Crash Reporter";
 		};
 		C2CBA40924586975001B775F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -931,13 +964,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8064D88B1C4D22E5005A8B4C;
 			remoteInfo = "CrashReporter tvOS Framework";
-		};
-		F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
-			remoteInfo = "CrashReporter XCFramework";
 		};
 		F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1160,7 +1186,7 @@
 		2D0E10451141F7DC00CE1BD6 /* PLCrashReportProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashReportProcessInfo.m; sourceTree = "<group>"; };
 		8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCrashReporter.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8064D8BB1C4D22E5005A8B4C /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8064D9951C4D27E2005A8B4C /* Tests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8064D9951C4D27E2005A8B4C /* CrashReporter tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CrashReporter tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8064D9A31C4D27E9005A8B4C /* DemoCrash tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DemoCrash tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CrashReporter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CrashReporter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1192,11 +1218,7 @@
 		C2B90DA22456FE8200834AFB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		C2B90DA32456FE8200834AFB /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		C2B90DA5245714E900834AFB /* generate-documentation.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "generate-documentation.sh"; sourceTree = "<group>"; };
-		C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-static-libs-archive.sh"; sourceTree = "<group>"; };
 		C2B90DA7245714E900834AFB /* verify-modifications.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "verify-modifications.sh"; sourceTree = "<group>"; };
-		C2B90DA8245714E900834AFB /* create-disk-image.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-disk-image.sh"; sourceTree = "<group>"; };
-		C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-tvos-universal.sh"; sourceTree = "<group>"; };
-		C2B90DAA245714EA00834AFB /* build-ios-universal.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-ios-universal.sh"; sourceTree = "<group>"; };
 		C2BBCD7E2456E03D00F9E820 /* PLCrashMachExceptionPortTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionPortTests.m; sourceTree = "<group>"; };
 		C2BBCD7F2456E03D00F9E820 /* PLCrashAsyncDwarfEncodingTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncDwarfEncodingTests.mm; sourceTree = "<group>"; };
 		C2BBCD802456E03D00F9E820 /* PLCrashMachExceptionServerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashMachExceptionServerTests.m; sourceTree = "<group>"; };
@@ -1204,14 +1226,17 @@
 		C2BBCD822456E03D00F9E820 /* PLCrashAsyncLinkedListTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PLCrashAsyncLinkedListTests.mm; sourceTree = "<group>"; };
 		C2BBCD832456E03D00F9E820 /* PLCrashSysctlTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashSysctlTests.m; sourceTree = "<group>"; };
 		C2BBCD842456E03D00F9E820 /* PLCrashAsyncMachOStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PLCrashAsyncMachOStringTests.m; sourceTree = "<group>"; };
+		C2C74A852535CD3A00313817 /* combine-frameworks.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-frameworks.sh"; sourceTree = "<group>"; };
+		C2C74A862535CD3A00313817 /* combine-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-xcframework.sh"; sourceTree = "<group>"; };
+		C2C74A882535CD3A00313817 /* build-framework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-framework.sh"; sourceTree = "<group>"; };
+		C2C74E1E25385F8300313817 /* combine-libraries.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "combine-libraries.sh"; sourceTree = "<group>"; };
+		C2C74E1F25385F8300313817 /* copy-products.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "copy-products.sh"; sourceTree = "<group>"; };
 		C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "DemoCrash-iOS.entitlements"; sourceTree = "<group>"; };
 		C2F0AC9F24AB7C28004890EC /* CrashReporterFramework.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashReporterFramework.m; sourceTree = "<group>"; };
 		C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-tvOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-xcframework.sh"; sourceTree = "<group>"; };
-		F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-xcframework-archive.sh"; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1344,7 +1369,7 @@
 				052A45CF136353FB00987004 /* DemoCrash iOS.app */,
 				8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */,
 				8064D8BB1C4D22E5005A8B4C /* CrashReporter.framework */,
-				8064D9951C4D27E2005A8B4C /* Tests tvOS.xctest */,
+				8064D9951C4D27E2005A8B4C /* CrashReporter tvOS Tests.xctest */,
 				8064D9A31C4D27E9005A8B4C /* DemoCrash tvOS.app */,
 			);
 			name = Products;
@@ -1957,12 +1982,11 @@
 		C2B90DA4245707BD00834AFB /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				C2B90DAA245714EA00834AFB /* build-ios-universal.sh */,
-				C2B90DA9245714EA00834AFB /* build-tvos-universal.sh */,
-				F8B9C72F24695C2200B9FEF6 /* build-xcframework.sh */,
-				C2B90DA8245714E900834AFB /* create-disk-image.sh */,
-				C2B90DA6245714E900834AFB /* create-static-libs-archive.sh */,
-				F8CF2BCB246C043200904633 /* create-xcframework-archive.sh */,
+				C2C74A882535CD3A00313817 /* build-framework.sh */,
+				C2C74A852535CD3A00313817 /* combine-frameworks.sh */,
+				C2C74E1E25385F8300313817 /* combine-libraries.sh */,
+				C2C74A862535CD3A00313817 /* combine-xcframework.sh */,
+				C2C74E1F25385F8300313817 /* copy-products.sh */,
 				C2B90DA5245714E900834AFB /* generate-documentation.sh */,
 				C2B90DA7245714E900834AFB /* verify-modifications.sh */,
 			);
@@ -2376,9 +2400,9 @@
 			productReference = 05CD31520EE936A9000FDE88 /* libCrashReporter.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		05CD32680EE93DC3000FDE88 /* Tests macOS */ = {
+		05CD32680EE93DC3000FDE88 /* CrashReporter macOS Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests macOS" */;
+			buildConfigurationList = 05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter macOS Tests" */;
 			buildPhases = (
 				05CD32640EE93DC3000FDE88 /* Resources */,
 				05CD34410EEA60F8000FDE88 /* Copy Frameworks */,
@@ -2391,14 +2415,14 @@
 			dependencies = (
 				C26C52A52451B45D00D20162 /* PBXTargetDependency */,
 			);
-			name = "Tests macOS";
+			name = "CrashReporter macOS Tests";
 			productName = "$(TARGET_NAME)";
 			productReference = 05CD32690EE93DC3000FDE88 /* Tests macOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		05CD33230EE94439000FDE88 /* Tests iOS */ = {
+		05CD33230EE94439000FDE88 /* CrashReporter iOS Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests iOS" */;
+			buildConfigurationList = 05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter iOS Tests" */;
 			buildPhases = (
 				05CD33200EE94439000FDE88 /* Resources */,
 				05CD33210EE94439000FDE88 /* Sources */,
@@ -2410,7 +2434,7 @@
 			dependencies = (
 				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
 			);
-			name = "Tests iOS";
+			name = "CrashReporter iOS Tests";
 			productName = "$(TARGET_NAME)";
 			productReference = 05CD33240EE94439000FDE88 /* Tests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -2505,9 +2529,9 @@
 			productReference = 8064D8BB1C4D22E5005A8B4C /* CrashReporter.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		8064D9281C4D27E2005A8B4C /* Tests tvOS */ = {
+		8064D9281C4D27E2005A8B4C /* CrashReporter tvOS Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "Tests tvOS" */;
+			buildConfigurationList = 8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "CrashReporter tvOS Tests" */;
 			buildPhases = (
 				8064D92D1C4D27E2005A8B4C /* Resources */,
 				8064D9301C4D27E2005A8B4C /* Sources */,
@@ -2519,9 +2543,9 @@
 			dependencies = (
 				80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */,
 			);
-			name = "Tests tvOS";
+			name = "CrashReporter tvOS Tests";
 			productName = "$(TARGET_NAME)";
-			productReference = 8064D9951C4D27E2005A8B4C /* Tests tvOS.xctest */;
+			productReference = 8064D9951C4D27E2005A8B4C /* CrashReporter tvOS Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		8064D9971C4D27E9005A8B4C /* DemoCrash tvOS */ = {
@@ -2595,6 +2619,9 @@
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
 					};
+					C2C74D9B2538508300313817 = {
+						CreatedOnToolsVersion = 12.2;
+					};
 				};
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "CrashReporter" */;
@@ -2610,8 +2637,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				058812D410405908009128FB /* Disk Image */,
-				C25664D123571D330088513E /* Documentation */,
+				C2C74D9B2538508300313817 /* CrashReporter */,
+				058812D410405908009128FB /* CrashReporter Archive */,
+				C25664D123571D330088513E /* CrashReporter Documentation */,
 				F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */,
 				C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */,
 				C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */,
@@ -2621,9 +2649,9 @@
 				05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */,
 				05CD31510EE936A9000FDE88 /* CrashReporter iOS */,
 				8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */,
-				05CD32680EE93DC3000FDE88 /* Tests macOS */,
-				05CD33230EE94439000FDE88 /* Tests iOS */,
-				8064D9281C4D27E2005A8B4C /* Tests tvOS */,
+				05CD32680EE93DC3000FDE88 /* CrashReporter macOS Tests */,
+				05CD33230EE94439000FDE88 /* CrashReporter iOS Tests */,
+				8064D9281C4D27E2005A8B4C /* CrashReporter tvOS Tests */,
 				05F40CE60EF7AB80008050CF /* DemoCrash macOS */,
 				052A45CE136353FB00987004 /* DemoCrash iOS */,
 				8064D9971C4D27E9005A8B4C /* DemoCrash tvOS */,
@@ -2698,19 +2726,19 @@
 			shellScript = "# If zzuf isn't available, nothing to do.\nwhich -s zzuf\nif [ $? != 0 ]; then\n\texit\nfi\n\n# Run 4 jobs at once.\n# Run from seed 0 to 100000.\n# Only fuzz .plcrash files\nzzuf -I '\\.plcrash$' -j 4 -s 0:100000 \"${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}\" \"${SRCROOT}/Resources/fuzz_report.plcrash\"\n";
 			showEnvVarsInLog = 0;
 		};
-		058812D310405908009128FB /* Create Disk Image */ = {
+		058812D310405908009128FB /* Create Archive With Universal Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Create Disk Image";
+			name = "Create Archive With Universal Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/create-disk-image.sh\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-$CURRENT_PROJECT_VERSION\" \"iOS Framework\" \"tvOS Framework\" \"Mac OS X Framework\" \"Tools\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
@@ -2767,10 +2795,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/create-static-libs-archive.sh\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-$CURRENT_PROJECT_VERSION\" Static/*\n";
 			showEnvVarsInLog = 0;
 		};
-		C2B90DAB2457178800834AFB /* Build Universal Framework */ = {
+		C2B90DAB2457178800834AFB /* Build iOS Device Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2779,17 +2807,17 @@
 			);
 			inputPaths = (
 			);
-			name = "Build Universal Framework";
+			name = "Build iOS Device Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-ios-universal.sh\"\n";
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"iphoneos\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C2B90DAC245717D800834AFB /* Build Universal Framework */ = {
+		C2C74A842535CCC700313817 /* Build iOS Simulator Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2798,17 +2826,17 @@
 			);
 			inputPaths = (
 			);
-			name = "Build Universal Framework";
+			name = "Build iOS Simulator Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-tvos-universal.sh\"\n";
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"iphonesimulator\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F8B9C72E24695BF200B9FEF6 /* Build XCFramework */ = {
+		C2C74A892535CD8000313817 /* Combine iOS Universal Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2817,14 +2845,166 @@
 			);
 			inputPaths = (
 			);
-			name = "Build XCFramework";
+			name = "Combine iOS Universal Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-xcframework.sh\"\n";
+			shellScript = "DEVICE_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-iphoneos/$PRODUCT_NAME.framework\"\nSIMULATOR_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-iphonesimulator/$PRODUCT_NAME.framework\"\n\"$SRCROOT/Scripts/combine-frameworks.sh\" \"$DEVICE_FRAMEWORK\" \"$SIMULATOR_FRAMEWORK\" \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.framework\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74C9825372B9800313817 /* Build tvOS Device Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build tvOS Device Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME tvOS Framework\" \"appletvos\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74C9925372B9A00313817 /* Build tvOS Simulator Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build tvOS Simulator Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME tvOS Framework\" \"appletvsimulator\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74C9A25372B9B00313817 /* Combine tvOS Universal Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine tvOS Universal Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-appletvos/$PRODUCT_NAME.framework\"\nSIMULATOR_FRAMEWORK=\"$BUILD_DIR/$CONFIGURATION-appletvsimulator/$PRODUCT_NAME.framework\"\n\"$SRCROOT/Scripts/combine-frameworks.sh\" \"$DEVICE_FRAMEWORK\" \"$SIMULATOR_FRAMEWORK\" \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.framework\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Mac Catalyst Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/build-framework.sh\" \"$PROJECT_NAME iOS Framework\" \"maccatalyst\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74DD1253851C300313817 /* Copy Products */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Products";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/copy-products.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74E0825385BCE00313817 /* Combine iOS Universal Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine iOS Universal Library";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-iphoneos/lib$PRODUCT_NAME.a\"\nSIMULATOR_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-iphonesimulator/lib$PRODUCT_NAME.a\"\n\"$SRCROOT/Scripts/combine-libraries.sh\" \"$DEVICE_LIBRARY\" \"$SIMULATOR_LIBRARY\" \"$BUILT_PRODUCTS_DIR/lib$PRODUCT_NAME.a\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2C74E0925385C9700313817 /* Combine tvOS Universal Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine tvOS Universal Library";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DEVICE_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvos/lib$PRODUCT_NAME.a\"\nSIMULATOR_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvsimulator/lib$PRODUCT_NAME.a\"\n\"$SRCROOT/Scripts/combine-libraries.sh\" \"$DEVICE_LIBRARY\" \"$SIMULATOR_LIBRARY\" \"$BUILT_PRODUCTS_DIR/lib$PRODUCT_NAME.a\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Combine XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/combine-xcframework.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8CF2BD2246C139400904633 /* Create Archive With XCFramework */ = {
@@ -2843,7 +3023,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/create-xcframework-archive.sh\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-XCFramework-$CURRENT_PROJECT_VERSION\" \"$PROJECT_NAME.xcframework\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -3336,11 +3516,6 @@
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = 05E7325C0EFA1F6C005EDFB7 /* PBXContainerItemProxy */;
 		};
-		05EC525A10531C9300DB9D39 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
-			targetProxy = 05EC525910531C9300DB9D39 /* PBXContainerItemProxy */;
-		};
 		80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */;
@@ -3356,11 +3531,6 @@
 			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
 			targetProxy = C23D0555248A7C440094EC6B /* PBXContainerItemProxy */;
 		};
-		C25664E5235737560088513E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C25664D123571D330088513E /* Documentation */;
-			targetProxy = C25664E4235737560088513E /* PBXContainerItemProxy */;
-		};
 		C26C52A02451B3B300D20162 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
@@ -3371,20 +3541,40 @@
 			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
 			targetProxy = C26C52A42451B45D00D20162 /* PBXContainerItemProxy */;
 		};
-		C26C52AB2451B4D400D20162 /* PBXTargetDependency */ = {
+		C2C74DC4253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
-			targetProxy = C26C52AA2451B4D400D20162 /* PBXContainerItemProxy */;
+			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
+			targetProxy = C2C74DC3253850A500313817 /* PBXContainerItemProxy */;
 		};
-		C2B90D9E2456FBF400834AFB /* PBXTargetDependency */ = {
+		C2C74DC6253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
-			targetProxy = C2B90D9D2456FBF400834AFB /* PBXContainerItemProxy */;
+			targetProxy = C2C74DC5253850A500313817 /* PBXContainerItemProxy */;
 		};
-		C2B90DA02456FBF400834AFB /* PBXTargetDependency */ = {
+		C2C74DC8253850A500313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
+			targetProxy = C2C74DC7253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74DCA253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */;
-			targetProxy = C2B90D9F2456FBF400834AFB /* PBXContainerItemProxy */;
+			targetProxy = C2C74DC9253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74DCC253850A500313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C25664D123571D330088513E /* CrashReporter Documentation */;
+			targetProxy = C2C74DCB253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74DCE253850A500313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731E20EFA1A3E005EDFB7 /* plcrashutil */;
+			targetProxy = C2C74DCD253850A500313817 /* PBXContainerItemProxy */;
+		};
+		C2C74E1D25385F5B00313817 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2C74D9B2538508300313817 /* CrashReporter */;
+			targetProxy = C2C74E1C25385F5B00313817 /* PBXContainerItemProxy */;
 		};
 		C2CBA40A24586975001B775F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3400,11 +3590,6 @@
 			isa = PBXTargetDependency;
 			target = 8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */;
 			targetProxy = C2CBA40E245869F4001B775F /* PBXContainerItemProxy */;
-		};
-		F8358676246BEFA500D1CE3E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
-			targetProxy = F8358675246BEFA500D1CE3E /* PBXContainerItemProxy */;
 		};
 		F8CF2BCD246C05D100904633 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3423,7 +3608,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
 			};
@@ -3433,7 +3617,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
 			};
@@ -3491,6 +3674,7 @@
 					armv7s,
 					arm64e,
 				);
+				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
@@ -3514,6 +3698,7 @@
 					armv7s,
 					arm64e,
 				);
+				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
@@ -3553,10 +3738,12 @@
 					armv7s,
 					arm64e,
 				);
+				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
+				PL_SIMULATOR_ARCHS = "i386 x86_64 arm64";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -3572,12 +3759,14 @@
 					armv7s,
 					arm64e,
 				);
+				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
+				PL_SIMULATOR_ARCHS = "i386 x86_64 arm64";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -3589,7 +3778,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests macOS";
@@ -3602,7 +3791,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests macOS";
@@ -3614,6 +3803,7 @@
 		05CD33270EE9443A000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3627,6 +3817,7 @@
 		05CD33280EE9443A000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3641,7 +3832,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3651,7 +3842,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3661,11 +3852,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -3676,11 +3863,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -3693,7 +3876,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/DemoCrash-macOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3713,7 +3896,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/DemoCrash-macOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3731,17 +3914,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEFINES_MODULE = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
@@ -3753,17 +3932,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEFINES_MODULE = YES;
-				EFFECTIVE_PLATFORM_NAME = "-macOS";
+				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					"-DPLCF_MIN_MACOSX_SDK=$(PL_MIN_MACOSX_SDK)",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
@@ -3798,7 +3973,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.7.2;
+				CURRENT_PROJECT_VERSION = 1.8.1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -3827,7 +4002,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
-				PL_MIN_MACOSX_SDK = 101500;
+				PL_SIMULATOR_ARCHS = "i386 x86_64";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
@@ -3864,7 +4039,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.7.2;
+				CURRENT_PROJECT_VERSION = 1.8.1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -3890,7 +4065,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
-				PL_MIN_MACOSX_SDK = 101500;
+				PL_SIMULATOR_ARCHS = "i386 x86_64";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
@@ -3903,6 +4078,7 @@
 		8064D8191C4D22D8005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
@@ -3915,6 +4091,7 @@
 		8064D81A1C4D22D8005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
@@ -3929,6 +4106,7 @@
 		8064D8B91C4D22E5005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
@@ -3947,6 +4125,7 @@
 		8064D8BA1C4D22E5005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -3967,6 +4146,7 @@
 		8064D9931C4D27E2005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3979,6 +4159,7 @@
 		8064D9941C4D27E2005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -4031,7 +4212,7 @@
 		C2B90D972456FBD000834AFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-iOS";
+				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = iphoneos;
 			};
@@ -4040,7 +4221,7 @@
 		C2B90D982456FBD000834AFB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-iOS";
+				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = iphoneos;
 			};
@@ -4049,7 +4230,7 @@
 		C2B90D9B2456FBDF00834AFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-tvOS";
+				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
 			};
@@ -4058,9 +4239,23 @@
 		C2B90D9C2456FBDF00834AFB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EFFECTIVE_PLATFORM_NAME = "-tvOS";
+				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
+			};
+			name = Release;
+		};
+		C2C74D9C2538508300313817 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C2C74D9D2538508300313817 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -4108,7 +4303,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "Disk Image" */ = {
+		058812D71040592A009128FB /* Build configuration list for PBXAggregateTarget "CrashReporter Archive" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				058812D510405908009128FB /* Debug */,
@@ -4126,7 +4321,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "Tests macOS" */ = {
+		05CD326D0EE93DC4000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter macOS Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD326B0EE93DC4000FDE88 /* Debug */,
@@ -4135,7 +4330,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "Tests iOS" */ = {
+		05CD33290EE9443A000FDE88 /* Build configuration list for PBXNativeTarget "CrashReporter iOS Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05CD33270EE9443A000FDE88 /* Debug */,
@@ -4207,7 +4402,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "Tests tvOS" */ = {
+		8064D9921C4D27E2005A8B4C /* Build configuration list for PBXNativeTarget "CrashReporter tvOS Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8064D9931C4D27E2005A8B4C /* Debug */,
@@ -4225,7 +4420,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "Documentation" */ = {
+		C25664D223571D340088513E /* Build configuration list for PBXAggregateTarget "CrashReporter Documentation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C25664D323571D340088513E /* Debug */,
@@ -4248,6 +4443,15 @@
 			buildConfigurations = (
 				C2B90D9B2456FBDF00834AFB /* Debug */,
 				C2B90D9C2456FBDF00834AFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "CrashReporter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C2C74D9C2538508300313817 /* Debug */,
+				C2C74D9D2538508300313817 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

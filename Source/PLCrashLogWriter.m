@@ -247,7 +247,16 @@ enum {
 
     /** CrashReport.report_info.uuid */
     PLCRASH_PROTO_REPORT_INFO_UUID_ID = 2,
+
+    /** CrashReport.custom_data */
+    PLCRASH_PROTO_CUSTOM_DATA_ID = 10,
 };
+
+static void plprotobuf_cbinary_data_init (PLProtobufCBinaryData *data, const void *pointer, size_t len) {
+    data->data = malloc(len);
+    memcpy(data->data , pointer, len);
+    data->len = len;
+}
 
 static void plprotobuf_cbinary_data_string_init (PLProtobufCBinaryData *data, const char *value) {
     data->data = (void *)value;
@@ -492,6 +501,24 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
 }
 
 /**
+ * Set the custom data for this writer. Once set, this information will be used to
+ * provide custom data for the crash log output.
+ *
+ * @warning This function is not async safe, and must be called outside of a signal handler.
+ */
+void plcrash_log_writer_set_custom_data (plcrash_log_writer_t *writer, NSData *custom_data) {
+    /* If there is already user data, delete it */
+    if (writer->custom_data.data) {
+        plprotobuf_cbinary_data_free(&writer->custom_data);
+    }
+
+    /* Save the user data */
+    if (custom_data != nil) {
+        plprotobuf_cbinary_data_init(&writer->custom_data, custom_data.bytes, custom_data.length);
+    }
+}
+
+/**
  * Close the plcrash_writer_t output.
  *
  * @param writer Writer instance to be closed.
@@ -533,6 +560,10 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
         
         if (writer->uncaught_exception.callstack != NULL)
             free(writer->uncaught_exception.callstack);
+    }
+
+    if (writer->custom_data.data) {
+        plprotobuf_cbinary_data_free(&writer->custom_data);
     }
 }
 
@@ -1365,6 +1396,11 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
         size = (uint32_t) plcrash_writer_write_signal(NULL, siginfo);
         plcrash_writer_pack(file, PLCRASH_PROTO_SIGNAL_ID, PLPROTOBUF_C_TYPE_MESSAGE, &size);
         plcrash_writer_write_signal(file, siginfo);
+    }
+
+    /* Custom data */
+    if (writer->custom_data.data) {
+        plcrash_writer_pack(file, PLCRASH_PROTO_CUSTOM_DATA_ID, PLPROTOBUF_C_TYPE_BYTES, &writer->custom_data);
     }
     
     plcrash_async_symbol_cache_free(&findContext);

@@ -37,68 +37,48 @@
 
 #if defined(__arm__) || defined(__arm64__)
 
-#define THREAD_STATE_GET(name, type, ts) (ts->arm_state. type . __ ## name)
+#if __DARWIN_UNIX03
+#define THREAD_STATE_REG_PREFIX(name) __ ## name
+#else
+#define THREAD_STATE_REG_PREFIX(name) name
+#endif
+
+#define THREAD_STATE_GET(name, type, ts) (ts->arm_state. type . THREAD_STATE_REG_PREFIX(name))
 #define THREAD_STATE_SET(name, type, ts, regnum, value) { \
     ts->valid_regs |= 1ULL << regnum; \
-    (ts->arm_state. type . __ ## name) = value; \
+    (ts->arm_state. type . THREAD_STATE_REG_PREFIX(name)) = value; \
 }
 
 #if defined(__LP64__)
 
+#if __DARWIN_OPAQUE_ARM_THREAD_STATE64
+#define THREAD_STATE_OPAQUE_PREFIX(name) __opaque_ ## name
+#define THREAD_STATE_OPAQUE_TYPE void *
+#else
+#define THREAD_STATE_OPAQUE_PREFIX THREAD_STATE_REG_PREFIX
+#define THREAD_STATE_OPAQUE_TYPE uint64_t
+#endif
+
 /*
- * Pointer authentication codes (on arm64e for example) must be stripped out.
+ * Pointer authentication codes (on arm64e for example) must be stripped out by applying ARM64_PTR_MASK bitmask.
  * See https://developer.apple.com/documentation/security/preparing_your_app_to_work_with_pointer_authentication
- */
-#if __has_feature(ptrauth_calls)
-
-#include <ptrauth.h>
-
-#define THREAD_STATE_GET_PTR(name, type, ts) ({ \
-    plcrash_greg_t ptr = arm_thread_state64_get_ ## name (ts->arm_state. type); \
-    (plcrash_greg_t) ptrauth_strip((void *) ptr, ptrauth_key_frame_pointer); \
-})
-#define THREAD_STATE_GET_FPTR(name, type, ts)  ({ \
-    plcrash_greg_t ptr = (plcrash_greg_t) arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
-    ptr = ptr ? ptr : arm_thread_state64_get_ ## name (ts->arm_state. type); \
-    (plcrash_greg_t) ptrauth_strip((void *) ptr, ptrauth_key_function_pointer); \
-})
-
-#define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
-    void *ptr = ptrauth_strip((void *)value, ptrauth_key_frame_pointer); \
-    ptr = ptrauth_sign_unauthenticated(ptr, ptrauth_key_frame_pointer, 0); \
-    ts->valid_regs |= 1ULL << regnum; \
-    arm_thread_state64_set_ ## name (ts->arm_state. type, ptr); \
-}
-#define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) { \
-    void *ptr = ptrauth_strip((void *)value, ptrauth_key_function_pointer); \
-    ptr = ptrauth_sign_unauthenticated(ptr, ptrauth_key_function_pointer, 0); \
-    ts->valid_regs |= 1ULL << regnum; \
-    arm_thread_state64_set_ ## name ## _fptr (ts->arm_state. type, ptr); \
-}
-
-#else // __has_feature(ptrauth_calls)
-
-/*
- * Even if pointer authentication is not available at the compile time, the binary still can be used in an environment with PAC.
- * In this case, we can apply bitmask as a workaround.
+ *
+ * Note: Even if pointer authentication (ptrauth) is not available at the compile time, the binary still can be used
+ * in an environment with PAC.
+ *
+ * Do not use arm_thread_state64_get_* to access to specific fields because arm64e injects additional checks that can
+ * prevent to get the values despite of the fact that the actual data was already read before.
  */
 #define THREAD_STATE_GET_PTR(name, type, ts) ({ \
-    plcrash_greg_t ptr = arm_thread_state64_get_ ## name (ts->arm_state. type); \
+    plcrash_greg_t ptr = (plcrash_greg_t) ts->arm_state. type . THREAD_STATE_OPAQUE_PREFIX(name); \
     (ptr & ARM64_PTR_MASK); \
 })
-#define THREAD_STATE_GET_FPTR(name, type, ts) ({ \
-    plcrash_greg_t ptr = (plcrash_greg_t) arm_thread_state64_get_ ## name ## _fptr (ts->arm_state. type); \
-    ptr = ptr ? ptr : arm_thread_state64_get_ ## name (ts->arm_state. type); \
-    (ptr & ARM64_PTR_MASK); \
-})
-
+#define THREAD_STATE_GET_FPTR THREAD_STATE_GET_PTR
 #define THREAD_STATE_SET_PTR(name, type, ts, regnum, value) { \
     ts->valid_regs |= 1ULL << regnum; \
-    arm_thread_state64_set_ ## name (ts->arm_state. type, (void *)value); \
+    (ts->arm_state. type . THREAD_STATE_OPAQUE_PREFIX(name)) = (THREAD_STATE_OPAQUE_TYPE) value; \
 }
-#define THREAD_STATE_SET_FPTR(name, type, ts, regnum, value) THREAD_STATE_SET_PTR(name ## _fptr, type, ts, regnum, value)
-
-#endif // __has_feature(ptrauth_calls)
+#define THREAD_STATE_SET_FPTR THREAD_STATE_SET_PTR
 
 #else // __LP64__
 
