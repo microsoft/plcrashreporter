@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.8.2 (Under development)
+
+* **[Fix]** Fix `double-quoted` warnings in Xcode 12.
+
 ## Version 1.8.1
 
 * Re-build Apple Silicon binaries with [Xcode 12.2 Release Candidate](https://developer.apple.com/news/releases/?id=11052020h) to [be able to](https://developer.apple.com/news/releases/?id=11052020i) submit the applications that use the framework as a binary to the App Store.
