@@ -29,8 +29,17 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
+#if __has_include(<CrashReporter/PLCrashReporterConfig.h>)
+#import <CrashReporter/PLCrashReporterConfig.h>
+#else
 #import "PLCrashReporterConfig.h"
+#endif
+
+#if __has_include(<CrashReporter/PLCrashMacros.h>)
+#import <CrashReporter/PLCrashMacros.h>
+#else
 #import "PLCrashMacros.h"
+#endif
 
 @class PLCrashMachExceptionServer;
 @class PLCrashMachExceptionPortSet;

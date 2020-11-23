@@ -27,7 +27,12 @@
  */
 
 #import <Foundation/Foundation.h>
+
+#if __has_include(<CrashReporter/PLCrashFeatureConfig.h>)
+#import <CrashReporter/PLCrashFeatureConfig.h>
+#else
 #import "PLCrashFeatureConfig.h"
+#endif
 
 /**
  * @ingroup enums

@@ -26,7 +26,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef PLCRASH_REPORT_THREAD_INFO
+#define PLCRASH_REPORT_THREAD_INFO
 #import "PLCrashReportThreadInfo.h"
+#endif
 
 /**
  * Crash log per-thread state information.
