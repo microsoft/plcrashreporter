@@ -28,81 +28,34 @@
 
 #import <Foundation/Foundation.h>
 
-#if __has_include(<CrashReporter/PLCrashReportApplicationInfo.h>)
+#if __has_include(<CrashReporter/PLCrashReportApplicationInfo.h>) && __has_include(<CrashReporter/PLCrashReportBinaryImageInfo.h>) && __has_include(<CrashReporter/PLCrashReportExceptionInfo.h>) && __has_include(<CrashReporter/PLCrashReportMachineInfo.h>) && __has_include(<CrashReporter/PLCrashReportMachExceptionInfo.h>) && __has_include(<CrashReporter/PLCrashReportProcessInfo.h>) && __has_include(<CrashReporter/PLCrashReportProcessorInfo.h>) && __has_include(<CrashReporter/PLCrashReportRegisterInfo.h>) && __has_include(<CrashReporter/PLCrashReportSignalInfo.h>) && __has_include(<CrashReporter/PLCrashReportStackFrameInfo.h>) && __has_include(<CrashReporter/PLCrashReportSymbolInfo.h>) && __has_include(<CrashReporter/PLCrashReportSystemInfo.h>) && __has_include(<CrashReporter/PLCrashReportThreadInfo.h>)
+
 #import <CrashReporter/PLCrashReportApplicationInfo.h>
-#else
-#import "PLCrashReportApplicationInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportBinaryImageInfo.h>)
 #import <CrashReporter/PLCrashReportBinaryImageInfo.h>
-#else
-#import "PLCrashReportBinaryImageInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportExceptionInfo.h>)
 #import <CrashReporter/PLCrashReportExceptionInfo.h>
-#else
-#import "PLCrashReportExceptionInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportMachineInfo.h>)
 #import <CrashReporter/PLCrashReportMachineInfo.h>
-#else
-#import "PLCrashReportMachineInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportMachExceptionInfo.h>)
 #import <CrashReporter/PLCrashReportMachExceptionInfo.h>
-#else
-#import "PLCrashReportMachExceptionInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportProcessInfo.h>)
 #import <CrashReporter/PLCrashReportProcessInfo.h>
-#else
-#import "PLCrashReportProcessInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportProcessorInfo.h>)
 #import <CrashReporter/PLCrashReportProcessorInfo.h>
-#else
-#import "PLCrashReportProcessorInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportRegisterInfo.h>)
 #import <CrashReporter/PLCrashReportRegisterInfo.h>
-#else
-#import "PLCrashReportRegisterInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportSignalInfo.h>)
 #import <CrashReporter/PLCrashReportSignalInfo.h>
-#else
-#import "PLCrashReportSignalInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportStackFrameInfo.h>)
 #import <CrashReporter/PLCrashReportStackFrameInfo.h>
-#else
-#import "PLCrashReportStackFrameInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportSymbolInfo.h>)
 #import <CrashReporter/PLCrashReportSymbolInfo.h>
-#else
-#import "PLCrashReportSymbolInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportSystemInfo.h>)
 #import <CrashReporter/PLCrashReportSystemInfo.h>
-#else
-#import "PLCrashReportSystemInfo.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportThreadInfo.h>)
 #import <CrashReporter/PLCrashReportThreadInfo.h>
 #else
+#import "PLCrashReportApplicationInfo.h"
+#import "PLCrashReportBinaryImageInfo.h"
+#import "PLCrashReportExceptionInfo.h"
+#import "PLCrashReportMachineInfo.h"
+#import "PLCrashReportMachExceptionInfo.h"
+#import "PLCrashReportProcessInfo.h"
+#import "PLCrashReportProcessorInfo.h"
+#import "PLCrashReportRegisterInfo.h"
+#import "PLCrashReportSignalInfo.h"
+#import "PLCrashReportStackFrameInfo.h"
+#import "PLCrashReportSymbolInfo.h"
+#import "PLCrashReportSystemInfo.h"
 #import "PLCrashReportThreadInfo.h"
 #endif
 

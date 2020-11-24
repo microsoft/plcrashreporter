@@ -34,28 +34,15 @@
 
 // This must be included before any other PLCrashReporter includes, as
 // it redefines symbol names
-#if __has_include(<CrashReporter/PLCrashNamespace.h>)
+#if __has_include(<CrashReporter/PLCrashNamespace.h>) && __has_include(<CrashReporter/PLCrashReporter.h>) && __has_include(<CrashReporter/PLCrashReport.h>) && __has_include(<CrashReporter/PLCrashReportTextFormatter.h>)
 #import <CrashReporter/PLCrashNamespace.h>
-#else
-#import "PLCrashNamespace.h"
-#endif
-
-/* Library Imports */
-#if __has_include(<CrashReporter/PLCrashReporter.h>)
 #import <CrashReporter/PLCrashReporter.h>
-#else
-#import "PLCrashReporter.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReport.h>)
 #import <CrashReporter/PLCrashReport.h>
-#else
-#import "PLCrashReport.h"
-#endif
-
-#if __has_include(<CrashReporter/PLCrashReportTextFormatter.h>)
 #import <CrashReporter/PLCrashReportTextFormatter.h>
 #else
+#import "PLCrashNamespace.h"
+#import "PLCrashReporter.h"
+#import "PLCrashReport.h"
 #import "PLCrashReportTextFormatter.h"
 #endif
 
