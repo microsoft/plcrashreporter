@@ -26,13 +26,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#if __has_include(<CrashReporter/PLCrashReporter.h>) && __has_include(<CrashReporter/PLCrashReport.h>)
+#if __has_include(<CrashReporter/PLCrashReport.h>)
 #import <CrashReporter/CrashReporter.h>
 #import <CrashReporter/PLCrashReport.h>
 #else
-#import "PLCrashReporter.h"
+#import "CrashReporter.h"
 #import "PLCrashReport.h"
 #endif
+
 #import "PLCrashReport.pb-c.h"
 #import "PLCrashAsyncThread.h"
 

@@ -29,7 +29,10 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
-#if __has_include(<CrashReporter/PLCrashReporterConfig.h>) && __has_include(<CrashReporter/PLCrashMacros.h>)
+#ifndef PLCRASH_REPORTER_H
+#define PLCRASH_REPORTER_H
+
+#if __has_include(<CrashReporter/PLCrashReporterConfig.h>)
 #import <CrashReporter/PLCrashReporterConfig.h>
 #import <CrashReporter/PLCrashMacros.h>
 #else
@@ -142,3 +145,5 @@ typedef struct PLCrashReporterCallbacks {
 @property(nonatomic, strong) NSData *customData;
 
 @end
+
+#endif

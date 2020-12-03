@@ -34,7 +34,6 @@
 #import "PLCrashReportThreadInfo.h"
 #endif
 
-
 @interface PLCrashReportExceptionInfo : NSObject {
 @private
     /** Name */
