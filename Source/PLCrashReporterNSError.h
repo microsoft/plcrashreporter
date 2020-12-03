@@ -28,8 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-#if __has_include(<CrashReporter/CrashReporter.h>) \
-    && __has_include(<CrashReporter/PLCrashMacros.h>)
+#if __has_include(<CrashReporter/CrashReporter.h>)
 #import <CrashReporter/CrashReporter.h>
 #import <CrashReporter/PLCrashMacros.h>
 #else
