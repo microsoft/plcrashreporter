@@ -29,8 +29,16 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
+#ifndef PLCRASH_REPORTER_H
+#define PLCRASH_REPORTER_H
+
+#if __has_include(<CrashReporter/PLCrashReporterConfig.h>)
+#import <CrashReporter/PLCrashReporterConfig.h>
+#import <CrashReporter/PLCrashMacros.h>
+#else
 #import "PLCrashReporterConfig.h"
 #import "PLCrashMacros.h"
+#endif
 
 @class PLCrashMachExceptionServer;
 @class PLCrashMachExceptionPortSet;
@@ -137,3 +145,5 @@ typedef struct PLCrashReporterCallbacks {
 @property(nonatomic, strong) NSData *customData;
 
 @end
+
+#endif

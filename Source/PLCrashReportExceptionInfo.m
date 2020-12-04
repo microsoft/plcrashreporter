@@ -26,7 +26,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if __has_include(<CrashReporter/PLCrashReportExceptionInfo.h>)
+#import <CrashReporter/PLCrashReportExceptionInfo.h>
+#else
 #import "PLCrashReportExceptionInfo.h"
+#endif
 
 /**
  * If a crash is triggered by an uncaught Objective-C exception, the exception name and reason will be made available.

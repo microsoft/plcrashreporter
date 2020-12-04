@@ -26,7 +26,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if __has_include(<CrashReporter/PLCrashReporterConfig.h>)
+#import <CrashReporter/PLCrashReporterConfig.h>
+#else
 #import "PLCrashReporterConfig.h"
+#endif
 
 /**
  * Crash Reporter Configuration.
