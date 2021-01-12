@@ -275,6 +275,7 @@ static void plprotobuf_cbinary_data_nsstring_init (PLProtobufCBinaryData *data, 
 static void plprotobuf_cbinary_data_free (PLProtobufCBinaryData *data) {
     if (data != NULL && data->data != NULL) {
         free(data->data);
+        data->data = nil;
         data->len = 0;
     }
 }
