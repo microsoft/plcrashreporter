@@ -295,7 +295,7 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     };
     if ((err = plcrash_async_thread_state_current(mach_exception_callback_live_cb, &live_ctx)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to write live report: %d", err);
-        return false;
+        return KERN_FAILURE;
     }
 
     /* Call any post-crash callback */
