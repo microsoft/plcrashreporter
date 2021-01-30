@@ -922,11 +922,7 @@ cleanup:
     
     /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
     NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
-    
-    //NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    //NSString *cacheDir = [paths objectAtIndex: 0];
     _crashReportDirectory = [[basePath stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath];
-    
     return self;
 }
 
@@ -996,7 +992,6 @@ cleanup:
         PLCR_LOG("Warning -- bundle version unavailable");
         bundleVersion = @"";
     }
-    
     return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion basePath:basePath configuration: configuration];
 }
 
