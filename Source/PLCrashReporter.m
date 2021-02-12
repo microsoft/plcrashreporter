@@ -456,7 +456,7 @@ static PLCrashReporter *sharedReporter = nil;
  * @param configuration The configuration to be used by this reporter instance.
  */
 - (instancetype) initWithConfiguration: (PLCrashReporterConfig *) configuration basePath:(NSString*) basePath {
-    return [self initWithBundle: [NSBundle mainBundle] basePath:basePath configuration: configuration];
+    return [self initWithBundle: [NSBundle mainBundle] basePath: basePath configuration: configuration];
 }
 
 /**
