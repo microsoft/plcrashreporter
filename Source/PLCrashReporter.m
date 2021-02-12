@@ -377,8 +377,8 @@ static void uncaught_exception_handler (NSException *exception) {
 
 @interface PLCrashReporter (PrivateMethods)
 
-- (id) initWithBundle: (NSBundle *) bundle basePath:(NSString*)basePath configuration: (PLCrashReporterConfig *) configuration;
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion basePath:(NSString*)basePath configuration: (PLCrashReporterConfig *) configuration;
+- (id) initWithBundle: (NSBundle *) bundle basePath: (NSString *) basePath configuration: (PLCrashReporterConfig *) configuration;
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion basePath: (NSString *) basePath configuration: (PLCrashReporterConfig *) configuration;
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 - (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (__strong PLCrashMachExceptionPortSet **) previousPortSet
@@ -428,7 +428,7 @@ static PLCrashReporter *sharedReporter = nil;
     static dispatch_once_t onceLock;
     dispatch_once(&onceLock, ^{
         if (sharedReporter == nil)
-            sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] basePath:nil configuration: [PLCrashReporterConfig defaultConfiguration]];
+            sharedReporter = [[PLCrashReporter alloc] initWithBundle: [NSBundle mainBundle] basePath: nil configuration: [PLCrashReporterConfig defaultConfiguration]];
     });
     return sharedReporter;
 }
@@ -446,11 +446,12 @@ static PLCrashReporter *sharedReporter = nil;
  * @param configuration The configuration to be used by this reporter instance.
  */
 - (instancetype) initWithConfiguration: (PLCrashReporterConfig *) configuration {
-    return [self initWithBundle: [NSBundle mainBundle] basePath:nil configuration: configuration];
+    return [self initWithBundle: [NSBundle mainBundle] basePath: nil configuration: configuration];
 }
 
 /**
  * Initialize a new PLCrashReporter instance with the given configuration.
+ *
  * @param basePath The base path to save the crash data.
  * @param configuration The configuration to be used by this reporter instance.
  */
@@ -861,7 +862,6 @@ cleanup:
  */
 @implementation PLCrashReporter (PrivateMethods)
 
-
 /**
  * @internal
  *
@@ -877,7 +877,7 @@ cleanup:
  * @todo The appId and version values should be fetched from the PLCrashReporterConfig, once the API
  * has been extended to allow supplying these values.
  */
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion basePath:(NSString*)basePath configuration: (PLCrashReporterConfig *) configuration {
+- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion basePath: (NSString *) basePath configuration: (PLCrashReporterConfig *) configuration {
     /* Initialize our superclass */
     if ((self = [super init]) == nil)
         return nil;
@@ -909,7 +909,7 @@ cleanup:
  * @param basePath The base path for saving the crash data.
  * @param configuration The PLCrashReporter configuration to use for this instance.
  */
-- (id) initWithBundle: (NSBundle *) bundle basePath:(NSString*)basePath configuration: (PLCrashReporterConfig *) configuration {
+- (id) initWithBundle: (NSBundle *) bundle basePath: (NSString *) basePath configuration: (PLCrashReporterConfig *) configuration {
     NSString *bundleIdentifier = [bundle bundleIdentifier];
     NSString *bundleVersion = [[bundle infoDictionary] objectForKey: (NSString *) kCFBundleVersionKey];
     NSString *bundleMarketingVersion = [[bundle infoDictionary] objectForKey: @"CFBundleShortVersionString"];
@@ -932,7 +932,7 @@ cleanup:
         bundleVersion = @"";
     }
 
-    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion basePath:basePath configuration: configuration];
+    return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion basePath: basePath configuration: configuration];
 }
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
