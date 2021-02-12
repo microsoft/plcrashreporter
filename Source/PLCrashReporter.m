@@ -443,6 +443,7 @@ static PLCrashReporter *sharedReporter = nil;
 
 /**
  * Initialize a new PLCrashReporter instance with the given configuration.
+ *
  * @param configuration The configuration to be used by this reporter instance.
  */
 - (instancetype) initWithConfiguration: (PLCrashReporterConfig *) configuration {
