@@ -2795,7 +2795,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-$CURRENT_PROJECT_VERSION\" Static/*\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-$CURRENT_PROJECT_VERSION\" Static/* \"Tools\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C2B90DAB2457178800834AFB /* Build iOS Device Framework */ = {
@@ -3023,7 +3023,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-XCFramework-$CURRENT_PROJECT_VERSION\" \"$PROJECT_NAME.xcframework\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-XCFramework-$CURRENT_PROJECT_VERSION\" \"$PROJECT_NAME.xcframework\" \"Tools\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
