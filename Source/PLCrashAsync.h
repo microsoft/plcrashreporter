@@ -157,6 +157,11 @@ typedef int64_t pl_vm_off_t;
 
 #endif /* PLCF_RELEASE_BUILD */
 
+#ifdef PLCF_RELEASE_BUILD
+#define PLCF_UNUSED_IN_RELEASE __unused
+#else
+#define PLCF_UNUSED_IN_RELEASE
+#endif
 
 /**
  * @ingroup plcrash_async
