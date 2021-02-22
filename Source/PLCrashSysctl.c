@@ -172,7 +172,6 @@ size_t plcrash_sysctl_valid_utf8_bytes_max (const uint8_t *s, size_t maxlen) {
         size_t seqlen = 0;
         if ((c & 0x80) == 0) {
             /* 1 byte sequence. Code point value range is 0 to 127. */
-            seqlen = 0;
             continue;
             
         } else if ((c & 0xE0) == 0xC0) {
