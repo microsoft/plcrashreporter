@@ -71,12 +71,14 @@ if ([crashReporter hasPendingCrashReport]) {
         return;
     }
 
-   // We could send the report from here, but we'll just print out some debugging info instead.
+    // Retrieving crash reporter data.
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: data error: &error];
     if (report == nil) {
         NSLog(@"Failed to parse crash report: %@", error);
         return;
     }
+
+    // We could send the report from here, but we'll just print out some debugging info instead.
     NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport: report withTextFormat: PLCrashReportTextFormatiOS];
     NSLog(@"%@", text);
 
