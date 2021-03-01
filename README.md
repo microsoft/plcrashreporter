@@ -32,6 +32,59 @@ In addition to the in-library decoding support, you may use the included `plcras
 `plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
+## Usage
+
+PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html), [Carthage](https://github.com/Carthage/Carthage#quick-start), [Swift Package Manager](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app), or by manually adding the binaries to your project.
+
+### Example
+
+The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers.
+
+```objc
+@import CrashReporter;
+
+...
+
+// It is strongly recommended that local symbolication only be enabled for non-release builds.
+// Use PLCrashReporterSymbolicationStrategyNone for release versions.
+PLCrashReporterConfig *config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
+                                                                   symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll];
+PLCrashReporter *crashReporter = [[PLCrashReporter alloc] initWithConfiguration: config];
+
+// Enable the Crash Reporter.
+NSError *error;
+if (![crashReporter enableCrashReporterAndReturnError: &error]) {
+    NSLog(@"Warning: Could not enable crash reporter: %@", error);
+}
+```
+
+Checking collected crash report can be done in the following way:
+
+```objc
+if ([crashReporter hasPendingCrashReport]) {
+    NSError *error;
+
+    // Try loading the crash report.
+    NSData *data = [crashReporter loadPendingCrashReportDataAndReturnError: &error];
+    if (data == nil) {
+        NSLog(@"Failed to load crash report data: %@", error);
+        return;
+    }
+
+   // We could send the report from here, but we'll just print out some debugging info instead.
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: data error: &error];
+    if (report == nil) {
+        NSLog(@"Failed to parse crash report: %@", error);
+        return;
+    }
+    NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport: report withTextFormat: PLCrashReportTextFormatiOS];
+    NSLog(@"%@", text);
+
+    // Purge the report.
+    [crashReporter purgePendingCrashReport];
+}
+```
+
 ## Building
 
 ### Prerequisites
