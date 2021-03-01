@@ -3,6 +3,7 @@
 ## Version 1.8.2 (Under development)
 
 * **[Fix]** Fix `double-quoted` warnings in Xcode 12.
+* **[Feature]** Add an API to customize data path.
 
 ## Version 1.8.1
 

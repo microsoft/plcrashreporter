@@ -450,7 +450,6 @@ static PLCrashReporter *sharedReporter = nil;
     return [self initWithBundle: [NSBundle mainBundle] configuration: configuration];
 }
 
-
 /**
  * Returns YES if the application has previously crashed and
  * an pending crash report is available.
@@ -882,17 +881,19 @@ cleanup:
     /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
     NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *cacheDir = [paths objectAtIndex: 0];
-    _crashReportDirectory = [[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath];
-    
+    NSString *basePath = _config.basePath;
+    if (basePath == nil) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        basePath = [paths objectAtIndex: 0];
+    }
+    _crashReportDirectory = [[basePath stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath];
     return self;
 }
 
 
 /**
  * @internal
- * 
+ *
  * Derive the bundle identifier and version from @a bundle.
  *
  * @param bundle The application's main bundle.
@@ -920,7 +921,7 @@ cleanup:
         PLCR_LOG("Warning -- bundle version unavailable");
         bundleVersion = @"";
     }
-    
+
     return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion configuration: configuration];
 }
 
