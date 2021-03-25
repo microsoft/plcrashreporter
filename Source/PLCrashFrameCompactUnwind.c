@@ -90,7 +90,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Could not parse the compact unwind info section for image '%s': %d", image->macho_image.name, err);
         result = PLFRAME_EINVAL;
-        goto cleanup;
+        goto cleanup_2;
     }
 
     /* Find the encoding entry (if any) and free the reader */
@@ -101,7 +101,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Did not find CFE entry for PC 0x%" PRIx64 ": %d", (uint64_t) pc, err);
         result = PLFRAME_ENOTSUP;
-        goto cleanup;
+        goto cleanup_2;
     }
     
     /* Decode the entry */
@@ -110,15 +110,13 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     if (err != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Could not decode CFE encoding 0x%" PRIx32 " for PC 0x%" PRIx64 ": %d", encoding, (uint64_t) pc, err);
         result = PLFRAME_ENOTSUP;
-        goto cleanup;
+        goto cleanup_2;
     }
 
     /* Skip entries for which no unwind information is unavailable */
     if (plcrash_async_cfe_entry_type(&entry) == PLCRASH_ASYNC_CFE_ENTRY_TYPE_NONE) {
         result = PLFRAME_ENOFRAME;
-
-        plcrash_async_cfe_entry_free(&entry);
-        goto cleanup;
+        goto cleanup_3;
     }
     
     /* Compute the in-core function address */
@@ -127,9 +125,7 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         PLCF_DEBUG("The provided function base (0x%" PRIx64 ") plus header address (0x%" PRIx64 ") will overflow pl_vm_address_t",
                    (uint64_t) function_base, (uint64_t) image->macho_image.header_addr);
         result = PLFRAME_EINVAL;
-
-        plcrash_async_cfe_entry_free(&entry);
-        goto cleanup;
+        goto cleanup_3;
     }
 
     /* Apply the frame delta -- this may fail. */
@@ -140,8 +136,10 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
         result = PLFRAME_ENOFRAME;
     }
 
+cleanup_3:
     plcrash_async_cfe_entry_free(&entry);
-
+cleanup_2:
+    plcrash_async_mobject_free(&unwind_mobj);
 cleanup:
     plcrash_async_image_list_set_reading(image_list, false);
     return result;
