@@ -42,7 +42,6 @@ The following example shows a way how to initialize crash reporter. Please note 
 
 ```objc
 @import CrashReporter;
-
 ...
 
 // It is strongly recommended that local symbolication only be enabled for non-release builds.
