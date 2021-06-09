@@ -7,7 +7,7 @@ set -e
 PROJECT_DIR="$(dirname "$0")/.."
 
 # Create temporary directory
-TEMP_ARCH_NAME="PLCrashReporter"
+TEMP_ARCH_NAME=`echo $1 | cut -d'-' -f 1`
 TEMP_DIR=$(mktemp -d -t "$TEMP_ARCH_NAME")
 TEMP_PATH_TO_ARCH="$TEMP_DIR/$TEMP_ARCH_NAME"
 mkdir -p "$TEMP_PATH_TO_ARCH"
