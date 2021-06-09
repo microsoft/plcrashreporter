@@ -7,7 +7,7 @@ set -e
 PROJECT_DIR="$(dirname "$0")/.."
 
 # Create temporary directory
-TEMP_PRODUCT_NAME=`echo $1 | cut -d'-' -f 1`
+TEMP_PRODUCT_NAME="${PRODUCT_NAME:-`echo $1 | cut -d'-' -f 1`}"
 TEMP_DIR=$(mktemp -d -t "$TEMP_PRODUCT_NAME")
 TEMP_PATH_TO_ARCH="$TEMP_DIR/$TEMP_PRODUCT_NAME"
 mkdir -p "$TEMP_PATH_TO_ARCH"
