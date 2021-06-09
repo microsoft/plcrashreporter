@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.8.2 (Under development)
+## Version 1.9.0
 
 * **[Fix]** Fix `double-quoted` warnings in Xcode 12.
 * **[Fix]** Fix memory leak during stack trace unwinding.
