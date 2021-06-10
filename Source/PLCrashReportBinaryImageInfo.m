@@ -26,7 +26,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if __has_include(<CrashReporter/PLCrashReportBinaryImageInfo.h>)
+#import <CrashReporter/PLCrashReportBinaryImageInfo.h>
+#else
 #import "PLCrashReportBinaryImageInfo.h"
+#endif
 
 /**
  * Crash Log binary image info. Represents an executable or shared library.

@@ -1,5 +1,19 @@
 # PLCrashReporter Change Log
 
+## Version 1.9.0
+
+* **[Fix]** Fix `double-quoted` warnings in Xcode 12.
+* **[Fix]** Fix memory leak during stack trace unwinding.
+* **[Feature]** Add an API to customize data path.
+
+___
+
+## Version 1.8.1
+
+* Re-build Apple Silicon binaries with [Xcode 12.2 Release Candidate](https://developer.apple.com/news/releases/?id=11052020h) to [be able to](https://developer.apple.com/news/releases/?id=11052020i) submit the applications that use the framework as a binary to the App Store.
+
+___
+
 ## Version 1.8.0
 
 * Drop support of old versions of iOS and macOS. The minimal version is iOS 9 and macOS 10.9 now.

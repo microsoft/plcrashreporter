@@ -530,7 +530,10 @@ plcrash_error_t dwarf_cfa_state<machine_ptr, machine_ptr_s>::apply_state (task_t
                 PLCF_DEBUG("CFA eval_64 failed");
                 return err;
             }
-            
+
+            /* Clean up the memory mapping */
+            plcrash_async_mobject_free(&mobj);
+
             break;
         }
     }

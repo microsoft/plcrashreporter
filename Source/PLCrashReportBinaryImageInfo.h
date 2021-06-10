@@ -27,7 +27,12 @@
  */
 
 #import <Foundation/Foundation.h>
+
+#if __has_include(<CrashReporter/PLCrashReportProcessorInfo.h>)
+#import <CrashReporter/PLCrashReportProcessorInfo.h>
+#else
 #import "PLCrashReportProcessorInfo.h"
+#endif
 
 @interface PLCrashReportBinaryImageInfo : NSObject {
 @private
