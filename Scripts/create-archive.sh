@@ -14,7 +14,7 @@ mkdir -p "$TEMP_PATH_TO_ARCH"
 
 # Copy required files
 cp "$PROJECT_DIR/LICENSE" "$TEMP_PATH_TO_ARCH/LICENSE.txt"
-cp -R "../Documentation" "$TEMP_PATH_TO_ARCH"
+cp -R "$PROJECT_DIR/Documentation" "$TEMP_PATH_TO_ARCH"
 (cd "$TEMP_PATH_TO_ARCH" && ln -sf "Documentation/index.html" "API Documentation.html")
 cp -R "${@:2}" "$TEMP_PATH_TO_ARCH"
 
