@@ -15,6 +15,7 @@
 				058812D310405908009128FB /* Create Archive With Universal Frameworks */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
+				D5A991BC2670C84D000A0F97 /* Create Archive Carthage */,
 			);
 			dependencies = (
 				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
@@ -2988,6 +2989,25 @@
 			shellScript = "DEVICE_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvos/lib$PRODUCT_NAME.a\"\nSIMULATOR_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvsimulator/lib$PRODUCT_NAME.a\"\n\"$SRCROOT/Scripts/combine-libraries.sh\" \"$DEVICE_LIBRARY\" \"$SIMULATOR_LIBRARY\" \"$BUILT_PRODUCTS_DIR/lib$PRODUCT_NAME.a\"\n";
 			showEnvVarsInLog = 0;
 		};
+		D5A991BC2670C84D000A0F97 /* Create Archive Carthage */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Create Archive Carthage";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-$CURRENT_PROJECT_VERSION.carthage.framework\" \"iOS Framework\" \"tvOS Framework\" \"Mac OS X Framework\" \"Tools\"\n";
+			showEnvVarsInLog = 0;
+		};
 		F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3969,7 +3989,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.8.1;
+				CURRENT_PROJECT_VERSION = 1.9.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4034,7 +4054,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.8.1;
+				CURRENT_PROJECT_VERSION = 1.9.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;

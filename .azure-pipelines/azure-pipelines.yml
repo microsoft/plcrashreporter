@@ -106,6 +106,7 @@ jobs:
       VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
       [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION.carthage.framework" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/*
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework"
     displayName: 'Create Archives'
