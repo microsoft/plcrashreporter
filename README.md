@@ -32,9 +32,35 @@ In addition to the in-library decoding support, you may use the included `plcras
 `plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
-## Usage
+## Integration
 
 PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html), [Carthage](https://github.com/Carthage/Carthage#quick-start), [Swift Package Manager](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app), or by manually adding the binaries to your project.
+
+### Integration via Cocoapods
+
+1. Add the following line to your `Podfile`:
+    ```ruby
+    pod 'PLCrashReporter'
+    ```
+1. Run `pod install` to install your newly defined pod and open the project's `.xcworkspace`.
+
+### Integration via Swift Package Manager
+
+1. From the Xcode menu, click **File** > **Swift Packages** > **Add Package Dependency**.
+1. In the dialog that appears, enter the repository URL: https://github.com/microsoft/plcrashreporter.git.
+1. In Version, select Up to Next Major and take the default option.
+
+### Integration via Carthage
+
+1. Add the following line to your `Cartfile`:
+    ```ruby
+    github "microsoft/plcrashreporter"
+    ```
+1. Run `carthage update` to fetch dependencies.
+1. Open your application target's **General** settings tab. Drag and drop **CrashReporter.framework** from **Carthage/Build/iOS** folder into Xcode's Project Navigator.
+
+> **NOTE:**
+> Carthage integration doesn't build the dependency correctly in Xcode 12 with flag "--no-use-binaries" or from a specific branch. To make it work, refer to [this instruction](https://github.com/Carthage/Carthage/blob/master/Documentation/Xcode12Workaround.md).
 
 ### Example
 
