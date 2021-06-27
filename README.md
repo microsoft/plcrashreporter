@@ -32,7 +32,7 @@ In addition to the in-library decoding support, you may use the included `plcras
 `plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
-## Integration
+## Adding PLCrashReporter to your project
 
 PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html), [Carthage](https://github.com/Carthage/Carthage#quick-start), [Swift Package Manager](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app), or by manually adding the binaries to your project.
 
