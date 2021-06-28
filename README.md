@@ -48,7 +48,7 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
 
 1. From the Xcode menu, click **File** > **Swift Packages** > **Add Package Dependency**.
 1. In the dialog that appears, enter the repository URL: https://github.com/microsoft/plcrashreporter.git.
-1. In Version, select Up to Next Major and take the default option.
+1. In Version, select **Up to Next Major** and take the default option.
 
 ### Integration via Carthage
 
