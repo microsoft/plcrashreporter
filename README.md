@@ -72,7 +72,6 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
 
    * A dialog will appear, make sure your app target is checked. Then click **Finish**.
 
-
 ## Example
 
 The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers.
