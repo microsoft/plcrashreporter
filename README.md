@@ -57,7 +57,7 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
     github "microsoft/plcrashreporter"
     ```
 1. Run `carthage update` to fetch dependencies.
-1. Open your application target's **General** settings tab. Drag and drop **CrashReporter.framework** from **Carthage/Build/iOS** folder into Xcode's Project Navigator.
+1. Open your application target's **General** settings tab. Drag and drop **CrashReporter.framework** from **Carthage/Build/<platform>** folder into Xcode's Project Navigator.
 
 > **NOTE:**
 > Carthage integration doesn't build the dependency correctly in Xcode 12 with flag "--no-use-binaries" or from a specific branch. To make it work, refer to [this instruction](https://github.com/Carthage/Carthage/blob/master/Documentation/Xcode12Workaround.md).
