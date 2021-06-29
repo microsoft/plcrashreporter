@@ -70,7 +70,7 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
    * Make sure the Project Navigator is visible (⌘+1).
    * Now drag & drop **PLCrashReporter.framework** (or **PLCrashReporter.xcframework**) from the Finder into Xcode's Project Navigator.
    * A dialog will appear, make sure your app target is checked and click **Finish**.
-    > **Note:**
+    > **NOTE:**
     > PLCrashReporter xcframework contains static binaries for iOS and tvOS, and dynamic binaries for macOS. When adding the framework to your project make sure that in `Frameworks, Libraries and Embedded Content` section `Embed` is selected to `Do not embed` for iOS and tvOS and `Embed and Sign` for macOS. `PLCrashReporter-Static-{version}.zip` is an exception - it contains static frameworks for all platforms.
 
 ## Example
