@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.9.1
+
+* **[Fix]** Fix error "Undefined symbols for architecture arm64" while building PLCrashReporter for simulator on Xcode 12.4+
+
 ## Version 1.9.0
 
 * **[Fix]** Fix `double-quoted` warnings in Xcode 12.
