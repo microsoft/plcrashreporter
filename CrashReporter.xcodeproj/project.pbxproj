@@ -3694,7 +3694,6 @@
 					armv7s,
 					arm64e,
 				);
-				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				DEFINES_MODULE = YES;
 				GENERATE_MASTER_OBJECT_FILE = YES;
@@ -3719,7 +3718,6 @@
 					armv7s,
 					arm64e,
 				);
-				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				DEFINES_MODULE = YES;
@@ -3760,7 +3758,6 @@
 					armv7s,
 					arm64e,
 				);
-				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
@@ -3780,7 +3777,6 @@
 					armv7s,
 					arm64e,
 				);
-				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
@@ -3823,7 +3819,6 @@
 		05CD33270EE9443A000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3837,7 +3832,6 @@
 		05CD33280EE9443A000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=iphonesimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -4024,7 +4018,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
-				PL_SIMULATOR_ARCHS = "i386 x86_64";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
@@ -4087,7 +4080,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
-				PL_SIMULATOR_ARCHS = "i386 x86_64";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
@@ -4100,7 +4092,6 @@
 		8064D8191C4D22D8005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
@@ -4113,7 +4104,6 @@
 		8064D81A1C4D22D8005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
@@ -4128,7 +4118,6 @@
 		8064D8B91C4D22E5005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -4148,7 +4137,6 @@
 		8064D8BA1C4D22E5005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				BITCODE_GENERATION_MODE = bitcode;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Manual;
@@ -4170,7 +4158,6 @@
 		8064D9931C4D27E2005A8B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -4183,7 +4170,6 @@
 		8064D9941C4D27E2005A8B4C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				"ARCHS[sdk=appletvsimulator*]" = "$(PL_SIMULATOR_ARCHS)";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
