@@ -29,7 +29,7 @@
 #include "PLCrashFeatureConfig.h"
 #import "PLCrashMachExceptionPort.h"
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 
 /*
  * WARNING:

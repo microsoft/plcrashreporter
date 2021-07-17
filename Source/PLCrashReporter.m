@@ -108,7 +108,7 @@ typedef struct signal_handler_ctx {
     /** Path to the output file */
     const char *path;
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
     /* Previously registered Mach exception ports, if any. Will be left uninitialized if PLCrashReporterSignalHandlerTypeMach
      * is not enabled. */
     plcrash_mach_exception_port_set_t port_set;
@@ -244,7 +244,7 @@ static bool signal_handler_callback (int signal, siginfo_t *info, pl_ucontext_t 
     return false;
 }
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 /* State and callback used to generate thread state for the calling mach thread. */
 struct mach_exception_callback_live_cb_ctx {
     plcrashreporter_handler_ctx_t *sigctx;
@@ -380,7 +380,7 @@ static void uncaught_exception_handler (NSException *exception) {
 - (id) initWithBundle: (NSBundle *) bundle configuration: (PLCrashReporterConfig *) configuration;
 - (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier appVersion: (NSString *) applicationVersion appMarketingVersion: (NSString *) applicationMarketingVersion configuration: (PLCrashReporterConfig *) configuration;
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 - (PLCrashMachExceptionServer *) enableMachExceptionServerWithPreviousPortSet: (__strong PLCrashMachExceptionPortSet **) previousPortSet
                                                                      callback: (PLCrashMachExceptionHandlerCallback) callback
                                                                       context: (void *) context
@@ -600,7 +600,7 @@ static PLCrashReporter *sharedReporter = nil;
             }
             break;
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
         case PLCrashReporterSignalHandlerTypeMach: {
             /* We still need to use signal handlers to catch SIGABRT in-process. The kernel sends an EXC_CRASH mach exception
              * to denote SIGABRT termination. In that case, catching the Mach exception in-process leads to process deadlock
@@ -925,7 +925,7 @@ cleanup:
     return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion configuration: configuration];
 }
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 
 /**
  * Create, register, and return a Mach exception server.

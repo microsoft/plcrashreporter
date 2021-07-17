@@ -32,7 +32,7 @@
 #include "PLCrashFeatureConfig.h"
 #include "PLCrashMacros.h"
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 
 PLCR_C_BEGIN_DECLS
 

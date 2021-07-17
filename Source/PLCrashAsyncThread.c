@@ -155,6 +155,7 @@ void plcrash_async_thread_state_mcontext_init (plcrash_async_thread_state_t *thr
     memset(&thread_state->valid_regs, 0xFF, sizeof(thread_state->valid_regs));
 }
 
+#if !TARGET_OS_WATCH
 /**
  * Initialize the @a thread_state using thread state fetched from the given mach @a thread. If the thread is not
  * suspended, the fetched state may be inconsistent.
@@ -221,7 +222,7 @@ plcrash_error_t plcrash_async_thread_state_mach_thread_init (plcrash_async_threa
 
     return PLCRASH_ESUCCESS;
 }
-
+#endif
 /**
  * Copy thread state @a source to @a dest.
  *

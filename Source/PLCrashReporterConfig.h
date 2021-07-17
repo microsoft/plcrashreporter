@@ -65,7 +65,7 @@ typedef NS_ENUM(NSUInteger, PLCrashReporterSignalHandlerType) {
      */
     PLCrashReporterSignalHandlerTypeBSD = 0,
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
     /**
      * Trap fatal signals via a Mach exception server.
      *

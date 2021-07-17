@@ -32,3 +32,6 @@ xcuserdata/
 
 # Mac
 .DS_Store
+
+.build/
+.swiftpm/

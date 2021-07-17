@@ -1211,6 +1211,7 @@ static size_t plcrash_writer_write_report_info (plcrash_async_file_t *file, plcr
     return rv;
 }
 
+#if !TARGET_OS_WATCH
 /**
  * Write the crash report. All other running threads are suspended while the crash report is generated.
  *
@@ -1427,8 +1428,7 @@ plcrash_error_t plcrash_log_writer_write (plcrash_log_writer_t *writer,
     
     return PLCRASH_ESUCCESS;
 }
-
-
+#endif
 /*
  * @} plcrash_log_writer
  */

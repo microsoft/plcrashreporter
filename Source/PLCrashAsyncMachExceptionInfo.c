@@ -29,7 +29,7 @@
 #include "PLCrashAsyncMachExceptionInfo.h"
 #include "PLCrashFeatureConfig.h"
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 
 /**
  * @ingroup plcrash_async_mach_exception_info

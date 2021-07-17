@@ -319,7 +319,7 @@ static PLCrashSignalHandler *sharedHandler;
           /*
            * The sigaltstack API is not available on tvOS
            */
-#if !TARGET_OS_TV
+#if !TARGET_OS_TV && !TARGET_OS_WATCH
             /*
              * Register our signal stack. Right now, we register our signal stack on the calling thread; this may,
              * in the future, be moved to an exposed instance method, as to allow registering a custom signal stack on any thread.

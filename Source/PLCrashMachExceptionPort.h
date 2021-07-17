@@ -32,7 +32,7 @@
 #import "PLCrashFeatureConfig.h"
 #import "PLCrashMachExceptionPortSet.h"
 
-#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS && !TARGET_OS_WATCH
 
 @interface PLCrashMachExceptionPort : NSObject {
 @private
