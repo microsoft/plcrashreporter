@@ -10,7 +10,8 @@ cp -Rv "$1" "$3"
 # Combining libraries.
 product_name=${1##*/}
 product_name=${product_name%.*}
-$(dirname "$0")/combine-libraries.sh \
+script_folder=$(dirname "$0")
+"${script_folder}"/combine-libraries.sh \
     "$1/${product_name}" \
     "$2/${product_name}" \
     "$3/${product_name}"
