@@ -531,6 +531,9 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                                            mach_msg_type_number_t code_count,
                                            plcrash_mach_exception_port_set_t *port_state)
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconditional-uninitialized"
+
     exception_behavior_t behavior;
     thread_state_flavor_t flavor;
     mach_port_t port;
@@ -630,6 +633,7 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
     
     PLCF_DEBUG("Unsupported exception behavior: 0x%x (MACH_EXCEPTION_CODES=%s)", behavior, mach_exc_codes ? "true" : "false");
     return KERN_FAILURE;
+#pragma clang diagnostic pop
 }
 
 
