@@ -532,6 +532,12 @@ kern_return_t PLCrashMachExceptionForward (task_t task,
                                            plcrash_mach_exception_port_set_t *port_state)
 {
 #pragma clang diagnostic push
+/**
+ * Disable uninitialized variable warnings for `behavior`, `flavor`, `port` and `thread_state_count` which will be triggered 
+ * if the build setting for Uninitialized Variables Warning is Yes (Aggressive)
+ * behavior, flavor and port can be seen to be either initialized in the loop (found -> true) or the function will exit (found -> false)
+ * thread_state_count will be initialized for all cases except behavior == EXCEPTION_DEFAULT, in which case the thread_state_count is not used in the `switch (behavior)` block
+ */
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
 
     exception_behavior_t behavior;
