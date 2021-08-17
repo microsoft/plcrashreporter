@@ -574,7 +574,7 @@ static PLCrashReporter *sharedReporter = nil;
 
     /* Check for programmer error */
     if (_enabled)
-        [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+        [NSException raise: PLCrashReporterException format: @"The crash reporter has already been enabled"];
 
     /* Create the directory tree */
     if (![self populateCrashReportDirectoryAndReturnError: outError])
@@ -821,7 +821,7 @@ cleanup:
     /* Check for programmer error; this should not be called after the signal handler is enabled as to ensure that
      * the signal handler can never fire with a partially initialized callback structure. */
     if (_enabled)
-        [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+        [NSException raise: PLCrashReporterException format: @"The crash reporter has already been enabled"];
 
     assert(callbacks->version == 0);
 
