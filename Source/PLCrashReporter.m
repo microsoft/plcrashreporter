@@ -574,7 +574,7 @@ static PLCrashReporter *sharedReporter = nil;
 
     /* Check for programmer error */
     if (_enabled)
-        [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+        [NSException raise: PLCrashReporterException format: @"The crash reporter has already been enabled"];
 
     /* Create the directory tree */
     if (![self populateCrashReportDirectoryAndReturnError: outError])
