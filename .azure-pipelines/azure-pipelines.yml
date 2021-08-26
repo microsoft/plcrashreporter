@@ -126,7 +126,6 @@ jobs:
   
   - bash: |
       mkdir -p $(Build.ArtifactStagingDirectory)/Info
-      echo $BUILD_SOURCEVERSION
       echo $BUILD_SOURCEVERSION > $(Build.ArtifactStagingDirectory)/Info/COMMIT
     displayName: 'Collect Version Information'
 
