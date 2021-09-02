@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "32CF775E26DFBB080087748A"
                BuildableName = "CrashReporter.framework"
-               BlueprintName = "CrashReporter macOS Framework static"
+               BlueprintName = "CrashReporter macOS Static Framework"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -52,7 +52,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "32CF775E26DFBB080087748A"
             BuildableName = "CrashReporter.framework"
-            BlueprintName = "CrashReporter macOS Framework static"
+            BlueprintName = "CrashReporter macOS Static Framework"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

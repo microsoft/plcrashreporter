@@ -16,6 +16,7 @@
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 				D5A991BC2670C84D000A0F97 /* Create Archive Carthage */,
+				061DB46526E0B73500913209 /* Create Archive With Static XCFramework */,
 			);
 			dependencies = (
 				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
@@ -2752,9 +2753,9 @@
 			productReference = 05F40CE70EF7AB80008050CF /* DemoCrash macOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		32CF775E26DFBB080087748A /* CrashReporter macOS Framework static */ = {
+		32CF775E26DFBB080087748A /* CrashReporter macOS Static Framework */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 32CF777C26DFBB080087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS Framework static" */;
+			buildConfigurationList = 32CF777C26DFBB080087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS Static Framework" */;
 			buildPhases = (
 				32CF776126DFBB080087748A /* Headers */,
 				32CF777826DFBB080087748A /* Sources */,
@@ -2765,15 +2766,15 @@
 			dependencies = (
 				32CF79F826DFCA120087748A /* PBXTargetDependency */,
 			);
-			name = "CrashReporter macOS Framework static";
+			name = "CrashReporter macOS Static Framework";
 			productInstallPath = "$(HOME)/Library/Frameworks";
 			productName = CrashReporter;
 			productReference = 32CF777F26DFBB080087748A /* CrashReporter.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		32CF791A26DFC9C90087748A /* CrashReporter macOS static */ = {
+		32CF791A26DFC9C90087748A /* CrashReporter macOS (use for static framework) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 32CF799B26DFC9C90087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS static" */;
+			buildConfigurationList = 32CF799B26DFC9C90087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS (use for static framework)" */;
 			buildPhases = (
 				32CF791B26DFC9C90087748A /* Headers */,
 				32CF795C26DFC9C90087748A /* Sources */,
@@ -2783,7 +2784,7 @@
 			);
 			dependencies = (
 			);
-			name = "CrashReporter macOS static";
+			name = "CrashReporter macOS (use for static framework)";
 			productName = "CrashReporter-MacOSX-Static";
 			productReference = 32CF799E26DFC9C90087748A /* libCrashReporter.a */;
 			productType = "com.apple.product-type.library.static";
@@ -2939,9 +2940,11 @@
 				C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */,
 				C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */,
 				8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */,
+				32CF775E26DFBB080087748A /* CrashReporter macOS Static Framework */,
 				058812B81040582D009128FB /* CrashReporter iOS Framework */,
 				8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */,
 				05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */,
+				32CF791A26DFC9C90087748A /* CrashReporter macOS (use for static framework) */,
 				05CD31510EE936A9000FDE88 /* CrashReporter iOS */,
 				8064D7AD1C4D22D8005A8B4C /* CrashReporter tvOS */,
 				05CD32680EE93DC3000FDE88 /* CrashReporter macOS Tests */,
@@ -2952,8 +2955,6 @@
 				8064D9971C4D27E9005A8B4C /* DemoCrash tvOS */,
 				05E731E20EFA1A3E005EDFB7 /* plcrashutil */,
 				050DE24C0F61B80B00152ED3 /* Fuzz Testing */,
-				32CF775E26DFBB080087748A /* CrashReporter macOS Framework static */,
-				32CF791A26DFC9C90087748A /* CrashReporter macOS static */,
 			);
 		};
 /* End PBXProject section */
@@ -3037,6 +3038,24 @@
 			shellPath = /bin/sh;
 			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-$CURRENT_PROJECT_VERSION\" \"iOS Framework\" \"tvOS Framework\" \"Mac OS X Framework\" \"Tools\"\n";
 			showEnvVarsInLog = 0;
+		};
+		061DB46526E0B73500913209 /* Create Archive With Static XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Create Archive With Static XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-XCFramework-$CURRENT_PROJECT_VERSION\" \"$PROJECT_NAME-static.xcframework\" \"Tools\"\n";
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3909,12 +3928,12 @@
 		};
 		32CF79F826DFCA120087748A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 32CF791A26DFC9C90087748A /* CrashReporter macOS static */;
+			target = 32CF791A26DFC9C90087748A /* CrashReporter macOS (use for static framework) */;
 			targetProxy = 32CF79F726DFCA120087748A /* PBXContainerItemProxy */;
 		};
 		32CF7A1126DFCAC10087748A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 32CF775E26DFBB080087748A /* CrashReporter macOS Framework static */;
+			target = 32CF775E26DFBB080087748A /* CrashReporter macOS Static Framework */;
 			targetProxy = 32CF7A1026DFCAC10087748A /* PBXContainerItemProxy */;
 		};
 		80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */ = {
@@ -4826,7 +4845,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		32CF777C26DFBB080087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS Framework static" */ = {
+		32CF777C26DFBB080087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS Static Framework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				32CF777D26DFBB080087748A /* Debug */,
@@ -4835,7 +4854,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		32CF799B26DFC9C90087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS static" */ = {
+		32CF799B26DFC9C90087748A /* Build configuration list for PBXNativeTarget "CrashReporter macOS (use for static framework)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				32CF799C26DFC9C90087748A /* Debug */,
