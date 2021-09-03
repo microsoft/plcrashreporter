@@ -15,8 +15,8 @@
 				058812D310405908009128FB /* Create Archive With Universal Frameworks */,
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
-				D5A991BC2670C84D000A0F97 /* Create Archive Carthage */,
 				061DB46526E0B73500913209 /* Create Archive With Static XCFramework */,
+				D5A991BC2670C84D000A0F97 /* Create Archive Carthage */,
 			);
 			dependencies = (
 				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
@@ -3055,7 +3055,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-XCFramework-$CURRENT_PROJECT_VERSION\" \"$PROJECT_NAME-static.xcframework\" \"Tools\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-XCFramework-$CURRENT_PROJECT_VERSION\" \"XCFrameworkStatic/$PROJECT_NAME.xcframework\" \"Tools\"\n";
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
 			isa = PBXShellScriptBuildPhase;
