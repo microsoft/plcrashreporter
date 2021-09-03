@@ -102,6 +102,37 @@ jobs:
     displayName: 'Combine Binaries'
     workingDirectory: '$(Build.BinariesDirectory)'
 
+
+  - bash: |
+      cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
+      lipo -info "Release/Static/libCrashReporter-MacOSX-Static.a"
+      rm -rf "Release/Mac OS X Framework/CrashReporter.framework" "Release/Mac OS X Framework/CrashReporter.framework.dSYM"
+      cp -R "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release/Mac OS X Framework"
+      lipo -info "Release/Mac OS X Framework/CrashReporter.framework/CrashReporter"
+      cp -f "Release-macosx/plcrashutil" "Release/Tools"
+      lipo -info "Release/Tools/plcrashutil"
+
+      rm -rf "Release-xcframework/CrashReporter-static.xcframework/macos-x86_64/CrashReporter.framework"
+      cp -R "Release-macosx/CrashReporter.framework" "Release-xcframework/CrashReporter-static.xcframework/macos-x86_64"
+      lipo "Release-xcframework/CrashReporter-static.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" \
+        "Release-iphonesimulator/CrashReporter.framework/CrashReporter" \
+        -create -output "Release-xcframework/CrashReporter-static.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
+      lipo "Release-xcframework/CrashReporter-static.xcframework/ios-x86_64-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" \
+        "Release-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" \
+        -create -output "Release-xcframework/CrashReporter-static.xcframework/ios-x86_64-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" || exit 1
+      lipo "Release-xcframework/CrashReporter-static.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" \
+        "Release-appletvsimulator/CrashReporter.framework/CrashReporter" \
+        -create -output "Release-xcframework/CrashReporter-static.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
+
+      rm -rf "Release/CrashReporter-static.xcframework"
+      for framework in Release-xcframework/CrashReporter-static.xcframework/*/CrashReporter.framework; do
+        xcframeworks+=( -framework "$framework")
+      done
+      xcodebuild -create-xcframework "${xcframeworks[@]}" -output "Release/CrashReporter-static.xcframework"
+      ls "Release/CrashReporter-static.xcframework"
+    displayName: 'Combine Static Binaries'
+    workingDirectory: '$(Build.BinariesDirectory)'
+
   - bash: |
       VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
       [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
