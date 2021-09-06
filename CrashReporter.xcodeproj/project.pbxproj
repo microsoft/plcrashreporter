@@ -16,7 +16,6 @@
 				C25664E62357487D0088513E /* Create Archive With Static Libraries */,
 				F8CF2BD2246C139400904633 /* Create Archive With XCFramework */,
 				061DB46526E0B73500913209 /* Create Archive With Static XCFramework */,
-				D5A991BC2670C84D000A0F97 /* Create Archive Carthage */,
 			);
 			dependencies = (
 				C2C74E1D25385F5B00313817 /* PBXTargetDependency */,
@@ -3302,25 +3301,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DEVICE_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvos/lib$PRODUCT_NAME.a\"\nSIMULATOR_LIBRARY=\"$BUILD_DIR/$CONFIGURATION-appletvsimulator/lib$PRODUCT_NAME.a\"\n\"$SRCROOT/Scripts/combine-libraries.sh\" \"$DEVICE_LIBRARY\" \"$SIMULATOR_LIBRARY\" \"$BUILT_PRODUCTS_DIR/lib$PRODUCT_NAME.a\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D5A991BC2670C84D000A0F97 /* Create Archive Carthage */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Create Archive Carthage";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-$CURRENT_PROJECT_VERSION.carthage.framework\" Static/* \"Tools\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */ = {
