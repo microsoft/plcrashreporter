@@ -52,7 +52,7 @@
 - (void) testGenerateLiveReportWithThread {
     NSError *error;
     NSData *reportData;
-    plcrash_test_thread_t thr;
+    plcrash_test_thread_t *thr;
 
     /* Spawn a thread and generate a report for it */
     plcrash_test_thread_spawn(&thr);
