@@ -4,7 +4,7 @@
 
 * **[Fix]** Fix error `Undefined symbols for architecture arm64` while building PLCrashReporter for simulator on Xcode 12.4 and higher.
 * **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
-* **[Fix]** Fix path in script for XCFramework and Static
+* **[Fix]** Include plcrashutil in all release archives
 
 ## Version 1.9.0
 
