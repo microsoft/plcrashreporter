@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-PREF="static"
+LINKER_TYPE="static"
 
 # Remove the previous version of the xcframework.
 rm -rf "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
-rm -rf "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${PREF}.xcframework"
+rm -rf "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${LINKER_TYPE}.xcframework"
 
 # Combine all frameworks into xcframework.
 for sdk in iphoneos iphonesimulator appletvos appletvsimulator maccatalyst; do
@@ -14,13 +14,13 @@ for sdk in iphoneos iphonesimulator appletvos appletvsimulator maccatalyst; do
   xcframeworksStatic+=( -framework "${framework_path}")
 done
 
-# Add macOS with dinamic framework to CrashReporter-XCFramework.
+# Add macOS with dinamic framework to CrashReporter XCFramework.
 framework_path="${BUILD_DIR}/${CONFIGURATION}-macosx/${PRODUCT_NAME}.framework"
 xcframeworks+=( -framework "${framework_path}")
 
-# Add macOS with dinamic framework to CrashReporter-static-XCFramework.
-framework_path="${BUILD_DIR}/${CONFIGURATION}-macosx-${PREF}/${PRODUCT_NAME}.framework"
+# Add macOS with static framework to CrashReporter Static XCFramework.
+framework_path="${BUILD_DIR}/${CONFIGURATION}-macosx-${LINKER_TYPE}/${PRODUCT_NAME}.framework"
 xcframeworksStatic+=( -framework "${framework_path}")
 
 xcodebuild -create-xcframework "${xcframeworks[@]}" -output "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
-xcodebuild -create-xcframework "${xcframeworksStatic[@]}" -output "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${PREF}.xcframework"
+xcodebuild -create-xcframework "${xcframeworksStatic[@]}" -output "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-${LINKER_TYPE}.xcframework"
