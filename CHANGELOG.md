@@ -5,6 +5,7 @@
 * **[Fix]** Fix error `Undefined symbols for architecture arm64` while building PLCrashReporter for simulator on Xcode 12.4 and higher.
 * **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
 * **[Feature]** Distribute XCFramework via Cocoapods. The XCFramework will contain static libs only.
+* **[Feature]** Distribute XCFramework via Carthage. The XCFramework will contain static libs only.
 
 ## Version 1.9.0
 
