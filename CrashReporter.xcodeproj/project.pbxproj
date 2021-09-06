@@ -3055,7 +3055,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-XCFramework-$CURRENT_PROJECT_VERSION\" \"XCFrameworkStatic/$PROJECT_NAME.xcframework\" \"Tools\"\n";
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR\"\n\"$SRCROOT/Scripts/create-archive.sh\" \"$PRODUCT_NAME-Static-$CURRENT_PROJECT_VERSION.xcframework\" \"XCFrameworkStatic/$PROJECT_NAME.xcframework\" \"Tools\"\n";
 		};
 		C25664D023571BC60088513E /* Verify Modifications */ = {
 			isa = PBXShellScriptBuildPhase;
