@@ -6,6 +6,7 @@
 * **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
 * **[Feature]** Distribute XCFramework via Cocoapods. The XCFramework will contain static libs only.
 * **[Fix]** Fix path in script for XCFramework and Static.
+* **[Fix]** Include plcrashutil in all release archives.
 
 ## Version 1.9.0
 
