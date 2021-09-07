@@ -69,9 +69,6 @@
 				C2C74DD1253851C300313817 /* Copy Products */,
 			);
 			dependencies = (
-				C2C74DC8253850A500313817 /* PBXTargetDependency */,
-				C2C74DC6253850A500313817 /* PBXTargetDependency */,
-				C2C74DCA253850A500313817 /* PBXTargetDependency */,
 				C2C74DC4253850A500313817 /* PBXTargetDependency */,
 				C2C74DCC253850A500313817 /* PBXTargetDependency */,
 				C2C74DCE253850A500313817 /* PBXTargetDependency */,
@@ -902,27 +899,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = F8B9C72A24695BE600B9FEF6;
 			remoteInfo = "CrashReporter XCFramework";
-		};
-		C2C74DC5253850A500313817 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C2B90D952456FBD000834AFB;
-			remoteInfo = "CrashReporter iOS Universal";
-		};
-		C2C74DC7253850A500313817 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
-			remoteInfo = "CrashReporter macOS Framework";
-		};
-		C2C74DC9253850A500313817 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C2B90D992456FBDE00834AFB;
-			remoteInfo = "CrashReporter tvOS Universal";
 		};
 		C2C74DCB253850A500313817 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3565,21 +3541,6 @@
 			isa = PBXTargetDependency;
 			target = F8B9C72A24695BE600B9FEF6 /* CrashReporter XCFramework */;
 			targetProxy = C2C74DC3253850A500313817 /* PBXContainerItemProxy */;
-		};
-		C2C74DC6253850A500313817 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
-			targetProxy = C2C74DC5253850A500313817 /* PBXContainerItemProxy */;
-		};
-		C2C74DC8253850A500313817 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8DC2EF4F0486A6940098B216 /* CrashReporter macOS Framework */;
-			targetProxy = C2C74DC7253850A500313817 /* PBXContainerItemProxy */;
-		};
-		C2C74DCA253850A500313817 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C2B90D992456FBDE00834AFB /* CrashReporter tvOS Universal */;
-			targetProxy = C2C74DC9253850A500313817 /* PBXContainerItemProxy */;
 		};
 		C2C74DCC253850A500313817 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
