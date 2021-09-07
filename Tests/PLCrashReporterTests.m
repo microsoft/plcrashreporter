@@ -64,7 +64,7 @@
     
     NSLog(@"Data length : %lu", reportData.length);
     
-    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+    STAssertEquals(reportData.length, 0, @"lengh should be > 0");
 
     /* Try parsing the result */
     PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
