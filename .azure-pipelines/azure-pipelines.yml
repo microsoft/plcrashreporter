@@ -12,7 +12,7 @@ variables:
   SDK:
 
   # Xcode 11.3.1 version is the last one that has compatible bitcode with Xcode 11.0 (minimal supported).
-  XCODE_PATH: '/Applications/Xcode_11.3.1.app/Contents/Developer'
+  XCODE_PATH: '/Applications/Xcode_12.2.app/Contents/Developer'
 
 jobs:
 - template: analyze-and-test-template.yml
