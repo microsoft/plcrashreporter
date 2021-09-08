@@ -14,7 +14,7 @@ for sdk in iphoneos iphonesimulator appletvos appletvsimulator maccatalyst; do
   xcframeworksStatic+=( -framework "${framework_path}")
 done
 
-# Add macOS with dinamic framework to CrashReporter XCFramework.
+# Add macOS with dynamic framework to CrashReporter XCFramework.
 framework_path="${BUILD_DIR}/${CONFIGURATION}-macosx/${PRODUCT_NAME}.framework"
 xcframeworks+=( -framework "${framework_path}")
 
