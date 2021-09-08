@@ -109,9 +109,9 @@ jobs:
       [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION.carthage.framework" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
-      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/*
-      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework"
-      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "PLCrashReporterStatic/CrashReporter.xcframework"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/* "Tools"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework" "Tools"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "Tools" "PLCrashReporterStatic/CrashReporter.xcframework"
     displayName: 'Create Archives'
     workingDirectory: '$(Build.BinariesDirectory)/Release'
 
