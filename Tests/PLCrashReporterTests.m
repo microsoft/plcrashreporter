@@ -1475,7 +1475,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread {
+- (void) testGenerateLiveReportWithThread7 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1504,7 +1504,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread1 {
+- (void) testGenerateLiveReportWithThread71 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1532,7 +1532,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread2 {
+- (void) testGenerateLiveReportWithThread72 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1561,7 +1561,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread3 {
+- (void) testGenerateLiveReportWithThread73 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1589,7 +1589,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread4 {
+- (void) testGenerateLiveReportWithThread74 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1617,7 +1617,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread5 {
+- (void) testGenerateLiveReportWithThread75 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1645,7 +1645,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread6 {
+- (void) testGenerateLiveReportWithThread76 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1676,7 +1676,7 @@
 
 /** */
 
-- (void) 7testGenerateLiveReportWithThread11 {
+- (void) testGenerateLiveReportWithThread711 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1705,7 +1705,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread21 {
+- (void) testGenerateLiveReportWithThread721 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1734,7 +1734,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread31 {
+- (void) testGenerateLiveReportWithThread731 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1762,7 +1762,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread41 {
+- (void) testGenerateLiveReportWithThread741 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1790,7 +1790,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread51 {
+- (void) testGenerateLiveReportWithThread751 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1818,7 +1818,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread61 {
+- (void) testGenerateLiveReportWithThread761 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1848,7 +1848,7 @@
 
 /** */
 
-- (void) 7testGenerateLiveReportWithThread111 {
+- (void) testGenerateLiveReportWithThread7111 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1876,7 +1876,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread211 {
+- (void) testGenerateLiveReportWithThread7211 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1905,7 +1905,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread311 {
+- (void) testGenerateLiveReportWithThread7311 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1933,7 +1933,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread411 {
+- (void) testGenerateLiveReportWithThread7411 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1961,7 +1961,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread511 {
+- (void) testGenerateLiveReportWithThread7511 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -1989,7 +1989,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread611 {
+- (void) testGenerateLiveReportWithThread7611 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2019,7 +2019,7 @@
 
 /***/
 
-- (void) 7testGenerateLiveReportWithThread1111 {
+- (void) testGenerateLiveReportWithThread71111 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2047,7 +2047,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread22 {
+- (void) testGenerateLiveReportWithThread722 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2076,7 +2076,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread32 {
+- (void) testGenerateLiveReportWithThread732 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2104,7 +2104,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread42 {
+- (void) testGenerateLiveReportWithThread742 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2132,7 +2132,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread52 {
+- (void) testGenerateLiveReportWithThread752 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2160,7 +2160,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread62 {
+- (void) testGenerateLiveReportWithThread762 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2188,64 +2188,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread47 {
-    NSError *error;
-    NSData *reportData;
-    plcrash_test_thread_t thr;
-
-    /* Spawn a thread and generate a report for it */
-    //plcrash_test_thread_spawn(&thr);
-    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
-    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
-                                                  error: &error];
-    //plcrash_test_thread_stop(&thr);
-    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
-    
-    NSLog(@"Data length : %lu", reportData.length);
-    
-    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
-
-    /* Try parsing the result */
-    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
-    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
-
-    /* Sanity check the signal info */
-    if (report) {
-        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
-        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
-    }
-}
-
-
-- (void) 7testGenerateLiveReportWithThread417 {
-    NSError *error;
-    NSData *reportData;
-    plcrash_test_thread_t thr;
-
-    /* Spawn a thread and generate a report for it */
-    //plcrash_test_thread_spawn(&thr);
-    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
-    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
-                                                  error: &error];
-    //plcrash_test_thread_stop(&thr);
-    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
-    
-    NSLog(@"Data length : %lu", reportData.length);
-    
-    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
-
-    /* Try parsing the result */
-    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
-    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
-
-    /* Sanity check the signal info */
-    if (report) {
-        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
-        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
-    }
-}
-
-- (void) 7testGenerateLiveReportWithThread427 {
+- (void) testGenerateLiveReportWithThread747 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2274,7 +2217,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread43 {
+- (void) testGenerateLiveReportWithThread7417 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2302,7 +2245,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread44 {
+- (void) testGenerateLiveReportWithThread7427 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2330,7 +2273,8 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread45 {
+
+- (void) testGenerateLiveReportWithThread743 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2358,7 +2302,63 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread46 {
+- (void) testGenerateLiveReportWithThread744 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) testGenerateLiveReportWithThread745 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) testGenerateLiveReportWithThread746 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2389,7 +2389,7 @@
 
 /** */
 
-- (void) 7testGenerateLiveReportWithThread4117 {
+- (void) testGenerateLiveReportWithThread74117 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2418,7 +2418,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread421 {
+- (void) testGenerateLiveReportWithThread7421 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2447,7 +2447,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread431 {
+- (void) testGenerateLiveReportWithThread7431 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2475,7 +2475,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread441 {
+- (void) testGenerateLiveReportWithThread7441 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2503,7 +2503,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread451 {
+- (void) testGenerateLiveReportWithThread7451 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2531,7 +2531,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread461 {
+- (void) testGenerateLiveReportWithThread7461 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2561,7 +2561,7 @@
 
 /** */
 
-- (void) 7testGenerateLiveReportWithThread4111 {
+- (void) testGenerateLiveReportWithThread74111 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2589,7 +2589,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread4211 {
+- (void) testGenerateLiveReportWithThread74211 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2618,7 +2618,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread4311 {
+- (void) testGenerateLiveReportWithThread74311 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2646,7 +2646,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread4411 {
+- (void) testGenerateLiveReportWithThread74411 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2674,7 +2674,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread4511 {
+- (void) testGenerateLiveReportWithThread74511 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2702,7 +2702,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread4611 {
+- (void) testGenerateLiveReportWithThread74611 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2732,7 +2732,7 @@
 
 /***/
 
-- (void) 7testGenerateLiveReportWithThread41111 {
+- (void) testGenerateLiveReportWithThread741111 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2760,7 +2760,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread422 {
+- (void) testGenerateLiveReportWithThread7422 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2789,7 +2789,7 @@
 }
 
 
-- (void) 7testGenerateLiveReportWithThread432 {
+- (void) testGenerateLiveReportWithThread7432 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2817,7 +2817,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread442 {
+- (void) testGenerateLiveReportWithThread7442 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2845,7 +2845,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread452 {
+- (void) testGenerateLiveReportWithThread7452 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
@@ -2873,7 +2873,7 @@
     }
 }
 
-- (void) 7testGenerateLiveReportWithThread462 {
+- (void) testGenerateLiveReportWithThread7462 {
     NSError *error;
     NSData *reportData;
     plcrash_test_thread_t thr;
