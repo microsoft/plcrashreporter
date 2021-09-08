@@ -1475,6 +1475,1431 @@
     }
 }
 
+- (void) 7testGenerateLiveReportWithThread {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    //plcrash_test_thread_stop(&thr);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread1 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread2 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread3 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread4 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread5 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread6 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+/** */
+
+- (void) 7testGenerateLiveReportWithThread11 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread21 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread31 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread41 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread51 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread61 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+/** */
+
+- (void) 7testGenerateLiveReportWithThread111 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread211 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread311 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread411 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread511 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread611 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+/***/
+
+- (void) 7testGenerateLiveReportWithThread1111 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    ////plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    ////plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread22 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    //plcrash_test_thread_stop(&thr);
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread32 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread42 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread52 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread62 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread47 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread417 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread427 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread43 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread44 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread45 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread46 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+/** */
+
+- (void) 7testGenerateLiveReportWithThread4117 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread421 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread431 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread441 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread451 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread461 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+/** */
+
+- (void) 7testGenerateLiveReportWithThread4111 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread4211 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread4311 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread4411 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread4511 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread4611 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+/***/
+
+- (void) 7testGenerateLiveReportWithThread41111 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread422 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+
+- (void) 7testGenerateLiveReportWithThread432 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread442 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread452 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
+
+- (void) 7testGenerateLiveReportWithThread462 {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+
+    /* Spawn a thread and generate a report for it */
+    //plcrash_test_thread_spawn(&thr);
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                                  error: &error];
+    //plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+    
+    NSLog(@"Data length : %lu", reportData.length);
+    
+    STAssertTrue(reportData.length > 0, @"lengh should be > 0");
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
+
+    /* Sanity check the signal info */
+    if (report) {
+        STAssertEqualStrings([[report signalInfo] name], @"SIGTRAP", @"Incorrect signal name");
+        STAssertEqualStrings([[report signalInfo] code], @"TRAP_TRACE", @"Incorrect signal code");
+    }
+}
 /**
  * Test generation of a 'live' crash report.
  */
