@@ -42,6 +42,15 @@ jobs:
       args: 'SYMROOT="$(Build.BinariesDirectory)"'
 
   - task: Xcode@5
+    displayName: 'Build CrashReporter macOS Static Framework for Apple Silicon'
+    inputs:
+      xcWorkspacePath: CrashReporter.xcodeproj
+      scheme: 'CrashReporter macOS Static Framework'
+      xcodeVersion: specifyPath
+      xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
+      args: 'SYMROOT="$(Build.BinariesDirectory)"'
+
+  - task: Xcode@5
     displayName: 'Build plcrashutil for Apple Silicon'
     inputs:
       xcWorkspacePath: CrashReporter.xcodeproj
@@ -80,27 +89,20 @@ jobs:
       lipo -info "Release/Mac OS X Framework/CrashReporter.framework/CrashReporter"
       cp -f "Release-macosx/plcrashutil" "Release/Tools"
       lipo -info "Release/Tools/plcrashutil"
-
-      rm -rf "Release-xcframework/CrashReporter.xcframework/macos-x86_64/CrashReporter.framework"
-      cp -R "Release-macosx/CrashReporter.framework" "Release-xcframework/CrashReporter.xcframework/macos-x86_64"
-      lipo "Release-xcframework/CrashReporter.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" \
-        "Release-iphonesimulator/CrashReporter.framework/CrashReporter" \
-        -create -output "Release-xcframework/CrashReporter.xcframework/ios-i386_x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
-      lipo "Release-xcframework/CrashReporter.xcframework/ios-x86_64-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" \
-        "Release-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" \
-        -create -output "Release-xcframework/CrashReporter.xcframework/ios-x86_64-maccatalyst/CrashReporter.framework/Versions/A/CrashReporter" || exit 1
-      lipo "Release-xcframework/CrashReporter.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" \
-        "Release-appletvsimulator/CrashReporter.framework/CrashReporter" \
-        -create -output "Release-xcframework/CrashReporter.xcframework/tvos-x86_64-simulator/CrashReporter.framework/CrashReporter" || exit 1
-
-      rm -rf "Release/CrashReporter.xcframework"
-      for framework in Release-xcframework/CrashReporter.xcframework/*/CrashReporter.framework; do
-        xcframeworks+=( -framework "$framework")
-      done
-      xcodebuild -create-xcframework "${xcframeworks[@]}" -output "Release/CrashReporter.xcframework"
-      ls "Release/CrashReporter.xcframework"
-    displayName: 'Combine Binaries'
+    displayName: 'Prepare macOS Framework and Tools'
     workingDirectory: '$(Build.BinariesDirectory)'
+
+  - template: combine-binaries-template.yml
+    parameters:
+      xcframeworkName: 'CrashReporter.xcframework'
+      outputPath: 'CrashReporter.xcframework'
+      macosFrameworkPath: 'Release-macosx/CrashReporter.framework'
+
+  - template: combine-binaries-template.yml
+    parameters:
+      xcframeworkName: 'CrashReporter-static.xcframework'
+      outputPath: 'PLCrashReporterStatic/CrashReporter.xcframework'
+      macosFrameworkPath: 'Release-macosx-static/CrashReporter.framework'
 
   - bash: |
       VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
@@ -109,6 +111,7 @@ jobs:
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION.carthage.framework" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/*
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "PLCrashReporterStatic/CrashReporter.xcframework"
     displayName: 'Create Archives'
     workingDirectory: '$(Build.BinariesDirectory)/Release'
 
