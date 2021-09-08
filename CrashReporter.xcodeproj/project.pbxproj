@@ -3458,7 +3458,8 @@
 		05CD326B0EE93DC4000FDE88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
+				CODE_SIGN_IDENTITY = "-";
+				DEVELOPMENT_TEAM = "";
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
@@ -3471,7 +3472,8 @@
 		05CD326C0EE93DC4000FDE88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
+				CODE_SIGN_IDENTITY = "-";
+				DEVELOPMENT_TEAM = "";
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
