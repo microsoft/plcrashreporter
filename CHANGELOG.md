@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.9.1
+## Version 1.10.0
 
 * **[Fix]** Fix error `Undefined symbols for architecture arm64` while building PLCrashReporter for simulator on Xcode 12.4 and higher.
 * **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
