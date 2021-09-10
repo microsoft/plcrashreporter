@@ -32,11 +32,48 @@ In addition to the in-library decoding support, you may use the included `plcras
 `plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
-## Usage
+## Adding PLCrashReporter to your project
 
 PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html), [Carthage](https://github.com/Carthage/Carthage#quick-start), [Swift Package Manager](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app), or by manually adding the binaries to your project.
 
-### Example
+### Integration via Cocoapods
+
+1. Add the following line to your `Podfile`:
+    ```ruby
+    pod 'PLCrashReporter'
+    ```
+1. Run `pod install` to install your newly defined pod and open the project's `.xcworkspace`.
+
+### Integration via Swift Package Manager
+
+1. From the Xcode menu, click **File** > **Swift Packages** > **Add Package Dependency**.
+1. In the dialog that appears, enter the repository URL: https://github.com/microsoft/plcrashreporter.git.
+1. In Version, select **Up to Next Major** and take the default option.
+
+### Integration via Carthage
+
+1. Add the following line to your `Cartfile`:
+    ```ruby
+    github "microsoft/plcrashreporter"
+    ```
+1. Run `carthage update --use-xcframeworks` to fetch dependencies.
+2. Open your application target's **General** settings tab. Drag and drop **CrashReporter.xcframework** from **Carthage/Build** folder into Xcode's Project Navigator.
+
+> **NOTE:**
+> Carthage integration doesn't build the dependency correctly in Xcode 12 with flag "--no-use-binaries" or from a specific branch. To make it work, refer to [this instruction](https://github.com/Carthage/Carthage/blob/master/Documentation/Xcode12Workaround.md).
+
+### Integration by copying the binaries into your project
+
+1. Download the [PLCrashReporter](https://github.com/Microsoft/plcrashreporter/releases) frameworks provided as a zip file.
+2. Unzip the file and you'll see a folder called **PLCrashReporter** that contains subfolders for all supported platforms.
+3. Add PLCrashReporter to the project in Xcode:
+   * Make sure the Project Navigator is visible (⌘+1).
+   * Now drag & drop **PLCrashReporter.framework** (or **PLCrashReporter.xcframework**) from the Finder into Xcode's Project Navigator.
+   * A dialog will appear, make sure your app target is checked and click **Finish**.
+    > **NOTE:**
+    > PLCrashReporter xcframework contains static binaries for iOS and tvOS, and dynamic binaries for macOS. When adding the framework to your project make sure that in `Frameworks, Libraries and Embedded Content` section `Embed` is selected to `Do not embed` for iOS and tvOS and `Embed and Sign` for macOS. `PLCrashReporter-Static-{version}.zip` is an exception - it contains static frameworks for all platforms.
+
+## Example
 
 The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers.
 

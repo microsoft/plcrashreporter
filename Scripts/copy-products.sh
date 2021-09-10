@@ -21,8 +21,12 @@ mkdir -p "$BUILT_PRODUCTS_DIR/Mac OS X Framework"
 cp -R "$BUILD_DIR/$CONFIGURATION-macosx/$PROJECT_NAME.framework" "$BUILT_PRODUCTS_DIR/Mac OS X Framework"
 cp -R "$BUILD_DIR/$CONFIGURATION-macosx/$PROJECT_NAME.framework.dSYM" "$BUILT_PRODUCTS_DIR/Mac OS X Framework"
 
-# XCFrameowrk
+# XCFramework
 cp -R "$BUILD_DIR/$CONFIGURATION-xcframework/$PROJECT_NAME.xcframework" "$BUILT_PRODUCTS_DIR"
+
+# Static XCFramework
+mkdir -p "$BUILT_PRODUCTS_DIR/XCFrameworkStatic"
+cp -R "$BUILD_DIR/$CONFIGURATION-xcframework/$PROJECT_NAME-static.xcframework" "$BUILT_PRODUCTS_DIR/XCFrameworkStatic/$PROJECT_NAME.xcframework"
 
 # Static libraries
 mkdir -p "$BUILT_PRODUCTS_DIR/Static/include"
