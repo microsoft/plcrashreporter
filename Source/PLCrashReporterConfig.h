@@ -27,7 +27,12 @@
  */
 
 #import <Foundation/Foundation.h>
+
+#if __has_include(<CrashReporter/PLCrashFeatureConfig.h>)
+#import <CrashReporter/PLCrashFeatureConfig.h>
+#else
 #import "PLCrashFeatureConfig.h"
+#endif
 
 /**
  * @ingroup enums
@@ -157,13 +162,27 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
 + (instancetype) defaultConfiguration;
 
 - (instancetype) init;
+
+- (instancetype) initWithBasePath: (NSString *) basePath;
+
 - (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
                      symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy;
 
 - (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
                      symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
-               shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler;
+                                  basePath: (NSString *) basePath;
 
+- (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+    shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler;
+
+- (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+    shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler
+                                  basePath: (NSString *) basePath;
+
+/** The base path to save the crash data. */
+@property(nonatomic, readonly) NSString *basePath;
 
 /** The configured signal handler type. */
 @property(nonatomic, readonly) PLCrashReporterSignalHandlerType signalHandlerType;

@@ -40,7 +40,12 @@
 
 #import <stdatomic.h>
 
+#if __has_include(<CrashReporter/PLCrashReport.h>)
+#import <CrashReporter/PLCrashReport.h>
+#else
 #import "PLCrashReport.h"
+#endif
+
 #import "PLCrashLogWriter.h"
 #import "PLCrashLogWriterEncoding.h"
 #import "PLCrashAsyncSignalInfo.h"
@@ -270,6 +275,7 @@ static void plprotobuf_cbinary_data_nsstring_init (PLProtobufCBinaryData *data, 
 static void plprotobuf_cbinary_data_free (PLProtobufCBinaryData *data) {
     if (data != NULL && data->data != NULL) {
         free(data->data);
+        data->data = NULL;
         data->len = 0;
     }
 }

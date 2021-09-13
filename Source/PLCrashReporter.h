@@ -29,8 +29,16 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
+#ifndef PLCRASH_REPORTER_H
+#define PLCRASH_REPORTER_H
+
+#if __has_include(<CrashReporter/PLCrashReporterConfig.h>)
+#import <CrashReporter/PLCrashReporterConfig.h>
+#import <CrashReporter/PLCrashMacros.h>
+#else
 #import "PLCrashReporterConfig.h"
 #import "PLCrashMacros.h"
+#endif
 
 @class PLCrashMachExceptionServer;
 @class PLCrashMachExceptionPortSet;
@@ -54,7 +62,7 @@ typedef void (*PLCrashReporterPostCrashSignalCallback)(siginfo_t *info, ucontext
  * @ingroup types
  *
  * This structure contains callbacks supported by PLCrashReporter to allow the host application to perform
- * additional tasks prior to program termination after a crash has occured.
+ * additional tasks prior to program termination after a crash has occurred.
  *
  * @sa The @ref async_safety documentation.
  */
@@ -134,6 +142,11 @@ typedef struct PLCrashReporterCallbacks {
 
 - (void) setCrashCallbacks: (PLCrashReporterCallbacks *) callbacks;
 
+/**
+ * Custom data to save in the crash report.
+ */
 @property(nonatomic, strong) NSData *customData;
 
 @end
+
+#endif
