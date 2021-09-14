@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1220"
+   LastUpgradeVersion = "1200"
    version = "1.3">
    <BuildAction
-      parallelizeBuildables = "YES"
+      parallelizeBuildables = "NO"
       buildImplicitDependencies = "NO">
       <BuildActionEntries>
          <BuildActionEntry
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C2C74D9B2538508300313817"
-               BuildableName = "CrashReporter"
-               BlueprintName = "CrashReporter"
+               BlueprintIdentifier = "32CF775E26DFBB080087748A"
+               BuildableName = "CrashReporter.framework"
+               BlueprintName = "CrashReporter macOS Static Framework"
                ReferencedContainer = "container:CrashReporter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C2C74D9B2538508300313817"
-            BuildableName = "CrashReporter"
-            BlueprintName = "CrashReporter"
+            BlueprintIdentifier = "32CF775E26DFBB080087748A"
+            BuildableName = "CrashReporter.framework"
+            BlueprintName = "CrashReporter macOS Static Framework"
             ReferencedContainer = "container:CrashReporter.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -26,7 +26,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if __has_include(<CrashReporter/PLCrashReportThreadInfo.h>)
+#import <CrashReporter/PLCrashReportThreadInfo.h>
+#else
 #import "PLCrashReportThreadInfo.h"
+#endif
 
 /**
  * Crash log per-thread state information.

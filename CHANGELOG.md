@@ -1,5 +1,20 @@
 # PLCrashReporter Change Log
 
+## Version 1.10.0
+
+* **[Fix]** Fix error `Undefined symbols for architecture arm64` while building PLCrashReporter for simulator on Xcode 12.4 and higher.
+* **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
+* **[Feature]** Distribute XCFramework via Cocoapods and Carthage. The XCFramework will contain static libs only.
+* **[Fix]** Include plcrashutil in all release archives
+
+## Version 1.9.0
+
+* **[Fix]** Fix `double-quoted` warnings in Xcode 12.
+* **[Fix]** Fix memory leak during stack trace unwinding.
+* **[Feature]** Add an API to customize data path.
+
+___
+
 ## Version 1.8.1
 
 * Re-build Apple Silicon binaries with [Xcode 12.2 Release Candidate](https://developer.apple.com/news/releases/?id=11052020h) to [be able to](https://developer.apple.com/news/releases/?id=11052020i) submit the applications that use the framework as a binary to the App Store.

@@ -28,6 +28,24 @@
 
 #import <Foundation/Foundation.h>
 
+#ifndef PLCRASH_REPORT_H
+#define PLCRASH_REPORT_H
+
+#if __has_include(<CrashReporter/PLCrashReportApplicationInfo.h>)
+#import <CrashReporter/PLCrashReportApplicationInfo.h>
+#import <CrashReporter/PLCrashReportBinaryImageInfo.h>
+#import <CrashReporter/PLCrashReportExceptionInfo.h>
+#import <CrashReporter/PLCrashReportMachineInfo.h>
+#import <CrashReporter/PLCrashReportMachExceptionInfo.h>
+#import <CrashReporter/PLCrashReportProcessInfo.h>
+#import <CrashReporter/PLCrashReportProcessorInfo.h>
+#import <CrashReporter/PLCrashReportRegisterInfo.h>
+#import <CrashReporter/PLCrashReportSignalInfo.h>
+#import <CrashReporter/PLCrashReportStackFrameInfo.h>
+#import <CrashReporter/PLCrashReportSymbolInfo.h>
+#import <CrashReporter/PLCrashReportSystemInfo.h>
+#import <CrashReporter/PLCrashReportThreadInfo.h>
+#else
 #import "PLCrashReportApplicationInfo.h"
 #import "PLCrashReportBinaryImageInfo.h"
 #import "PLCrashReportExceptionInfo.h"
@@ -41,6 +59,7 @@
 #import "PLCrashReportSymbolInfo.h"
 #import "PLCrashReportSystemInfo.h"
 #import "PLCrashReportThreadInfo.h"
+#endif
 
 /** 
  * @ingroup constants
@@ -207,3 +226,5 @@ typedef struct _PLCrashReportDecoder _PLCrashReportDecoder;
 @property(nonatomic, readonly) CFUUIDRef uuidRef;
 
 @end
+
+#endif

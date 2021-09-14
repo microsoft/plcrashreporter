@@ -26,8 +26,13 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReporter.h"
+#if __has_include(<CrashReporter/CrashReporter.h>)
+#import <CrashReporter/CrashReporter.h>
+#import <CrashReporter/PLCrashReporter.h>
+#else
 #import "CrashReporter.h"
+#import "PLCrashReporter.h"
+#endif
 
 #import "PLCrashFeatureConfig.h"
 
@@ -290,7 +295,7 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     };
     if ((err = plcrash_async_thread_state_current(mach_exception_callback_live_cb, &live_ctx)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Failed to write live report: %d", err);
-        return false;
+        return KERN_FAILURE;
     }
 
     /* Call any post-crash callback */
@@ -445,7 +450,6 @@ static PLCrashReporter *sharedReporter = nil;
     return [self initWithBundle: [NSBundle mainBundle] configuration: configuration];
 }
 
-
 /**
  * Returns YES if the application has previously crashed and
  * an pending crash report is available.
@@ -570,7 +574,7 @@ static PLCrashReporter *sharedReporter = nil;
 
     /* Check for programmer error */
     if (_enabled)
-        [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+        [NSException raise: PLCrashReporterException format: @"The crash reporter has already been enabled"];
 
     /* Create the directory tree */
     if (![self populateCrashReportDirectoryAndReturnError: outError])
@@ -817,7 +821,7 @@ cleanup:
     /* Check for programmer error; this should not be called after the signal handler is enabled as to ensure that
      * the signal handler can never fire with a partially initialized callback structure. */
     if (_enabled)
-        [NSException raise: PLCrashReporterException format: @"The crash reporter has alread been enabled"];
+        [NSException raise: PLCrashReporterException format: @"The crash reporter has already been enabled"];
 
     assert(callbacks->version == 0);
 
@@ -877,17 +881,19 @@ cleanup:
     /* No occurances of '/' should ever be in a bundle ID, but just to be safe, we escape them */
     NSString *appIdPath = [applicationIdentifier stringByReplacingOccurrencesOfString: @"/" withString: @"_"];
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *cacheDir = [paths objectAtIndex: 0];
-    _crashReportDirectory = [[cacheDir stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath];
-    
+    NSString *basePath = _config.basePath;
+    if (basePath == nil) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        basePath = [paths objectAtIndex: 0];
+    }
+    _crashReportDirectory = [[basePath stringByAppendingPathComponent: PLCRASH_CACHE_DIR] stringByAppendingPathComponent: appIdPath];
     return self;
 }
 
 
 /**
  * @internal
- * 
+ *
  * Derive the bundle identifier and version from @a bundle.
  *
  * @param bundle The application's main bundle.
@@ -915,7 +921,7 @@ cleanup:
         PLCR_LOG("Warning -- bundle version unavailable");
         bundleVersion = @"";
     }
-    
+
     return [self initWithApplicationIdentifier: bundleIdentifier appVersion: bundleVersion appMarketingVersion:bundleMarketingVersion configuration: configuration];
 }
 

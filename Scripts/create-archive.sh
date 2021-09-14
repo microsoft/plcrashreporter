@@ -7,18 +7,20 @@ set -e
 PROJECT_DIR="$(dirname "$0")/.."
 
 # Create temporary directory
-TEMP_DIR=$(mktemp -d -t "$1") 
-mkdir -p "$TEMP_DIR/$1"
+TEMP_PRODUCT_NAME="${PRODUCT_NAME:-`echo $1 | cut -d'-' -f 1`}"
+TEMP_DIR=$(mktemp -d -t "$TEMP_PRODUCT_NAME")
+TEMP_PATH_TO_ARCH="$TEMP_DIR/$TEMP_PRODUCT_NAME"
+mkdir -p "$TEMP_PATH_TO_ARCH"
 
 # Copy required files
-cp "$PROJECT_DIR/LICENSE" "$TEMP_DIR/$1/LICENSE.txt"
-cp -R "../Documentation" "$TEMP_DIR/$1"
-(cd "$TEMP_DIR/$1" && ln -sf "Documentation/index.html" "API Documentation.html")
-cp -R "${@:2}" "$TEMP_DIR/$1"
+cp "$PROJECT_DIR/LICENSE" "$TEMP_PATH_TO_ARCH/LICENSE.txt"
+cp -R "$PROJECT_DIR/Documentation" "$TEMP_PATH_TO_ARCH"
+(cd "$TEMP_PATH_TO_ARCH" && ln -sf "Documentation/index.html" "API Documentation.html")
+cp -R "${@:2}" "$TEMP_PATH_TO_ARCH"
 
 # Archive content
-rm -f "$TEMP_DIR/$1.zip"
-(cd "$TEMP_DIR" && zip -ryq9 "$1.zip" "$1")
+rm -f "$TEMP_DIR/$TEMP_PRODUCT_NAME.zip"
+(cd "$TEMP_DIR" && zip -ryq9 "$1.zip" "$TEMP_PRODUCT_NAME")
 mv "$TEMP_DIR/$1.zip" .
 
 # Remove temporary directory
