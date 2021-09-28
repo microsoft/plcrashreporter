@@ -2,6 +2,7 @@
 
 ## Version 1.10.0
 
+* **[Improvement]** Specified minimum cocoapods version in PLCrashReporter 1.10 -> in podspec to 1.10.0
 * **[Fix]** Fix error `Undefined symbols for architecture arm64` while building PLCrashReporter for simulator on Xcode 12.4 and higher.
 * **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
 * **[Feature]** Distribute XCFramework via Cocoapods and Carthage. The XCFramework will contain static libs only.
