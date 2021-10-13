@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.10.1 (Under develop)
+
+* **[Improvement]** Mark `(NSString *) crashReportPath;` method as public.
+
 ## Version 1.10.0
 
 * **[Fix]** Fix error `Undefined symbols for architecture arm64` while building PLCrashReporter for simulator on Xcode 12.4 and higher.
