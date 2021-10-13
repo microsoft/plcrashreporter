@@ -1,4 +1,5 @@
 Pod::Spec.new do |spec|
+  spec.cocoapods_version = '>= 1.10'
   spec.name        = 'PLCrashReporter'
   spec.version     = '1.10.0'
   spec.summary     = 'Reliable, open-source crash reporting for iOS, macOS and tvOS.'

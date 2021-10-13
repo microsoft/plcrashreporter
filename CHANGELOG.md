@@ -2,7 +2,10 @@
 
 ## Version 1.10.1 (Under develop)
 
+* **[Improvement]** Specified minimum cocoapods version in podspec to 1.10.0
 * **[Improvement]** Mark `(NSString *) crashReportPath;` method as public.
+
+___
 
 ## Version 1.10.0
 
@@ -10,6 +13,8 @@
 * **[Fix]** Fix Cycle in dependencies error happening when building project from sources multiple times.
 * **[Feature]** Distribute XCFramework via Cocoapods and Carthage. The XCFramework will contain static libs only.
 * **[Fix]** Include plcrashutil in all release archives
+
+___
 
 ## Version 1.9.0
 
