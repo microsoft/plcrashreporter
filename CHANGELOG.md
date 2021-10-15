@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.10.1 (Under develop)
+## Version 1.10.1 (Under development)
 
 * **[Improvement]** Specified minimum cocoapods version in podspec to 1.10.0
 * **[Improvement]** Mark `(NSString *) crashReportPath;` method as public.
