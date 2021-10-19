@@ -843,9 +843,6 @@ cleanup:
     plcrash_log_writer_set_custom_data(&signal_handler_context.writer, customData);
 }
 
-/**
- * Return the path to live crash report (which may not yet, or ever, exist).
- */
 - (NSString *) crashReportPath {
     return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_LIVE_CRASHREPORT];
 }
