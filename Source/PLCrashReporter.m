@@ -391,7 +391,6 @@ static void uncaught_exception_handler (NSException *exception) {
 - (BOOL) populateCrashReportDirectoryAndReturnError: (NSError **) outError;
 - (NSString *) crashReportDirectory;
 - (NSString *) queuedCrashReportDirectory;
-- (NSString *) crashReportPath;
 
 @end
 
@@ -844,6 +843,10 @@ cleanup:
     plcrash_log_writer_set_custom_data(&signal_handler_context.writer, customData);
 }
 
+- (NSString *) crashReportPath {
+    return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_LIVE_CRASHREPORT];
+}
+
 @end
 
 /**
@@ -1060,15 +1063,5 @@ cleanup:
 - (NSString *) queuedCrashReportDirectory {
     return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_QUEUED_DIR];
 }
-
-
-/**
- * Return the path to live crash report (which may not yet, or ever, exist).
- */
-- (NSString *) crashReportPath {
-    return [[self crashReportDirectory] stringByAppendingPathComponent: PLCRASH_LIVE_CRASHREPORT];
-}
-
-
 
 @end
