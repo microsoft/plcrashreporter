@@ -14,7 +14,6 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 - The most accurate stack unwinding available, using DWARF and Apple Compact Unwind frame data.
 - First released in 2008, and used in hundreds of thousands of apps. PLCrashReporter has seen a tremendous amount of user testing.
 - Does not interfere with debugging in lldb/gdb
-- Easy to integrate with existing or custom crash reporting services.
 - Backtraces for all active threads are provided.
 - Provides full register state for the crashed thread.
 
@@ -75,7 +74,7 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
 
 ## Example
 
-The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers.
+The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers so make sure the **debugger isn't attached** when you crash the app.
 
 ### Objective-c
 
@@ -83,6 +82,10 @@ The following example shows a way how to initialize crash reporter. Please note 
 @import CrashReporter;
 
 ...
+
+#if DEBUG
+  NSLog(@"Detecting crashes is NOT enabled due to running the app with a debugger attached.");
+#else
 
 // It is strongly recommended that local symbolication only be enabled for non-release builds.
 // Use PLCrashReporterSymbolicationStrategyNone for release versions.
@@ -95,6 +98,7 @@ NSError *error;
 if (![crashReporter enableCrashReporterAndReturnError: &error]) {
     NSLog(@"Warning: Could not enable crash reporter: %@", error);
 }
+#endif
 ```
 
 Checking collected crash report can be done in the following way:
@@ -132,6 +136,9 @@ if ([crashReporter hasPendingCrashReport]) {
 import CrashReporter
 
 ...
+#if DEBUG
+  print("Detecting crashes is NOT enabled due to running the app with a debugger attached.");
+#else
 
   // It is strongly recommended that local symbolication only be enabled for non-release builds.
   // Use [] for release versions.
@@ -147,6 +154,7 @@ import CrashReporter
   } catch let error {
     print("Warning: Could not enable crash reporter: \(error)")
   }
+#endif
 ```
 
 Checking collected crash report can be done in the following way:
