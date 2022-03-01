@@ -83,9 +83,9 @@ The following example shows a way how to initialize crash reporter. Please note 
 
 ...
 
-#if DEBUG
-  NSLog(@"Detecting crashes is NOT enabled due to running the app with a debugger attached.");
-#else
+// Uncomment and implement isDebuggerAttached to safely run this code with a debugger.
+// See: https://github.com/microsoft/plcrashreporter/blob/2dd862ce049e6f43feb355308dfc710f3af54c4d/Source/Crash%20Demo/main.m#L96
+// if (!isDebuggerAttached()) {
 
 // It is strongly recommended that local symbolication only be enabled for non-release builds.
 // Use PLCrashReporterSymbolicationStrategyNone for release versions.
@@ -98,7 +98,7 @@ NSError *error;
 if (![crashReporter enableCrashReporterAndReturnError: &error]) {
     NSLog(@"Warning: Could not enable crash reporter: %@", error);
 }
-#endif
+// }
 ```
 
 Checking collected crash report can be done in the following way:
@@ -136,9 +136,9 @@ if ([crashReporter hasPendingCrashReport]) {
 import CrashReporter
 
 ...
-#if DEBUG
-  print("Detecting crashes is NOT enabled due to running the app with a debugger attached.");
-#else
+// Uncomment and implement isDebuggerAttached to safely run this code with a debugger.
+// See: https://github.com/microsoft/plcrashreporter/blob/2dd862ce049e6f43feb355308dfc710f3af54c4d/Source/Crash%20Demo/main.m#L96
+// if (!isDebuggerAttached()) {
 
   // It is strongly recommended that local symbolication only be enabled for non-release builds.
   // Use [] for release versions.
@@ -154,7 +154,7 @@ import CrashReporter
   } catch let error {
     print("Warning: Could not enable crash reporter: \(error)")
   }
-#endif
+// }
 ```
 
 Checking collected crash report can be done in the following way:
