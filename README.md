@@ -85,7 +85,7 @@ The following example shows a way how to initialize crash reporter. Please note 
 
 // Uncomment and implement isDebuggerAttached to safely run this code with a debugger.
 // See: https://github.com/microsoft/plcrashreporter/blob/2dd862ce049e6f43feb355308dfc710f3af54c4d/Source/Crash%20Demo/main.m#L96
-// if (!isDebuggerAttached()) {
+// if (![self isDebuggerAttached]) {
 
 // It is strongly recommended that local symbolication only be enabled for non-release builds.
 // Use PLCrashReporterSymbolicationStrategyNone for release versions.
