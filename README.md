@@ -26,9 +26,13 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 
 Crash reports are output as protobuf-encoded messages, and may be decoded using the CrashReporter library or any [Google Protocol Buffers](https://developers.google.com/protocol-buffers/) decoder.
 
-In addition to the in-library decoding support, you may use the included `plcrashutil` binary to convert crash reports to apple's standard iPhone text format. This may be passed to the symbolicate tool.
+In addition to the in-library decoding support, you may use the included `plcrashutil` binary to convert crash reports to apple's standard iPhone text format:
 
-`plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
+```ruby
+plcrashutil convert --format=iphone example_report.plcrash
+```
+
+You can use `atos` command-line tool to symbolicate the output. For more information about this tool, see [Adding Identifiable Symbol Names to a Crash Report](https://developer.apple.com/documentation/Xcode/adding-identifiable-symbol-names-to-a-crash-report).
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
 ## Adding PLCrashReporter to your project
