@@ -2,7 +2,7 @@
 
 ## Version 1.10.2 (Under development)
 
-* **[Fix]** PLCrashReporterConfig is always setting shouldRegisterUncaughtExceptionHandler to YES in ctor.
+* **[Fix]** Config ignored `shouldRegisterUncaughtExceptionHandler` parameter in constructor.
 
 ___
 
