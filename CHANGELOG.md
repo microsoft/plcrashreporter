@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.10.2 (Under development)
+
+* **[Fix]** Config ignored `shouldRegisterUncaughtExceptionHandler` parameter in constructor.
+
+___
+
 ## Version 1.10.1
 
 * **[Improvement]** Specified minimum cocoapods version in podspec to 1.10.0
