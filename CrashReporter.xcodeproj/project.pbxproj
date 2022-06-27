@@ -525,6 +525,7 @@
 		C2CBA40824586975001B775F /* CrashReporter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* CrashReporter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C2DCD88124658A63007322C5 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; };
 		C2DCD88224658A63007322C5 /* mach_exc.defs in Sources */ = {isa = PBXBuildFile; fileRef = 0581B520168FDB280098C103 /* mach_exc.defs */; platformFilter = maccatalyst; };
+		C2E312032869BF1700CD5C50 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C2F0ACA024AB7C28004890EC /* CrashReporterFramework.m in Sources */ = {isa = PBXBuildFile; fileRef = C2F0AC9F24AB7C28004890EC /* CrashReporterFramework.m */; };
 		C2F0ACA124AB7C28004890EC /* CrashReporterFramework.m in Sources */ = {isa = PBXBuildFile; fileRef = C2F0AC9F24AB7C28004890EC /* CrashReporterFramework.m */; };
 		C2F0ACA224AB7C28004890EC /* CrashReporterFramework.m in Sources */ = {isa = PBXBuildFile; fileRef = C2F0AC9F24AB7C28004890EC /* CrashReporterFramework.m */; };
@@ -980,6 +981,13 @@
 			remoteGlobalIDString = 8064D88B1C4D22E5005A8B4C;
 			remoteInfo = "CrashReporter tvOS Framework";
 		};
+		C2E312042869BF1700CD5C50 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
+			remoteInfo = "CrashReporter macOS";
+		};
 		F8CF2BCC246C05D100904633 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -1332,6 +1340,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2E312032869BF1700CD5C50 /* libCrashReporter.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2558,6 +2567,7 @@
 			);
 			dependencies = (
 				C259BD4B2869ADAE00DBCE48 /* PBXTargetDependency */,
+				C2E312052869BF1700CD5C50 /* PBXTargetDependency */,
 			);
 			name = "CrashReporter macOS Static Framework";
 			productInstallPath = "$(HOME)/Library/Frameworks";
@@ -3685,6 +3695,11 @@
 			target = 8064D88B1C4D22E5005A8B4C /* CrashReporter tvOS Framework */;
 			targetProxy = C2CBA40E245869F4001B775F /* PBXContainerItemProxy */;
 		};
+		C2E312052869BF1700CD5C50 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 05E731F20EFA1AAB005EDFB7 /* CrashReporter macOS */;
+			targetProxy = C2E312042869BF1700CD5C50 /* PBXContainerItemProxy */;
+		};
 		F8CF2BCD246C05D100904633 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C2B90D952456FBD000834AFB /* CrashReporter iOS Universal */;
@@ -4168,17 +4183,15 @@
 			buildSettings = {
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				DEFINES_MODULE = YES;
-				DYLIB_INSTALL_NAME_BASE = "$(INSTALL_PATH)";
 				EFFECTIVE_PLATFORM_NAME = "-macosx-static";
-				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
+				LIBRARY_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx";
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
-				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
-				PRODUCT_NAME = CrashReporter;
+				PRELINK_LIBS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};
@@ -4189,17 +4202,15 @@
 			buildSettings = {
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				DEFINES_MODULE = YES;
-				DYLIB_INSTALL_NAME_BASE = "$(INSTALL_PATH)";
 				EFFECTIVE_PLATFORM_NAME = "-macosx-static";
-				EXPORTED_SYMBOLS_FILE = Resources/CrashReporter.exp;
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
+				LIBRARY_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx";
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
-				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
-				PRODUCT_NAME = CrashReporter;
+				PRELINK_LIBS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx/lib$(PRODUCT_NAME).a";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};
