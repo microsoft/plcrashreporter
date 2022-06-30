@@ -1,6 +1,6 @@
 # PLCrashReporter Change Log
 
-## Version 1.10.2 (Under development)
+## Version 1.10.2
 
 * **[Fix]** Config ignored `shouldRegisterUncaughtExceptionHandler` parameter in constructor.
 * **[Improvement]** Update `protobuf-c` to version 1.4.0.
