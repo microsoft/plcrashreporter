@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -2673,7 +2673,8 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1140;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1340;
 				TargetAttributes = {
 					052A45CE136353FB00987004 = {
 						DevelopmentTeam = 5Z97G9NZQ6;
@@ -4060,6 +4061,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -4072,6 +4074,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -4125,6 +4128,7 @@
 				CLANG_ENABLE_CODE_COVERAGE = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -4137,6 +4141,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -4350,7 +4355,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -4359,7 +4363,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = iphoneos;
 			};
 			name = Release;
@@ -4368,7 +4371,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
 			};
 			name = Debug;
@@ -4377,7 +4379,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
-				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				SDKROOT = appletvos;
 			};
 			name = Release;
