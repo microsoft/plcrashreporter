@@ -1,5 +1,13 @@
 # PLCrashReporter Change Log
 
+## Version 1.10.2
+
+* **[Fix]** Config ignored `shouldRegisterUncaughtExceptionHandler` parameter in constructor.
+* **[Improvement]** Update `protobuf-c` to version 1.4.0.
+* **[Improvement]** Fix Xcode 13 deprecated build settings that might broke incremental builds (it drops workaround for Xcode's 12.0-12.4 bug). It only affects projects that use PLCrashReporter as sources.
+
+___
+
 ## Version 1.10.1
 
 * **[Improvement]** Specified minimum cocoapods version in podspec to 1.10.0
