@@ -14,7 +14,6 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 - The most accurate stack unwinding available, using DWARF and Apple Compact Unwind frame data.
 - First released in 2008, and used in hundreds of thousands of apps. PLCrashReporter has seen a tremendous amount of user testing.
 - Does not interfere with debugging in lldb/gdb
-- Easy to integrate with existing or custom crash reporting services.
 - Backtraces for all active threads are provided.
 - Provides full register state for the crashed thread.
 
@@ -27,9 +26,13 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 
 Crash reports are output as protobuf-encoded messages, and may be decoded using the CrashReporter library or any [Google Protocol Buffers](https://developers.google.com/protocol-buffers/) decoder.
 
-In addition to the in-library decoding support, you may use the included `plcrashutil` binary to convert crash reports to apple's standard iPhone text format. This may be passed to the symbolicate tool.
+In addition to the in-library decoding support, you may use the included `plcrashutil` binary to convert crash reports to apple's standard iPhone text format:
 
-`plcrashutil convert --format=iphone example_report.plcrash | symbolicatecrash`
+```ruby
+plcrashutil convert --format=iphone example_report.plcrash
+```
+
+You can use `atos` command-line tool to symbolicate the output. For more information about this tool, see [Adding Identifiable Symbol Names to a Crash Report](https://developer.apple.com/documentation/Xcode/adding-identifiable-symbol-names-to-a-crash-report).
 Future library releases may include built-in re-usable formatters, for outputting alternative formats directly from the phone.
 
 ## Adding PLCrashReporter to your project
@@ -57,7 +60,7 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
     github "microsoft/plcrashreporter"
     ```
 1. Run `carthage update --use-xcframeworks` to fetch dependencies.
-2. Open your application target's **General** settings tab. Drag and drop **CrashReporter.xcframework** from **Carthage/Build** folder into Xcode's Project Navigator.
+2. In Xcode, open your application target's **General** settings tab.  Drag and drop **CrashReporter.xcframework** from the **Carthage/Build** folder into the `Frameworks, Libraries and Embedded Content` section.  For iOS and tvOS, set `Embed` to `Do not embed`.  For macoS, set `Embed` to `Embed and Sign`.
 
 > **NOTE:**
 > Carthage integration doesn't build the dependency correctly in Xcode 12 with flag "--no-use-binaries" or from a specific branch. To make it work, refer to [this instruction](https://github.com/Carthage/Carthage/blob/master/Documentation/Xcode12Workaround.md).
@@ -75,12 +78,18 @@ PLCrashReporter can be added to your app via [CocoaPods](https://guides.cocoapod
 
 ## Example
 
-The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers.
+The following example shows a way how to initialize crash reporter. Please note that enabling in-process crash reporting will conflict with any attached debuggers so make sure the **debugger isn't attached** when you crash the app.
+
+### Objective-c
 
 ```objc
 @import CrashReporter;
 
 ...
+
+// Uncomment and implement isDebuggerAttached to safely run this code with a debugger.
+// See: https://github.com/microsoft/plcrashreporter/blob/2dd862ce049e6f43feb355308dfc710f3af54c4d/Source/Crash%20Demo/main.m#L96
+// if (![self isDebuggerAttached]) {
 
 // It is strongly recommended that local symbolication only be enabled for non-release builds.
 // Use PLCrashReporterSymbolicationStrategyNone for release versions.
@@ -93,6 +102,7 @@ NSError *error;
 if (![crashReporter enableCrashReporterAndReturnError: &error]) {
     NSLog(@"Warning: Could not enable crash reporter: %@", error);
 }
+// }
 ```
 
 Checking collected crash report can be done in the following way:
@@ -122,6 +132,59 @@ if ([crashReporter hasPendingCrashReport]) {
     // Purge the report.
     [crashReporter purgePendingCrashReport];
 }
+```
+
+### Swift
+
+```swift 
+import CrashReporter
+
+...
+// Uncomment and implement isDebuggerAttached to safely run this code with a debugger.
+// See: https://github.com/microsoft/plcrashreporter/blob/2dd862ce049e6f43feb355308dfc710f3af54c4d/Source/Crash%20Demo/main.m#L96
+// if (!isDebuggerAttached()) {
+
+  // It is strongly recommended that local symbolication only be enabled for non-release builds.
+  // Use [] for release versions.
+  let config = PLCrashReporterConfig(signalHandlerType: .mach, symbolicationStrategy: .all)
+  guard let crashReporter = PLCrashReporter(configuration: config) else {
+    print("Could not create an instance of PLCrashReporter")
+    return
+  }
+
+  // Enable the Crash Reporter.
+  do {
+    try crashReporter.enableAndReturnError()
+  } catch let error {
+    print("Warning: Could not enable crash reporter: \(error)")
+  }
+// }
+```
+
+Checking collected crash report can be done in the following way:
+
+```swift
+  // Try loading the crash report.
+  if crashReporter.hasPendingCrashReport() {
+    do {
+      let data = try crashReporter.loadPendingCrashReportDataAndReturnError()
+
+      // Retrieving crash reporter data.
+      let report = try PLCrashReport(data: data)
+
+      // We could send the report from here, but we'll just print out some debugging info instead.
+      if let text = PLCrashReportTextFormatter.stringValue(for: report, with: PLCrashReportTextFormatiOS) { 
+        print(text)
+      } else {
+        print("CrashReporter: can't convert report to text")
+      }
+    } catch let error {
+      print("CrashReporter failed to load and parse with error: \(error)")
+    }
+  }
+
+  // Purge the report.
+  crashReporter.purgePendingCrashReport()
 ```
 
 ## Building
