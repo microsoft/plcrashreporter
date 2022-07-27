@@ -106,7 +106,7 @@
                      symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
     shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler
 {
-  return [self initWithSignalHandlerType: signalHandlerType symbolicationStrategy: symbolicationStrategy shouldRegisterUncaughtExceptionHandler: YES basePath: nil];
+  return [self initWithSignalHandlerType: signalHandlerType symbolicationStrategy: symbolicationStrategy shouldRegisterUncaughtExceptionHandler: shouldRegisterUncaughtExceptionHandler basePath: nil];
 }
 
 /**
