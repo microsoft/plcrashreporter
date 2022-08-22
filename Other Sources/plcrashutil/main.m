@@ -40,7 +40,7 @@ static void print_usage () {
     fprintf(stderr, "Usage: plcrashutil <command> <options>\n"
                     "Commands:\n"
                     "  convert --format=<format> <file>\n"
-                    "      Covert a plcrash file to the given format.\n\n"
+                    "      Convert a plcrash file to the given format.\n\n"
                     "      Supported formats:\n"
                     "        ios - Standard Apple iOS-compatible text crash log\n"
                     "        iphone - Synonym for 'iOS'.\n");
