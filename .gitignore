@@ -32,7 +32,3 @@ xcuserdata/
 
 # Mac
 .DS_Store
-
-# Swift Package Manager
-.swiftpm
-Package.resolved
