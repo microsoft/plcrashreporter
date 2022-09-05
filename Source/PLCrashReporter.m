@@ -262,7 +262,7 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
     plcrash_log_mach_signal_info_t mach_signal_info;
-    plcrash_error_t err;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t err;
 
     /* Let any other registered server attempt to handle the exception */
     if (PLCrashMachExceptionForward(task, thread, exception_type, code, code_count, &sigctx->port_set) == KERN_SUCCESS)

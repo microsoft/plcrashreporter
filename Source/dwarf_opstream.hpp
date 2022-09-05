@@ -141,7 +141,7 @@ template <typename V> inline bool dwarf_opstream::read_intU (V *result) {
  */
 inline bool dwarf_opstream::read_uintmax64 (uint8_t data_size, uint64_t *result) {
     pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
-    plcrash_error_t err;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t err;
 
     if ((err = plcrash_async_dwarf_read_uintmax64(_mobj, _byteorder, _start, offset, data_size, result)) != PLCRASH_ESUCCESS) {
         PLCF_DEBUG("Read of integer value failed with %u", err);
@@ -166,7 +166,7 @@ inline bool dwarf_opstream::read_uintmax64 (uint8_t data_size, uint64_t *result)
  * @return Returns true on success, or false if the read would exceed the boundry specified by @a maxpos.
  */
 inline bool dwarf_opstream::read_uleb128 (uint64_t *result) {
-    plcrash_error_t err;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t err;
     pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
     pl_vm_size_t lebsize;
 
@@ -192,7 +192,7 @@ inline bool dwarf_opstream::read_uleb128 (uint64_t *result) {
  * @return Returns true on success, or false if the read would exceed the boundry specified by @a maxpos.
  */
 inline bool dwarf_opstream::read_sleb128 (int64_t *result) {
-    plcrash_error_t err;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t err;
     pl_vm_off_t offset = ((uint8_t *)_p - (uint8_t *)_instr);
     pl_vm_size_t lebsize;
     
