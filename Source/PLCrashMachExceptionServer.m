@@ -475,11 +475,12 @@ struct plcrash_exception_server_context {
 static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *request, kern_return_t retcode) {
     PLReply_exception_raise_t reply;
     
-    /* Initialize the reply */
-    memset(&reply, 0, sizeof(reply));
-    
-    /* Set msgh_id. See xnu source. */
+    /* Obtain msgh_id. See xnu source. */
     mig_reply_setup((mach_msg_header_t *) request, (mach_msg_header_t *) &reply);
+    mach_msg_id_t reply_id = reply.Head.msgh_id;
+    
+    /* Reset the reply */
+    memset(&reply, 0, sizeof(reply));
     
     reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
     reply.Head.msgh_local_port = MACH_PORT_NULL;
@@ -487,6 +488,7 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
     reply.Head.msgh_size = sizeof(reply);
     reply.NDR = NDR_record;
     reply.RetCode = retcode;
+    reply.Head.msgh_id = reply_id;
     
     /* Dispatch the reply */
     return mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
