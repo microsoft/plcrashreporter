@@ -477,22 +477,16 @@ static mach_msg_return_t exception_server_reply (PLRequest_exception_raise_t *re
     
     /* Initialize the reply */
     memset(&reply, 0, sizeof(reply));
+    
+    /* Set msgh_id. See xnu source. */
+    mig_reply_setup((mach_msg_header_t *) request, (mach_msg_header_t *) &reply);
+    
     reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->Head.msgh_bits), 0);
     reply.Head.msgh_local_port = MACH_PORT_NULL;
     reply.Head.msgh_remote_port = request->Head.msgh_remote_port;
     reply.Head.msgh_size = sizeof(reply);
     reply.NDR = NDR_record;
     reply.RetCode = retcode;
-    
-    /*
-     * Mach uses reply id offsets of 100. This is rather arbitrary, and in theory could be changed
-     * in a future iOS release (although, it has stayed constant for nearly 24 years, so it seems unlikely
-     * to change now). See the top-level file warning regarding use on iOS.
-     *
-     * On Mac OS X, the reply_id offset may be considered implicitly defined due to mach_exc.defs and
-     * exc.defs being public.
-     */
-    reply.Head.msgh_id = request->Head.msgh_id + 100;
     
     /* Dispatch the reply */
     return mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
