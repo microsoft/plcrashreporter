@@ -7,7 +7,7 @@ jobs:
   - job:
     displayName: ${{ format('CrashReporter {0} Analyze and Test', platform) }}
     pool:
-      vmImage: internal-macos-10.15
+      vmImage: macOS-11
     steps:
     - checkout: self
       submodules: recursive
