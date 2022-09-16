@@ -34,21 +34,16 @@
 #import "PLCrashReporter.h"
 #endif
 
+#import "PLCrashCompatConstants.h"
 #import "PLCrashFeatureConfig.h"
-
 #import "PLCrashHostInfo.h"
-
 #import "PLCrashSignalHandler.h"
 #import "PLCrashMachExceptionServer.h"
-
 #import "PLCrashFeatureConfig.h"
-
 #import "PLCrashAsync.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
-
 #import "PLCrashAsyncMachExceptionInfo.h"
-
 #import "PLCrashReporterNSError.h"
 
 #import <fcntl.h>
