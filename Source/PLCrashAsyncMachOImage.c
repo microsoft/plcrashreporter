@@ -553,7 +553,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
         }
         if (plcrash_async_strncmp(sectname, image_sectname, fldsiz(section_64, sectname)) == 0) {
             /* Perform and return the mapping */
-            // PLCF_DEBUG("%s (%s,%.*s): 0x%lx - 0x%lx", PLCF_DEBUG_IMAGE_NAME(image), segname, (int)fldsiz(section_64, sectname), image_sectname, sectaddr, sectaddr + sectsize);
+            // PLCF_DEBUG("%s (%s,%.*s): 0x%" PRIx64 " - 0x%" PRIx64, PLCF_DEBUG_IMAGE_NAME(image), segname, (int)fldsiz(section_64, sectname), image_sectname, sectaddr, sectaddr + sectsize);
             return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize, true);
         }
     }

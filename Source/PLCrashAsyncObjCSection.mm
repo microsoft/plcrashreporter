@@ -271,9 +271,18 @@ struct pl_objc2_list_header {
     uint32_t count;
 };
 
+/**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-818.2/runtime/objc-runtime-new.h
+ */
 static const uint32_t SMALL_METHOD_FLAG = 0x80000000;
 
-/* Two bits of entsize are used for fixup markers, top half is reserved for more flags. */
+/**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-818.2/runtime/objc-runtime-new.h
+ *
+ * Two bits of entsize are used for fixup markers, top half is reserved for more flags.
+ */
 static const uint32_t ENTSIZE_FLAGS_MASK = 0xffff0003;
 
 /**
@@ -741,7 +750,10 @@ cleanup:
     return err;
 }
 
-/*
+/**
+ * @internal
+ * @see https://opensource.apple.com/source/objc4/objc4-818.2/runtime/objc-runtime-new.h
+ *
  * The target address is computed by taking the address of this field
  * and adding the offset stored within it. This is a 32-bit signed
  * offset giving ±2GB of range.
