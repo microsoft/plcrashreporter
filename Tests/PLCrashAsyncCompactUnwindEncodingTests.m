@@ -829,7 +829,7 @@
     STAssertEquals(PLCRASH_ESUCCESS, plcrash_async_cfe_entry_init(&entry, CPU_TYPE_ARM64, encoding), @"Failed to initialize CFE entry");
     
     /* Initialize default thread state */
-    plcrash_greg_t stack_addr = &stackframe[4]; // fp
+    plcrash_greg_t stack_addr = (plcrash_greg_t) &stackframe[4]; // fp
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_ARM64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
     plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_FP, stack_addr);
     
@@ -892,7 +892,7 @@
     
     /* Initialize default thread state */
     STAssertEquals(plcrash_async_thread_state_init(&ts, CPU_TYPE_ARM64), PLCRASH_ESUCCESS, @"Failed to initialize thread state");
-    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, &stackframe);
+    plcrash_async_thread_state_set_reg(&ts, PLCRASH_REG_SP, (plcrash_greg_t) &stackframe);
     plcrash_async_thread_state_set_reg(&ts, PLCRASH_ARM64_LR, 2);
 
     /* Apply */

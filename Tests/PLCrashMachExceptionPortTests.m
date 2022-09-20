@@ -52,10 +52,9 @@
 - (void) testExceptionPortStatesForTask {
     plcrash_mach_exception_port_set_t states;
     NSError *error;
-    kern_return_t kr;
     
     /* Fetch the current ports */
-    kr = task_get_exception_ports(mach_task_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
+    task_get_exception_ports(mach_task_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
     PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForTask: mach_task_self() mask: EXC_MASK_ALL_SAFE error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
@@ -80,10 +79,9 @@
 - (void) testExceptionPortStatesForThread {
     plcrash_mach_exception_port_set_t states;
     NSError *error;
-    kern_return_t kr;
     
     /* Fetch the current ports */
-    kr = thread_get_exception_ports(pl_mach_thread_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
+    thread_get_exception_ports(pl_mach_thread_self(), EXC_MASK_ALL_SAFE, states.masks, &states.count, states.ports, states.behaviors, states.flavors);
     
     PLCrashMachExceptionPortSet *objStates = [PLCrashMachExceptionPort exceptionPortsForThread: pl_mach_thread_self() mask: EXC_MASK_ALL_SAFE error: &error];
     STAssertNotNil(objStates, @"Failed to fetch port state: %@", error);
