@@ -65,7 +65,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
 
 	/* Header */
 	
-    /* Map to apple style OS nane */
+    /* Map to apple style OS name */
     NSString *osName;
     switch (report.systemInfo.operatingSystem) {
         case PLCrashReportOperatingSystemMacOSX:
