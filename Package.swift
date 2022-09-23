@@ -5,9 +5,9 @@ import PackageDescription
 let package = Package(
     name: "PLCrashReporter",
     platforms: [
-        .iOS(.v9),
+        .iOS(.v11),
         .macOS(.v10_10),
-        .tvOS(.v9)
+        .tvOS(.v11)
     ],
     products: [
         .library(name: "CrashReporter", targets: ["CrashReporter"])
