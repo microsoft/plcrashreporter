@@ -489,7 +489,7 @@ static PLCrashReporter *sharedReporter = nil;
  */
 - (NSData *) loadPendingCrashReportDataAndReturnError: (NSError **) outError {
     /* Load the (memory mapped) data */
-    return [NSData dataWithContentsOfFile: [self crashReportPath] options: NSMappedRead error: outError];
+    return [NSData dataWithContentsOfFile: [self crashReportPath] options: NSDataReadingMappedIfSafe error: outError];
 }
 
 
