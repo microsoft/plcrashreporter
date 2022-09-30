@@ -49,7 +49,7 @@ jobs:
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/* "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework" "Tools"
-      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "PLCrashReporterStatic/CrashReporter.xcframework" "Tools"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "XCFrameworkStatic/CrashReporter.xcframework" "Tools"
     displayName: 'Create Archives'
     workingDirectory: '$(Build.BinariesDirectory)/Release'
 
