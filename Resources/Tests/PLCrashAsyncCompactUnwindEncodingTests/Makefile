@@ -3,23 +3,23 @@ PLATFORMS?=	$(DEVELOPER)/Platforms/
 CFLAGS?=	-Os -std=c99
 LDFLAGS?=	-dynamiclib
 
-DEVICE_SDK?=		iPhoneOS7.0
+DEVICE_SDK?=		iPhoneOS
 DEVICE_PLATFORM?=	$(PLATFORMS)/iPhoneOS.platform
 DEVICE_ROOT?=		$(DEVICE_PLATFORM)/Developer/SDKs/$(DEVICE_SDK).sdk
-DEVICE_CC?=		$(shell xcrun -sdk `echo ${DEVICE_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
-DEVICE_CFLAGS?=		-arch armv7 -arch armv7s -arch arm64 -isysroot "$(DEVICE_ROOT)" -gdwarf-2 -miphoneos-version-min=7.0 $(CFLAGS)
+DEVICE_CC?=			$(shell xcrun -sdk `echo ${DEVICE_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
+DEVICE_CFLAGS?=		-arch armv7 -arch armv7s -arch arm64 -arch arm64e -isysroot "$(DEVICE_ROOT)" -gdwarf-2 -miphoneos-version-min=10.0 $(CFLAGS)
 
-SIM_SDK?=		iPhoneSimulator6.1
+SIM_SDK?=			iPhoneSimulator
 SIM_PLATFORM?=		$(PLATFORMS)/iPhoneSimulator.platform
-SIM_ROOT?=		$(SIM_PLATFORM)/Developer/SDKs/$(SIM_SDK).sdk
-SIM_CC?=		$(shell xcrun -sdk `echo ${SIM_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
-SIM_CFLAGS?=		-arch i386 -isysroot "$(SIM_ROOT)" -mmacosx-version-min=10.6 -gdwarf-2 $(CFLAGS)
+SIM_ROOT?=			$(SIM_PLATFORM)/Developer/SDKs/$(SIM_SDK).sdk
+SIM_CC?=			$(shell xcrun -sdk `echo ${SIM_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
+SIM_CFLAGS?=		-arch i386 -arch x86_64 -arch arm64 -isysroot "$(SIM_ROOT)" -gdwarf-2 $(CFLAGS)
 
-MAC_SDK?=		MacOSX10.8
+MAC_SDK?=			MacOSX
 MAC_PLATFORM?=		$(PLATFORMS)/MacOSX.platform
-MAC_ROOT?=		$(MAC_PLATFORM)/Developer/SDKs/$(MAC_SDK).sdk
-MAC_CC?=		$(shell xcrun -sdk `echo ${MAC_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
-MAC_CFLAGS?=		-arch x86_64 -arch i386 -isysroot "$(MAC_ROOT)" -mmacosx-version-min=10.6 -gdwarf-2 $(CFLAGS)
+MAC_ROOT?=			$(MAC_PLATFORM)/Developer/SDKs/$(MAC_SDK).sdk
+MAC_CC?=			$(shell xcrun -sdk `echo ${MAC_SDK} | tr '[A-Z]' '[a-z]'` -f clang)
+MAC_CFLAGS?=		-arch x86_64 -arch arm64 -isysroot "$(MAC_ROOT)" -mmacosx-version-min=10.9 -gdwarf-2 $(CFLAGS)
 
 IOS_OBJS=		test-ios.o
 SIM_OBJS=		test-sim.o
