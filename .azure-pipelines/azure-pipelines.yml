@@ -43,18 +43,6 @@ jobs:
     displayName: 'Prepare macOS Framework and Tools'
     workingDirectory: '$(Build.BinariesDirectory)'
 
-  - template: combine-binaries-template.yml
-    parameters:
-      xcframeworkName: 'CrashReporter.xcframework'
-      outputPath: 'CrashReporter.xcframework'
-      macosFrameworkPath: 'Release-macosx/CrashReporter.framework'
-
-  - template: combine-binaries-template.yml
-    parameters:
-      xcframeworkName: 'CrashReporter-static.xcframework'
-      outputPath: 'PLCrashReporterStatic/CrashReporter.xcframework'
-      macosFrameworkPath: 'Release-macosx-static/CrashReporter.framework'
-
   - bash: |
       VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
       [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
