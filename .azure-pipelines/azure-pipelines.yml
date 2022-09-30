@@ -5,14 +5,14 @@ pr:
 - master
 
 pool:
-  vmImage: macOS-11
+  vmImage: macOS-12
 
 variables:
   Configuration: Release
   SDK:
 
-  # Xcode 12.4 version is the last one that has compatible bitcode with Xcode 12.0 (minimal supported).
-  XCODE_PATH: '/Applications/Xcode_12.4.app/Contents/Developer'
+  # Xcode 13.2.1 version is the last one that has compatible bitcode with Xcode 13.0 (minimal supported).
+  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
 
 jobs:
 - job:
