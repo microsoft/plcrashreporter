@@ -3737,7 +3737,6 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
-					armv7s,
 					arm64e,
 				);
 				CODE_SIGN_ENTITLEMENTS = "Resources/DemoCrash-iOS.entitlements";
@@ -3759,7 +3758,6 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
-					armv7s,
 					arm64e,
 				);
 				CODE_SIGN_ENTITLEMENTS = "Resources/DemoCrash-iOS.entitlements";
@@ -3781,7 +3779,6 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
-					armv7s,
 					arm64e,
 				);
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
@@ -3805,7 +3802,6 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
-					armv7s,
 					arm64e,
 				);
 				BITCODE_GENERATION_MODE = bitcode;
@@ -3845,7 +3841,6 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
-					armv7s,
 					arm64e,
 				);
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -3864,7 +3859,6 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = (
 					"$(ARCHS_STANDARD)",
-					armv7s,
 					arm64e,
 				);
 				BITCODE_GENERATION_MODE = bitcode;
@@ -4106,14 +4100,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Debug;
@@ -4171,13 +4165,13 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/protobuf-c\"";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
 				VALIDATE_PRODUCT = YES;
 				WARNING_CFLAGS = "-Wall";
 			};

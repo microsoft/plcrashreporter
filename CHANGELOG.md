@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.10.3 (Under development)
+
+* **[Feature]** Add Xcode 14 support.
+
+___
+
 ## Version 1.10.2
 
 * **[Fix]** Config ignored `shouldRegisterUncaughtExceptionHandler` parameter in constructor.

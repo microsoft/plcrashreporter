@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashMacros.h"
+#import "PLCrashCompatConstants.h"
 #import "PLCrashMachExceptionPortSet.h"
 #import "PLCrashFeatureConfig.h"
 
