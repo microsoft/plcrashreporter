@@ -1,8 +1,9 @@
 # PLCrashReporter Change Log
 
-## Version 1.10.3 (Under development)
+## Version 1.11.0
 
-* **[Feature]** Add Xcode 14 support.
+* **[Feature]** Add Xcode 14 support. Xcode 11 and Xcode 12 are out of support now.
+* **[Improvement]** Fix analyzer warnings.
 
 ___
 
