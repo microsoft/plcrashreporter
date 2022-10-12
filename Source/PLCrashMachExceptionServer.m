@@ -26,7 +26,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "PLCrashFeatureConfig.h"
+#import "PLCrashCompatConstants.h"
+#import "PLCrashFeatureConfig.h"
 #import "PLCrashMachExceptionPort.h"
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS

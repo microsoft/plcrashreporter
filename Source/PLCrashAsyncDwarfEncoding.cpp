@@ -163,7 +163,7 @@ plcrash_error_t dwarf_frame_reader::find_fde (pl_vm_off_t offset,
         /* Fetch the entry id */
         uint64_t cie_id;
         
-        if ((err = plcrash_async_dwarf_read_uintmax64(_mobj, byteorder, cfi_entry, length_size, dwarf_word_size, &cie_id)) != PLCRASH_ESUCCESS) {
+        if ((plcrash_async_dwarf_read_uintmax64(_mobj, byteorder, cfi_entry, length_size, dwarf_word_size, &cie_id)) != PLCRASH_ESUCCESS) {
             PLCF_DEBUG("The current CFI entry 0x%" PRIx64 " cie_id lies outside the mapped range", (uint64_t) cfi_entry);
             return PLCRASH_EINVAL;
         }

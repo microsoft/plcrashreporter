@@ -34,21 +34,16 @@
 #import "PLCrashReporter.h"
 #endif
 
+#import "PLCrashCompatConstants.h"
 #import "PLCrashFeatureConfig.h"
-
 #import "PLCrashHostInfo.h"
-
 #import "PLCrashSignalHandler.h"
 #import "PLCrashMachExceptionServer.h"
-
 #import "PLCrashFeatureConfig.h"
-
 #import "PLCrashAsync.h"
 #import "PLCrashLogWriter.h"
 #import "PLCrashFrameWalker.h"
-
 #import "PLCrashAsyncMachExceptionInfo.h"
-
 #import "PLCrashReporterNSError.h"
 
 #import <fcntl.h>
@@ -262,7 +257,7 @@ static kern_return_t mach_exception_callback (task_t task, thread_t thread, exce
     plcrash_log_signal_info_t signal_info;
     plcrash_log_bsd_signal_info_t bsd_signal_info;
     plcrash_log_mach_signal_info_t mach_signal_info;
-    plcrash_error_t err;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t err;
 
     /* Let any other registered server attempt to handle the exception */
     if (PLCrashMachExceptionForward(task, thread, exception_type, code, code_count, &sigctx->port_set) == KERN_SUCCESS)
@@ -489,7 +484,7 @@ static PLCrashReporter *sharedReporter = nil;
  */
 - (NSData *) loadPendingCrashReportDataAndReturnError: (NSError **) outError {
     /* Load the (memory mapped) data */
-    return [NSData dataWithContentsOfFile: [self crashReportPath] options: NSMappedRead error: outError];
+    return [NSData dataWithContentsOfFile: [self crashReportPath] options: NSDataReadingMappedIfSafe error: outError];
 }
 
 

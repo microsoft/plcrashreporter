@@ -177,7 +177,7 @@ static void macho_symbol_callback (pl_vm_address_t address, const char *name, vo
  */
 static void objc_symbol_callback (bool isClassMethod, plcrash_async_macho_string_t *className, plcrash_async_macho_string_t *methodName, pl_vm_address_t imp, void *ctx) {
     struct symbol_lookup_ctx *lookup_ctx = ctx;
-    plcrash_error_t err;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t err;
 
     /* Skip this match if a better match has already been found */
     if (lookup_ctx->found && imp < lookup_ctx->symbol_address)

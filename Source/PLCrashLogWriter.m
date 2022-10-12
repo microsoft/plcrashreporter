@@ -265,7 +265,7 @@ static void plprotobuf_cbinary_data_init (PLProtobufCBinaryData *data, const voi
 
 static void plprotobuf_cbinary_data_string_init (PLProtobufCBinaryData *data, const char *value) {
     data->data = (void *)value;
-    data->len = strlen(value);
+    data->len = value ? strlen(value) : 0;
 }
 
 static void plprotobuf_cbinary_data_nsstring_init (PLProtobufCBinaryData *data, NSString *value) {
@@ -796,7 +796,7 @@ static size_t plcrash_writer_write_thread_register (plcrash_async_file_t *file, 
  * @param cursor The cursor from which to acquire frame registers.
  */
 static size_t plcrash_writer_write_thread_registers (plcrash_async_file_t *file, task_t task, plframe_cursor_t *cursor) {
-    plframe_error_t frame_err;
+    PLCF_UNUSED_IN_RELEASE plframe_error_t frame_err;
     uint32_t regCount = (uint32_t) plframe_cursor_get_regcount(cursor);
     size_t rv = 0;
     

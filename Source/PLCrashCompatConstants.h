@@ -30,8 +30,8 @@
 #define PLCRASH_COMPAT_CONSTANTS_H 1
 
 #include <AvailabilityMacros.h>
-
 #include <mach/machine.h>
+#include "PLCrashMacros.h"
 
 /*
  * ARM64 compact unwind constants; Since these values are fixed by the ABI, we can safely include them directly here.
@@ -76,5 +76,23 @@
 #define PLCR_COMPAT_LOCK_LOCK(lock)     OSSpinLockLock(lock)
 #define PLCR_COMPAT_LOCK_UNLOCK(lock)   OSSpinLockUnlock(lock)
 #endif
+
+
+#ifdef PLCR_PRIVATE
+/*
+ * asl_log is deprecated since macOS 10.12, iOS 10.0 and tvOS 10.0, but suggested replacement might be missed
+ * at runtime on older versions, so we must use it until we support older versions.
+ */
+#  if __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_12 || \
+      __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_10_0 || \
+      __TV_OS_VERSION_MIN_REQUIRED >= __TVOS_10_0 || \
+      __WATCH_OS_VERSION_MIN_REQUIRED >= __WATCHOS_3_0
+#    include <os/log.h>
+#    define PLCR_LOG(msg, args...) os_log(OS_LOG_DEFAULT, "[PLCrashReporter] "  msg, ## args)
+#  else
+#    include <asl.h>
+#    define PLCR_LOG(msg, args...) asl_log(NULL, NULL, ASL_LEVEL_INFO, "[PLCrashReporter] " msg, ## args)
+#  endif /* TARGET_OS_MACCATALYST */
+#endif /* PLCR_PRIVATE */
 
 #endif /* PLCRASH_COMPAT_CONSTANTS_H */

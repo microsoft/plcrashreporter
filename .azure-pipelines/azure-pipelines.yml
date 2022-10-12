@@ -5,14 +5,14 @@ pr:
 - master
 
 pool:
-  vmImage: internal-macos-10.15
+  vmImage: macOS-12
 
 variables:
   Configuration: Release
   SDK:
 
-  # Xcode 11.3.1 version is the last one that has compatible bitcode with Xcode 11.0 (minimal supported).
-  XCODE_PATH: '/Applications/Xcode_11.3.1.app/Contents/Developer'
+  # Xcode 13.2.1 version is the last one that has compatible bitcode with Xcode 13.0 (minimal supported).
+  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
 
 jobs:
 - job:
@@ -32,55 +32,6 @@ jobs:
       xcodeDeveloperDir: '$(XCODE_PATH)'
       args: 'SYMROOT="$(Build.BinariesDirectory)"'
 
-  - task: Xcode@5
-    displayName: 'Build CrashReporter macOS Framework for Apple Silicon'
-    inputs:
-      xcWorkspacePath: CrashReporter.xcodeproj
-      scheme: 'CrashReporter macOS Framework'
-      xcodeVersion: specifyPath
-      xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
-      args: 'SYMROOT="$(Build.BinariesDirectory)"'
-
-  - task: Xcode@5
-    displayName: 'Build CrashReporter macOS Static Framework for Apple Silicon'
-    inputs:
-      xcWorkspacePath: CrashReporter.xcodeproj
-      scheme: 'CrashReporter macOS Static Framework'
-      xcodeVersion: specifyPath
-      xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
-      args: 'SYMROOT="$(Build.BinariesDirectory)"'
-
-  - task: Xcode@5
-    displayName: 'Build plcrashutil for Apple Silicon'
-    inputs:
-      xcWorkspacePath: CrashReporter.xcodeproj
-      scheme: 'plcrashutil'
-      xcodeVersion: specifyPath
-      xcodeDeveloperDir: '/Applications/Xcode_12.2.app/Contents/Developer'
-      args: 'SYMROOT="$(Build.BinariesDirectory)"'
-
-  - template: build-apple-silicon-template.yml
-    parameters:
-      scheme: 'CrashReporter iOS Framework'
-      destination:
-        destinationPlatformOption: iOS
-        destinationTypeOption: simulators
-        destinationSimulators: 'iPhone 11'
-        
-  - template: build-apple-silicon-template.yml
-    parameters:
-      scheme: 'CrashReporter iOS Framework'
-      destination:
-        destinationPlatformOption: macOS
-
-  - template: build-apple-silicon-template.yml
-    parameters:
-      scheme: 'CrashReporter tvOS Framework'
-      destination:
-        destinationPlatformOption: tvOS
-        destinationTypeOption: simulators
-        destinationSimulators: 'Apple TV'
-
   - bash: |
       cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
       lipo -info "Release/Static/libCrashReporter-MacOSX-Static.a"
@@ -92,25 +43,13 @@ jobs:
     displayName: 'Prepare macOS Framework and Tools'
     workingDirectory: '$(Build.BinariesDirectory)'
 
-  - template: combine-binaries-template.yml
-    parameters:
-      xcframeworkName: 'CrashReporter.xcframework'
-      outputPath: 'CrashReporter.xcframework'
-      macosFrameworkPath: 'Release-macosx/CrashReporter.framework'
-
-  - template: combine-binaries-template.yml
-    parameters:
-      xcframeworkName: 'CrashReporter-static.xcframework'
-      outputPath: 'PLCrashReporterStatic/CrashReporter.xcframework'
-      macosFrameworkPath: 'Release-macosx-static/CrashReporter.framework'
-
   - bash: |
       VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
       [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/* "Tools"
       "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework" "Tools"
-      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "PLCrashReporterStatic/CrashReporter.xcframework" "Tools"
+      "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "XCFrameworkStatic/CrashReporter.xcframework" "Tools"
     displayName: 'Create Archives'
     workingDirectory: '$(Build.BinariesDirectory)/Release'
 
@@ -141,4 +80,4 @@ jobs:
 
 - template: analyze-and-test-template.yml
   parameters:
-    platforms: [iOS, macOS, tvOS, MacCatalyst ]
+    platforms: [iOS, macOS, tvOS, MacCatalyst]
