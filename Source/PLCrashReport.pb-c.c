@@ -265,7 +265,7 @@ const ProtobufCEnumDescriptor plcrash__crash_report__system_info__operating_syst
 };
 static const Plcrash__CrashReport__SystemInfo__OperatingSystem plcrash__crash_report__system_info__operating_system__default_value = PLCRASH__CRASH_REPORT__SYSTEM_INFO__OPERATING_SYSTEM__OS_UNKNOWN;
 static const Plcrash__Architecture plcrash__crash_report__system_info__architecture__default_value = PLCRASH__ARCHITECTURE__ARCHITECTURE_UNKNOWN;
-static const ProtobufCFieldDescriptor plcrash__crash_report__system_info__field_descriptors[5] =
+static const ProtobufCFieldDescriptor plcrash__crash_report__system_info__field_descriptors[8] =
 {
   {
     "operating_system",
@@ -327,9 +327,48 @@ static const ProtobufCFieldDescriptor plcrash__crash_report__system_info__field_
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "battery_level",
+    6,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_INT64,
+    offsetof(Plcrash__CrashReport__SystemInfo, has_battery_level),
+    offsetof(Plcrash__CrashReport__SystemInfo, battery_level),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "free_disk_space",
+    7,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_INT64,
+    offsetof(Plcrash__CrashReport__SystemInfo, has_free_disk_space),
+    offsetof(Plcrash__CrashReport__SystemInfo, free_disk_space),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "free_memory",
+    8,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_INT64,
+    offsetof(Plcrash__CrashReport__SystemInfo, has_free_memory),
+    offsetof(Plcrash__CrashReport__SystemInfo, free_memory),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned plcrash__crash_report__system_info__field_indices_by_name[] = {
   2,   /* field[2] = architecture */
+  5,   /* field[5] = battery_level */
+  6,   /* field[6] = free_disk_space */
+  7,   /* field[7] = free_memory */
   0,   /* field[0] = operating_system */
   4,   /* field[4] = os_build */
   1,   /* field[1] = os_version */
@@ -338,7 +377,7 @@ static const unsigned plcrash__crash_report__system_info__field_indices_by_name[
 static const ProtobufCIntRange plcrash__crash_report__system_info__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 8 }
 };
 const ProtobufCMessageDescriptor plcrash__crash_report__system_info__descriptor =
 {
@@ -348,7 +387,7 @@ const ProtobufCMessageDescriptor plcrash__crash_report__system_info__descriptor 
   "Plcrash__CrashReport__SystemInfo",
   "plcrash",
   sizeof(Plcrash__CrashReport__SystemInfo),
-  5,
+  8,
   plcrash__crash_report__system_info__field_descriptors,
   plcrash__crash_report__system_info__field_indices_by_name,
   1,  plcrash__crash_report__system_info__number_ranges,

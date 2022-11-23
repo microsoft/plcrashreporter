@@ -105,7 +105,10 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
                     operatingSystemBuild: nil
                             architecture: architecture
                            processorInfo: nil
-                               timestamp: timestamp];
+                               timestamp: timestamp
+                            batteryLevel: nil
+                           freeDiskSpace: nil
+                              freeMemory: nil];
 }
 
 /**
@@ -128,7 +131,10 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
                     operatingSystemBuild: operatingSystemBuild
                             architecture: architecture
                            processorInfo: nil
-                               timestamp: timestamp];
+                               timestamp: timestamp
+                            batteryLevel: nil
+                           freeDiskSpace: nil
+                              freeMemory: nil];
 }
 
 /**
@@ -140,6 +146,9 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
  * @param architecture Architecture
  * @param processorInfo The processor info
  * @param timestamp Timestamp (may be nil).
+ * @param batteryLevel Battery Level (may be nil).
+ * @param freeDiskSpace Free Disk Space (may be nil).
+ * @param freeMemory Free Memory (may be nil).
  */
 - (id) initWithOperatingSystem: (PLCrashReportOperatingSystem) operatingSystem
         operatingSystemVersion: (NSString *) operatingSystemVersion
@@ -147,6 +156,9 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
                   architecture: (PLCrashReportArchitecture) architecture
                  processorInfo: (PLCrashReportProcessorInfo *) processorInfo
                      timestamp: (NSDate *) timestamp
+                  batteryLevel: (NSNumber *) batteryLevel
+                 freeDiskSpace: (NSNumber *) freeDiskSpace
+                    freeMemory: (NSNumber *) freeMemory
 {
     if ((self = [super init]) == nil)
         return nil;
@@ -157,6 +169,9 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
     _architecture = architecture;
     _processorInfo = processorInfo;
     _timestamp = timestamp;
+    _batteryLevel = batteryLevel;
+    _freeDiskSpace = freeDiskSpace;
+    _freeMemory = freeMemory;
     
     return self;
 }

@@ -244,6 +244,16 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
         
         [text appendFormat: @"Date/Time:       %@\n", report.systemInfo.timestamp];
         [text appendFormat: @"OS Version:      %@ %@ (%@)\n", osName, report.systemInfo.operatingSystemVersion, osBuild];
+
+        if (report.systemInfo.batteryLevel != nil)
+            [text appendFormat: @"Battery Level:   %@\n", report.systemInfo.batteryLevel];
+
+        if (report.systemInfo.freeDiskSpace != nil)
+            [text appendFormat: @"Free Disk Space: %@\n", report.systemInfo.freeDiskSpace];
+
+        if (report.systemInfo.freeMemory != nil)
+            [text appendFormat: @"Free Memory:     %@\n", report.systemInfo.freeMemory];
+
         [text appendFormat: @"Report Version:  104\n"];        
     }
 

@@ -124,6 +124,15 @@ message CrashReport {
 
         /* OS build number (eg, 10J869) */
         optional string os_build = 5;
+
+        /* Device Battery Level (eg, 85) */
+        optional int64 battery_level = 6;
+
+        /* Free disk space in bytes (eg, 227573678080) */
+        optional int64 free_disk_space = 7;
+
+        /* Free memory in bytes (eg, 227573678080) */
+        optional int64 free_memory = 8;
     }
 
     /* Host system data */

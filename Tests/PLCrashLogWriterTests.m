@@ -96,6 +96,20 @@
     
     STAssertNotNULL(systemInfo->os_version, @"No OS version encoded");
 
+#if TARGET_OS_IOS
+    /* iOS */
+{
+    bool batteryLevel = systemInfo->battery_level != 0;
+    STAssertTrue(batteryLevel, @"No Battery Reading");
+}
+#endif
+
+    bool hasDiskSpace = systemInfo->free_disk_space > 0;
+    STAssertTrue(hasDiskSpace, @"No Free Disk Space");
+
+    bool hasMemory = systemInfo->free_memory > 0;
+    STAssertTrue(hasMemory, @"No Free Memory");
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
     STAssertEquals((int) systemInfo->architecture, PLCrashReportHostArchitecture, @"Unexpected machine type");

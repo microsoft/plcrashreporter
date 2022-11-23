@@ -54,6 +54,10 @@
 #import "PLCrashSysctl.h"
 #import "PLCrashProcessInfo.h"
 
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#endif
+
 /**
  * @internal
  * Maximum number of frames that will be written to the crash report for a single thread. Used as a safety measure
@@ -83,6 +87,15 @@ enum {
 
     /** CrashReport.system_info.os_build */
     PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID = 5,
+
+    /** CrashReport.system_info.battery_level */
+    PLCRASH_PROTO_SYSTEM_INFO_BATTERY_LEVEL_ID = 6,
+
+    /** CrashReport.system_info.free_disk_space */
+    PLCRASH_PROTO_SYSTEM_INFO_FREE_DISK_SPACE_ID = 7,
+
+    /** CrashReport.system_info.free_memory */
+    PLCRASH_PROTO_SYSTEM_INFO_FREE_MEMORY_ID = 8,
 
     /** CrashReport.app_info */
     PLCRASH_PROTO_APP_INFO_ID = 2,
@@ -577,6 +590,43 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
     }
 }
 
+static long getFreeStorage()
+{
+    NSNumber *freeStorage = [[NSFileManager defaultManager]
+            attributesOfFileSystemForPath:NSHomeDirectory()
+                                    error:nil][NSFileSystemFreeSize];
+    return freeStorage.longValue;
+}
+
+static long getFreeMemory() {
+
+    int mib[6];
+    mib[0] = CTL_HW;
+    mib[1] = HW_PAGESIZE;
+
+    int pagesize;
+    size_t length;
+    length = sizeof (pagesize);
+    if (sysctl (mib, 2, &pagesize, &length, NULL, 0) < 0)
+    {
+        fprintf (stderr, "getting page size");
+    }
+
+    mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
+
+    vm_statistics_data_t vmstat;
+    if (host_statistics (mach_host_self (), HOST_VM_INFO, (host_info_t) &vmstat, &count) != KERN_SUCCESS)
+    {
+        fprintf (stderr, "Failed to get VM statistics.");
+    }
+
+    task_basic_info_64_data_t info;
+    unsigned size = sizeof (info);
+    task_info (mach_task_self (), TASK_BASIC_INFO_64, (task_info_t) &info, &size);
+
+    return vmstat.free_count * pagesize;
+}
+
 /**
  * @internal
  *
@@ -598,6 +648,24 @@ static size_t plcrash_writer_write_system_info (plcrash_async_file_t *file, plcr
     
     /* OS Build */
     rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_OS_BUILD_ID, PLPROTOBUF_C_TYPE_BYTES, &writer->system_info.build);
+
+#if TARGET_OS_IOS
+    /* iOS */
+    {
+        /* Battery Level */
+        UIDevice.currentDevice.batteryMonitoringEnabled = YES;
+        long batteryLevel = (long) UIDevice.currentDevice.batteryLevel * 100;
+        rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_BATTERY_LEVEL_ID, PLPROTOBUF_C_TYPE_INT64, &batteryLevel);
+    }
+#endif
+
+    /* Free Disk Space */
+    long freeDiskSpace = getFreeStorage();
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_FREE_DISK_SPACE_ID, PLPROTOBUF_C_TYPE_INT64, &freeDiskSpace);
+
+    /* Free Memory */
+    long freeMemory = getFreeMemory();
+    rv += plcrash_writer_pack(file, PLCRASH_PROTO_SYSTEM_INFO_FREE_MEMORY_ID, PLPROTOBUF_C_TYPE_INT64, &freeMemory);
 
     /* Machine type */
     enumval = PLCrashReportHostArchitecture;

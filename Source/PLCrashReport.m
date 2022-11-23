@@ -321,6 +321,9 @@ error:
 {
     NSDate *timestamp = nil;
     NSString *osBuild = nil;
+    NSNumber *batteryLevel = nil;
+    NSNumber *freeMemory = nil;
+    NSNumber *freeDiskSpace = nil;
     
     /* Validate */
     if (systemInfo == NULL) {
@@ -345,6 +348,18 @@ error:
     if (systemInfo->timestamp != 0)
         timestamp = [NSDate dateWithTimeIntervalSince1970: systemInfo->timestamp];
 
+    /* Set up the battery level, if available */
+    if (systemInfo->battery_level != 0)
+        batteryLevel = [NSNumber numberWithLongLong: systemInfo->battery_level];
+
+    /* Set up the free disk space, if available */
+    if (systemInfo->free_disk_space != 0)
+        freeDiskSpace = [NSNumber numberWithLongLong: systemInfo->free_disk_space];
+
+    /* Set up the free memory, if available */
+    if (systemInfo->free_memory != 0)
+        freeMemory = [NSNumber numberWithLongLong: systemInfo->free_memory];
+
 	/* v1 crash logs will not have machine info, so the only data available to
 	 * us is the deprecated architecture field. From that we will generate a
 	 * PLCrashReportProcessorInfo object so that library users don't have to
@@ -361,7 +376,10 @@ error:
                                                 operatingSystemBuild: osBuild
                                                         architecture: (PLCrashReportArchitecture) systemInfo->architecture
                                                        processorInfo: processorInfo
-                                                           timestamp: timestamp];
+            timestamp: timestamp
+         batteryLevel: batteryLevel
+        freeDiskSpace: freeDiskSpace
+           freeMemory: freeMemory];
 }
 
 /**

@@ -129,6 +129,15 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
     /** Date crash report was generated. May be nil if the date is unknown. */
     __strong NSDate *_timestamp;
 
+    /** Battery level when crash report was generated. May be nil if it is unknown. */
+    __strong NSNumber *_batteryLevel;
+
+    /** Free disk space when crash report was generated. May be nil if it is unknown. */
+    __strong NSNumber *_freeDiskSpace;
+
+    /** Free memory when crash report was generated. May be nil if it is unknown. */
+    __strong NSNumber *_freeMemory;
+
     /** Processor information. */
     __strong PLCrashReportProcessorInfo *_processorInfo;
 }
@@ -149,7 +158,10 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
           operatingSystemBuild: (NSString *) operatingSystemBuild
                   architecture: (PLCrashReportArchitecture) architecture
                  processorInfo: (PLCrashReportProcessorInfo *) processorInfo
-                     timestamp: (NSDate *) timestamp;
+                     timestamp: (NSDate *) timestamp
+                  batteryLevel: (NSNumber *) batteryLevel
+                 freeDiskSpace: (NSNumber *) freeDiskSpace
+                    freeMemory: (NSNumber *) freeMemory;
 
 /** The operating system. */
 @property(nonatomic, readonly) PLCrashReportOperatingSystem operatingSystem;
@@ -169,6 +181,15 @@ PLCR_EXTERNAL_DEPRECATED_NOWARN_PUSH();
 
 /** Date and time that the crash report was generated. This may be unavailable, and this property will be nil. */
 @property(nonatomic, readonly, strong) NSDate *timestamp;
+
+/** Date and time that the crash report was generated. This may be unavailable, and this property will be nil. */
+@property(nonatomic, readonly, strong) NSNumber *batteryLevel;
+
+/** Date and time that the crash report was generated. This may be unavailable, and this property will be nil. */
+@property(nonatomic, readonly, strong) NSNumber *freeDiskSpace;
+
+/** Date and time that the crash report was generated. This may be unavailable, and this property will be nil. */
+@property(nonatomic, readonly, strong) NSNumber *freeMemory;
 
 /** The processor type. For v1.2 reports and later, this is an alias to the machine info's processorInfo.
   * For earlier reports, this will be synthesized from the deprecated architecture property.  */

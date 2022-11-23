@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.12.0
+
+* **[Improvement]** Sends battery level, free disk space and free memory in crash reports.
+
+___
+
 ## Version 1.11.0
 
 * **[Feature]** Add Xcode 14 support. Xcode 11 and Xcode 12 are out of support now.
