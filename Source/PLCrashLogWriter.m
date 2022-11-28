@@ -54,6 +54,8 @@
 #import "PLCrashSysctl.h"
 #import "PLCrashProcessInfo.h"
 
+#include <sys/statvfs.h>
+
 #if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 #endif
@@ -592,10 +594,9 @@ void plcrash_log_writer_free (plcrash_log_writer_t *writer) {
 
 static long getFreeStorage()
 {
-    NSNumber *freeStorage = [[NSFileManager defaultManager]
-            attributesOfFileSystemForPath:NSHomeDirectory()
-                                    error:nil][NSFileSystemFreeSize];
-    return freeStorage.longValue;
+    struct statvfs buf;
+    statvfs(".", &buf);
+    return buf.f_bavail * buf.f_frsize;
 }
 
 static long getFreeMemory() {
