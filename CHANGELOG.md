@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.11.1 (Under development)
+
+* **[Fix]** Disable "TREAT_WARNINGS_AS_ERRORS"
+
 ## Version 1.11.0
 
 * **[Feature]** Add Xcode 14 support. Xcode 11 and Xcode 12 are out of support now.
