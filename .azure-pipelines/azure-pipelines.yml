@@ -30,7 +30,7 @@ jobs:
       scheme: 'CrashReporter'
       xcodeVersion: specifyPath
       xcodeDeveloperDir: '$(XCODE_PATH)'
-      args: 'SYMROOT="$(Build.BinariesDirectory)"'
+      args: 'SYMROOT="$(Build.BinariesDirectory)" GCC_TREAT_WARNINGS_AS_ERRORS=YES SWIFT_TREAT_WARNINGS_AS_ERRORS=YES'
 
   - bash: |
       cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
