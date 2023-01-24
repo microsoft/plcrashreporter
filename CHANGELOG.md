@@ -2,11 +2,11 @@
 
 ## Version 1.11.1 (Under development)
 
-* **[Fix]** Disable "TREAT_WARNINGS_AS_ERRORS"
+* **[Improvement]** Disable treating warnings as errors in code to avoid blockers when new Xcode warnings are introduced.
 
 ## Version 1.11.0
 
-* **[Improvement]** Disable treating warnings as errors in code to avoid blockers when new Xcode warnings are introduced.
+* **[Feature]** Add Xcode 14 support. Xcode 11 and Xcode 12 are out of support now.
 * **[Improvement]** Fix analyzer warnings.
 
 ___
