@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.11.1 (Under development)
+
+* **[Improvement]** Disable treating warnings as errors in code to avoid blockers when new Xcode warnings are introduced.
+
 ## Version 1.11.0
 
 * **[Feature]** Add Xcode 14 support. Xcode 11 and Xcode 12 are out of support now.
