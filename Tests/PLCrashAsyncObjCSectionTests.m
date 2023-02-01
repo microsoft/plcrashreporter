@@ -118,7 +118,7 @@ static void parse_callback_trampoline(bool isClassMethod, plcrash_async_macho_st
 }
 
 - (void) testParseCurrent {
-    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
+//    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
 
     __block plcrash_error_t err;
     __block BOOL didCall = NO;
@@ -153,7 +153,7 @@ static void parse_callback_trampoline(bool isClassMethod, plcrash_async_macho_st
 }
 
 - (void) testParseCategory {
-    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
+//    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
 
     __block plcrash_error_t err;
     __block BOOL didCall = NO;
@@ -187,7 +187,7 @@ static void parse_callback_trampoline(bool isClassMethod, plcrash_async_macho_st
 }
 
 - (void) testParseSimpleClass {
-    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
+//    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
 
     __block plcrash_error_t err;
     __block BOOL didCall = NO;
@@ -222,7 +222,7 @@ static void parse_callback_trampoline(bool isClassMethod, plcrash_async_macho_st
 }
 
 - (void) testParseClassMethod {
-    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
+//    XCTSkip(@"ERROR: testParseCategory, ((didCall) is true) failed - Method find callback never got called");
 
     __block plcrash_error_t err;
     __block BOOL didCall = NO;
