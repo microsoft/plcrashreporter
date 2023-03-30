@@ -58,7 +58,7 @@
     plcrash_test_thread_spawn(&thr);
 
     NSException *exc = [NSException exceptionWithName: NSInvalidArgumentException reason: @"Testing" userInfo: nil];
-    PLCrashReporter *reporter = [[[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]] autorelease];
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: [PLCrashReporterConfig defaultConfiguration]];
     reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
                                               exception: exc
                                                   error: &error];
@@ -66,7 +66,7 @@
     STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
     
     /* Try parsing the result */
-    PLCrashReport *report = [[[PLCrashReport alloc] initWithData: reportData error: &error] autorelease];
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
     STAssertNotNil(report, @"Could not parse geneated live report: %@", error);
     
     /* Sanity check the signal info */
