@@ -653,10 +653,29 @@ static PLCrashReporter *sharedReporter = nil;
  *
  * @return Returns nil if the crash report data could not be generated.
  *
- * @sa PLCrashReporter::generateLiveReportWithMachThread:error:
+ * @sa PLCrashReporter::generateLiveReportWithThread:exception:error:
  */
 - (NSData *) generateLiveReportWithThread: (thread_t) thread {
     return [self generateLiveReportWithThread: thread error: NULL];
+}
+
+/**
+ * Generate a live crash report for a given @a thread, without triggering an actual crash condition.
+ * This may be used to log current process state without actually crashing. The crash report data will be
+ * returned on success.
+ *
+ * @param thread The thread which will be marked as the failing thread in the generated report.
+ * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
+ * will contain an error object indicating why the crash report could not be generated or loaded. If no
+ * error occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no
+ * error information will be provided.
+ *
+ * @return Returns nil if the crash report data could not be loaded.
+ *
+ * @sa PLCrashReporter::generateLiveReportWithThread:exception:error:
+ */
+- (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
+    return [self generateLiveReportWithThread: thread exception: nil error: outError];
 }
 
 
@@ -678,6 +697,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
  * returned on success.
  *
  * @param thread The thread which will be marked as the failing thread in the generated report.
+ * @param exception An exception to be included as the report's uncaught exception, or nil.
  * @param outError A pointer to an NSError object variable. If an error occurs, this pointer
  * will contain an error object indicating why the crash report could not be generated or loaded. If no
  * error occurs, this parameter will be left unmodified. You may specify nil for this parameter, and no
@@ -687,7 +707,7 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
  *
  * @todo Implement in-memory, rather than requiring writing of the report to disk.
  */
-- (NSData *) generateLiveReportWithThread: (thread_t) thread error: (NSError **) outError {
+- (NSData *) generateLiveReportWithThread: (thread_t) thread exception: (NSException *) exception error: (NSError **) outError {
     plcrash_log_writer_t writer;
     plcrash_async_file_t file;
     plcrash_error_t err;
@@ -712,6 +732,9 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     if (self.customData != nil) {
         plcrash_log_writer_set_custom_data(&writer, self.customData);
     }
+    
+    if (exception != nil)
+        plcrash_log_writer_set_exception(&writer, exception);
     
     /* Mock up a SIGTRAP-based signal info */
     plcrash_log_bsd_signal_info_t bsd_signal_info;
@@ -797,9 +820,13 @@ cleanup:
  * @return Returns nil if the crash report data could not be loaded.
  */
 - (NSData *) generateLiveReportAndReturnError: (NSError **) outError {
-    return [self generateLiveReportWithThread: pl_mach_thread_self() error: outError];
+    return [self generateLiveReportWithException: nil error: outError];
 }
 
+
+- (NSData *) generateLiveReportWithException: (NSException *)exception error: (NSError **) outError {
+    return [self generateLiveReportWithThread: pl_mach_thread_self() exception: exception error: outError];
+}
 
 /**
  * Set the callbacks that will be executed by the receiver after a crash has occured and been recorded by PLCrashReporter.
