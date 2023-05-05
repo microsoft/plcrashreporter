@@ -318,3 +318,6 @@
 #  define protobuf_c_version                                PLNS(protobuf_c_version)
 #  define protobuf_c_version_number                         PLNS(protobuf_c_version_number)
 #endif /* PLCR_PRIVATE */
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-interface-ivars"
