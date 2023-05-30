@@ -1,8 +1,9 @@
 # PLCrashReporter Change Log
 
-## Version 1.11.1 (Under development)
+## Version 1.11.1
 
 * **[Improvement]** Disable treating warnings as errors in code to avoid blockers when new Xcode warnings are introduced.
+* **[Improvement]** Add caught exception logging to PLCrashReporter to generate reports from specific exception.
 
 ## Version 1.11.0
 
