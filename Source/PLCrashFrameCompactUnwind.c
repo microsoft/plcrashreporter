@@ -129,10 +129,11 @@ plframe_error_t plframe_cursor_read_compact_unwind (task_t task,
     }
 
     /* Apply the frame delta -- this may fail. */
-    if ((err = plcrash_async_cfe_entry_apply(task, function_address, &current_frame->thread_state, &entry, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t debugError;
+    if ((debugError = plcrash_async_cfe_entry_apply(task, function_address, &current_frame->thread_state, &entry, &next_frame->thread_state)) == PLCRASH_ESUCCESS) {
         result = PLFRAME_ESUCCESS;
     } else {
-        PLCF_DEBUG("Failed to apply CFE encoding 0x%" PRIx32 " for PC 0x%" PRIx64 ": %d", encoding, (uint64_t) pc, err);
+        PLCF_DEBUG("Failed to apply CFE encoding 0x%" PRIx32 " for PC 0x%" PRIx64 ": %d", encoding, (uint64_t) pc, debugError);
         result = PLFRAME_ENOFRAME;
     }
 

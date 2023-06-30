@@ -74,6 +74,18 @@ typedef struct plcrash_async_objc_cache {
 
     /** A memory object for the __objc_const_ax section. */
     plcrash_async_mobject_t objcConstAxMobj;
+    
+    /** Whether the objcMethListMobj object is initialized. */
+    bool objcMethListMobjInitialized;
+
+    /** A memory object for the __objc_methlist section. */
+    plcrash_async_mobject_t objcMethListMobj;
+
+    /** Whether the objcSelRefsMobj object is initialized. */
+    bool objcSelRefsMobjInitialized;
+    
+    /** A memory object for the __objc_selrefs section. */
+    plcrash_async_mobject_t objcSelRefsMobj;
 
     /** Whether the class memory object is initialized. */
     bool classMobjInitialized;

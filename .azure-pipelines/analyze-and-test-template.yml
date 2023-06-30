@@ -7,7 +7,9 @@ jobs:
   - job:
     displayName: ${{ format('CrashReporter {0} Analyze and Test', platform) }}
     pool:
-      vmImage: internal-macos-10.15
+      vmImage: macOS-12
+    variables:
+      XCODE_PATH: '/Applications/Xcode_14.0.1.app/Contents/Developer'
     steps:
     - checkout: self
       submodules: recursive
@@ -17,6 +19,8 @@ jobs:
       inputs:
         actions: analyze
         configuration: Debug
+        xcodeVersion: specifyPath
+        xcodeDeveloperDir: '$(XCODE_PATH)'
         xcWorkspacePath: CrashReporter.xcodeproj
         ${{ if eq(platform, 'MacCatalyst') }}:
           scheme: 'CrashReporter iOS'
@@ -34,6 +38,8 @@ jobs:
       inputs:
         actions: test
         configuration: Debug
+        xcodeVersion: specifyPath
+        xcodeDeveloperDir: '$(XCODE_PATH)'
         xcWorkspacePath: CrashReporter.xcodeproj
         ${{ if eq(platform, 'MacCatalyst') }}:
           scheme: 'CrashReporter iOS'

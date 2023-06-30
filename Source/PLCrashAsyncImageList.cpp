@@ -103,7 +103,7 @@ void plcrash_nasync_image_list_free (plcrash_async_image_list_t *list) {
  * @warning This method is not async safe.
  */
 void plcrash_nasync_image_list_append (plcrash_async_image_list_t *list, pl_vm_address_t header, const char *name) {
-    plcrash_error_t ret;
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t ret;
 
     /* Initialize the new entry. */
     plcrash_async_image_t *new_entry = (plcrash_async_image_t *) calloc(1, sizeof(plcrash_async_image_t));

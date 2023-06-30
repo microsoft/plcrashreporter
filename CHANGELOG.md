@@ -1,5 +1,17 @@
 # PLCrashReporter Change Log
 
+## Version 1.11.1
+
+* **[Improvement]** Disable treating warnings as errors in code to avoid blockers when new Xcode warnings are introduced.
+* **[Improvement]** Add caught exception logging to PLCrashReporter to generate reports from specific exception.
+
+## Version 1.11.0
+
+* **[Feature]** Add Xcode 14 support. Xcode 11 and Xcode 12 are out of support now.
+* **[Improvement]** Fix analyzer warnings.
+
+___
+
 ## Version 1.10.2
 
 * **[Fix]** Config ignored `shouldRegisterUncaughtExceptionHandler` parameter in constructor.

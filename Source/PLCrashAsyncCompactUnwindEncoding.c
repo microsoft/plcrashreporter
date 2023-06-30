@@ -729,7 +729,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_FRAMELESS_STACK_REG_PERMUTATION);
-                uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+                uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {0};
                 
                 ret = plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
                 if (ret != PLCRASH_ESUCCESS) {
@@ -826,7 +826,7 @@ plcrash_error_t plcrash_async_cfe_entry_init (plcrash_async_cfe_entry_t *entry, 
                 /* Extract the register values */
                 entry->register_count = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_COUNT);
                 uint32_t encoded_regs = EXTRACT_BITS(encoding, UNWIND_X86_64_FRAMELESS_STACK_REG_PERMUTATION);
-                uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX];
+                uint32_t decoded_regs[PLCRASH_ASYNC_CFE_SAVED_REGISTER_MAX] = {0};
 
                 ret = plcrash_async_cfe_register_decode(encoded_regs, entry->register_count, decoded_regs);
                 if (ret != PLCRASH_ESUCCESS) {

@@ -80,10 +80,11 @@ plcrash_error_t plcrash_nasync_macho_init (plcrash_async_macho_t *image, mach_po
     task_initialized = true;
 
     /* Read in the Mach-O header */
-    if ((ret = plcrash_async_task_memcpy(image->task, image->header_addr, 0, &image->header, sizeof(image->header))) != PLCRASH_ESUCCESS) {
+    PLCF_UNUSED_IN_RELEASE plcrash_error_t debugError;
+    if ((debugError = plcrash_async_task_memcpy(image->task, image->header_addr, 0, &image->header, sizeof(image->header))) != PLCRASH_ESUCCESS) {
         /* NOTE: The image struct must be fully initialized before returning here, as otherwise our _free() function
          * will crash */
-        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, ret=%d", (uint64_t) image->header_addr, name, ret);
+        PLCF_DEBUG("Failed to read Mach-O header from 0x%" PRIx64 " for image %s, ret=%d", (uint64_t) image->header_addr, name, debugError);
         ret = PLCRASH_EINTERNAL;
         goto error;
     }
@@ -552,7 +553,7 @@ plcrash_error_t plcrash_async_macho_map_section (plcrash_async_macho_t *image, c
         }
         if (plcrash_async_strncmp(sectname, image_sectname, fldsiz(section_64, sectname)) == 0) {
             /* Perform and return the mapping */
-            // PLCF_DEBUG("%s (%s,%.*s): 0x%lx - 0x%lx", PLCF_DEBUG_IMAGE_NAME(image), segname, (int)fldsiz(section_64, sectname), image_sectname, sectaddr, sectaddr + sectsize);
+            // PLCF_DEBUG("%s (%s,%.*s): 0x%" PRIx64 " - 0x%" PRIx64, PLCF_DEBUG_IMAGE_NAME(image), segname, (int)fldsiz(section_64, sectname), image_sectname, sectaddr, sectaddr + sectsize);
             return plcrash_async_mobject_init(mobj, image->task, sectaddr, sectsize, true);
         }
     }

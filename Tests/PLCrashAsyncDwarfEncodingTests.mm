@@ -105,15 +105,7 @@ using namespace plcrash::async;
     /* Determine the address size */
     const plcrash_async_byteorder_t *byteorder = plcrash_async_macho_byteorder(&_image);
     cpu_type_t cputype = byteorder->swap32(_image.header.cputype);
-    uint8_t address_size;
-
-    if (cputype & CPU_ARCH_ABI64) {
-        _m64 = true;
-        address_size = 8;
-    } else {
-        _m64 = false;
-        address_size = 4;
-    }
+    _m64 = cputype & CPU_ARCH_ABI64;
 
     /* Initialize eh/debug readers */
     err = _eh_reader.init(&_eh_frame, byteorder, _m64, false);
