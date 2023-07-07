@@ -395,7 +395,35 @@ static void uncaught_exception_handler (NSException *exception) {
  *
  * A PLCrashReporter instance manages process-wide handling of crashes.
  */
-@implementation PLCrashReporter
+@implementation PLCrashReporter {
+@private
+    /** Reporter configuration */
+    __strong PLCrashReporterConfig *_config;
+
+    /** YES if the crash reporter has been enabled */
+    BOOL _enabled;
+    
+#if PLCRASH_FEATURE_MACH_EXCEPTIONS
+    /** The backing Mach exception server, if any. Nil if the reporter has not been enabled, or if
+     * the configured signal handler type is not PLCrashReporterSignalHandlerTypeMach. */
+    __strong PLCrashMachExceptionServer *_machServer;
+    
+    /** Previously registered Mach exception ports, if any. */
+    __strong PLCrashMachExceptionPortSet *_previousMachPorts;
+#endif /* PLCRASH_FEATURE_MACH_EXCEPTIONS */
+
+    /** Application identifier */
+    __strong NSString *_applicationIdentifier;
+
+    /** Application version */
+    __strong NSString *_applicationVersion;
+    
+    /** Application marketing version */
+    __strong NSString *_applicationMarketingVersion;
+
+    /** Path to the crash reporter internal data directory */
+    __strong NSString *_crashReportDirectory;
+}
 
 + (void) initialize {
     if (![[self class] isEqual: [PLCrashReporter class]])

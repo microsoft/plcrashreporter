@@ -34,20 +34,7 @@
 
 #if PLCRASH_FEATURE_MACH_EXCEPTIONS
 
-@interface PLCrashMachExceptionPort : NSObject {
-@private
-    /** Exception mask. */
-    exception_mask_t _mask;
-    
-    /** Exception server port. */
-    mach_port_t _port;
-    
-    /** Exception behavior. */
-    exception_behavior_t _behavior;
-    
-    /** Exception thread flavor. */
-    thread_state_flavor_t _flavor;
-}
+@interface PLCrashMachExceptionPort : NSObject
 
 - (instancetype) initWithServerPort: (mach_port_t) port
                                mask: (exception_mask_t) mask

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -3950,6 +3950,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_WARN_OBJC_INTERFACE_IVARS = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
@@ -3961,6 +3962,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_WARN_OBJC_INTERFACE_IVARS = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;

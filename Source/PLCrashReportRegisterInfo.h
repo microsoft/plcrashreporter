@@ -28,14 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashReportRegisterInfo : NSObject {
-@private
-    /** Register name */
-    __strong NSString *_registerName;
-    
-    /** Register value */
-    uint64_t _registerValue;
-}
+@interface PLCrashReportRegisterInfo : NSObject
 
 - (id) initWithRegisterName: (NSString *) registerName registerValue: (uint64_t) registerValue;
 
