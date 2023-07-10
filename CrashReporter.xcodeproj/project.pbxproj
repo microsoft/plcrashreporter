@@ -3844,6 +3844,7 @@
 					arm64e,
 				);
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_WARN_OBJC_INTERFACE_IVARS = NO;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
@@ -3863,6 +3864,7 @@
 				);
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_WARN_OBJC_INTERFACE_IVARS = NO;
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
@@ -3950,7 +3952,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				CLANG_WARN_OBJC_INTERFACE_IVARS = YES;
+				CLANG_WARN_OBJC_INTERFACE_IVARS = NO;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
@@ -3962,7 +3964,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				CLANG_WARN_OBJC_INTERFACE_IVARS = YES;
+				CLANG_WARN_OBJC_INTERFACE_IVARS = NO;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
