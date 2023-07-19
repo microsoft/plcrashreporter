@@ -38,7 +38,7 @@
  * Supports configuring the behavior of PLCrashReporter instances.
  */
 @implementation PLCrashReporterConfig {
-@private
+
     /** The configured signal handler type. */
     PLCrashReporterSignalHandlerType _signalHandlerType;
     

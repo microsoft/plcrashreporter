@@ -37,7 +37,7 @@
  * application process.
  */
 @implementation PLCrashReportProcessInfo {
-@private
+
     /** Process name, or nil if unavailable. */
     __strong NSString *_processName;
     

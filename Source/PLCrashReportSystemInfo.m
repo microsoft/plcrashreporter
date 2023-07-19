@@ -86,7 +86,7 @@ PLCrashReportArchitecture PLCrashReportHostArchitecture =
  * This contains information about the host system, including operating system and architecture.
  */
 @implementation PLCrashReportSystemInfo {
-@private
+
     /** Operating system */
     PLCrashReportOperatingSystem _operatingSystem;
     

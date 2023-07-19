@@ -40,7 +40,7 @@
  * mask, behavior, and thread state flavor expected by the given Mach exception server.
  */
 @implementation PLCrashMachExceptionPort {
-@private
+
     /** Exception mask. */
     exception_mask_t _mask;
     

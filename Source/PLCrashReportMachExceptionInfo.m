@@ -32,7 +32,7 @@
  * Provides access to the exception type and code. @sa mach_exceptions.
  */
 @implementation PLCrashReportMachExceptionInfo {
-@private
+
     /** The Mach exception type. */
     uint64_t _type;
     

@@ -396,7 +396,7 @@ static void uncaught_exception_handler (NSException *exception) {
  * A PLCrashReporter instance manages process-wide handling of crashes.
  */
 @implementation PLCrashReporter {
-@private
+
     /** Reporter configuration */
     __strong PLCrashReporterConfig *_config;
 

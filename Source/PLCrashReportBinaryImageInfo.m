@@ -36,7 +36,7 @@
  * Crash Log binary image info. Represents an executable or shared library.
  */
 @implementation PLCrashReportBinaryImageInfo {
-@private
+
     /** Code type */
     __strong PLCrashReportProcessorInfo *_processorInfo;
 

@@ -33,7 +33,7 @@
  * Provides access to the signal name and signal code.
  */
 @implementation PLCrashReportSignalInfo {
-@private
+
     /** Signal name */
     __strong NSString *_name;
     

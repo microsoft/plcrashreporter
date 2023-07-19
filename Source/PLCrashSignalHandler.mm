@@ -232,7 +232,7 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int sig, s
  * @todo Remove the signal handler's registered callbacks from the callback chain when the instance is deallocated.
  */
 @implementation PLCrashSignalHandler {
-@private
+
     /** Signal stack */
     stack_t _sigstk;
 }

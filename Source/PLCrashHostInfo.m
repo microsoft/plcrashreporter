@@ -44,7 +44,7 @@
  * The PLCrashHostInfo provides methods to access basic information about the current host.
  */
 @implementation PLCrashHostInfo {
-@private
+
     /** The Darwin (xnu) release version (eg, kern.osversion) */
     PLCrashHostInfoVersion _darwinVersion;
 }

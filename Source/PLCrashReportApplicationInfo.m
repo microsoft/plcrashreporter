@@ -35,7 +35,7 @@
  * application.
  */
 @implementation PLCrashReportApplicationInfo {
-@private
+
     /** Application identifier */
     __strong NSString *_applicationIdentifier;
     

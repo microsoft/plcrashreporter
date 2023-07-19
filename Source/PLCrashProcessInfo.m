@@ -46,7 +46,7 @@
  * The PLCrashProcessInfo provides methods to access basic information about a target process.
  */
 @implementation PLCrashProcessInfo {
-@private
+
     /** The target process identifier. */
     pid_t _processID;
     

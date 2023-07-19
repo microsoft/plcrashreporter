@@ -33,7 +33,7 @@
  * Crash log general purpose register information.
  */
 @implementation PLCrashReportRegisterInfo {
-@private
+
     /** Register name */
     __strong NSString *_registerName;
     

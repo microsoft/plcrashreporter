@@ -36,7 +36,7 @@
  * If a crash is triggered by an uncaught Objective-C exception, the exception name and reason will be made available.
  */
 @implementation PLCrashReportExceptionInfo {
-@private
+
     /** Name */
     __strong NSString *_name;
 

@@ -32,7 +32,7 @@
  * Crash log symbol information.
  */
 @implementation PLCrashReportSymbolInfo {
-@private
+
     /** The symbol name. */
     __strong NSString *_symbolName;
     

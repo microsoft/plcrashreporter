@@ -36,7 +36,7 @@
  * Crash log stack frame information.
  */
 @implementation PLCrashReportStackFrameInfo {
-@private
+
     /** Frame instruction pointer. */
     uint64_t _instructionPointer;
 

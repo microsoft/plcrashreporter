@@ -39,7 +39,7 @@
  * processor counts.
  */
 @implementation PLCrashReportMachineInfo {
-@private
+
     /** The hardware model name (eg, MacBookPro6,1). This may be unavailable, and this property will be nil. */
     __strong NSString *_modelName;
     

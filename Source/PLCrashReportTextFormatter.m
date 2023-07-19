@@ -48,7 +48,7 @@ static NSInteger binaryImageSort(id binary1, id binary2, void *context);
  * Formats PLCrashReport data as human-readable text.
  */
 @implementation PLCrashReportTextFormatter {
-@private
+
     /** Text output format. */
     PLCrashReportTextFormat _textFormat;
 

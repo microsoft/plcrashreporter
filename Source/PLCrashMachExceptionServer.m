@@ -246,7 +246,7 @@ struct plcrash_exception_server_context {
  *       any bugs that may have occured in the stack unwinding code for existing threads.
  */
 @implementation PLCrashMachExceptionServer {
-@private
+
     /** Backing server context. This structure will not be allocated until the background
      * exception server thread is spawned; once the server thread has been successfully started,
      * it is that server thread's responsibility to deallocate this structure. */

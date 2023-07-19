@@ -38,7 +38,7 @@
  * Provides thread state information, including a backtrace and register state.
  */
 @implementation PLCrashReportThreadInfo {
-@private
+
     /** The thread number. Should be unique within a given crash log. */
     NSInteger _threadNumber;
 

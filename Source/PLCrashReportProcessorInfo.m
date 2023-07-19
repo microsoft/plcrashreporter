@@ -44,7 +44,7 @@
  * stable, intended to be encoded in Mach-O files, and are defined in mach/machine.h on Mac OS X.
  */
 @implementation PLCrashReportProcessorInfo {
-@private
+
     /** Type encoding */
     PLCrashReportProcessorTypeEncoding _typeEncoding;
 

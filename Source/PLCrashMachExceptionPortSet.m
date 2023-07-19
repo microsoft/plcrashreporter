@@ -43,7 +43,7 @@
  * the managed PLCrashMachExceptionPortState instances.
  */
 @implementation PLCrashMachExceptionPortSet {
-@private
+
     /** Backing state set representation. */
     __strong NSSet *_state_set;
     

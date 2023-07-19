@@ -69,7 +69,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
  * @warning This API should be considered in-development and subject to change.
  */
 @implementation PLCrashReport {
-@private
+
     /** Private implementation variables (used to hide the underlying protobuf parser) */
     _PLCrashReportDecoder *_decoder;
 
