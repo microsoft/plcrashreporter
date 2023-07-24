@@ -39,7 +39,20 @@
  * This class manages a reference to a Mach exception server port, and the associated
  * mask, behavior, and thread state flavor expected by the given Mach exception server.
  */
-@implementation PLCrashMachExceptionPort
+@implementation PLCrashMachExceptionPort {
+
+    /** Exception mask. */
+    exception_mask_t _mask;
+    
+    /** Exception server port. */
+    mach_port_t _port;
+    
+    /** Exception behavior. */
+    exception_behavior_t _behavior;
+    
+    /** Exception thread flavor. */
+    thread_state_flavor_t _flavor;
+}
 
 @synthesize server_port = _port;
 @synthesize mask = _mask;

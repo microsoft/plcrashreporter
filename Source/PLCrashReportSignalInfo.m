@@ -32,7 +32,17 @@
 /**
  * Provides access to the signal name and signal code.
  */
-@implementation PLCrashReportSignalInfo
+@implementation PLCrashReportSignalInfo {
+
+    /** Signal name */
+    __strong NSString *_name;
+    
+    /** Signal code */
+    __strong NSString *_code;
+
+    /** Fauling instruction or address */
+    uint64_t _address;
+}
 
 /**
  * Initialize with the given signal name and reason.

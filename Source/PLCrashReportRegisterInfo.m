@@ -32,7 +32,14 @@
 /**
  * Crash log general purpose register information.
  */
-@implementation PLCrashReportRegisterInfo
+@implementation PLCrashReportRegisterInfo {
+
+    /** Register name */
+    __strong NSString *_registerName;
+    
+    /** Register value */
+    uint64_t _registerValue;
+}
 
 /**
  * Initialize with the provided name and value.

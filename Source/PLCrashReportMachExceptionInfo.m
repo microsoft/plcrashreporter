@@ -31,7 +31,14 @@
 /**
  * Provides access to the exception type and code. @sa mach_exceptions.
  */
-@implementation PLCrashReportMachExceptionInfo
+@implementation PLCrashReportMachExceptionInfo {
+
+    /** The Mach exception type. */
+    uint64_t _type;
+    
+    /** The Mach exception codes, represented as an ordered array of NSNumber instances. */
+    __strong NSArray *_codes;
+}
 
 @synthesize type = _type;
 @synthesize codes = _codes;

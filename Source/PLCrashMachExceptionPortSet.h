@@ -64,13 +64,7 @@ typedef struct plcrash_mach_exception_port_set {
     thread_state_flavor_t flavors[EXC_TYPES_COUNT];
 } plcrash_mach_exception_port_set_t;
 
-@interface PLCrashMachExceptionPortSet : NSObject <NSFastEnumeration> {
-@private
-    /** Backing state set representation. */
-    __strong NSSet *_state_set;
-    
-    plcrash_mach_exception_port_set_t _asyncSafeRepresentation;
-}
+@interface PLCrashMachExceptionPortSet : NSObject <NSFastEnumeration>
 
 - (id) initWithSet: (NSSet *) set;
 - (id) initWithAsyncSafeRepresentation: (plcrash_mach_exception_port_set_t) asyncSafeRepresentation;

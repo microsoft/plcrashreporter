@@ -68,7 +68,44 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
  *
  * @warning This API should be considered in-development and subject to change.
  */
-@implementation PLCrashReport
+@implementation PLCrashReport {
+
+    /** Private implementation variables (used to hide the underlying protobuf parser) */
+    _PLCrashReportDecoder *_decoder;
+
+    /** System info */
+    __strong PLCrashReportSystemInfo *_systemInfo;
+    
+    /** Machine info */
+    __strong PLCrashReportMachineInfo *_machineInfo;
+
+    /** Application info */
+    __strong PLCrashReportApplicationInfo *_applicationInfo;
+    
+    /** Process info */
+    __strong PLCrashReportProcessInfo *_processInfo;
+
+    /** Signal info */
+    __strong PLCrashReportSignalInfo *_signalInfo;
+    
+    /** Mach exception info */
+    __strong PLCrashReportMachExceptionInfo *_machExceptionInfo;
+
+    /** Thread info (PLCrashReportThreadInfo instances) */
+    __strong NSArray *_threads;
+
+    /** Binary images (PLCrashReportBinaryImageInfo instances */
+    __strong NSArray *_images;
+
+    /** Exception information (may be nil) */
+    __strong PLCrashReportExceptionInfo *_exceptionInfo;
+
+    /** User defined information (may be nil) */
+    __strong NSData *_customData;
+
+    /** Report UUID */
+    CFUUIDRef _uuid;
+}
 
 /**
  * Initialize with the provided crash log data. On error, nil will be returned, and
