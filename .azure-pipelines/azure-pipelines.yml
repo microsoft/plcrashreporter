@@ -5,7 +5,7 @@ pr:
 - master
 
 pool:
-  vmImage: macOS-12
+  vmImage: macOS-13
 
 variables:
   Configuration: Release

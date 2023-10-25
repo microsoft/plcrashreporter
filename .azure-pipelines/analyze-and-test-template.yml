@@ -7,7 +7,7 @@ jobs:
   - job:
     displayName: ${{ format('CrashReporter {0} Analyze and Test', platform) }}
     pool:
-      vmImage: macOS-12
+      vmImage: macOS-13
     variables:
       XCODE_PATH: '/Applications/Xcode_14.0.1.app/Contents/Developer'
     steps:
