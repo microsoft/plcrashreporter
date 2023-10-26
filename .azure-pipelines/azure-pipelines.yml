@@ -12,7 +12,7 @@ variables:
   SDK:
 
   # Xcode 13.2.1 version is the last one that has compatible bitcode with Xcode 13.0 (minimal supported).
-  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
+  XCODE_PATH: '/Applications/Xcode_15.0.1.app/Contents/Developer'
 
 jobs:
 - job:
