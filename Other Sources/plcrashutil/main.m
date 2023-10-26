@@ -33,11 +33,6 @@
 #import <stdio.h>
 #import <getopt.h>
 
-
-static void print_usage (void);
-
-static int convert_command (int argc, char *argv[]);
-
 /*
  * Print command line usage.
  */

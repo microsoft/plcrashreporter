@@ -6,7 +6,7 @@ let package = Package(
     name: "PLCrashReporter",
     platforms: [
         .iOS(.v11),
-        .macOS(.v13),
+        .macOS(.v10_10),
         .tvOS(.v11)
     ],
     products: [
