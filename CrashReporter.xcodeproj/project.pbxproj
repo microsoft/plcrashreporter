@@ -4108,7 +4108,10 @@
 				PRODUCT_NAME = CrashReporter;
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
-				WARNING_CFLAGS = "-Wall";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wno-strict-prototypes",
+				);
 			};
 			name = Debug;
 		};
@@ -4173,7 +4176,10 @@
 				PROTOBUF_C_UNPACK_ERROR = PLCF_DEBUG;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
 				VALIDATE_PRODUCT = YES;
-				WARNING_CFLAGS = "-Wall";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wno-strict-prototypes",
+				);
 			};
 			name = Release;
 		};
