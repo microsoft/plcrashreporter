@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.11.2 (In Development)
+
+* **[Improvement]** Update PLCrashReporter to include privacy manifest.
+
+___
+
 ## Version 1.11.1
 
 * **[Improvement]** Disable treating warnings as errors in code to avoid blockers when new Xcode warnings are introduced.
