@@ -64,6 +64,7 @@ jobs:
    displayName: 'Generation Task'
    inputs:
       BuildDropPath: '$(System.ArtifactsDirectory)'
+      PackageName: 'PLCrashReporter archive'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
