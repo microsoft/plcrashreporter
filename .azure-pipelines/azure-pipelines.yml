@@ -59,6 +59,11 @@ jobs:
       SourceFolder: '$(Build.BinariesDirectory)/Release'
       Contents: '*.zip'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: ManifestGeneratorTask@0
+   displayName: 'Generation Task'
+   inputs:
+       BuildDropPath: '$(System.ArtifactsDirectory)'
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
