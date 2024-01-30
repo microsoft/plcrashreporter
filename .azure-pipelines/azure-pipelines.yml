@@ -61,7 +61,7 @@ jobs:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-   displayName: 'Generation Task '
+   displayName: 'Manifest Generator '
    inputs:
       BuildDropPath: '$(System.ArtifactsDirectory)'
       PackageName: 'PLCrashReporter archive'
