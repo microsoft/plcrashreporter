@@ -60,7 +60,7 @@ jobs:
       Contents: '*.zip'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+  - task: ManifestGeneratorTask@0
     displayName: 'Manifest Generator'
     inputs:
       BuildDropPath: '$(System.ArtifactsDirectory)'
