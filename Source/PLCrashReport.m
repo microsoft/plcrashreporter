@@ -789,7 +789,23 @@ error:
     /* Done */
     NSString *name = [NSString stringWithUTF8String: exceptionInfo->name];
     NSString *reason = [NSString stringWithUTF8String: exceptionInfo->reason];
-    
+
+    /* Name not nil? */
+    if (name == nil) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
+                         NSLocalizedString(@"Crash report exception name is N/A as UTF8 String",
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+
+    /* Reason not nil? */
+    if (reason == nil) {
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid,
+                         NSLocalizedString(@"Crash report exception reason is N/A as UTF8 String",
+                                           @"Missing appinfo operating system in crash report"));
+        return nil;
+    }
+
     /* Fetch stack frames for this thread */
     NSMutableArray *frames = nil;
     if (exceptionInfo->n_frames > 0) {

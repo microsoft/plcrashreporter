@@ -3,6 +3,7 @@
 ## Version 1.11.2 (In Development)
 
 * **[Improvement]** Update PLCrashReporter to include privacy manifest.
+* **[Fix]** Fix name/reason of PLCrashReportExceptionInfo could be nil.
 
 ___
 
