@@ -42,6 +42,7 @@
 				C2C74A842535CCC700313817 /* Build iOS Simulator Framework */,
 				C2C74E0825385BCE00313817 /* Combine iOS Universal Library */,
 				C2C74A892535CD8000313817 /* Combine iOS Universal Framework */,
+				D8160D572B75109D0081EBA2 /* CopyFiles */,
 			);
 			dependencies = (
 			);
@@ -56,6 +57,7 @@
 				C2C74C9925372B9A00313817 /* Build tvOS Simulator Framework */,
 				C2C74E0925385C9700313817 /* Combine tvOS Universal Library */,
 				C2C74C9A25372B9B00313817 /* Combine tvOS Universal Framework */,
+				D8160D592B7510A50081EBA2 /* CopyFiles */,
 			);
 			dependencies = (
 			);
@@ -67,6 +69,7 @@
 			buildConfigurationList = C2C74D9E2538508300313817 /* Build configuration list for PBXAggregateTarget "CrashReporter" */;
 			buildPhases = (
 				C2C74DD1253851C300313817 /* Copy Products */,
+				D8160D532B7510850081EBA2 /* CopyFiles */,
 			);
 			dependencies = (
 				C2C74DC4253850A500313817 /* PBXTargetDependency */,
@@ -82,7 +85,7 @@
 			buildPhases = (
 				C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */,
 				F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */,
-				D8160D462B7502A30081EBA2 /* CopyFiles */,
+				D8160D552B7510950081EBA2 /* CopyFiles */,
 			);
 			dependencies = (
 				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
@@ -756,7 +759,14 @@
 		C2F7F2B72451FC76002BD8BF /* PLCrashFrameCompactUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */; };
 		C2F7F2B92451FC78002BD8BF /* PLCrashFrameCompactUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */; };
 		C2F7F2BA2451FC78002BD8BF /* PLCrashFrameCompactUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */; };
-		D8160D472B7502BB0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D542B75108A0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D562B75109A0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D582B7510A10081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D5A2B7510A90081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D5C2B7510B10081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D5E2B7510B80081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D602B7510BF0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D622B7510C70081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
 		FCE4550BA74D9DF923CFCD5A /* PLCrashFrameStackUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */; };
 		FCE4586A7041D332D1025F37 /* PLCrashFrameStackUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */; };
 		FCE45962BDFEEEFAF00DA7E4 /* PLCrashFrameStackUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */; };
@@ -1028,13 +1038,83 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D8160D462B7502A30081EBA2 /* CopyFiles */ = {
+		D8160D532B7510850081EBA2 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				D8160D472B7502BB0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+				D8160D542B75108A0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D552B7510950081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D562B75109A0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D572B75109D0081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D582B7510A10081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D592B7510A50081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D5A2B7510A90081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D5B2B7510AD0081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D5C2B7510B10081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D5D2B7510B40081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D5E2B7510B80081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D5F2B7510BC0081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D602B7510BF0081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D612B7510C20081EBA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D8160D622B7510C70081EBA2 /* PrivacyInfo.xcprivacy in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2447,6 +2527,7 @@
 				058812B41040582D009128FB /* Headers */,
 				058812B61040582D009128FB /* Sources */,
 				058812B71040582D009128FB /* Frameworks */,
+				D8160D5F2B7510BC0081EBA2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -2576,6 +2657,7 @@
 				32CF776126DFBB080087748A /* Headers */,
 				32CF777826DFBB080087748A /* Sources */,
 				32CF777A26DFBB080087748A /* Frameworks */,
+				D8160D5D2B7510B40081EBA2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -2614,6 +2696,7 @@
 				8064D8901C4D22E5005A8B4C /* Headers */,
 				8064D8B51C4D22E5005A8B4C /* Sources */,
 				8064D8B61C4D22E5005A8B4C /* Frameworks */,
+				D8160D612B7510C20081EBA2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -2669,6 +2752,7 @@
 				8DC2EF500486A6940098B216 /* Headers */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
+				D8160D5B2B7510AD0081EBA2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
