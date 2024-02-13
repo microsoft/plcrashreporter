@@ -77,6 +77,11 @@ jobs:
       echo $VERSION > $(Build.ArtifactStagingDirectory)/Info/VERSION
     displayName: 'Collect Version Information'
 
+  - task: ManifestGeneratorTask@0
+    displayName: 'Manifest Generator'
+    inputs:
+      BuildDropPath: '$(Build.ArtifactStagingDirectory)/Info'
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Version Information'
     inputs:
