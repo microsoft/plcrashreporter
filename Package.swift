@@ -33,7 +33,7 @@ let package = Package(
                 "Source",
                 "Dependencies/protobuf-c"
             ],
-            resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
+            resources: [.process("Resources/PrivacyInfo.xcprivacy")],
             cSettings: [
                 .define("PLCR_PRIVATE"),
                 .define("PLCF_RELEASE_BUILD"),
