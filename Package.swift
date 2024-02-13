@@ -16,6 +16,7 @@ let package = Package(
         .target(
             name: "CrashReporter",
             path: "",
+            resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
             exclude: [
                 "Source/dwarf_opstream.hpp",
                 "Source/dwarf_stack.hpp",
@@ -27,9 +28,6 @@ let package = Package(
                 "Source/PLCrashAsyncDwarfPrimitives.hpp",
                 "Source/PLCrashAsyncLinkedList.hpp",
                 "Source/PLCrashReport.proto"
-            ],
-            resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy"),
             ],
             sources: [
                 "Source",
