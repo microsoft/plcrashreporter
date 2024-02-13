@@ -63,7 +63,7 @@ jobs:
   - task: ManifestGeneratorTask@0
     displayName: 'Manifest Generator'
     inputs:
-      BuildDropPath: '$(System.ArtifactStagingDirectory)'
+      BuildDropPath: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
