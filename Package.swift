@@ -28,6 +28,9 @@ let package = Package(
                 "Source/PLCrashAsyncLinkedList.hpp",
                 "Source/PLCrashReport.proto"
             ],
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy"),
+            ],
             sources: [
                 "Source",
                 "Dependencies/protobuf-c"
