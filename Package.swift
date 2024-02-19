@@ -27,7 +27,9 @@ let package = Package(
                 "Source/PLCrashAsyncDwarfFDE.hpp",
                 "Source/PLCrashAsyncDwarfPrimitives.hpp",
                 "Source/PLCrashAsyncLinkedList.hpp",
-                "Source/PLCrashReport.proto"
+                "Source/PLCrashReport.proto",
+                "Tools/CrashViewer/CrashReporterQuicklook",
+                "Other Sources/Crash Demo/"
             ],
             sources: [
                 "Source",
