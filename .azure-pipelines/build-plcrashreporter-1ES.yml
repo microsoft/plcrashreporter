@@ -47,7 +47,7 @@ extends:
             artifactName: Release
           - output: pipelineArtifact
             displayName: 'Publish Version Information'
-            path: '$(Build.ArtifactStagingDirectory)/Info'
+            path: '$(Build.ArtifactStagingDirectory)'
             artifactName: Info
 
         steps:
