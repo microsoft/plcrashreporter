@@ -22,19 +22,23 @@ resources:
     ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-2022
-      os: windows
+      name: AppleRelease
+      os: macOS
     customBuildTags:
     - ES365AIMigrationTooling-BulkMigrated
-
+    sdl:
+      sourceAnalysisPool: 1ES-PT-Windows-2022
+      
     stages:
     - stage: stage
       jobs:
-      - job: ''
+      - job: HostJob
         displayName: Build SDK for All Platforms
         templateContext:
           outputs:
