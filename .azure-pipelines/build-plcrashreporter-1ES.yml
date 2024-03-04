@@ -52,11 +52,6 @@ extends:
             displayName: 'Publish Version Information'
             path: '$(Build.ArtifactStagingDirectory)/Info'
             artifactName: Info
-          - output: pipelineArtifact
-            displayName: 'Publish SBOM'
-            path: '$(Build.ArtifactStagingDirectory)/Release/_manifest'
-            artifactName: SBOM
-
         steps:
         - checkout: self
         - bash: 'brew install doxygen graphviz protobuf-c'
