@@ -35,8 +35,6 @@ extends:
     - ES365AIMigrationTooling-BulkMigrated
     sdl:
       sourceAnalysisPool: 1ES-PT-Windows-2022
-      sbom:
-       enabled: true
     stages:
     - stage: stage
       jobs:
@@ -48,6 +46,7 @@ extends:
             displayName: 'Publish Artifacts'
             path: '$(Build.ArtifactStagingDirectory)/Release'
             artifactName: Release
+            sbomEnabled: true
           - output: pipelineArtifact
             displayName: 'Publish Version Information'
             path: '$(Build.ArtifactStagingDirectory)/Info'
