@@ -47,6 +47,7 @@ extends:
             path: '$(Build.ArtifactStagingDirectory)/Release'
             artifactName: Release
             sbomEnabled: true
+            sbomOutputArtifactPath: '$(Build.ArtifactStagingDirectory)/Release/_manifest'
           - output: pipelineArtifact
             displayName: 'Publish Version Information'
             path: '$(Build.ArtifactStagingDirectory)/Info'
