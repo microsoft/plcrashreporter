@@ -90,7 +90,7 @@ extends:
           inputs:
             SourceFolder: '$(Build.BinariesDirectory)/Release'
             Contents: '*.zip'
-            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/Release'
 
         - bash: |
             mkdir -p $(Build.ArtifactStagingDirectory)/Info
