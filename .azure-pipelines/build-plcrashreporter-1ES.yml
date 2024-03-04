@@ -46,12 +46,16 @@ extends:
             displayName: 'Publish Artifacts'
             path: '$(Build.ArtifactStagingDirectory)/Release'
             artifactName: Release
-            sbomEnabled: true
-            sbomBuildDropPath: '$(Build.ArtifactStagingDirectory)/SBOM'
           - output: pipelineArtifact
             displayName: 'Publish Version Information'
             path: '$(Build.ArtifactStagingDirectory)/Info'
             artifactName: Info
+          - output: pipelineArtifact
+            displayName: 'Publish SBOM'
+            path: '$(Build.ArtifactStagingDirectory)/SBOM'
+            artifactName: SBOM
+            sbomEnabled: true
+            sbomBuildDropPath: '$(Build.ArtifactStagingDirectory)/Release'
 
         steps:
         - checkout: self
