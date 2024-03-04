@@ -28,7 +28,7 @@ extends:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: AppleRelease
+      name: Azure Pipelines
       os: macOS
     customBuildTags:
     - ES365AIMigrationTooling-BulkMigrated
@@ -44,10 +44,11 @@ extends:
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish Artifacts'
+            path: '$(Build.ArtifactStagingDirectory)/Release'
             artifactName: Release
           - output: pipelineArtifact
             displayName: 'Publish Version Information'
-            path: '$(Build.ArtifactStagingDirectory)'
+            path: '$(Build.ArtifactStagingDirectory)/Info'
             artifactName: Info
 
         steps:
