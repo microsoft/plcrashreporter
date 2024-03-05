@@ -41,7 +41,7 @@ extends:
             path: '$(Build.ArtifactStagingDirectory)/Release'
             artifactName: Release
             sbomEnabled: true
-            sbomOutputArtifactPath: '$(Build.ArtifactStagingDirectory)/Release/_manifest'
+            sbomBuildDropPath: '$(Build.SourcesDirectory)'
           - output: pipelineArtifact
             displayName: 'Publish Version Information'
             path: '$(Build.ArtifactStagingDirectory)/Info'
@@ -93,6 +93,6 @@ extends:
             echo $VERSION > $(Build.ArtifactStagingDirectory)/Info/VERSION
           displayName: 'Collect Version Information'
           
-      - template: /.azure-pipelines/build-plcrashreporter-1ES-template.yml@self
+      - template: /.azure-pipelines/analyze-and-test-1ES-template.yml
         parameters:
           platforms: [iOS, macOS, tvOS, MacCatalyst]

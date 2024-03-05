@@ -15,6 +15,7 @@ jobs:
         condition: failed()
         targetPath: /Users/runner/Library/Logs/DiagnosticReports
         artifactName: 'Test Diagnostic Reports'
+        sbomEnabled: false
 
     steps:
     - checkout: self
