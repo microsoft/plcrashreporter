@@ -45,6 +45,7 @@ extends:
             displayName: 'Publish Version Information'
             path: '$(Build.ArtifactStagingDirectory)/Info'
             artifactName: Info
+            sbomEnabled: false
         steps:
         - checkout: self
         - bash: 'brew install doxygen graphviz protobuf-c'
