@@ -93,6 +93,6 @@ extends:
             echo $VERSION > $(Build.ArtifactStagingDirectory)/Info/VERSION
           displayName: 'Collect Version Information'
           
-      - template: /.azure-pipelines/analyze-and-test-1ES-template.yml
+      - template: /.azure-pipelines/analyze-and-test-1ES-template.yml@self
         parameters:
           platforms: [iOS, macOS, tvOS, MacCatalyst]
