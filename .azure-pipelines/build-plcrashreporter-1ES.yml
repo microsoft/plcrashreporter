@@ -123,8 +123,9 @@ extends:
           inputs:
             softwareFolder: '$(Agent.BuildDirectory)\Release'
             softwareName: 'plcrashreporter'
-            softwareVersionNum: Latest
+            softwareVersionNum: '$(Build.BuildId)'
             isLargeApp: false
+            toolVersion: 'Latest'
             verbosityLevel: verbose
           condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
           env:
