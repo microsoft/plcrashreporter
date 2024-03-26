@@ -82,7 +82,6 @@
 			buildPhases = (
 				C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */,
 				F8B9C72E24695BF200B9FEF6 /* Combine XCFramework */,
-				BBC2CC312BB32A7F00868C35 /* CopyFiles */,
 			);
 			dependencies = (
 				F8CF2BCD246C05D100904633 /* PBXTargetDependency */,
@@ -457,7 +456,6 @@
 		8064D8AB1C4D22E5005A8B4C /* PLCrashReportProcessorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 05BB83CB1364A77800D53B84 /* PLCrashReportProcessorInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8064D92F1C4D27E2005A8B4C /* Tests in Resources */ = {isa = PBXBuildFile; fileRef = 05F3CD6C16DE7625007911FB /* Tests */; };
 		80A63BD81C4D32FB0073B7A3 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8064D81B1C4D22D8005A8B4C /* libCrashReporter.a */; };
-		BBC2CC322BB32D5400868C35 /* PrivacyInfo.xcprivacy in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
 		C202F6482451C4FE00754DF7 /* libCrashReporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05E731F30EFA1AAB005EDFB7 /* libCrashReporter.a */; };
 		C2198DD91640188C006EB46A /* PLCrashAsyncObjCSection.mm in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.mm */; };
 		C2198DDB1640188C006EB46A /* PLCrashAsyncObjCSection.mm in Sources */ = {isa = PBXBuildFile; fileRef = C2198DD81640188C006EB46A /* PLCrashAsyncObjCSection.mm */; };
@@ -1019,16 +1017,6 @@
 			files = (
 			);
 			name = "Copy Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BBC2CC312BB32A7F00868C35 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-				BBC2CC322BB32D5400868C35 /* PrivacyInfo.xcprivacy in CopyFiles */,
-			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C2CBA40B24586975001B775F /* Embed Frameworks */ = {
