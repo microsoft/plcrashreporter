@@ -1,9 +1,10 @@
-// swift-tools-version:5.0
+// swift-tools-version:5.3
 
 import PackageDescription
 
 let package = Package(
     name: "PLCrashReporter",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v11),
         .macOS(.v10_10),
@@ -26,12 +27,15 @@ let package = Package(
                 "Source/PLCrashAsyncDwarfFDE.hpp",
                 "Source/PLCrashAsyncDwarfPrimitives.hpp",
                 "Source/PLCrashAsyncLinkedList.hpp",
-                "Source/PLCrashReport.proto"
+                "Source/PLCrashReport.proto",
+                "Tools/CrashViewer/CrashReporterQuicklook",
+                "Other Sources/Crash Demo/"
             ],
             sources: [
                 "Source",
                 "Dependencies/protobuf-c"
             ],
+            resources: [.process("Resources/PrivacyInfo.xcprivacy")],
             cSettings: [
                 .define("PLCR_PRIVATE"),
                 .define("PLCF_RELEASE_BUILD"),
