@@ -12,7 +12,7 @@ Pod::Spec.new do |spec|
   spec.source      = { :http     => "https://github.com/microsoft/plcrashreporter/releases/download/#{spec.version}/PLCrashReporter-Static-#{spec.version}.xcframework.zip",
                        :flatten  => true }
 
-  spec.resource_bundle = { 'PLCrashReporter' => 'Resources/PrivacyInfo.xcprivacy' }
+  spec.resource_bundle = { 'PLCrashReporter' => 'CrashReporter.xcframework/PrivacyInfo.xcprivacy' }
 
   spec.ios.deployment_target    = '11.0'
   spec.osx.deployment_target    = '10.9'
