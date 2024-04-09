@@ -3760,6 +3760,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
 			};
@@ -3769,6 +3770,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "Fuzz Testing";
 				SDKROOT = macosx;
 			};
@@ -3785,6 +3787,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3806,6 +3809,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-iOS-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3828,6 +3832,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
@@ -3852,6 +3857,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
@@ -3867,6 +3873,7 @@
 		058812D510405908009128FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = PLCrashReporter;
 			};
 			name = Debug;
@@ -3874,6 +3881,7 @@
 		058812D610405908009128FB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = PLCrashReporter;
 			};
 			name = Release;
@@ -3887,6 +3895,7 @@
 				);
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -3906,6 +3915,7 @@
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=iphoneos*]" = "-fembed-bitcode";
 				"OTHER_CFLAGS[sdk=macosx*]" = "";
@@ -3922,6 +3932,7 @@
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests macOS";
 				SDKROOT = macosx;
@@ -3935,6 +3946,7 @@
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests macOS";
 				SDKROOT = macosx;
@@ -3947,6 +3959,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests iOS";
 				SDKROOT = iphoneos;
@@ -3960,6 +3973,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "Tests iOS";
 				SDKROOT = iphoneos;
@@ -3973,6 +3987,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3983,6 +3998,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3993,6 +4009,7 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -4004,6 +4021,7 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -4022,6 +4040,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -4042,6 +4061,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -4061,6 +4081,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
@@ -4080,6 +4101,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@rpath";
 				MACH_O_TYPE = mh_dylib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
@@ -4230,6 +4252,7 @@
 				INSTALL_PATH = "@rpath";
 				LIBRARY_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx";
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx/lib$(PRODUCT_NAME).a";
@@ -4249,6 +4272,7 @@
 				INSTALL_PATH = "@rpath";
 				LIBRARY_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx";
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_LDFLAGS = "-ObjC";
 				PRELINK_LIBS = "$(BUILD_DIR)/$(CONFIGURATION)-macosx/lib$(PRODUCT_NAME).a";
@@ -4262,6 +4286,7 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
 				SDKROOT = appletvos;
@@ -4275,6 +4300,7 @@
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
 				PUBLIC_HEADERS_FOLDER_PATH = include;
@@ -4293,6 +4319,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				PRELINK_LIBS = "$(CONFIGURATION_BUILD_DIR)/lib$(PRODUCT_NAME).a";
@@ -4313,6 +4340,7 @@
 				GENERATE_MASTER_OBJECT_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MODULEMAP_FILE = Resources/CrashReporter.modulemap;
 				OTHER_CFLAGS = "-fembed-bitcode-marker";
 				"OTHER_CFLAGS[sdk=appletvos*]" = "-fembed-bitcode";
@@ -4328,6 +4356,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -4340,6 +4369,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -4353,6 +4383,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-tvOS-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -4366,6 +4397,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 5Z97G9NZQ6;
 				INFOPLIST_FILE = "Resources/DemoCrash-tvOS-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.microsoft.plcrashreporter.DemoCrash-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -4376,6 +4408,7 @@
 		C25664D323571D340088513E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -4383,6 +4416,7 @@
 		C25664D423571D340088513E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -4391,6 +4425,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -4399,6 +4434,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-iphoneuniversal";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				SDKROOT = iphoneos;
 			};
 			name = Release;
@@ -4407,6 +4443,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				SDKROOT = appletvos;
 			};
 			name = Debug;
@@ -4415,6 +4452,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-appletvuniversal";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				SDKROOT = appletvos;
 			};
 			name = Release;
@@ -4422,6 +4460,7 @@
 		C2C74D9C2538508300313817 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -4429,6 +4468,7 @@
 		C2C74D9D2538508300313817 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -4437,6 +4477,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-xcframework";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
 		};
@@ -4444,6 +4485,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EFFECTIVE_PLATFORM_NAME = "-xcframework";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};
