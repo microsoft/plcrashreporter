@@ -7,7 +7,7 @@ jobs:
   - job: ''
     displayName: ${{ format('CrashReporter {0} Analyze and Test', platform) }}
     variables:
-      XCODE_PATH: '/Applications/Xcode_14.0.1.app/Contents/Developer'
+      XCODE_PATH: '/Applications/Xcode_15.3.app/Contents/Developer'
     templateContext:
       outputs:
       - output: pipelineArtifact
