@@ -9,6 +9,7 @@ export PATH=$PATH:/usr/local/bin:/opt/local/bin
 
 if [ ! -z `which doxygen` ]; then
     # Generate the documentation
+    echo "Start generating docs"
     pushd "${SRCROOT}" >/dev/null || exit 1
         doxygen
         if [ $? != 0 ]; then
@@ -23,3 +24,5 @@ if [ ! -z `which doxygen` ]; then
 else
     echo "WARNING: Doxygen not available, skipping documentation generation" >/dev/stderr
 fi
+echo "Stop generating docs"
+
