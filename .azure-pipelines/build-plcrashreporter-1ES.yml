@@ -6,7 +6,7 @@ pr:
 variables:
   Configuration: Release
   SDK: ''
-  XCODE_PATH: '/Applications/Xcode_14.0.1.app/Contents/Developer'
+  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
 
 resources:
   repositories:
@@ -48,7 +48,7 @@ extends:
             sbomEnabled: false
         steps:
         - checkout: self
-        - bash: 'brew install doxygen graphviz protobuf-c'
+        - bash: 'brew install doxygen graphviz protobuf-c@25.3_1'
           displayName: 'Install dependencies'
         - task: Xcode@5
           displayName: 'Build Crash Reporter'
