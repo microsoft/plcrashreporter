@@ -15,7 +15,7 @@ Pod::Spec.new do |spec|
   spec.resource_bundle = { 'PLCrashReporter' => 'CrashReporter.xcframework/PrivacyInfo.xcprivacy' }
 
   spec.ios.deployment_target    = '11.0'
-  spec.osx.deployment_target    = '10.9'
+  spec.osx.deployment_target    = '11.0'
   spec.tvos.deployment_target   = '11.0'
   spec.vendored_frameworks = "CrashReporter.xcframework"
 end

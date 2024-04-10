@@ -20,7 +20,7 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 ## Prerequisites
 
 - Xcode 11 or above.
-- Minimum supported platforms: iOS 11, macOS 10.9, tvOS 11, Mac Catalyst 13.0.
+- Minimum supported platforms: iOS 11, macOS 11, tvOS 11, Mac Catalyst 13.0.
 
 ## Decoding Crash Reports
 
