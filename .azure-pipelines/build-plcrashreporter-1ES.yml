@@ -6,7 +6,7 @@ pr:
 variables:
   Configuration: Release
   SDK: ''
-  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
+  XCODE_VERSION: '14'
 
 resources:
   repositories:
@@ -55,8 +55,7 @@ extends:
           inputs:
             xcWorkspacePath: CrashReporter.xcodeproj
             scheme: 'CrashReporter'
-            xcodeVersion: specifyPath
-            xcodeDeveloperDir: '$(XCODE_PATH)'
+            xcodeVersion: '$(XCODE_VERSION)'
             args: 'SYMROOT="$(Build.BinariesDirectory)" GCC_TREAT_WARNINGS_AS_ERRORS=YES SWIFT_TREAT_WARNINGS_AS_ERRORS=YES'
 
         - bash: |
