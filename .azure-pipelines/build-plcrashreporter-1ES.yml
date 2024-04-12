@@ -48,19 +48,10 @@ extends:
             sbomEnabled: false
         steps:
         - checkout: self
-        - bash: |
-            brew install doxygen graphviz
-            PROTOBUF_VERSION="25.3"
-            URL=https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-${PROTOBUF_VERSION}.tar.gz
-
-            brew install automake libtool wget
-            wget ${URL}
-            tar -xvjf protobuf-${PROTOBUF_VERSION}.tar.gz
-            cd protobuf-${PROTOBUF_VERSION}
-            ./autogen.sh
-            ./configure
-            make; make check
-            sudo make install
+        - task: Bash@3
+          inputs:
+            targetType: 'filePath'
+            filePath: 'Scripts/install-dependencies.sh'
           displayName: 'Install dependencies'
         - task: Xcode@5
           displayName: 'Build Crash Reporter'
