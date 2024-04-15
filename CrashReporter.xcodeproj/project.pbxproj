@@ -765,6 +765,99 @@
 		FCE45B4FD545A258E0292F25 /* PLCrashFrameStackUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		C2B72B1A24534DD200D03ABD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
+		};
+		C2B72B2C24534F5C00D03ABD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
+		};
+		C2B72B2D24534F6200D03ABD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
+		};
+		C2B72B2E24534F6800D03ABD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
+		};
+		C2B72B2F24534F6B00D03ABD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
+		};
+		C2B72B3024534F6F00D03ABD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
+				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
+			);
+			runOncePerArchitecture = 0;
+			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXContainerItemProxy section */
 		050DE25C0F61B92C00152ED3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -2367,6 +2460,7 @@
 				05CD31500EE936A9000FDE88 /* Frameworks */,
 			);
 			buildRules = (
+				C2B72B2C24534F5C00D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -2385,6 +2479,7 @@
 				05CD32660EE93DC3000FDE88 /* Frameworks */,
 			);
 			buildRules = (
+				C2B72B2E24534F6800D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 				C26C52A52451B45D00D20162 /* PBXTargetDependency */,
@@ -2403,6 +2498,7 @@
 				05CD33220EE94439000FDE88 /* Frameworks */,
 			);
 			buildRules = (
+				C2B72B2F24534F6B00D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 				054F50E90EEC50B30034B184 /* PBXTargetDependency */,
@@ -2438,6 +2534,7 @@
 				05E731F10EFA1AAB005EDFB7 /* Frameworks */,
 			);
 			buildRules = (
+				C2B72B1A24534DD200D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -2495,6 +2592,7 @@
 				8064D8161C4D22D8005A8B4C /* Frameworks */,
 			);
 			buildRules = (
+				C2B72B2D24534F6200D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -2531,6 +2629,7 @@
 				8064D98F1C4D27E2005A8B4C /* Frameworks */,
 			);
 			buildRules = (
+				C2B72B3024534F6F00D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 				80A63BC11C4D2BE20073B7A3 /* PBXTargetDependency */,
