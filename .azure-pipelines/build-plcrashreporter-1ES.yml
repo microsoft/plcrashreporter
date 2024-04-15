@@ -49,8 +49,9 @@ extends:
         steps:
         - checkout: self
         - bash: |
-            brew install doxygen graphviz protobuf-c
+            brew install wget doxygen graphviz protobuf-c
             brew unlink protobuf
+            wget https://raw.githubusercontent.com/Homebrew/homebrew-core/f248ae213f59dae615576e3dc06faa920ee2e717/Formula/p/protobuf.rb -O ./Dependencies/protobuf.rb
             brew install ./Dependencies/protobuf.rb
           displayName: 'Install dependencies'
         - task: Xcode@5
