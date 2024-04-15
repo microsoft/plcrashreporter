@@ -48,7 +48,10 @@ extends:
             sbomEnabled: false
         steps:
         - checkout: self
-        - bash: 'brew install doxygen graphviz protobuf-c'
+        - bash: |
+            brew install doxygen graphviz protobuf-c
+            brew unlink protobuf
+            brew install ./Dependencies/protobuf.rb
           displayName: 'Install dependencies'
         - task: Xcode@5
           displayName: 'Build Crash Reporter'
