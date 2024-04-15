@@ -48,10 +48,7 @@ extends:
             sbomEnabled: false
         steps:
         - checkout: self
-        - task: Bash@3
-          inputs:
-            targetType: 'filePath'
-            filePath: 'Scripts/install-dependencies.sh'
+        - bash: 'brew install doxygen graphviz protobuf-c'
           displayName: 'Install dependencies'
         - task: Xcode@5
           displayName: 'Build Crash Reporter'
