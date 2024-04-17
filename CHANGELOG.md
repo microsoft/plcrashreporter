@@ -3,6 +3,7 @@
 ## Version 1.11.2
 
 * **[Improvement]** Update PLCrashReporter to include privacy manifest.
+* **[Improvement]** Increase the maximum report size to 1MB.
 
 ___
 
