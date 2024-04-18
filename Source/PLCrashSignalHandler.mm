@@ -231,7 +231,11 @@ bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int sig, s
  *
  * @todo Remove the signal handler's registered callbacks from the callback chain when the instance is deallocated.
  */
-@implementation PLCrashSignalHandler
+@implementation PLCrashSignalHandler {
+
+    /** Signal stack */
+    stack_t _sigstk;
+}
 
 /* Shared signal handler. Since signal handlers are process-global, it would be unusual
  * for more than one instance to be required. */

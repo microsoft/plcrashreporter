@@ -40,20 +40,7 @@
 #endif
 
 
-@interface PLCrashReportThreadInfo : NSObject {
-@private
-    /** The thread number. Should be unique within a given crash log. */
-    NSInteger _threadNumber;
-
-    /** Ordered list of PLCrashReportStackFrame instances */
-    __strong NSArray *_stackFrames;
-
-    /** YES if this thread crashed. */
-    BOOL _crashed;
-
-    /** List of PLCrashReportRegister instances. Will be empty if _crashed is NO. */
-    __strong NSArray *_registers;
-}
+@interface PLCrashReportThreadInfo : NSObject
 
 - (id) initWithThreadNumber: (NSInteger) threadNumber
                 stackFrames: (NSArray *) stackFrames

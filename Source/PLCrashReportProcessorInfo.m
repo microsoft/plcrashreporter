@@ -43,7 +43,17 @@
  * Currently, only Apple Mach CPU type/subtype information is supported by the wire protocol. These types are
  * stable, intended to be encoded in Mach-O files, and are defined in mach/machine.h on Mac OS X.
  */
-@implementation PLCrashReportProcessorInfo
+@implementation PLCrashReportProcessorInfo {
+
+    /** Type encoding */
+    PLCrashReportProcessorTypeEncoding _typeEncoding;
+
+    /** CPU type */
+    uint64_t _type;
+
+    /** CPU subtype */
+    uint64_t _subtype;
+}
 
 @synthesize typeEncoding = _typeEncoding;
 @synthesize type = _type;

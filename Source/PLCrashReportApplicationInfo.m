@@ -34,7 +34,17 @@
  * Provides the application identifier and version of the crashed
  * application.
  */
-@implementation PLCrashReportApplicationInfo
+@implementation PLCrashReportApplicationInfo {
+
+    /** Application identifier */
+    __strong NSString *_applicationIdentifier;
+    
+    /** Application version */
+    __strong NSString *_applicationVersion;
+    
+    /** Application marketing version */
+    __strong NSString *_applicationMarketingVersion;
+}
 
 /**
  * Initialize with the provided application identifier and version.

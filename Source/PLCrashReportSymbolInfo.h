@@ -28,17 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashReportSymbolInfo : NSObject {
-@private
-    /** The symbol name. */
-    __strong NSString *_symbolName;
-    
-    /** The symbol start address. */
-    uint64_t _startAddress;
-    
-    /** The symbol end address, if explicitly defined. Will be 0 if unknown. */
-    uint64_t _endAddress;
-}
+@interface PLCrashReportSymbolInfo : NSObject
 
 - (id) initWithSymbolName: (NSString *) symbolName
              startAddress: (uint64_t) startAddress

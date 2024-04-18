@@ -45,7 +45,23 @@
 /**
  * The PLCrashProcessInfo provides methods to access basic information about a target process.
  */
-@implementation PLCrashProcessInfo
+@implementation PLCrashProcessInfo {
+
+    /** The target process identifier. */
+    pid_t _processID;
+    
+    /** The target process name. */
+    __strong NSString *_processName;
+    
+    /** The target process parent's process identifier. */
+    pid_t _parentProcessID;
+
+    /** The process start time. This is the timestamp at which the process was created. */
+    struct timeval _startTime;
+
+    /** If YES, a debugger is attached (eg, P_TRACED was set). */
+    BOOL _traced;
+}
 
 @synthesize processID = _processID;
 @synthesize processName = _processName;

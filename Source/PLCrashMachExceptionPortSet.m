@@ -42,7 +42,14 @@
  * This class conforms to NSFastEnumeration, which may be used to enumerate
  * the managed PLCrashMachExceptionPortState instances.
  */
-@implementation PLCrashMachExceptionPortSet
+@implementation PLCrashMachExceptionPortSet {
+
+    /** Backing state set representation. */
+    __strong NSSet *_state_set;
+    
+    plcrash_mach_exception_port_set_t _asyncSafeRepresentation;
+}
+
 
 @synthesize asyncSafeRepresentation = _asyncSafeRepresentation;
 @synthesize set = _state_set;

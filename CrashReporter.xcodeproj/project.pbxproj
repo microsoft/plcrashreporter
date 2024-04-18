@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -755,6 +755,10 @@
 		C2F7F2B72451FC76002BD8BF /* PLCrashFrameCompactUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */; };
 		C2F7F2B92451FC78002BD8BF /* PLCrashFrameCompactUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */; };
 		C2F7F2BA2451FC78002BD8BF /* PLCrashFrameCompactUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = 05F3CD6416DD6A58007911FB /* PLCrashFrameCompactUnwind.h */; };
+		D8160D8A2B7B7FAF0081EBA2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D8C2B7B7FC00081EBA2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D8E2B7B7FD30081EBA2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
+		D8160D902B7B7FE10081EBA2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */; };
 		FCE4550BA74D9DF923CFCD5A /* PLCrashFrameStackUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */; };
 		FCE4586A7041D332D1025F37 /* PLCrashFrameStackUnwind.h in Headers */ = {isa = PBXBuildFile; fileRef = FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */; };
 		FCE45962BDFEEEFAF00DA7E4 /* PLCrashFrameStackUnwind.c in Sources */ = {isa = PBXBuildFile; fileRef = FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */; };
@@ -1261,6 +1265,7 @@
 		C2F7F2302451F081002BD8BF /* DemoCrash-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DemoCrash-iOS-Info.plist"; sourceTree = "<group>"; };
 		C2F7F26A2451F796002BD8BF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C2F7F2BB2451FE1F002BD8BF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		FCE4522F86AC61C08E9DCC17 /* PLCrashFrameStackUnwind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PLCrashFrameStackUnwind.h; sourceTree = "<group>"; };
 		FCE45837C8C773EFFD15C52B /* PLCrashFrameStackUnwind.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PLCrashFrameStackUnwind.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1898,6 +1903,7 @@
 				C2F7F22F2451F081002BD8BF /* DemoCrash-tvOS-Info.plist */,
 				C2DCD87724657B24007322C5 /* DemoCrash-iOS.entitlements */,
 				050DE28D0F61BB1D00152ED3 /* fuzz_report.plcrash */,
+				D8389D722B57FC7F0061D8EF /* PrivacyInfo.xcprivacy */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				05F3CD6C16DE7625007911FB /* Tests */,
 				05CD32AF0EE94086000FDE88 /* Tests-Info.plist */,
@@ -2433,6 +2439,7 @@
 				058812B41040582D009128FB /* Headers */,
 				058812B61040582D009128FB /* Sources */,
 				058812B71040582D009128FB /* Frameworks */,
+				D8160D8D2B7B7FC80081EBA2 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -2562,6 +2569,7 @@
 				32CF776126DFBB080087748A /* Headers */,
 				32CF777826DFBB080087748A /* Sources */,
 				32CF777A26DFBB080087748A /* Frameworks */,
+				D8160D8B2B7B7FB60081EBA2 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -2600,6 +2608,7 @@
 				8064D8901C4D22E5005A8B4C /* Headers */,
 				8064D8B51C4D22E5005A8B4C /* Sources */,
 				8064D8B61C4D22E5005A8B4C /* Frameworks */,
+				D8160D8F2B7B7FD90081EBA2 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -2655,6 +2664,7 @@
 				8DC2EF500486A6940098B216 /* Headers */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
+				D8160D892B7B7FA50081EBA2 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -2789,6 +2799,38 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D892B7B7FA50081EBA2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8160D8A2B7B7FAF0081EBA2 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D8B2B7B7FB60081EBA2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8160D8C2B7B7FC00081EBA2 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D8D2B7B7FC80081EBA2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8160D8E2B7B7FD30081EBA2 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8160D8F2B7B7FD90081EBA2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8160D902B7B7FE10081EBA2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4075,7 +4117,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.11.0;
+				CURRENT_PROJECT_VERSION = 1.11.2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4092,7 +4134,7 @@
 					PLCR_PRIVATE,
 					PLCF_DEBUG_BUILD,
 				);
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -4142,7 +4184,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.11.0;
+				CURRENT_PROJECT_VERSION = 1.11.2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4157,7 +4199,7 @@
 					PLCR_PRIVATE,
 					PLCF_RELEASE_BUILD,
 				);
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

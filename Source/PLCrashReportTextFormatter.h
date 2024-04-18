@@ -50,14 +50,7 @@ typedef enum {
 } PLCrashReportTextFormat;
 
 
-@interface PLCrashReportTextFormatter : NSObject <PLCrashReportFormatter> {
-@private
-    /** Text output format. */
-    PLCrashReportTextFormat _textFormat;
-
-    /** Encoding to use for string output. */
-    NSStringEncoding _stringEncoding;
-}
+@interface PLCrashReportTextFormatter : NSObject <PLCrashReportFormatter>
 
 + (NSString *) stringValueForCrashReport: (PLCrashReport *) report withTextFormat: (PLCrashReportTextFormat) textFormat;
 

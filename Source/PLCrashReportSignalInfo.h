@@ -28,17 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashReportSignalInfo : NSObject {
-@private
-    /** Signal name */
-    __strong NSString *_name;
-    
-    /** Signal code */
-    __strong NSString *_code;
-
-    /** Fauling instruction or address */
-    uint64_t _address;
-}
+@interface PLCrashReportSignalInfo : NSObject
 
 - (id) initWithSignalName: (NSString *) name code: (NSString *) code address: (uint64_t) address;
 

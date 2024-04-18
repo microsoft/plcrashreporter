@@ -37,7 +37,20 @@
  *
  * Supports configuring the behavior of PLCrashReporter instances.
  */
-@implementation PLCrashReporterConfig
+@implementation PLCrashReporterConfig {
+
+    /** The configured signal handler type. */
+    PLCrashReporterSignalHandlerType _signalHandlerType;
+    
+    /** The configured symbolication strategy. */
+    PLCrashReporterSymbolicationStrategy _symbolicationStrategy;
+  
+   /**
+    * Flag indicating if the uncaughtExceptionHandler should be initialized or not. It usually is, except in a
+    * Xamarin environment.
+    */
+  BOOL _shouldRegisterUncaughtExceptionHandler;
+}
 
 @synthesize signalHandlerType = _signalHandlerType;
 @synthesize symbolicationStrategy = _symbolicationStrategy;

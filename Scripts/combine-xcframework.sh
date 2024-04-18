@@ -22,3 +22,8 @@ xcframeworksStatic+=( -framework "${framework_path}")
 
 xcodebuild -create-xcframework "${xcframeworks[@]}" -output "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.xcframework"
 xcodebuild -create-xcframework "${xcframeworksStatic[@]}" -output "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}-static.xcframework"
+
+# Copy the PrivacyInfo.xcprivacy file.
+echo "Copying new PrivacyInfo.xcprivacy to ${BUILT_PRODUCTS_DIR}/${PROJECT_NAME}.xcframework"
+cp ${SRCROOT}/Resources/PrivacyInfo.xcprivacy ${BUILT_PRODUCTS_DIR}/${PROJECT_NAME}.xcframework 
+

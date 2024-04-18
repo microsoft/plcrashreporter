@@ -35,7 +35,26 @@
 /**
  * Crash Log binary image info. Represents an executable or shared library.
  */
-@implementation PLCrashReportBinaryImageInfo
+@implementation PLCrashReportBinaryImageInfo {
+
+    /** Code type */
+    __strong PLCrashReportProcessorInfo *_processorInfo;
+
+    /** Base image address */
+    uint64_t _baseAddress;
+
+    /** Image segment size */
+    uint64_t _imageSize;
+
+    /** Name of binary image */
+    __strong NSString *_imageName;
+
+    /** If the UUID is available */
+    BOOL _hasImageUUID;
+
+    /** 128-bit object UUID. May be nil. */
+    __strong NSString *_imageUUID;
+}
 
 @synthesize codeType = _processorInfo;
 @synthesize imageBaseAddress = _baseAddress;

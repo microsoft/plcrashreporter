@@ -46,17 +46,7 @@ typedef enum {
     PLCrashReportProcessorTypeEncodingMach = 1
 } PLCrashReportProcessorTypeEncoding;
 
-@interface PLCrashReportProcessorInfo : NSObject {
-@private
-    /** Type encoding */
-    PLCrashReportProcessorTypeEncoding _typeEncoding;
-
-    /** CPU type */
-    uint64_t _type;
-
-    /** CPU subtype */
-    uint64_t _subtype;
-}
+@interface PLCrashReportProcessorInfo : NSObject
 
 - (id) initWithTypeEncoding: (PLCrashReportProcessorTypeEncoding) typeEncoding
                        type: (uint64_t) type

@@ -1,0 +1,135 @@
+trigger:
+- master
+pr:
+- master
+
+variables:
+  Configuration: Release
+  SDK: ''
+  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure Pipelines
+      image: macos-latest
+      os: macOS
+    customBuildTags:
+    - ES365AIMigrationTooling-BulkMigrated
+    sdl:
+      sourceAnalysisPool: 1ES-PT-Windows-2022
+    stages:
+    - stage: stage
+      jobs:
+      - job: HostJob
+        displayName: Build SDK for All Platforms
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish Artifacts'
+            path: '$(Build.ArtifactStagingDirectory)/Release'
+            artifactName: Release
+            sbomBuildDropPath: '$(Build.SourcesDirectory)'
+          - output: pipelineArtifact
+            displayName: 'Publish Version Information'
+            path: '$(Build.ArtifactStagingDirectory)/Info'
+            artifactName: Info
+            sbomEnabled: false
+        steps:
+        - checkout: self
+        - bash: |
+            brew install wget doxygen graphviz protobuf-c
+            brew unlink protobuf
+            brew install ./Dependencies/protobuf.rb
+          displayName: 'Install dependencies'
+        - task: Xcode@5
+          displayName: 'Build Crash Reporter'
+          inputs:
+            xcWorkspacePath: CrashReporter.xcodeproj
+            scheme: 'CrashReporter'
+            xcodeVersion: specifyPath
+            xcodeDeveloperDir: '$(XCODE_PATH)'
+            args: 'SYMROOT="$(Build.BinariesDirectory)" GCC_TREAT_WARNINGS_AS_ERRORS=YES SWIFT_TREAT_WARNINGS_AS_ERRORS=YES'
+
+        - bash: |
+            cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
+            lipo -info "Release/Static/libCrashReporter-MacOSX-Static.a"
+            rm -rf "Release/Mac OS X Framework/CrashReporter.framework" "Release/Mac OS X Framework/CrashReporter.framework.dSYM"
+            cp -R "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release/Mac OS X Framework"
+            lipo -info "Release/Mac OS X Framework/CrashReporter.framework/CrashReporter"
+            cp -f "Release-macosx/plcrashutil" "Release/Tools"
+            lipo -info "Release/Tools/plcrashutil"
+          displayName: 'Prepare macOS Framework and Tools'
+          workingDirectory: '$(Build.BinariesDirectory)'
+
+        - bash: |
+            VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
+            [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
+            "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
+            "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/* "Tools"
+            "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework" "Tools"
+            "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "XCFrameworkStatic/CrashReporter.xcframework" "Tools"
+          displayName: 'Create Archives'
+          workingDirectory: '$(Build.BinariesDirectory)/Release'
+        - task: CopyFiles@2
+          displayName: 'Copy Archives to Staging Directory'
+          inputs:
+            SourceFolder: '$(Build.BinariesDirectory)/Release'
+            Contents: '*.zip'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/Release'
+
+        - bash: |
+            mkdir -p $(Build.ArtifactStagingDirectory)/Info
+            echo $BUILD_SOURCEVERSION > $(Build.ArtifactStagingDirectory)/Info/COMMIT
+            VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
+            echo $VERSION > $(Build.ArtifactStagingDirectory)/Info/VERSION
+          displayName: 'Collect Version Information'
+          
+      - template: /.azure-pipelines/analyze-and-test-1ES-template.yml@self
+        parameters:
+          platforms: [iOS, macOS, tvOS, MacCatalyst]
+
+    - stage: APIScan
+      dependsOn: Stage
+      pool:
+        name: 1ES-PT-Windows-2022
+        os: windows
+      variables:
+        "agent.source.skip": true
+      jobs:
+      - job: APIScan
+        steps:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download Pipeline Artifacts for APIScan
+          inputs:
+            artifactName: Release
+            targetPath: '$(Agent.BuildDirectory)/Release'
+        - task: AzureKeyVault@2
+          inputs:
+            azureSubscription: 'AC - Dev Infra & Build Pool'
+            KeyVaultName: 'mobile-center-sdk'
+            SecretsFilter: 'appcenter-sdk-managed-identity-clientid'
+            RunAsPreJob: false
+        - task: APIScan@2
+          displayName: 'Run APIScan'
+          inputs:
+            softwareFolder: '$(Agent.BuildDirectory)\Release'
+            softwareName: 'plcrashreporter'
+            softwareVersionNum: '$(Build.BuildId)'
+            isLargeApp: false
+            toolVersion: 'Latest'
+            verbosityLevel: verbose
+          condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
+          env:
+            AzureServicesAuthConnectionString: 'runAs=App;AppId=$(appcenter-sdk-managed-identity-clientid)'

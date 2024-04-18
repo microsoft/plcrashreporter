@@ -52,12 +52,7 @@ void plcrash_signal_handler (int signo, siginfo_t *info, void *uapVoid);
 
 bool PLCrashSignalHandlerForward (PLCrashSignalHandlerCallback *next, int signal, siginfo_t *info, ucontext_t *uap);
 
-@interface PLCrashSignalHandler : NSObject {
-@private
-    /** Signal stack */
-    stack_t _sigstk;
-}
-
+@interface PLCrashSignalHandler : NSObject
 
 + (PLCrashSignalHandler *) sharedHandler;
 

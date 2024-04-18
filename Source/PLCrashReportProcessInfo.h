@@ -30,30 +30,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashReportProcessInfo : NSObject {
-@private
-    /** Process name, or nil if unavailable. */
-    __strong NSString *_processName;
-    
-    /** Process ID */
-    NSUInteger _processID;
-    
-    /** Process path */
-    __strong NSString* _processPath;
-
-    /** Date and time that the crashing process was started. This may be unavailable, and this property
-     * will be nil. */
-    __strong NSDate *_processStartTime;
-
-    /** Parent process name, or nil if unavailable.  */
-    __strong NSString *_parentProcessName;
-    
-    /** Parent process ID */
-    NSUInteger _parentProcessID;
-    
-    /** If false, the process is being run via process-level CPU emulation (such as Rosetta). */
-    BOOL _native;
-}
+@interface PLCrashReportProcessInfo : NSObject
 
 - (id) initWithProcessName: (NSString *) processName
                  processID: (NSUInteger) processID

@@ -31,7 +31,17 @@
 /**
  * Crash log symbol information.
  */
-@implementation PLCrashReportSymbolInfo
+@implementation PLCrashReportSymbolInfo {
+
+    /** The symbol name. */
+    __strong NSString *_symbolName;
+    
+    /** The symbol start address. */
+    uint64_t _startAddress;
+    
+    /** The symbol end address, if explicitly defined. Will be 0 if unknown. */
+    uint64_t _endAddress;
+}
 
 @synthesize symbolName = _symbolName;
 @synthesize startAddress = _startAddress;
