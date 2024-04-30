@@ -147,11 +147,15 @@ extends:
           inputs:
             artifactName: Info
             targetPath: '$(Agent.BuildDirectory)/Info'
-        - bash: |
-            PUBLISH_VERSION=$(<$(Agent.BuildDirectory)/Info/VERSION)
-            echo "Publish version: $PUBLISH_VERSION"
-            echo "##vso[task.setvariable variable=PUBLISH_VERSION]$PUBLISH_VERSION"
-          displayName: 'Get Version'
+        # - bash: |
+        #     PUBLISH_VERSION=$(<$(Agent.BuildDirectory)/Info/VERSION)
+        #     echo "Publish version: $PUBLISH_VERSION"
+        #     echo "##vso[task.setvariable variable=PUBLISH_VERSION]$PUBLISH_VERSION"
+        #   displayName: 'Get Version'
+
+        - powershell: |
+            $PUBLISH_VERSION = Get-Content $(Agent.BuildDirectory)\Info\VERSION -Raw
+            Write-Host "##vso[task.setvariable variable=PUBLISH_VERSION]$PUBLISH_VERSION"
         - task: AzureFileCopy@6
           inputs:
             SourcePath: '$(Agent.BuildDirectory)\Release\PLCrashReporter-$(PUBLISH_VERSION).zip'
