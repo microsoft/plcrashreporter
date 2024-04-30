@@ -135,3 +135,27 @@ extends:
           condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
           env:
             AzureServicesAuthConnectionString: 'runAs=App;AppId=$(appcenter-sdk-managed-identity-clientid)'
+      - job: UploadToStorage
+        steps:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download release artifacts
+          inputs:
+            artifactName: Release
+            targetPath: '$(Agent.BuildDirectory)/Release'
+        - task: DownloadPipelineArtifact@2
+          displayName: Download info
+          inputs:
+            artifactName: Info
+            targetPath: '$(Agent.BuildDirectory)/Info'
+        - bash: |
+            PUBLISH_VERSION=$(cat $(Agent.BuildDirectory)/Info/VERSION)
+            echo "Publish version: $PUBLISH_VERSION"
+            echo "##vso[task.setvariable variable=PUBLISH_VERSION]$PUBLISH_VERSION"
+          displayName: 'Get Version'
+        - task: AzureFileCopy@6
+          inputs:
+            SourcePath: '$(Agent.BuildDirectory)\Release\PLCrashReporter-$(PUBLISH_VERSION).zip'
+            azureSubscription: 'AC - Dev Infra & Build Pool'
+            Destination: 'AzureBlob'
+            storage: 'mobilecentersdkdev'
+            container: 'sdk'
