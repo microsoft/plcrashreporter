@@ -148,7 +148,7 @@ extends:
             artifactName: Info
             targetPath: '$(Agent.BuildDirectory)/Info'
         - bash: |
-            PUBLISH_VERSION=$(cat $(Agent.BuildDirectory)/Info/VERSION)
+            PUBLISH_VERSION=$(cat $(Agent.BuildDirectory)\Info\VERSION)
             echo "Publish version: $PUBLISH_VERSION"
             echo "##vso[task.setvariable variable=PUBLISH_VERSION]$PUBLISH_VERSION"
           displayName: 'Get Version'
