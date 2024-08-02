@@ -338,7 +338,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
         PLCrashProcessInfo *pinfo = [PLCrashProcessInfo currentProcessInfo];
         if (pinfo == nil) {
             /* Should only occur if the process is no longer valid */
-            PLCF_DEBUG("Could not retreive process info for target");
+            PLCF_DEBUG("Could not retrieve process info for target");
             return PLCRASH_EINVAL;
         }
 
@@ -375,7 +375,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                     plprotobuf_cbinary_data_nsstring_init(&writer->process_info.parent_process_name, parentInfo.processName);
                 }
             } else {
-                PLCF_DEBUG("Could not retreive parent process name: %s", strerror(errno));
+                PLCF_DEBUG("Could not retrieve parent process name: %s", strerror(errno));
             }
 
         }
