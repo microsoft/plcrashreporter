@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.11.3 (Under development)
+
+* **[Improvement]** Use different PTR mask for MacOSX.
+
+___
+
 ## Version 1.11.2
 
 * **[Improvement]** Update PLCrashReporter to include privacy manifest.

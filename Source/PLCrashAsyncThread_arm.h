@@ -37,6 +37,9 @@ extern "C" {
  * Bitmask to strip pointer authentication (PAC).
  */
 #define ARM64_PTR_MASK 0x0000000FFFFFFFFF
+#if defined(XNU_PLATFORM_MacOSX) || defined(XNU_PLATFORM_DriverKit)
+#define ARM64_PTR_MASK 0x00007FFFFFFFFFFF
+#endif
 
 #if defined(__arm__) || defined(__arm64__)
 
