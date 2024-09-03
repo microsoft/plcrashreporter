@@ -1,5 +1,11 @@
 # PLCrashReporter Change Log
 
+## Version 1.11.3
+
+* **[Improvement]** Update target iOS and tvOS version to 12.0.
+
+___
+
 ## Version 1.11.2
 
 * **[Improvement]** Update PLCrashReporter to include privacy manifest.
