@@ -211,6 +211,17 @@ Also, next optional tools are used to build additional resources:
 
     to create binaries for all platforms.
 
+## Updating protobuf-c
+
+To update the `protobuf-c` dependency:
+
+1. Download the latest `protobuf-c.h` and `protobuf-c.c` files from the [protobuf-c GitHub repository](https://github.com/protobuf-c/protobuf-c).
+2. Replace the existing files in `Dependencies/protobuf-c` with the downloaded ones.
+3. Run the script:
+```bash
+./Dependencies/protobuf-c/generate-pb-c.sh
+```
+
 ## Contributing
 
 We are looking forward to your contributions via pull requests.
