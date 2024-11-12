@@ -781,21 +781,6 @@
 			runOncePerArchitecture = 0;
 			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
 		};
-		C2B72B2C24534F5C00D03ABD /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.proto";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.c",
-				"${INPUT_FILE_DIR}/${INPUT_FILE_BASE}.pb-c.h",
-			);
-			runOncePerArchitecture = 0;
-			script = "if type protoc-c > /dev/null; then\n  cd \"${INPUT_FILE_DIR}\" && protoc-c --c_out=. \"${INPUT_FILE_NAME}\"\nfi\n";
-		};
 		C2B72B2D24534F6200D03ABD /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
@@ -2460,7 +2445,6 @@
 				05CD31500EE936A9000FDE88 /* Frameworks */,
 			);
 			buildRules = (
-				C2B72B2C24534F5C00D03ABD /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
