@@ -94,6 +94,8 @@ extends:
             echo $BUILD_SOURCEVERSION > $(Build.ArtifactStagingDirectory)/Info/COMMIT
             VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
             echo $VERSION > $(Build.ArtifactStagingDirectory)/Info/VERSION
+            cp $BUILD_SOURCESDIRECTORY/CHANGELOG.md $(Build.ArtifactStagingDirectory)/Info/CHANGELOG.md
+            cp $BUILD_SOURCESDIRECTORY/PLCrashReporter.podspec $(Build.ArtifactStagingDirectory)/Info/PLCrashReporter.podspec
           displayName: 'Collect Version Information'
           
       - template: /.azure-pipelines/analyze-and-test-1ES-template.yml@self
