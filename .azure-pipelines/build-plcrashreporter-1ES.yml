@@ -6,7 +6,7 @@ pr:
 variables:
   Configuration: Release
   SDK: ''
-  XCODE_PATH: '/Applications/Xcode_13.2.1.app/Contents/Developer'
+  XCODE_PATH: '/Applications/Xcode_14.3.1.app/Contents/Developer'
 
 resources:
   repositories:
@@ -23,7 +23,7 @@ extends:
   parameters:
     pool:
       name: Azure Pipelines
-      image: macos-latest
+      image: macos-13
       os: macOS
     customBuildTags:
     - ES365AIMigrationTooling-BulkMigrated
