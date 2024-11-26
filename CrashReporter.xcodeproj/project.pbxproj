@@ -3874,6 +3874,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
@@ -3884,6 +3885,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				EFFECTIVE_PLATFORM_NAME = "-macosx";
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = plcrashutil;
 				SDKROOT = macosx;
 			};
