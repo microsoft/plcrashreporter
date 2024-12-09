@@ -9,7 +9,7 @@ jobs:
     pool:
       vmImage: macOS-12
     variables:
-      XCODE_PATH: '/Applications/Xcode_14.0.1.app/Contents/Developer'
+      XCODE_PATH: '/Applications/Xcode_14.3.1.app/Contents/Developer'
     steps:
     - checkout: self
       submodules: recursive

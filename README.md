@@ -20,7 +20,7 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 ## Prerequisites
 
 - Xcode 11 or above.
-- Minimum supported platforms: iOS 12, macOS 10.9, tvOS 12, Mac Catalyst 13.0.
+- Minimum supported platforms: iOS 12, macOS 11.5, tvOS 12, Mac Catalyst 13.0.
 
 ## Decoding Crash Reports
 
@@ -210,6 +210,17 @@ Also, next optional tools are used to build additional resources:
     ```
 
     to create binaries for all platforms.
+
+## Updating protobuf-c
+
+To update the `protobuf-c` dependency:
+
+1. Download the latest `protobuf-c.h` and `protobuf-c.c` files from the [protobuf-c GitHub repository](https://github.com/protobuf-c/protobuf-c).
+2. Replace the existing files in `Dependencies/protobuf-c` with the downloaded ones.
+3. Run the script:
+```bash
+./Dependencies/protobuf-c/generate-pb-c.sh
+```
 
 ## Contributing
 
