@@ -29,7 +29,8 @@ let package = Package(
                 "Source/PLCrashAsyncLinkedList.hpp",
                 "Source/PLCrashReport.proto",
                 "Tools/CrashViewer/",	
-                "Other Sources/Crash Demo/"
+                "Other Sources/Crash Demo/",
+                "Dependencies/protobuf-c/generate-pb-c.sh",
             ],
             sources: [
                 "Source",
