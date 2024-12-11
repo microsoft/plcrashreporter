@@ -200,6 +200,12 @@ Also, next optional tools are used to build additional resources:
 - GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
 - `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
 
+### Proto files modification
+If you have modified any files with the .proto extension (such as `Tests/PLCrashLogWriterEncodingTests.proto` or `Source/PLCrashReport.proto`), then before building the project, you need to generate the source files using `protobuf-c`. To do this, you can run the following script:
+```bash
+./Dependencies/protobuf-c/generate-pb-c.sh
+```
+
 ### Building
 
 - Open a new window for your Terminal.
