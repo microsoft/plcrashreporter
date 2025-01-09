@@ -36,7 +36,7 @@
 /*
  * Print command line usage.
  */
-static void print_usage () {
+static void print_usage (void) {
     fprintf(stderr, "Usage: plcrashutil <command> <options>\n"
                     "Commands:\n"
                     "  convert --format=<format> <file>\n"

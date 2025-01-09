@@ -20,7 +20,7 @@ The easiest way to use PLCrashReporter is by using [AppCenter](https://appcenter
 ## Prerequisites
 
 - Xcode 11 or above.
-- Minimum supported platforms: iOS 11, macOS 10.9, tvOS 11, Mac Catalyst 13.0.
+- Minimum supported platforms: iOS 12, macOS 11.5, tvOS 12, Mac Catalyst 13.0.
 
 ## Decoding Crash Reports
 
@@ -199,6 +199,12 @@ Also, next optional tools are used to build additional resources:
 - Doxygen to generate the documentation. See [the official Doxygen repository](https://github.com/doxygen/doxygen) for more information or use [Homebrew](https://brew.sh) to install it.
 - GraphViz to generate the documentation. See [the official GraphViz website](https://www.graphviz.org/download/) for more information or use [Homebrew](https://brew.sh) to install it.
 - `protobuf-c` to convert Protocol Buffer `.proto` files to C descriptor code. See [the official protobuf-c repository](https://github.com/protobuf-c/protobuf-c) for more information or use [Homebrew](https://brew.sh) to install it.
+
+### Proto files modification
+If you have modified any files with the .proto extension (such as `Tests/PLCrashLogWriterEncodingTests.proto` or `Source/PLCrashReport.proto`), then before building the project, you need to generate the source files using `protobuf-c`. To do this, you can run the following script:
+```bash
+./Dependencies/protobuf-c/generate-pb-c.sh
+```
 
 ### Building
 
