@@ -4,6 +4,7 @@
 
 * **[Improvement]** Update target iOS and tvOS version to 12.0.
 * **[Improvement]** Support Xcode 16 build.
+* **[Improvement]** Update Swift Package Manager support to 5.9 and enable C++ interoperability mode.
 
 ___
 
