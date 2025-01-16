@@ -88,7 +88,7 @@ struct plcrash_signal_handler_action {
  * Signal handler context that must be global for async-safe
  * access.
  */
-static struct {
+struct shared_handler_context {
     /** @internal
      * Registered callbacks. */
     async_list<plcrash_signal_user_callback> callbacks;
@@ -97,7 +97,12 @@ static struct {
      * Originaly registered signal handlers. This list should only be mutated in
      * -[PLCrashSignalHandler registerHandlerWithSignal:error:] with the appropriate locks held. */
     async_list<plcrash_signal_handler_action> previous_actions;
-} shared_handler_context;
+};
+
+shared_handler_context& shared_handler_context() {
+    static struct shared_handler_context instance;
+    return instance;
+}
 
 /*
  * Finds and executes the first matching signal handler in the shared previous_actions list; this is used
@@ -111,10 +116,10 @@ static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *ua
     if (PLCrashSignalHandlerForward(nextHandler, signo, info, uap))
         return true;
 
-    shared_handler_context.previous_actions.set_reading(true); {
+    shared_handler_context().previous_actions.set_reading(true); {
         /* Find the first matching handler */
         async_list<plcrash_signal_handler_action>::node *next = NULL;
-        while ((next = shared_handler_context.previous_actions.next(next)) != NULL) {
+        while ((next = shared_handler_context().previous_actions.next(next)) != NULL) {
             /* Skip non-matching entries */
             if (next->value().signo != signo)
                 continue;
@@ -145,7 +150,7 @@ static bool previous_action_callback (int signo, siginfo_t *info, ucontext_t *ua
             /* Handler was found; iteration done */
             break;
         }
-    } shared_handler_context.previous_actions.set_reading(false);
+    } shared_handler_context().previous_actions.set_reading(false);
 
     return handled;
 }
@@ -158,18 +163,18 @@ static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *
     /* Call the next handler in the chain. If this is the last handler in the chain, pass it the original signal
      * handlers. */
     bool handled = false;
-    shared_handler_context.callbacks.set_reading(true); {
+    shared_handler_context().callbacks.set_reading(true); {
         async_list<plcrash_signal_user_callback>::node *prev = (async_list<plcrash_signal_user_callback>::node *) context;
-        async_list<plcrash_signal_user_callback>::node *current = shared_handler_context.callbacks.next(prev);
+        async_list<plcrash_signal_user_callback>::node *current = shared_handler_context().callbacks.next(prev);
 
         /* Check for end-of-list */
         if (current == NULL) {
-            shared_handler_context.callbacks.set_reading(false);
+            shared_handler_context().callbacks.set_reading(false);
             return false;
         }
         
         /* Check if any additional handlers are registered. If so, provide the next handler as the forwarding target. */
-        if (shared_handler_context.callbacks.next(current) != NULL) {
+        if (shared_handler_context().callbacks.next(current) != NULL) {
             PLCrashSignalHandlerCallback next_handler = {
                 .callback = internal_callback_iterator,
                 .context = current
@@ -179,7 +184,7 @@ static bool internal_callback_iterator (int signo, siginfo_t *info, ucontext_t *
             /* Otherwise, we've hit the final handler in the list. */
             handled = current->value().callback(signo, info, uap, current->value().context, NULL);
         }
-    } shared_handler_context.callbacks.set_reading(false);
+    } shared_handler_context().callbacks.set_reading(false);
 
     return handled;
 };
@@ -263,18 +268,18 @@ static PLCrashSignalHandler *sharedHandler;
  */
 + (void) resetHandlers {
     /* Reset all saved signal handlers */
-    shared_handler_context.previous_actions.set_reading(true); {
+    shared_handler_context().previous_actions.set_reading(true); {
         async_list<plcrash_signal_handler_action>::node *next = NULL;
-        while ((next = shared_handler_context.previous_actions.next(next)) != NULL)
-            shared_handler_context.previous_actions.nasync_remove_node(next);
-    } shared_handler_context.previous_actions.set_reading(false);
+        while ((next = shared_handler_context().previous_actions.next(next)) != NULL)
+            shared_handler_context().previous_actions.nasync_remove_node(next);
+    } shared_handler_context().previous_actions.set_reading(false);
 
     /* Reset all callbacks */
-    shared_handler_context.callbacks.set_reading(true); {
+    shared_handler_context().callbacks.set_reading(true); {
         async_list<plcrash_signal_user_callback>::node *next = NULL;
-        while ((next = shared_handler_context.callbacks.next(next)) != NULL)
-            shared_handler_context.callbacks.nasync_remove_node(next);
-    } shared_handler_context.callbacks.set_reading(false);
+        while ((next = shared_handler_context().callbacks.next(next)) != NULL)
+            shared_handler_context().callbacks.nasync_remove_node(next);
+    } shared_handler_context().callbacks.set_reading(false);
 }
 
 /**
@@ -344,21 +349,21 @@ static PLCrashSignalHandler *sharedHandler;
                 .callback = previous_action_callback,
                 .context = NULL
             };
-            shared_handler_context.callbacks.nasync_append(sa);
+            shared_handler_context().callbacks.nasync_append(sa);
         }
         
         /* Check whether the signal already has a registered handler. */
         BOOL isRegistered = NO;
-        shared_handler_context.previous_actions.set_reading(true); {
+        shared_handler_context().previous_actions.set_reading(true); {
             /* Find the first matching handler */
             async_list<plcrash_signal_handler_action>::node *next = NULL;
-            while ((next = shared_handler_context.previous_actions.next(next)) != NULL) {
+            while ((next = shared_handler_context().previous_actions.next(next)) != NULL) {
                 if (next->value().signo == signo) {
                     isRegistered = YES;
                     break;
                 }
             }
-        } shared_handler_context.previous_actions.set_reading(false);
+        } shared_handler_context().previous_actions.set_reading(false);
 
         /* Register handler for the requested signal */
         if (!isRegistered) {
@@ -389,7 +394,7 @@ static PLCrashSignalHandler *sharedHandler;
                 .signo = signo,
                 .action = sa_prev
             };
-            shared_handler_context.previous_actions.nasync_append(act);
+            shared_handler_context().previous_actions.nasync_append(act);
         }
     } pthread_mutex_unlock(&registerHandlers);
     
@@ -426,7 +431,7 @@ static PLCrashSignalHandler *sharedHandler;
         .callback = callback,
         .context = context
     };
-    shared_handler_context.callbacks.nasync_prepend(reg);
+    shared_handler_context().callbacks.nasync_prepend(reg);
     
     return YES;
 }
