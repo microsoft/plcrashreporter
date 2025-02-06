@@ -2804,6 +2804,7 @@
 		};
 		C25664D523571D3D0088513E /* Generate Documentation */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -2842,6 +2843,7 @@
 		};
 		C2B90DAB2457178800834AFB /* Build iOS Device Framework */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -2961,6 +2963,7 @@
 		};
 		C2C74CBD253730FA00313817 /* Build Mac Catalyst Framework */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
