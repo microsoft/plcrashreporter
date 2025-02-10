@@ -168,6 +168,12 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
     shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler
                                   basePath: (NSString *) basePath;
 
+- (instancetype) initWithSignalHandlerType: (PLCrashReporterSignalHandlerType) signalHandlerType
+                     symbolicationStrategy: (PLCrashReporterSymbolicationStrategy) symbolicationStrategy
+    shouldRegisterUncaughtExceptionHandler: (BOOL) shouldRegisterUncaughtExceptionHandler
+                                  basePath: (NSString *) basePath
+                            maxReportBytes: (NSUInteger) maxReportByte;
+
 /** The base path to save the crash data. */
 @property(nonatomic, readonly) NSString *basePath;
 
@@ -177,8 +183,11 @@ typedef NS_OPTIONS(NSUInteger, PLCrashReporterSymbolicationStrategy) {
 /** The configured symbolication strategy. */
 @property(nonatomic, readonly) PLCrashReporterSymbolicationStrategy symbolicationStrategy;
 
-/** Should PLCrashReporter regiser an uncaught exception handler? This is entended to be used in Xamarin apps */
+/** Should PLCrashReporter register an uncaught exception handler? This is intended to be used in Xamarin apps */
 @property(nonatomic, readonly) BOOL shouldRegisterUncaughtExceptionHandler;
+
+/** Maximum number of bytes that will be written to the crash report */
+@property(nonatomic, readonly) NSUInteger maxReportBytes;
 
 @end
 
