@@ -1,7 +1,7 @@
 stages:
   - stage: "cocoapods_verification"
     displayName: "CocoaPods Verification"
-    dependsOn:
+    dependsOn: "build"
     jobs:
       - job: "lint"
         displayName: "CocoaPods Lint Check"
