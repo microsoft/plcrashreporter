@@ -6,11 +6,18 @@ stages:
       - job: "lint"
         displayName: "CocoaPods Lint Check"
         steps:
-          - checkout: "self"
+          - checkout: "none"
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Download Pipeline Artifacts for APIScan
+            inputs:
+              artifactName: Info
+              targetPath: '$(Agent.BuildDirectory)/Info'
 
           - task: "Bash@3"
             displayName: "CocoaPods Lint Check"
             inputs:
               targetType: "inline"
               script: |
-                pod lib lint
+                cd $(Agent.BuildDirectory)/Info
+                pod lib lint --verbose
