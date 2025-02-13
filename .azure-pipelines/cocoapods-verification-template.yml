@@ -1,0 +1,15 @@
+stages:
+  - stage: "cocoapods-verification"
+    displayName: "CocoaPods Verification"
+    jobs:
+      - job: "lint"
+        displayName: "CocoaPods Lint Check"
+        steps:
+          - checkout: "self"
+
+          - task: "Bash@3"
+            displayName: "CocoaPods Lint Check"
+            inputs:
+              targetType: "inline"
+              script: |
+                pod lib lint
