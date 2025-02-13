@@ -18,4 +18,6 @@ Pod::Spec.new do |spec|
   spec.osx.deployment_target    = '11.5'
   spec.tvos.deployment_target   = '12.0'
   spec.vendored_frameworks = "CrashReporter.xcframework"
+  spec.libraries = 'c++'
+  spec.pod_target_xcconfig = { 'OTHER_LDFLAGS' => '-lc++' }
 end
