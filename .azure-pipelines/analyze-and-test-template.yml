@@ -4,11 +4,11 @@ parameters:
 
 stages:
   - stage: "analyze"
+    dependsOn:
     jobs:
       - ${{ each platform in parameters.platforms }}:
           - job:
             displayName: "${{ format('CrashReporter {0} Analyze and Test', platform) }}"
-            dependsOn:
             variables:
               XCODE_PATH: "/Applications/Xcode_14.3.1.app/Contents/Developer"
             templateContext:
