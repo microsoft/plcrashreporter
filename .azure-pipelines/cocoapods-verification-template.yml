@@ -10,29 +10,29 @@ stages:
         steps:
           - checkout: "none"
 
-          - task: Bash@3
-            displayName: Switch Xcode to ${XCODE_PATH}
+          - task: "Bash@3"
+            displayName: "Switch Xcode to ${XCODE_PATH}"
             inputs:
-              targetType: inline
+              targetType: "inline"
               script: |
                 sudo xcode-select --switch ${XCODE_PATH}
 
-          - task: DownloadPipelineArtifact@2
-            displayName: Download 'Info' Pipeline Artifact
+          - task: "DownloadPipelineArtifact@2"
+            displayName: "Download 'Info' Pipeline Artifact"
             inputs:
-              artifactName: Info
-              targetPath: '$(Agent.BuildDirectory)/Info'
+              artifactName: "Info"
+              targetPath: "$(Agent.BuildDirectory)/Info"
 
-          - task: DownloadPipelineArtifact@2
-            displayName: Download 'Release' Pipeline Artifact
+          - task: "DownloadPipelineArtifact@2"
+            displayName: "Download 'Release' Pipeline Artifact"
             inputs:
-              artifactName: Release
-              targetPath: '$(Agent.BuildDirectory)/Release'
+              artifactName: "Release"
+              targetPath: "$(Agent.BuildDirectory)/Release"
 
           - task: "Bash@3"
             displayName: "Rename XCFramework Zip"
             inputs:
-              targetType: inline
+              targetType: "inline"
               script: |
                 ZIP_NAME=$(find $(Agent.BuildDirectory)/Release -type f -name "PLCrashReporter-Static-*.xcframework.zip")
                 mv $ZIP_NAME $(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip
