@@ -35,7 +35,7 @@ stages:
               targetType: inline
               script: |
                 ZIP_NAME=$(find $(Agent.BuildDirectory)/Release -type f -name "PLCrashReporter-Static-*.xcframework.zip")
-                mv ZIP_NAME $(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip
+                mv $ZIP_NAME $(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip
 
           - task: "Bash@3"
             displayName: "Patch Podspec to use local zip with PLCrashReporter"
