@@ -5,6 +5,7 @@ pr:
 
 variables:
   Configuration: "Release"
+  SDK: ""
   XCODE_PATH: "/Applications/Xcode_14.3.1.app/Contents/Developer"
 
 resources:
