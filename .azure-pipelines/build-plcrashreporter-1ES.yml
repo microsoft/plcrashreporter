@@ -37,7 +37,7 @@ extends:
     - template: ./cocoapods-verification-template.yml
 
     - stage: APIScan
-      dependsOn: build, analyze, cocoapods-verification
+      dependsOn: build, analyze, cocoapods_verification
       pool:
         name: 1ES-PT-Windows-2022
         os: windows

@@ -1,5 +1,5 @@
 stages:
-  - stage: "cocoapods-verification"
+  - stage: "cocoapods_verification"
     displayName: "CocoaPods Verification"
     jobs:
       - job: "lint"
