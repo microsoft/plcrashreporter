@@ -30,16 +30,24 @@ stages:
               targetPath: '$(Agent.BuildDirectory)/Release'
 
           - task: "Bash@3"
+            displayName: "Rename XCFramework Zip"
+            inputs:
+              targetType: inline
+              script: |
+                ZIP_NAME=$(find $(Agent.BuildDirectory)/Release -type f -name "PLCrashReporter-Static-*.xcframework.zip")
+                mv ZIP_NAME $(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip
+
+          - task: "Bash@3"
             displayName: "Patch Podspec to use local zip with PLCrashReporter"
             inputs:
               targetType: "inline"
               script: |
-                sed -i '' 's|:http *=> "https://github.com/microsoft/plcrashreporter/releases/download/#{spec.version}/PLCrashReporter-Static-#{spec.version}.xcframework.zip"|:http    => "file:$(Agent.BuildDirectory)/Release/PLCrashReporter-Static-#{spec.version}.xcframework.zip"|' $(Agent.BuildDirectory)/Info/PLCrashReporter.podspec
+                ZIP_NAME=$(find $(Agent.BuildDirectory)/Release -type f -name "PLCrashReporter-Static-*.xcframework.zip")
+                sed -i '' 's|:http *=> "https://github.com/microsoft/plcrashreporter/releases/download/#{spec.version}/PLCrashReporter-Static-#{spec.version}.xcframework.zip"|:http    => "file:$(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip"|' $(Agent.BuildDirectory)/Info/PLCrashReporter.podspec
 
           - task: "Bash@3"
-            displayName: "CocoaPods Lint Check"
+            displayName: "CocoaPods Spec Lint Check"
             inputs:
               targetType: "inline"
               script: |
-                cd $(Agent.BuildDirectory)/Info
-                pod spec lint --verbose
+                pod spec lint $(Agent.BuildDirectory)/Info/PLCrashReporter.podspec --verbose
