@@ -30,11 +30,11 @@ extends:
     sdl:
       sourceAnalysisPool: 1ES-PT-Windows-2022
     stages:
-    - template: ./.azure-pipelines/build-template.yml
-    - template: /.azure-pipelines/analyze-and-test-template.yml@self
+    - template: ./build-template.yml
+    - template: ./analyze-and-test-template.yml@self
       parameters:
         platforms: [iOS, macOS, tvOS, MacCatalyst]
-    - template: ./.azure-pipelines/cocoapods-verification-template.yml
+    - template: ./cocoapods-verification-template.yml
 
     - stage: APIScan
       dependsOn: build, analyze, cocoapods-verification
