@@ -1,0 +1,53 @@
+stages:
+  - stage: "cocoapods_verification"
+    displayName: "CocoaPods Verification"
+    dependsOn: "build"
+    jobs:
+      - job: "lint"
+        displayName: "CocoaPods Lint Check"
+        variables:
+          XCODE_VERSION: "14.3.1"
+        steps:
+          - checkout: "none"
+
+          - task: "Bash@3"
+            displayName: "Switch Xcode to ${XCODE_PATH}"
+            inputs:
+              targetType: "inline"
+              script: |
+                sudo xcode-select --switch ${XCODE_PATH}
+
+          - task: "DownloadPipelineArtifact@2"
+            displayName: "Download 'Info' Pipeline Artifact"
+            inputs:
+              artifactName: "Info"
+              targetPath: "$(Agent.BuildDirectory)/Info"
+
+          - task: "DownloadPipelineArtifact@2"
+            displayName: "Download 'Release' Pipeline Artifact"
+            inputs:
+              artifactName: "Release"
+              targetPath: "$(Agent.BuildDirectory)/Release"
+
+          - task: "Bash@3"
+            displayName: "Rename XCFramework Zip"
+            inputs:
+              targetType: "inline"
+              script: |
+                ZIP_NAME=$(find $(Agent.BuildDirectory)/Release -type f -name "PLCrashReporter-Static-*.xcframework.zip")
+                mv $ZIP_NAME $(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip
+
+          - task: "Bash@3"
+            displayName: "Patch Podspec to use local zip with PLCrashReporter"
+            inputs:
+              targetType: "inline"
+              script: |
+                ZIP_NAME=$(find $(Agent.BuildDirectory)/Release -type f -name "PLCrashReporter-Static-*.xcframework.zip")
+                sed -i '' 's|:http *=> "https://github.com/microsoft/plcrashreporter/releases/download/#{spec.version}/PLCrashReporter-Static-#{spec.version}.xcframework.zip"|:http    => "file:$(Agent.BuildDirectory)/Release/PLCrashReporter-Static.xcframework.zip"|' $(Agent.BuildDirectory)/Info/PLCrashReporter.podspec
+
+          - task: "Bash@3"
+            displayName: "CocoaPods Spec Lint Check"
+            inputs:
+              targetType: "inline"
+              script: |
+                pod spec lint $(Agent.BuildDirectory)/Info/PLCrashReporter.podspec --verbose

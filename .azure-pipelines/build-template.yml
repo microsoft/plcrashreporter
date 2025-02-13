@@ -1,0 +1,69 @@
+stages:
+  - stage: "build"
+    displayName: "Build PLCrashReporter"
+    jobs:
+      - job: "build"
+        displayName: "Build for All Platforms"
+        templateContext:
+          outputs:
+            - output: "pipelineArtifact"
+              displayName: "Publish Artifacts"
+              path: "$(Build.ArtifactStagingDirectory)/Release"
+              artifactName: "Release"
+              sbomBuildDropPath: "$(Build.SourcesDirectory)"
+            - output: "pipelineArtifact"
+              displayName: "Publish Version Information"
+              path: "$(Build.ArtifactStagingDirectory)/Info"
+              artifactName: "Info"
+              sbomEnabled: false
+        steps:
+          - checkout: "self"
+          - bash: |
+              brew install wget doxygen graphviz protobuf-c
+              brew unlink protobuf
+              brew install ./Dependencies/protobuf.rb
+            displayName: "Install dependencies"
+          - task: "Xcode@5"
+            displayName: "Build Crash Reporter"
+            inputs:
+              xcWorkspacePath: "CrashReporter.xcodeproj"
+              scheme: "CrashReporter"
+              xcodeVersion: "specifyPath"
+              xcodeDeveloperDir: "$(XCODE_PATH)"
+              args: 'SYMROOT="$(Build.BinariesDirectory)" GCC_TREAT_WARNINGS_AS_ERRORS=YES SWIFT_TREAT_WARNINGS_AS_ERRORS=YES'
+
+          - bash: |
+              cp -f "Release-macosx/libCrashReporter.a" "Release/Static/libCrashReporter-MacOSX-Static.a"
+              lipo -info "Release/Static/libCrashReporter-MacOSX-Static.a"
+              rm -rf "Release/Mac OS X Framework/CrashReporter.framework" "Release/Mac OS X Framework/CrashReporter.framework.dSYM"
+              cp -R "Release-macosx/CrashReporter.framework" "Release-macosx/CrashReporter.framework.dSYM" "Release/Mac OS X Framework"
+              lipo -info "Release/Mac OS X Framework/CrashReporter.framework/CrashReporter"
+              cp -f "Release-macosx/plcrashutil" "Release/Tools"
+              lipo -info "Release/Tools/plcrashutil"
+            displayName: "Prepare macOS Framework and Tools"
+            workingDirectory: "$(Build.BinariesDirectory)"
+
+          - bash: |
+              VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
+              [[ $BUILD_SOURCEBRANCH != 'refs/heads/master' ]] && VERSION="$VERSION+$(cd $BUILD_SOURCESDIRECTORY && git rev-parse --short $BUILD_SOURCEVERSION)"
+              "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-$VERSION" "iOS Framework" "tvOS Framework" "Mac OS X Framework" "Tools"
+              "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION" Static/* "Tools"
+              "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-XCFramework-$VERSION" "CrashReporter.xcframework" "Tools"
+              "$BUILD_SOURCESDIRECTORY/Scripts/create-archive.sh" "PLCrashReporter-Static-$VERSION.xcframework" "XCFrameworkStatic/CrashReporter.xcframework" "Tools"
+            displayName: "Create Archives"
+            workingDirectory: "$(Build.BinariesDirectory)/Release"
+          - task: "CopyFiles@2"
+            displayName: "Copy Archives to Staging Directory"
+            inputs:
+              SourceFolder: "$(Build.BinariesDirectory)/Release"
+              Contents: "*.zip"
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/Release"
+
+          - bash: |
+              mkdir -p $(Build.ArtifactStagingDirectory)/Info
+              echo $BUILD_SOURCEVERSION > $(Build.ArtifactStagingDirectory)/Info/COMMIT
+              VERSION="$(cd $BUILD_SOURCESDIRECTORY && agvtool vers -terse)"
+              echo $VERSION > $(Build.ArtifactStagingDirectory)/Info/VERSION
+              cp $BUILD_SOURCESDIRECTORY/CHANGELOG.md $(Build.ArtifactStagingDirectory)/Info/CHANGELOG.md
+              cp $BUILD_SOURCESDIRECTORY/PLCrashReporter.podspec $(Build.ArtifactStagingDirectory)/Info/PLCrashReporter.podspec
+            displayName: "Collect Version Information"
