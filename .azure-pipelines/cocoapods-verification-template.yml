@@ -5,8 +5,20 @@ stages:
     jobs:
       - job: "lint"
         displayName: "CocoaPods Lint Check"
+        variables:
+          XCODE_VERSION: "14.3.1"
         steps:
           - checkout: "none"
+
+          - task: Bash@3
+            displayName: Switch Active Xcode to Version ${XCODE_VERSION}
+            inputs:
+              targetType: inline
+              script: |
+                set -e
+
+                echo "Switching to Xcode ${XCODE_VERSION}"
+                sudo xcode-select --switch "/Applications/Xcode_${XCODE_VERSION}.app"
 
           - task: DownloadPipelineArtifact@2
             displayName: Download Pipeline Artifacts for APIScan
