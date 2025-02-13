@@ -1,71 +1,72 @@
 trigger:
-- master
+  - "master"
 pr:
-- master
+  - "master"
 
 variables:
-  Configuration: Release
-  SDK: ''
-  XCODE_PATH: '/Applications/Xcode_14.3.1.app/Contents/Developer'
+  Configuration: "Release"
+  SDK: ""
+  XCODE_PATH: "/Applications/Xcode_14.3.1.app/Contents/Developer"
 
 resources:
   repositories:
-  - repository: 1ESPipelineTemplates
-    type: git
-    name: 1ESPipelineTemplates/1ESPipelineTemplates
-    ref: refs/tags/release
+    - repository: "1ESPipelineTemplates"
+      type: "git"
+      name: "1ESPipelineTemplates/1ESPipelineTemplates"
+      ref: "refs/tags/release"
 
 extends:
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+    template: "v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates"
   ${{ else }}:
-    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+    template: "v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates"
   parameters:
     pool:
-      name: Azure Pipelines
-      image: macos-13
-      os: macOS
+      name: "Azure Pipelines"
+      image: "macos-13"
+      os: "macOS"
     customBuildTags:
-    - ES365AIMigrationTooling-BulkMigrated
+      - "ES365AIMigrationTooling-BulkMigrated"
     sdl:
-      sourceAnalysisPool: 1ES-PT-Windows-2022
+      sourceAnalysisPool: "1ES-PT-Windows-2022"
     stages:
-    - template: ./build-template.yml
-    - template: ./analyze-and-test-template.yml@self
-      parameters:
-        platforms: [iOS, macOS, tvOS, MacCatalyst]
-    - template: ./cocoapods-verification-template.yml
+      - template: "./build-template.yml@self"
+      - template: "./analyze-and-test-template.yml@self"
+        parameters:
+          platforms: [iOS, macOS, tvOS, MacCatalyst]
+      - template: "./cocoapods-verification-template.yml@self"
 
-    - stage: APIScan
-      dependsOn: build
-      pool:
-        name: 1ES-PT-Windows-2022
-        os: windows
-      variables:
-        "agent.source.skip": true
-      jobs:
-      - job: APIScan
-        steps:
-        - task: DownloadPipelineArtifact@2
-          displayName: Download Pipeline Artifacts for APIScan
-          inputs:
-            artifactName: Release
-            targetPath: '$(Agent.BuildDirectory)/Release'
-        - task: AzureKeyVault@2
-          inputs:
-            azureSubscription: 'AC - Dev Infra & Build Pool'
-            KeyVaultName: 'mobile-center-sdk'
-            SecretsFilter: 'appcenter-sdk-managed-identity-clientid'
-            RunAsPreJob: false
-        - task: APIScan@2
-          displayName: 'Run APIScan'
-          inputs:
-            softwareFolder: '$(Agent.BuildDirectory)\Release'
-            softwareName: 'plcrashreporter'
-            softwareVersionNum: '$(Build.BuildId)'
-            isLargeApp: false
-            toolVersion: 'Latest'
-            verbosityLevel: verbose
-          condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
-          env:
-            AzureServicesAuthConnectionString: 'runAs=App;AppId=$(appcenter-sdk-managed-identity-clientid)'
+      - stage: "APIScan"
+        dependsOn: "build"
+        pool:
+          name: "1ES-PT-Windows-2022"
+          os: "windows"
+        variables:
+          "agent.source.skip": true
+        jobs:
+          - job: "APIScan"
+            steps:
+              - task: "DownloadPipelineArtifact@2"
+                displayName: "Download Pipeline Artifacts for APIScan"
+                inputs:
+                  artifactName: "Release"
+                  targetPath: "$(Agent.BuildDirectory)/Release"
+              - task: "AzureKeyVault@2"
+                inputs:
+                  azureSubscription: "AC - Dev Infra & Build Pool"
+                  KeyVaultName: "mobile-center-sdk"
+                  SecretsFilter: "appcenter-sdk-managed-identity-clientid"
+                  RunAsPreJob: false
+
+              - task: "APIScan@2"
+                displayName: "Run APIScan"
+                inputs:
+                  softwareFolder: "$(Agent.BuildDirectory)/Release"
+                  softwareName: "plcrashreporter"
+                  softwareVersionNum: "$(Build.BuildId)"
+                  isLargeApp: false
+                  toolVersion: "Latest"
+                  verbosityLevel: "verbose"
+                condition: "and(succeeded(), ne(variables['DisableAPIScan'], 'true'))"
+                env:
+                  AzureServicesAuthConnectionString: "runAs=App;AppId=$(appcenter-sdk-managed-identity-clientid)"
