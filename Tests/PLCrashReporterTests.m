@@ -93,6 +93,7 @@
 
     NSException *exc = [NSException exceptionWithName: NSInvalidArgumentException reason: @"Testing" userInfo: nil];
 
+    /* CrashReporter config with maximum 1024 bytes to write the crash report */
     PLCrashReporterConfig * config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD
                                                                         symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone
                                                        shouldRegisterUncaughtExceptionHandler: YES
@@ -101,8 +102,7 @@
 
     PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: config];
 
-
-
+    /* The report exceeds the 1024 bytes defined in the config. */
     reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
                                               exception: exc
                                                   error: &error];
