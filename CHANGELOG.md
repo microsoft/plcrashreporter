@@ -5,6 +5,7 @@
 * **[Improvement]** Update target iOS and tvOS version to 12.0.
 * **[Improvement]** Support Xcode 16 build.
 * **[Fix]** Fix endless loop when PLCrashReporter was set up during `load`.
+* **[Improvement]** Make crash report size configurable.
 
 ___
 

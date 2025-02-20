@@ -80,6 +80,44 @@
 }
 
 /**
+ * Test generation of a 'live' crash report that exceeds maxReportBytes.
+ */
+- (void) testGenerateLiveReportExceedingMaxReportBytes {
+    NSError *error;
+    NSData *reportData;
+    plcrash_test_thread_t thr;
+    NSUInteger maxReportBytes = 1024;
+
+    /* Spawn a thread and generate a report for it */
+    plcrash_test_thread_spawn(&thr);
+
+    NSException *exc = [NSException exceptionWithName: NSInvalidArgumentException reason: @"Testing" userInfo: nil];
+
+    /* CrashReporter config with maximum 1024 bytes to write the crash report */
+    PLCrashReporterConfig * config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeBSD
+                                                                        symbolicationStrategy: PLCrashReporterSymbolicationStrategyNone
+                                                       shouldRegisterUncaughtExceptionHandler: YES
+                                                                                     basePath: nil
+                                                                               maxReportBytes: maxReportBytes];
+
+    PLCrashReporter *reporter = [[PLCrashReporter alloc] initWithConfiguration: config];
+
+    /* The report exceeds the 1024 bytes defined in the config. */
+    reportData = [reporter generateLiveReportWithThread: pthread_mach_thread_np(thr.thread)
+                                              exception: exc
+                                                  error: &error];
+    plcrash_test_thread_stop(&thr);
+    STAssertNotNil(reportData, @"Failed to generate live report: %@", error);
+
+    /* Try parsing the result */
+    PLCrashReport *report = [[PLCrashReport alloc] initWithData: reportData error: &error];
+    STAssertNil(report, @"Could not parse generated live report: %@", error);
+
+    NSString* errorDescription = [NSString stringWithFormat: @"Could not decode crash report with size of %lu bytes.", (maxReportBytes - sizeof(struct PLCrashReportFileHeader))];
+    STAssertEqualStrings([error localizedDescription], errorDescription, @"Error is not about exceeding MaxReportBytes");
+}
+
+/**
  * Test generation of a 'live' crash report for a specific thread.
  */
 - (void) testGenerateLiveReportWithThread {

@@ -329,10 +329,11 @@ error:
         return NULL;
     }
 
-    Plcrash__CrashReport *crashReport = plcrash__crash_report__unpack(NULL, [data length] - sizeof(struct PLCrashReportFileHeader), header->data);
+    NSUInteger stackTraceSize = [data length] - sizeof(struct PLCrashReportFileHeader);
+    Plcrash__CrashReport *crashReport = plcrash__crash_report__unpack(NULL, stackTraceSize, header->data);
     if (crashReport == NULL) {
-        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, NSLocalizedString(@"An unknown error occured decoding the crash report", 
-                                                                                             @"Crash log decoding error message"));
+        populate_nserror(outError, PLCrashReporterErrorCrashReportInvalid, [NSString stringWithFormat: NSLocalizedString(@"Could not decode crash report with size of %lu bytes.",
+                                                                                                                         @"Crash log decoding error message"), stackTraceSize]);
         return NULL;
     }
 
