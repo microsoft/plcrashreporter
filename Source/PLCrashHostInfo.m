@@ -103,7 +103,7 @@ error:
     /* Extract the Darwin version */
     char *val = plcrash_sysctl_string("kern.osrelease");
     if (val == NULL) {
-        /* This should never fail; if it does, either malloc failed, or 'kern.osrelease' disappeared. */
+        /* This should never fail; if it does, either calloc failed, or 'kern.osrelease' disappeared. */
         PLCR_LOG("Failed to fetch kern.osrelease value %d: %s", errno, strerror(errno));
         return nil;
     }

@@ -127,7 +127,7 @@ void foo__bar__baz_bah__init
 ~~~
  * - `unpack()`. Unpacks data for a particular message format. Note that the
  *   `allocator` parameter is usually `NULL` to indicate that the system's
- *   `malloc()` and `free()` functions should be used for dynamically allocating
+ *   `calloc()` and `free()` functions should be used for dynamically allocating
  *   memory.
  *
 ~~~{.c}

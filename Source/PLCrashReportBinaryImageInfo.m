@@ -93,7 +93,7 @@
         /* Convert UUID to ASCII hex representation. */
         size_t inlen = [uuid length];
         size_t outlen = inlen * 2;
-        char *output = malloc(outlen);
+        char *output = calloc(1, outlen);
         const char hex[] = "0123456789abcdef";
         const uint8_t *bytes = [uuid bytes];
 

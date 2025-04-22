@@ -47,11 +47,11 @@
  * @param name The sysctl MIB name.
  * @param length On success, will be populated with the length of the result. If NULL, length will not be supplied.
  *
- * @return Returns a malloc-allocated buffer containing the sysctl result on success. On failure, NULL is returned
+ * @return Returns a calloc-allocated buffer containing the sysctl result on success. On failure, NULL is returned
  * and the global variable errno is set to indicate the error. The caller is responsible for free()'ing the returned
  * buffer.
  */
-static void *plcrash_sysctl_malloc (const char *name, size_t *length) {
+static void *plcrash_sysctl_calloc (const char *name, size_t *length) {
     /* Attempt to fetch the data, looping until our buffer is sufficiently sized. */
     void *result = NULL;
     size_t result_len = 0;
@@ -67,7 +67,7 @@ static void *plcrash_sysctl_malloc (const char *name, size_t *length) {
         /* Allocate the destination buffer */
         if (result != NULL)
             free(result);
-        result = malloc(result_len);
+        result = calloc(1, result_len);
         
         /* Fetch the value */
         ret = sysctlbyname(name, result, &result_len, NULL, 0);
@@ -97,12 +97,12 @@ static void *plcrash_sysctl_malloc (const char *name, size_t *length) {
  * @param name The sysctl MIB name.
  * @param length On success, will be populated with the length of the result. If NULL, length will not be supplied.
  *
- * @return Returns a malloc-allocated NULL-terminated C string containing the sysctl result on success. On failure,
+ * @return Returns a calloc-allocated NULL-terminated C string containing the sysctl result on success. On failure,
  * NULL is returned and the global variable errno is set to indicate the error. The caller is responsible for
  * free()'ing the returned buffer.
  */
 char *plcrash_sysctl_string (const char *name) {
-    return plcrash_sysctl_malloc(name, NULL);
+    return plcrash_sysctl_calloc(name, NULL);
 }
 
 /**

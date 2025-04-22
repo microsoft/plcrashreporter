@@ -45,7 +45,7 @@
  * \todo Use size_t consistently.
  */
 
-#include <stdlib.h>	/* for malloc, free */
+#include <stdlib.h>	/* for calloc, free */
 #include <string.h>	/* for strcmp, strlen, memcpy, memmove, memset */
 
 #include "protobuf-c.h"
@@ -151,7 +151,7 @@ static void *
 system_alloc(void *allocator_data, size_t size)
 {
 	(void)allocator_data;
-	return malloc(size);
+	return calloc(1, size);
 }
 
 static void
@@ -175,7 +175,7 @@ do_free(ProtobufCAllocator *allocator, void *data)
 }
 
 /*
- * This allocator uses the system's malloc() and free(). It is the default
+ * This allocator uses the system's calloc() and free(). It is the default
  * allocator used if NULL is passed as the ProtobufCAllocator to an exported
  * function.
  */

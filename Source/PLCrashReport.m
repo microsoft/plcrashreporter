@@ -129,7 +129,7 @@ static void populate_nserror (NSError **error, PLCrashReporterError code, NSStri
 
 
     /* Allocate the struct and attempt to parse */
-    _decoder = malloc(sizeof(_PLCrashReportDecoder));
+    _decoder = calloc(1, sizeof(_PLCrashReportDecoder));
     _decoder->crashReport = [self decodeCrashData: encodedData error: outError];
 
     /* Check if decoding failed. If so, outError has already been populated. */

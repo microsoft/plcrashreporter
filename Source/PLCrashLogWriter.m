@@ -258,7 +258,7 @@ enum {
 };
 
 static void plprotobuf_cbinary_data_init (PLProtobufCBinaryData *data, const void *pointer, size_t len) {
-    data->data = malloc(len);
+    data->data = calloc(1, len);
     memcpy(data->data , pointer, len);
     data->len = len;
 }
@@ -356,7 +356,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
             uint32_t process_path_len = 0;
             _NSGetExecutablePath(NULL, &process_path_len);
             if (process_path_len > 0) {
-                char *process_path = malloc(process_path_len);
+                char *process_path = calloc(1, process_path_len);
                 _NSGetExecutablePath(process_path, &process_path_len);
                 writer->process_info.process_path.data = process_path;
                 writer->process_info.process_path.len = process_path_len;
@@ -496,7 +496,7 @@ void plcrash_log_writer_set_exception (plcrash_log_writer_t *writer, NSException
     if (callStackArray != nil && [callStackArray count] > 0) {
         size_t count = [callStackArray count];
         writer->uncaught_exception.callstack_count = count;
-        writer->uncaught_exception.callstack = malloc(sizeof(void *) * count);
+        writer->uncaught_exception.callstack = calloc(1, sizeof(void *) * count);
 
         size_t i = 0;
         for (NSNumber *num in callStackArray) {

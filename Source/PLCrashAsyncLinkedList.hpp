@@ -66,7 +66,7 @@ public:
         
         // Custom new/delete that do not rely on the stdlib
         void *operator new (size_t size) {
-            void *ptr = malloc(size);
+            void *ptr = calloc(1, size);
             PLCF_ASSERT(ptr != NULL);
             return ptr;
         }
@@ -127,7 +127,7 @@ public:
     
     // Custom new/delete that do not rely on the stdlib
     void *operator new (size_t size) {
-        void *ptr = malloc(size);
+        void *ptr = calloc(1, size);
         PLCF_ASSERT(ptr != NULL);
         return ptr;
     }

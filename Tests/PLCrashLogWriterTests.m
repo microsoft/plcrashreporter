@@ -162,7 +162,7 @@
     
     _NSGetExecutablePath(NULL, &process_path_len);
     if (process_path_len > 0) {
-        process_path = malloc(process_path_len);
+        process_path = calloc(1, process_path_len);
         _NSGetExecutablePath(process_path, &process_path_len);
         STAssertEqualCStrings(procInfo->process_path, process_path, @"Incorrect process name");
         free(process_path);
