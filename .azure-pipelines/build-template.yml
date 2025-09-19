@@ -20,8 +20,10 @@ stages:
           - checkout: "self"
           - bash: |
               brew install wget doxygen graphviz protobuf-c
-              brew unlink protobuf
-              brew install ./Dependencies/protobuf.rb
+              brew uninstall --ignore-dependencies protobuf
+              brew tap-new local/protobuf
+              cp ./Dependencies/protobuf.rb $(brew --repository)/Library/Taps/local/homebrew-protobuf/Formula/protobuf.rb
+              brew install local/protobuf/protobuf
             displayName: "Install dependencies"
           - task: "Xcode@5"
             displayName: "Build Crash Reporter"
