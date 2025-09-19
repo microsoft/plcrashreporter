@@ -36,10 +36,3 @@ extends:
         enabledOnNonDefaultBranches: true
     stages:
       - template: "./build-template.yml@self"
-      - stage: "APIScan"
-        dependsOn: "build"
-        pool:
-          name: "1ES-PT-Windows-2022"
-          os: "windows"
-        variables:
-          "agent.source.skip": true
