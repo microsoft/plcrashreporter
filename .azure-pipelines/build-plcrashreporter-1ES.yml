@@ -4,9 +4,15 @@ pr:
   - "master"
 
 variables:
-  Configuration: "Release"
-  SDK: ""
-  XCODE_PATH: "/Applications/Xcode_14.3.1.app/Contents/Developer"
+- group: "mobile-center-sdk KV"
+- name: "Configuration"
+  value: "Release"
+- name: "SDK"
+  value: ""
+- name: "XCODE_PATH"
+  value: "/Applications/Xcode_14.3.1.app/Contents/Developer"
+- name: CRASHREPORTER_ROOT_PATH
+  value: "sdk/plcrashreporter"
 
 resources:
   repositories:
@@ -16,10 +22,7 @@ resources:
       ref: "refs/tags/release"
 
 extends:
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-    template: "v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates"
-  ${{ else }}:
-    template: "v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates"
+  template: "v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates"
   parameters:
     pool:
       name: "Azure Pipelines"
@@ -29,13 +32,11 @@ extends:
       - "ES365AIMigrationTooling-BulkMigrated"
     sdl:
       sourceAnalysisPool: "1ES-PT-Windows-2022"
+      codeql:
+        buildIdentifier: plcrashreporter
+        enabledOnNonDefaultBranches: true
     stages:
       - template: "./build-template.yml@self"
-      - template: "./analyze-and-test-template.yml@self"
-        parameters:
-          platforms: [iOS, macOS, tvOS, MacCatalyst]
-      - template: "./cocoapods-verification-template.yml@self"
-
       - stage: "APIScan"
         dependsOn: "build"
         pool:
