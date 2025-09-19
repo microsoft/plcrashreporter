@@ -52,13 +52,6 @@ extends:
                 inputs:
                   artifactName: "Release"
                   targetPath: "$(Agent.BuildDirectory)/Release"
-              - task: "AzureKeyVault@2"
-                inputs:
-                  azureSubscription: "AC - Dev Infra & Build Pool"
-                  KeyVaultName: "mobile-center-sdk"
-                  SecretsFilter: "appcenter-sdk-managed-identity-clientid"
-                  RunAsPreJob: false
-
               - task: "APIScan@2"
                 displayName: "Run APIScan"
                 inputs:
