@@ -4,7 +4,6 @@ pr:
   - "master"
 
 variables:
-- group: "mobile-center-sdk KV"
 - name: "Configuration"
   value: "Release"
 - name: "SDK"
@@ -44,23 +43,3 @@ extends:
           os: "windows"
         variables:
           "agent.source.skip": true
-        jobs:
-          - job: "APIScan"
-            steps:
-              - task: "DownloadPipelineArtifact@2"
-                displayName: "Download Pipeline Artifacts for APIScan"
-                inputs:
-                  artifactName: "Release"
-                  targetPath: "$(Agent.BuildDirectory)/Release"
-              - task: "APIScan@2"
-                displayName: "Run APIScan"
-                inputs:
-                  softwareFolder: "$(Agent.BuildDirectory)/Release"
-                  softwareName: "plcrashreporter"
-                  softwareVersionNum: "$(Build.BuildId)"
-                  isLargeApp: false
-                  toolVersion: "Latest"
-                  verbosityLevel: "verbose"
-                condition: "and(succeeded(), ne(variables['DisableAPIScan'], 'true'))"
-                env:
-                  AzureServicesAuthConnectionString: "runAs=App;AppId=$(appcenter-sdk-managed-identity-clientid)"
