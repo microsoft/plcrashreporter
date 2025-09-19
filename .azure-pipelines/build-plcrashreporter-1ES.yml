@@ -34,5 +34,6 @@ extends:
       codeql:
         buildIdentifier: plcrashreporter
         enabledOnNonDefaultBranches: true
+        language: cpp,swift,ruby
     stages:
       - template: "./build-template.yml@self"

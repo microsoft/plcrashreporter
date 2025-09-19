@@ -4,18 +4,6 @@ stages:
     jobs:
       - job: "build"
         displayName: "Build for All Platforms"
-        templateContext:
-          outputs:
-            - output: "pipelineArtifact"
-              displayName: "Publish Artifacts"
-              path: "$(Build.ArtifactStagingDirectory)/Release"
-              artifactName: "Release"
-              sbomBuildDropPath: "$(Build.SourcesDirectory)"
-            - output: "pipelineArtifact"
-              displayName: "Publish Version Information"
-              path: "$(Build.ArtifactStagingDirectory)/Info"
-              artifactName: "Info"
-              sbomEnabled: false
         steps:
           - checkout: "self"
           - bash: |
