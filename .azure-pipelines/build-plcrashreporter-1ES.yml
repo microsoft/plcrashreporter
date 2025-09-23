@@ -1,7 +1,10 @@
-trigger:
-  - "master"
-pr:
-  - "master"
+schedules:
+  - cron: "0 0 * * 0"
+    displayName: Weekly schedule
+    branches:
+      include:
+        - fix-codeql
+    always: true
 
 variables:
 - name: "Configuration"
