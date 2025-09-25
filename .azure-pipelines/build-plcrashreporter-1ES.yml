@@ -33,7 +33,7 @@ extends:
     customBuildTags:
       - "ES365AIMigrationTooling-BulkMigrated"
     sdl:
-      sourceAnalysisPool: "1ES-PT-Windows-2022"
+      sourceAnalysisPool: "1ES-PT-PME-Windows-2022"
       codeql:
         buildIdentifier: plcrashreporter
         enabledOnNonDefaultBranches: true
