@@ -359,7 +359,7 @@ plcrash_error_t plcrash_log_writer_init (plcrash_log_writer_t *writer,
                 char *process_path = malloc(process_path_len);
                 _NSGetExecutablePath(process_path, &process_path_len);
                 writer->process_info.process_path.data = process_path;
-                writer->process_info.process_path.len = process_path_len;
+                writer->process_info.process_path.len = strnlen(process_path, process_path_len);
             }
         }
 
