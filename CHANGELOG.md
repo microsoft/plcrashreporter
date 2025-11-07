@@ -1,5 +1,9 @@
 # PLCrashReporter Change Log
 
+## Version 1.12.2
+
+* **[Fix]** Do not include trailing zero byte in process_path https://github.com/microsoft/plcrashreporter/pull/351
+
 ## Version 1.12.0
 
 * **[Improvement]** Make crash report size configurable.
