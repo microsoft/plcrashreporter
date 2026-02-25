@@ -28,7 +28,7 @@ extends:
   parameters:
     pool:
       name: "Azure Pipelines"
-      image: "macos-13"
+      image: "macos-14"
       os: "macOS"
     customBuildTags:
       - "ES365AIMigrationTooling-BulkMigrated"
