@@ -54,7 +54,7 @@
 
 /** @internal
  * CrashReporter cache directory name. */
-static NSString *PLCRASH_CACHE_DIR = @"com.plausiblelabs.crashreporter.data";
+static NSString *PLCRASH_CACHE_DIR = @"com.bugsplat.crashreporter.data";
 
 /** @internal
  * Crash Report file name. */
